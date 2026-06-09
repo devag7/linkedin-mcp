@@ -1,12 +1,12 @@
 {
-  "name": "linkedin-pro-mcp",
+  "name": "linkedin-mcp",
   "version": "1.0.0",
   "description": "The most reliable LinkedIn MCP server. 30+ tools, remote-first, zero dependencies. Works with Claude, Cursor, and any MCP client.",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
-    "linkedin-pro-mcp": "dist/index.js"
+    "linkedin-mcp": "dist/index.js"
   },
   "scripts": {
     "dev": "tsx src/index.ts",
@@ -56,11 +56,11 @@
   "author": "Dev Agarwalla",
   "repository": {
     "type": "git",
-    "url": "https://github.com/devag7/linkedin-pro-mcp.git"
+    "url": "https://github.com/devag7/linkedin-mcp.git"
   },
-  "homepage": "https://github.com/devag7/linkedin-pro-mcp#readme",
+  "homepage": "https://github.com/devag7/linkedin-mcp#readme",
   "bugs": {
-    "url": "https://github.com/devag7/linkedin-pro-mcp/issues"
+    "url": "https://github.com/devag7/linkedin-mcp/issues"
   },
   "engines": {
     "node": ">=20.0.0"

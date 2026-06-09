@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-describe('LinkedIn Pro MCP Server', () => {
+describe('LinkedIn MCP Server', () => {
   it('should have correct version', () => {
     expect('1.0.0').toBe('1.0.0');
   });

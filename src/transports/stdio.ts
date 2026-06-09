@@ -20,7 +20,7 @@ export async function connectStdio(server: McpServer, logger: Logger): Promise<v
 
   await server.connect(transport);
 
-  logger.info('LinkedIn Pro MCP Server running on stdio');
+  logger.info('LinkedIn MCP Server running on stdio');
 
   // Keep the process alive
   process.on('SIGINT', async () => {

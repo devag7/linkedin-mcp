@@ -1,5 +1,5 @@
 /**
- * LinkedIn Pro MCP Server — Core Server Setup
+ * LinkedIn MCP Server — Core Server Setup
  *
  * Creates and configures the MCP server with all tool registrations.
  * This is the heart of the server — tools are registered here.
@@ -24,7 +24,7 @@ const VERSION = '1.0.0';
 export function createServer(logger: Logger): McpServer {
   const server = new McpServer(
     {
-      name: 'linkedin-pro-mcp',
+      name: 'linkedin-mcp',
       version: VERSION,
     },
     {
@@ -66,7 +66,7 @@ function registerUtilityTools(
 ): void {
   server.tool(
     'whoami',
-    'Get information about the current LinkedIn Pro MCP server instance, authentication status, and capabilities.',
+    'Get information about the current LinkedIn MCP server instance, authentication status, and capabilities.',
     {},
     async () => {
       logger.debug('Tool called: whoami');
@@ -79,7 +79,7 @@ function registerUtilityTools(
             type: 'text' as const,
             text: JSON.stringify(
               {
-                server: 'linkedin-pro-mcp',
+                server: 'linkedin-mcp',
                 version: VERSION,
                 status: 'running',
                 authentication: authStatus,
@@ -109,7 +109,7 @@ function registerUtilityTools(
 
   server.tool(
     'health_check',
-    'Check the health of the LinkedIn Pro MCP server and LinkedIn connectivity.',
+    'Check the health of the LinkedIn MCP server and LinkedIn connectivity.',
     {},
     async () => {
       logger.debug('Tool called: health_check');
@@ -894,7 +894,7 @@ async function safeToolCall(
             tool: toolName,
             type: isAuth ? 'authentication_error' : isApi ? 'api_error' : 'internal_error',
             ...(isAuth
-              ? { setup_guide: 'https://github.com/devag7/linkedin-pro-mcp#authentication' }
+              ? { setup_guide: 'https://github.com/devag7/linkedin-mcp#authentication' }
               : {}),
             ...(isApi ? { status: (error as LinkedInApiError).status } : {}),
           }),
@@ -927,7 +927,7 @@ function formatResult(
 export async function startServer(config: ServerConfig): Promise<void> {
   const logger = new Logger(config.logLevel);
 
-  logger.info('Starting LinkedIn Pro MCP Server', {
+  logger.info('Starting LinkedIn MCP Server', {
     version: VERSION,
     transport: config.transport,
     port: config.transport === 'http' ? config.port : undefined,

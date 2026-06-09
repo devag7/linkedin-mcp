@@ -1,17 +1,17 @@
 #!/usr/bin/env node
 
 /**
- * LinkedIn Pro MCP Server — Entry Point
+ * LinkedIn MCP Server — Entry Point
  *
  * The most reliable LinkedIn MCP server for AI assistants.
  * 30+ tools, remote-first, zero local dependencies.
  *
  * Usage:
- *   npx linkedin-pro-mcp                     # stdio mode (default)
- *   npx linkedin-pro-mcp --transport http     # HTTP mode on port 3000
- *   npx linkedin-pro-mcp --transport http --port 8080
+ *   npx linkedin-mcp                     # stdio mode (default)
+ *   npx linkedin-mcp --transport http     # HTTP mode on port 3000
+ *   npx linkedin-mcp --transport http --port 8080
  *
- * @see https://github.com/devag7/linkedin-pro-mcp
+ * @see https://github.com/devag7/linkedin-mcp
  */
 
 import { startServer } from './server.js';
@@ -69,7 +69,7 @@ function parseArgs(): ServerConfig {
 
       case '--version':
       case '-v':
-        console.log('linkedin-pro-mcp v1.0.0');
+        console.log('linkedin-mcp v1.0.0');
         process.exit(0);
         break;
 
@@ -105,11 +105,11 @@ function parseArgs(): ServerConfig {
  */
 function printHelp(): void {
   console.log(`
-🔗 LinkedIn Pro MCP Server v1.0.0
+🔗 LinkedIn MCP Server v1.0.0
    The most reliable LinkedIn MCP server for AI assistants.
 
 USAGE:
-  linkedin-pro-mcp [OPTIONS]
+  linkedin-mcp [OPTIONS]
 
 OPTIONS:
   -t, --transport <type>   Transport mode: stdio (default) or http
@@ -120,13 +120,13 @@ OPTIONS:
 
 EXAMPLES:
   # Run with stdio (for Claude Desktop / Claude Code)
-  linkedin-pro-mcp
+  linkedin-mcp
 
   # Run with HTTP (for remote access)
-  linkedin-pro-mcp --transport http --port 3000
+  linkedin-mcp --transport http --port 3000
 
   # Run with environment variables
-  LINKEDIN_COOKIE="your_li_at_cookie" linkedin-pro-mcp
+  LINKEDIN_COOKIE="your_li_at_cookie" linkedin-mcp
 
 ENVIRONMENT VARIABLES:
   LINKEDIN_ACCESS_TOKEN    LinkedIn OAuth access token
@@ -137,7 +137,7 @@ ENVIRONMENT VARIABLES:
   LOG_LEVEL                Logging level (default: info)
 
 DOCUMENTATION:
-  https://github.com/devag7/linkedin-pro-mcp
+  https://github.com/devag7/linkedin-mcp
 `);
 }
 

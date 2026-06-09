@@ -56,7 +56,7 @@ export async function startHttpServer(
       res.end(
         JSON.stringify({
           status: 'ok',
-          server: 'linkedin-pro-mcp',
+          server: 'linkedin-mcp',
           version: '1.0.0',
           transport: 'streamable-http',
           endpoint: '/mcp',
@@ -153,7 +153,7 @@ export async function startHttpServer(
 
   return new Promise((resolve) => {
     httpServer.listen(port, () => {
-      logger.info(`LinkedIn Pro MCP Server running on http://localhost:${port}/mcp`);
+      logger.info(`LinkedIn MCP Server running on http://localhost:${port}/mcp`);
       logger.info('Add this URL to your Claude Desktop config for remote access');
       resolve();
     });

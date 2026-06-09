@@ -1,5 +1,5 @@
 services:
-  linkedin-pro-mcp:
+  linkedin-mcp:
     build: .
     ports:
       - "${PORT:-3000}:3000"

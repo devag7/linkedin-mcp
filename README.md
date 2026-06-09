@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🔗 LinkedIn Pro MCP
+# 🔗 LinkedIn MCP
 
 ### The most reliable LinkedIn MCP server for AI assistants
 
@@ -8,7 +8,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-≥20-green?logo=node.js&logoColor=white)](https://nodejs.org/)
 [![MCP](https://img.shields.io/badge/MCP-Compatible-purple?logo=anthropic&logoColor=white)](https://modelcontextprotocol.io/)
-[![CI](https://img.shields.io/github/actions/workflow/status/devag7/linkedin-pro-mcp/ci.yml?label=CI&logo=github)](https://github.com/devag7/linkedin-pro-mcp/actions)
+[![CI](https://img.shields.io/github/actions/workflow/status/devag7/linkedin-mcp/ci.yml?label=CI&logo=github)](https://github.com/devag7/linkedin-mcp/actions)
 
 **Give Claude, Cursor, and any MCP-compatible AI assistant full access to LinkedIn — profiles, messaging, jobs, companies, and more. Zero local dependencies. Just add a URL.**
 
@@ -18,7 +18,7 @@
 
 ---
 
-## ✨ Why LinkedIn Pro MCP?
+## ✨ Why LinkedIn MCP?
 
 | | Feature | Description |
 |---|---|---|
@@ -57,7 +57,7 @@ Add to your Claude Desktop config (`~/Library/Application Support/Claude/claude_
   "mcpServers": {
     "linkedin": {
       "command": "npx",
-      "args": ["-y", "linkedin-pro-mcp"],
+      "args": ["-y", "linkedin-mcp"],
       "env": {
         "LINKEDIN_COOKIE": "your_li_at_cookie_value"
       }
@@ -69,8 +69,8 @@ Add to your Claude Desktop config (`~/Library/Application Support/Claude/claude_
 ### Method 3: Clone & Run
 
 ```bash
-git clone https://github.com/devag7/linkedin-pro-mcp.git
-cd linkedin-pro-mcp
+git clone https://github.com/devag7/linkedin-mcp.git
+cd linkedin-mcp
 npm install
 npm run dev
 ```
@@ -180,7 +180,7 @@ export LINKEDIN_CSRF_TOKEN="your_jsessionid_value"
 
 ## ⚡ Comparison with Alternatives
 
-| Feature | **LinkedIn Pro MCP** | linkedin-mcp-server |
+| Feature | **LinkedIn MCP** | linkedin-mcp-server |
 |---|---|---|
 | **Transport** | ✅ Remote HTTP + stdio | ❌ stdio only (local) |
 | **Install Required** | ✅ No — just add URL | ❌ Python + Chromium (~500MB) |
@@ -216,8 +216,8 @@ export LINKEDIN_CSRF_TOKEN="your_jsessionid_value"
 
 ```bash
 # Clone the repo
-git clone https://github.com/devag7/linkedin-pro-mcp.git
-cd linkedin-pro-mcp
+git clone https://github.com/devag7/linkedin-mcp.git
+cd linkedin-mcp
 
 # Install dependencies
 npm install

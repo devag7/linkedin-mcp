@@ -1,4 +1,4 @@
-# Contributing to LinkedIn Pro MCP
+# Contributing to LinkedIn MCP
 
 Thank you for your interest in contributing! This document provides guidelines for contributing to the project.
 
@@ -6,8 +6,8 @@ Thank you for your interest in contributing! This document provides guidelines f
 
 ```bash
 # Clone the repo
-git clone https://github.com/devag7/linkedin-pro-mcp.git
-cd linkedin-pro-mcp
+git clone https://github.com/devag7/linkedin-mcp.git
+cd linkedin-mcp
 
 # Install dependencies
 npm install
@@ -113,11 +113,11 @@ npm run lint:fix  # Auto-fix lint issues
 
 ## 🐛 Reporting Bugs
 
-Use the [Bug Report template](https://github.com/devag7/linkedin-pro-mcp/issues/new?template=bug_report.md).
+Use the [Bug Report template](https://github.com/devag7/linkedin-mcp/issues/new?template=bug_report.md).
 
 ## 💡 Feature Requests
 
-Use the [Feature Request template](https://github.com/devag7/linkedin-pro-mcp/issues/new?template=feature_request.md).
+Use the [Feature Request template](https://github.com/devag7/linkedin-mcp/issues/new?template=feature_request.md).
 
 ## 📄 License
 

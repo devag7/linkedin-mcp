@@ -1,5 +1,5 @@
 /**
- * Shared type definitions for LinkedIn Pro MCP Server.
+ * Shared type definitions for LinkedIn MCP Server.
  */
 
 /** Transport type for the MCP server */
