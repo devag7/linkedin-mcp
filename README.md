@@ -57,7 +57,7 @@ Add to your Claude Desktop config (`~/Library/Application Support/Claude/claude_
   "mcpServers": {
     "linkedin": {
       "command": "npx",
-      "args": ["-y", "linkedin-mcp"],
+      "args": ["-y", "linkedinmcp"],
       "env": {
         "LINKEDIN_COOKIE": "your_li_at_cookie_value"
       }
