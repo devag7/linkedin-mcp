@@ -1,12 +1,11 @@
 {
-  "name": "linkedinmcp",
+  "name": "@devag7/linkedin-mcp",
   "version": "1.0.0",
   "description": "The most reliable LinkedIn MCP server. 36 tools, remote-first, zero dependencies. Works with Claude, Cursor, and any MCP client.",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
-    "linkedinmcp": "dist/index.js",
     "linkedin-mcp": "dist/index.js"
   },
   "scripts": {

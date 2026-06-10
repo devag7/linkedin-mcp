@@ -52,15 +52,20 @@ Add to your Claude Desktop config (`~/Library/Application Support/Claude/claude_
 
 ### Method 2: npx (No Install)
 
+First, save your credentials once:
+
+```bash
+npx -y @devag7/linkedin-mcp --login
+```
+
+Then add to Claude config (no env vars needed!):
+
 ```json
 {
   "mcpServers": {
     "linkedin": {
       "command": "npx",
-      "args": ["-y", "linkedinmcp"],
-      "env": {
-        "LINKEDIN_COOKIE": "your_li_at_cookie_value"
-      }
+      "args": ["-y", "@devag7/linkedin-mcp"]
     }
   }
 }
@@ -154,26 +159,45 @@ npm run dev
 
 ## 🔐 Authentication
 
-### Method 1: LinkedIn OAuth 2.0 (Recommended)
+### One-Time Setup (Recommended)
+
+Run the interactive login once — credentials are saved and reused automatically:
+
+```bash
+npx @devag7/linkedin-mcp --login
+```
+
+This guides you through pasting your LinkedIn cookie or OAuth token, and saves it to `~/.linkedin-mcp/credentials.json`. You never need to set env vars again.
+
+```bash
+# Check your current auth status
+npx @devag7/linkedin-mcp --status
+
+# Clear saved credentials
+npx @devag7/linkedin-mcp --logout
+```
+
+### Cookie Auth (Works with All 36 Tools)
+
+1. Log in to LinkedIn in your browser
+2. Open DevTools (F12) → Application → Cookies → `linkedin.com`
+3. Copy the `li_at` cookie value
+4. Run `linkedin-mcp --login` and paste when prompted
+
+### OAuth 2.0 (Official API)
 
 1. Create an app at [LinkedIn Developer Portal](https://www.linkedin.com/developers/)
 2. Get your access token
-3. Set the environment variable:
+3. Run `linkedin-mcp --login` and select OAuth option
 
-```bash
-export LINKEDIN_ACCESS_TOKEN="your_access_token"
-```
+### Environment Variables (Alternative)
 
-### Method 2: Session Cookie (Quick Setup)
-
-1. Log in to LinkedIn in your browser
-2. Open DevTools → Application → Cookies → `linkedin.com`
-3. Copy the `li_at` cookie value
-4. Optionally copy the `JSESSIONID` cookie value (for CSRF)
+For CI/Docker, you can use env vars instead (they override saved credentials):
 
 ```bash
 export LINKEDIN_COOKIE="your_li_at_cookie_value"
-export LINKEDIN_CSRF_TOKEN="your_jsessionid_value"
+# or
+export LINKEDIN_ACCESS_TOKEN="your_oauth_token"
 ```
 
 ---

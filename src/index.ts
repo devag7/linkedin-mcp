@@ -4,12 +4,12 @@
  * LinkedIn MCP Server — Entry Point
  *
  * The most reliable LinkedIn MCP server for AI assistants.
- * 30+ tools, remote-first, zero local dependencies.
+ * 36 tools, remote-first, zero local dependencies.
  *
  * Usage:
- *   npx linkedin-mcp                     # stdio mode (default)
- *   npx linkedin-mcp --transport http     # HTTP mode on port 3000
- *   npx linkedin-mcp --transport http --port 8080
+ *   npx @devag7/linkedin-mcp                     # stdio mode (default)
+ *   npx @devag7/linkedin-mcp --transport http     # HTTP mode on port 3000
+ *   npx @devag7/linkedin-mcp --login              # One-time credential setup
  *
  * @see https://github.com/devag7/linkedin-mcp
  */
@@ -17,21 +17,40 @@
 import { startServer } from './server.js';
 import type { ServerConfig, TransportType } from './types.js';
 import { Logger } from './types.js';
+import {
+  interactiveLogin,
+  clearCredentials,
+  applyStoredCredentials,
+  hasStoredCredentials,
+} from './auth/store.js';
 
 /**
  * Parse command-line arguments.
  */
-function parseArgs(): ServerConfig {
+function parseArgs(): ServerConfig & { action?: 'login' | 'logout' | 'status' } {
   const args = process.argv.slice(2);
   let transport: TransportType = 'stdio';
   let port = 3000;
   let logLevel: 'debug' | 'info' | 'warn' | 'error' = 'info';
+  let action: 'login' | 'logout' | 'status' | undefined;
 
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
     const next = args[i + 1];
 
     switch (arg) {
+      case '--login':
+        action = 'login';
+        break;
+
+      case '--logout':
+        action = 'logout';
+        break;
+
+      case '--status':
+        action = 'status';
+        break;
+
       case '--transport':
       case '-t':
         if (next === 'stdio' || next === 'http') {
@@ -97,7 +116,7 @@ function parseArgs(): ServerConfig {
     }
   }
 
-  return { transport, port, logLevel };
+  return { transport, port, logLevel, action };
 }
 
 /**
@@ -111,6 +130,11 @@ function printHelp(): void {
 USAGE:
   linkedin-mcp [OPTIONS]
 
+COMMANDS:
+  --login                  Save LinkedIn credentials (one-time setup)
+  --logout                 Clear saved credentials
+  --status                 Show current auth status
+
 OPTIONS:
   -t, --transport <type>   Transport mode: stdio (default) or http
   -p, --port <number>      Port for HTTP transport (default: 3000)
@@ -119,22 +143,22 @@ OPTIONS:
   -v, --version            Show version
 
 EXAMPLES:
+  # One-time login (saves to ~/.linkedin-mcp/credentials.json)
+  linkedin-mcp --login
+
   # Run with stdio (for Claude Desktop / Claude Code)
   linkedin-mcp
 
   # Run with HTTP (for remote access)
   linkedin-mcp --transport http --port 3000
 
-  # Run with environment variables
+  # Run with environment variables (overrides saved credentials)
   LINKEDIN_COOKIE="your_li_at_cookie" linkedin-mcp
 
-ENVIRONMENT VARIABLES:
-  LINKEDIN_ACCESS_TOKEN    LinkedIn OAuth access token
-  LINKEDIN_COOKIE          LinkedIn li_at session cookie
-  LINKEDIN_CSRF_TOKEN      LinkedIn JSESSIONID CSRF token
-  PORT                     HTTP server port (default: 3000)
-  TRANSPORT                Transport mode: stdio | http
-  LOG_LEVEL                Logging level (default: info)
+AUTHENTICATION:
+  Credentials are loaded in this order (first wins):
+  1. Environment variables (LINKEDIN_COOKIE, LINKEDIN_ACCESS_TOKEN)
+  2. Saved credentials (~/.linkedin-mcp/credentials.json via --login)
 
 DOCUMENTATION:
   https://github.com/devag7/linkedin-mcp
@@ -147,6 +171,39 @@ DOCUMENTATION:
 async function main(): Promise<void> {
   const config = parseArgs();
   const logger = new Logger(config.logLevel);
+
+  // Handle special commands
+  if (config.action === 'login') {
+    await interactiveLogin();
+    process.exit(0);
+  }
+
+  if (config.action === 'logout') {
+    const cleared = clearCredentials(logger);
+    if (cleared) {
+      console.error('✅ Saved credentials cleared.');
+    } else {
+      console.error('ℹ️  No saved credentials found.');
+    }
+    process.exit(0);
+  }
+
+  if (config.action === 'status') {
+    const hasStored = hasStoredCredentials();
+    const hasEnvCookie = !!process.env.LINKEDIN_COOKIE;
+    const hasEnvOAuth = !!process.env.LINKEDIN_ACCESS_TOKEN;
+
+    console.error('\n🔗 LinkedIn MCP — Auth Status\n');
+    console.error(`  Saved credentials:  ${hasStored ? '✅ Found (~/.linkedin-mcp/credentials.json)' : '❌ None'}`);
+    console.error(`  Env LINKEDIN_COOKIE: ${hasEnvCookie ? '✅ Set' : '❌ Not set'}`);
+    console.error(`  Env LINKEDIN_ACCESS_TOKEN: ${hasEnvOAuth ? '✅ Set' : '❌ Not set'}`);
+    console.error(`\n  Active method: ${hasEnvOAuth ? 'OAuth (env)' : hasEnvCookie ? 'Cookie (env)' : hasStored ? 'Saved credentials' : 'None — run --login'}\n`);
+    process.exit(0);
+  }
+
+  // Apply stored credentials before server starts
+  // (env vars take precedence — applyStoredCredentials only fills gaps)
+  applyStoredCredentials(logger);
 
   try {
     await startServer(config);
