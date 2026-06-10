@@ -23,9 +23,9 @@
 | | Feature | Description |
 |---|---|---|
 | 🚀 | **Remote-First** | Zero install — add a URL to your Claude config and go. No Python, no browser, no Docker required. |
-| 🔧 | **30+ Tools** | The most comprehensive LinkedIn MCP available. Profiles, messaging, jobs, companies, network, feed, and more. |
+| 🔧 | **36 Tools** | The most comprehensive LinkedIn MCP available. Profiles, messaging, jobs, companies, network, feed, and more. |
 | 🔒 | **Secure** | OAuth 2.0 + cookie authentication. Rate limiting, CORS, origin validation built-in. |
-| ⚡ | **Fast & Lightweight** | API-based — no headless browser needed. ~5MB vs 500MB+ browser-based alternatives. |
+| ⚡ | **Fast & Lightweight** | API-based — no headless browser needed. ~50KB bundle vs 500MB+ browser-based alternatives. |
 | 🌍 | **Reliable** | No session expiry loops, no browser crashes, no dialog collisions. Stateless HTTP design. |
 | 🌐 | **Locale-Independent** | Works worldwide. No English-only DOM selectors. API-based, not scraping. |
 
@@ -180,19 +180,25 @@ export LINKEDIN_CSRF_TOKEN="your_jsessionid_value"
 
 ## ⚡ Comparison with Alternatives
 
-| Feature | **LinkedIn MCP** | linkedin-mcp-server |
+| Feature | **LinkedIn MCP** | stickerdaniel/linkedin-mcp-server |
 |---|---|---|
-| **Transport** | ✅ Remote HTTP + stdio | ❌ stdio only (local) |
-| **Install Required** | ✅ No — just add URL | ❌ Python + Chromium (~500MB) |
-| **Browser Dependency** | ✅ None — API-based | ❌ Patchright + Chromium |
-| **Language** | TypeScript (MCP-native) | Python |
-| **Tools** | 30+ | ~15 |
-| **Multiline Messages** | ✅ Native support | ❌ Buggy (Shift+Enter hack) |
-| **Session Stability** | ✅ Stateless HTTP | ❌ Session expiry loops |
-| **Connection Requests** | ✅ API-based, reliable | ❌ Dialog collision bugs |
-| **Locale Support** | ✅ Worldwide | ⚠️ English selectors |
-| **Docker Image Size** | ~50MB | ~500MB+ |
-| **Known Critical Bugs** | 0 | 10+ open issues |
+| **Architecture** | ✅ API-based (Voyager/REST) | ❌ Browser scraping (Patchright + Chromium) |
+| **Transport** | ✅ Remote HTTP + stdio | ⚠️ stdio + experimental HTTP |
+| **Install Required** | ✅ No — `npx linkedinmcp` | ❌ Python + uv + Chromium (~500MB) |
+| **Language** | TypeScript (official MCP SDK) | Python (fastmcp — 3rd party) |
+| **Tools** | **36** | 17 |
+| **Auth Methods** | OAuth 2.0 + Cookie | Browser login only |
+| **Multiline Messages** | ✅ Native support | ❌ Buggy (#441 — splits into multiple) |
+| **Session Stability** | ✅ Stateless — no session to expire | ❌ Browser session expiry loops |
+| **Connection Requests** | ✅ API-based, reliable | ❌ 4 open bugs (#407, #432, #448, #454) |
+| **Post/React/Comment** | ✅ Create, react, comment, search | ❌ Feed read-only |
+| **Network Management** | ✅ Connections, invitations, withdraw | ❌ No network tools |
+| **Rate Limiting** | ✅ Built-in token bucket | ❌ None |
+| **Response Caching** | ✅ LRU with TTL | ❌ None |
+| **Retry Logic** | ✅ Exponential backoff | ❌ None |
+| **Locale Support** | ✅ Worldwide (API returns JSON) | ⚠️ DOM-based, locale issues (#454) |
+| **Docker Image** | ~50MB (Alpine) | ~500MB+ (includes Chromium) |
+| **Known Critical Bugs** | 0 | 7+ open issues |
 
 ---
 
