@@ -4,7 +4,7 @@
 
 ### The most reliable LinkedIn MCP server for AI assistants
 
-[![npm version](https://img.shields.io/npm/v/@devag7/linkedin-mcp?color=cb0000&logo=npm)](https://www.npmjs.com/package/@devag7/linkedin-mcp)
+[![npm version](https://img.shields.io/npm/v/linkedin-mcp-tools?color=cb0000&logo=npm)](https://www.npmjs.com/package/linkedin-mcp-tools)
 [![MIT License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-≥20-green?logo=node.js&logoColor=white)](https://nodejs.org/)
@@ -15,7 +15,7 @@
 **Give Claude, Cursor, and any MCP-compatible AI assistant full access to LinkedIn — profiles, messaging, jobs, companies, and more. Zero local dependencies.**
 
 ```bash
-npx -y @devag7/linkedin-mcp --login   # One-time setup
+npx -y linkedin-mcp-tools --login   # One-time setup
 ```
 
 [Quick Start](#-quick-start) · [36 Tools](#-available-tools) · [Setup Guide](SETUP_GUIDE.md) · [Authentication](#-authentication) · [Compare](#-comparison-with-alternatives)
@@ -61,7 +61,7 @@ Add to your Claude Desktop config (`~/Library/Application Support/Claude/claude_
 First, save your credentials once:
 
 ```bash
-npx -y @devag7/linkedin-mcp --login
+npx -y linkedin-mcp-tools --login
 ```
 
 Then add to Claude config (no env vars needed!):
@@ -71,7 +71,7 @@ Then add to Claude config (no env vars needed!):
   "mcpServers": {
     "linkedin": {
       "command": "npx",
-      "args": ["-y", "@devag7/linkedin-mcp"]
+      "args": ["-y", "linkedin-mcp-tools"]
     }
   }
 }
@@ -170,17 +170,17 @@ npm run dev
 Run the interactive login once — credentials are saved and reused automatically:
 
 ```bash
-npx @devag7/linkedin-mcp --login
+npx linkedin-mcp-tools --login
 ```
 
 This guides you through pasting your LinkedIn cookie or OAuth token, and saves it to `~/.linkedin-mcp/credentials.json`. You never need to set env vars again.
 
 ```bash
 # Check your current auth status
-npx @devag7/linkedin-mcp --status
+npx linkedin-mcp-tools --status
 
 # Clear saved credentials
-npx @devag7/linkedin-mcp --logout
+npx linkedin-mcp-tools --logout
 ```
 
 ### Cookie Auth (Works with All 36 Tools)

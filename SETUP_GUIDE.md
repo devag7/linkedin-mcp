@@ -21,7 +21,7 @@
 ### Step 1: One-Time Login
 
 ```bash
-npx -y @devag7/linkedin-mcp --login
+npx -y linkedin-mcp-tools --login
 ```
 
 This will prompt you to paste your LinkedIn `li_at` cookie. Here's how to get it:
@@ -37,7 +37,7 @@ Your credentials are saved to `~/.linkedin-mcp/credentials.json` — you never n
 ### Step 2: Verify Setup
 
 ```bash
-npx -y @devag7/linkedin-mcp --status
+npx -y linkedin-mcp-tools --status
 ```
 
 Expected output:
@@ -62,7 +62,7 @@ See the sections below for Claude Desktop, Claude Code, or Cursor.
 ### Option A: Cookie Auth (Recommended — All 36 Tools)
 
 ```bash
-npx -y @devag7/linkedin-mcp --login
+npx -y linkedin-mcp-tools --login
 # Select option 1 (Cookie Auth)
 # Paste your li_at cookie
 ```
@@ -74,7 +74,7 @@ npx -y @devag7/linkedin-mcp --login
 3. Run:
 
 ```bash
-npx -y @devag7/linkedin-mcp --login
+npx -y linkedin-mcp-tools --login
 # Select option 2 (OAuth)
 # Paste your access token
 ```
@@ -83,7 +83,7 @@ npx -y @devag7/linkedin-mcp --login
 
 ```bash
 export LINKEDIN_COOKIE="your_li_at_cookie_value"
-npx -y @devag7/linkedin-mcp
+npx -y linkedin-mcp-tools
 ```
 
 > **Priority order:** Env vars → Saved credentials → None
@@ -108,13 +108,13 @@ Add this to `~/Library/Application Support/Claude/claude_desktop_config.json` (M
   "mcpServers": {
     "linkedin": {
       "command": "npx",
-      "args": ["-y", "@devag7/linkedin-mcp"]
+      "args": ["-y", "linkedin-mcp-tools"]
     }
   }
 }
 ```
 
-> **Note:** Make sure you've run `npx -y @devag7/linkedin-mcp --login` first!
+> **Note:** Make sure you've run `npx -y linkedin-mcp-tools --login` first!
 
 ---
 
@@ -122,7 +122,7 @@ Add this to `~/Library/Application Support/Claude/claude_desktop_config.json` (M
 
 ```bash
 # Add LinkedIn MCP to Claude Code
-claude mcp add linkedin -- npx -y @devag7/linkedin-mcp
+claude mcp add linkedin -- npx -y linkedin-mcp-tools
 ```
 
 ---
@@ -136,7 +136,7 @@ Add to `.cursor/mcp.json` in your project:
   "mcpServers": {
     "linkedin": {
       "command": "npx",
-      "args": ["-y", "@devag7/linkedin-mcp"]
+      "args": ["-y", "linkedin-mcp-tools"]
     }
   }
 }
@@ -285,10 +285,10 @@ Add to `.cursor/mcp.json` in your project:
 
 ```bash
 # Check your auth status
-npx -y @devag7/linkedin-mcp --status
+npx -y linkedin-mcp-tools --status
 
 # Re-login if needed
-npx -y @devag7/linkedin-mcp --login
+npx -y linkedin-mcp-tools --login
 ```
 
 ### Cookie expired
@@ -296,7 +296,7 @@ npx -y @devag7/linkedin-mcp --login
 LinkedIn cookies typically last 6-12 months. If you get auth errors:
 
 1. Get a fresh `li_at` cookie from your browser
-2. Run `npx -y @devag7/linkedin-mcp --login` and paste the new cookie
+2. Run `npx -y linkedin-mcp-tools --login` and paste the new cookie
 
 ### Claude Desktop not detecting the server
 
@@ -312,7 +312,7 @@ The server includes built-in rate limiting (30 requests/minute by default). If y
 
 ```bash
 # Increase the limit via env var
-RATE_LIMIT_RPM=60 npx -y @devag7/linkedin-mcp
+RATE_LIMIT_RPM=60 npx -y linkedin-mcp-tools
 ```
 
 ---

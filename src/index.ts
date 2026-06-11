@@ -7,9 +7,9 @@
  * 36 tools, remote-first, zero local dependencies.
  *
  * Usage:
- *   npx @devag7/linkedin-mcp                     # stdio mode (default)
- *   npx @devag7/linkedin-mcp --transport http     # HTTP mode on port 3000
- *   npx @devag7/linkedin-mcp --login              # One-time credential setup
+ *   npx linkedin-mcp-tools                     # stdio mode (default)
+ *   npx linkedin-mcp-tools --transport http     # HTTP mode on port 3000
+ *   npx linkedin-mcp-tools --login              # One-time credential setup
  *
  * @see https://github.com/devag7/linkedin-mcp
  */
