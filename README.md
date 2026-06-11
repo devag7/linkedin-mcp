@@ -4,15 +4,21 @@
 
 ### The most reliable LinkedIn MCP server for AI assistants
 
+[![npm version](https://img.shields.io/npm/v/@devag7/linkedin-mcp?color=cb0000&logo=npm)](https://www.npmjs.com/package/@devag7/linkedin-mcp)
 [![MIT License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-≥20-green?logo=node.js&logoColor=white)](https://nodejs.org/)
 [![MCP](https://img.shields.io/badge/MCP-Compatible-purple?logo=anthropic&logoColor=white)](https://modelcontextprotocol.io/)
 [![CI](https://img.shields.io/github/actions/workflow/status/devag7/linkedin-mcp/ci.yml?label=CI&logo=github)](https://github.com/devag7/linkedin-mcp/actions)
+[![GitHub stars](https://img.shields.io/github/stars/devag7/linkedin-mcp?style=social)](https://github.com/devag7/linkedin-mcp/stargazers)
 
-**Give Claude, Cursor, and any MCP-compatible AI assistant full access to LinkedIn — profiles, messaging, jobs, companies, and more. Zero local dependencies. Just add a URL.**
+**Give Claude, Cursor, and any MCP-compatible AI assistant full access to LinkedIn — profiles, messaging, jobs, companies, and more. Zero local dependencies.**
 
-[Quick Start](#-quick-start) · [Tools](#-available-tools) · [Authentication](#-authentication) · [Comparison](#-comparison-with-alternatives)
+```bash
+npx -y @devag7/linkedin-mcp --login   # One-time setup
+```
+
+[Quick Start](#-quick-start) · [36 Tools](#-available-tools) · [Setup Guide](SETUP_GUIDE.md) · [Authentication](#-authentication) · [Compare](#-comparison-with-alternatives)
 
 </div>
 

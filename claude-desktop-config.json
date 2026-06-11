@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "linkedin": {
+      "command": "npx",
+      "args": ["-y", "@devag7/linkedin-mcp"]
+    }
+  }
+}

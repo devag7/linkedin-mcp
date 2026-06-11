@@ -476,7 +476,7 @@ function registerCompanyTools(
     },
     async ({ companyId, keywords, count, start }) => {
       return safeToolCall(logger, 'get_company_employees', async () => {
-        let queryParams = `keywords:List(${encodeURIComponent(keywords ?? '')}),currentCompany:List(${companyId}),resultType:List(PEOPLE)`;
+        const queryParams = `keywords:List(${encodeURIComponent(keywords ?? '')}),currentCompany:List(${companyId}),resultType:List(PEOPLE)`;
         const data = await client.voyagerGet(
           `/search/dash/clusters?q=all&query=(flagshipSearchIntent:SEARCH_SRP,queryParameters:(${queryParams}))&count=${count}&start=${start}`,
         );
