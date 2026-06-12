@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+# LinkedIn MCP Server - The most reliable LinkedIn MCP server for AI assistants
+# 36 tools, remote-first, zero dependencies
+# Install: npx linkedin-mcp-tools
+# GitHub: https://github.com/devag7/linkedin-mcp
+# npm: https://www.npmjs.com/package/linkedin-mcp-tools

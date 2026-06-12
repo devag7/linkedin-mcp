@@ -1,0 +1,18 @@
+{
+  "schema_version": "v1",
+  "name_for_model": "linkedin",
+  "name_for_human": "LinkedIn MCP",
+  "description_for_model": "Access LinkedIn data and perform actions. Get profiles, search people/companies/jobs, send messages, manage connections, create posts, react, comment, and more. 36 tools available.",
+  "description_for_human": "The most reliable LinkedIn MCP server for AI assistants. 36 tools, remote-first, zero dependencies.",
+  "auth": {
+    "type": "none"
+  },
+  "api": {
+    "type": "mcp",
+    "transport": ["stdio", "streamable-http"],
+    "url": "npx linkedin-mcp-tools"
+  },
+  "logo_url": "https://cdn-icons-png.flaticon.com/512/174/174857.png",
+  "contact_email": "devagarwalla2016@gmail.com",
+  "legal_info_url": "https://github.com/devag7/linkedin-mcp/blob/main/LICENSE"
+}
