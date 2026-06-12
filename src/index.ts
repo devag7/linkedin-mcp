@@ -88,6 +88,7 @@ function parseArgs(): ServerConfig & { action?: 'login' | 'logout' | 'status' } 
 
       case '--version':
       case '-v':
+        // eslint-disable-next-line no-console -- CLI output before MCP transport starts
         console.log('linkedin-mcp v1.0.0');
         process.exit(0);
         break;
@@ -123,6 +124,7 @@ function parseArgs(): ServerConfig & { action?: 'login' | 'logout' | 'status' } 
  * Print CLI help text.
  */
 function printHelp(): void {
+  // eslint-disable-next-line no-console -- CLI help text before MCP transport starts
   console.log(`
 🔗 LinkedIn MCP Server v1.0.0
    The most reliable LinkedIn MCP server for AI assistants.
