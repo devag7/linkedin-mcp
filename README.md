@@ -214,7 +214,7 @@ export LINKEDIN_ACCESS_TOKEN="your_oauth_token"
 |---|---|---|
 | **Architecture** | ✅ API-based (Voyager/REST) | ❌ Browser scraping (Patchright + Chromium) |
 | **Transport** | ✅ Remote HTTP + stdio | ⚠️ stdio + experimental HTTP |
-| **Install Required** | ✅ No — `npx linkedinmcp` | ❌ Python + uv + Chromium (~500MB) |
+| **Install Required** | ✅ No — `npx linkedin-mcp-tools` | ❌ Python + uv + Chromium (~500MB) |
 | **Language** | TypeScript (official MCP SDK) | Python (fastmcp — 3rd party) |
 | **Tools** | **36** | 17 |
 | **Auth Methods** | OAuth 2.0 + Cookie | Browser login only |
@@ -303,9 +303,23 @@ This project is not officially affiliated with LinkedIn. Use responsibly and in 
 
 ---
 
+## 📚 Related Resources
+
+- 📘 **[Full Setup Guide](SETUP_GUIDE.md)** — Step-by-step instructions with example prompts for all 36 tools
+- 📥 **[Latest Release](https://github.com/devag7/linkedin-mcp/releases)** — Download Claude Desktop config file
+- 🔧 **[MCP Protocol](https://modelcontextprotocol.io/)** — Learn about the Model Context Protocol
+- 📦 **[npm Package](https://www.npmjs.com/package/linkedin-mcp-tools)** — `npm install linkedin-mcp-tools`
+
+---
+
 <div align="center">
 
-**If you find this useful, please give us a ⭐! It helps others discover the project.**
+### ⭐ Star this repo to support the project!
+
+If LinkedIn MCP saves you time, show your support with a star.<br/>
+It helps others discover the most comprehensive LinkedIn MCP server available.
+
+[![Star History Chart](https://api.star-history.com/svg?repos=devag7/linkedin-mcp&type=Date)](https://star-history.com/#devag7/linkedin-mcp&Date)
 
 Made with ❤️ by [Dev Agarwalla](https://github.com/devag7)
 
