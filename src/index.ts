@@ -23,6 +23,20 @@ import {
   applyStoredCredentials,
   hasStoredCredentials,
 } from './auth/store.js';
+import { readFileSync } from 'fs';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+
+// Read version from package.json at build time (tsup inlines it)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+let PKG_VERSION = '1.0.1';
+try {
+  const pkg = JSON.parse(readFileSync(join(__dirname, '..', 'package.json'), 'utf-8'));
+  PKG_VERSION = pkg.version;
+} catch {
+  // fallback to hardcoded version
+}
 
 /**
  * Parse command-line arguments.
@@ -89,7 +103,7 @@ function parseArgs(): ServerConfig & { action?: 'login' | 'logout' | 'status' } 
       case '--version':
       case '-v':
         // eslint-disable-next-line no-console -- CLI output before MCP transport starts
-        console.log('linkedin-mcp v1.0.0');
+        console.log(`linkedin-mcp v${PKG_VERSION}`);
         process.exit(0);
         break;
 
@@ -126,7 +140,7 @@ function parseArgs(): ServerConfig & { action?: 'login' | 'logout' | 'status' } 
 function printHelp(): void {
   // eslint-disable-next-line no-console -- CLI help text before MCP transport starts
   console.log(`
-🔗 LinkedIn MCP Server v1.0.0
+🔗 LinkedIn MCP Server v${PKG_VERSION}
    The most reliable LinkedIn MCP server for AI assistants.
 
 USAGE:
