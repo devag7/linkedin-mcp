@@ -91,13 +91,13 @@ function restliList(values: readonly string[]): string {
  * re-captured hash can override the bundled {@link KNOWN_QUERY_IDS} default.
  *
  * NOTE: REST-li GraphQL `variables` use a structural literal syntax, NOT JSON
- * (e.g. `(start:0,count:10)`); we do not JSON-encode it. The whole string is
- * percent-encoded so it is safe inside a URL query.
+ * (e.g. `(start:0,count:10)`). LinkedIn requires the structural characters
+ * `( ) : ,` to stay LITERAL in the URL — percent-encoding them yields HTTP 400.
+ * Only individual VALUES that contain unsafe characters (e.g. a keyword with a
+ * space) are encoded by the caller. So we leave `variables` verbatim here.
  */
 function graphqlPath(queryId: string, variables: string): string {
-  return `/graphql?queryId=${encodeURIComponent(queryId)}&variables=${encodeURIComponent(
-    variables,
-  )}`;
+  return `/graphql?queryId=${encodeURIComponent(queryId)}&variables=${variables}`;
 }
 
 /* ───────────────────────────── Identity / Profiles ──────────────────────── */
@@ -323,7 +323,7 @@ export function companyGraphql(
   name: string,
   queryId: string = KNOWN_QUERY_IDS.company,
 ): string {
-  return graphqlPath(queryId, `(universalName:${name})`);
+  return graphqlPath(queryId, `(universalName:${encodeURIComponent(name)})`);
 }
 
 /**

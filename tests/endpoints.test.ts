@@ -66,9 +66,9 @@ describe('endpoints — search cluster builder', () => {
     // The space in keywords must be percent-encoded (no raw spaces in a URL).
     expect(path).not.toContain(' ');
     expect(path).toContain('variables=');
-    // PEOPLE vertical resultType is carried through.
-    expect(decodeURIComponent(path)).toContain('value:List(PEOPLE)');
-    expect(decodeURIComponent(path)).toContain('keywords:staff%20engineer');
+    // Structural chars stay literal; only the value's space is encoded.
+    expect(path).toContain('value:List(PEOPLE)');
+    expect(path).toContain('keywords:staff%20engineer');
   });
 
   it('honors a live re-captured queryId over the bundled default', () => {
