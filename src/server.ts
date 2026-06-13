@@ -127,6 +127,7 @@ function registerUtilityTools(
                     'feed & content (6 tools)',
                     'utility (2 tools)',
                   ],
+                  note: 'All data tools use LinkedIn Voyager API. Cloudflare bot-management may block requests on some networks.',
                 },
                 uptime: Math.floor(process.uptime()),
               },
@@ -141,7 +142,7 @@ function registerUtilityTools(
 
   server.tool(
     'health_check',
-    'Check the health of the LinkedIn MCP server and LinkedIn connectivity.',
+    'Check server process health and basic linkedin.com reachability. Note: this does NOT verify Voyager API access — linkedin.com may be reachable while API calls are blocked by Cloudflare.',
     {},
     async () => {
       logger.debug('Tool called: health_check');

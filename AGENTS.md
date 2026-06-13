@@ -4,7 +4,9 @@
 
 ## What This Project Is
 
-**linkedin-mcp-tools** is a Model Context Protocol (MCP) server that gives AI assistants (Claude, Cursor, Windsurf, etc.) full access to LinkedIn. It provides 36 tools across 7 categories.
+**linkedin-mcp-tools** is a Model Context Protocol (MCP) server that provides 36 tools for interacting with LinkedIn via its internal Voyager API.
+
+> **⚠️ Limitation:** LinkedIn's Voyager API is protected by Cloudflare bot-management. On many networks, all data tools return `"Too many redirects"` errors because Cloudflare blocks plain HTTP requests. This is not a bug — it's an architectural limitation of the API-based approach.
 
 ## Installation
 
@@ -78,14 +80,14 @@ Add to `claude_desktop_config.json`:
 
 ### Utility Tools
 - `whoami` — Server info and capabilities
-- `health_check` — Check server and LinkedIn connectivity
+- `health_check` — Check server health and basic linkedin.com reachability (does not verify Voyager API access)
 
 ## Architecture
 
-- **API-based**: Uses LinkedIn Voyager/REST API, not browser scraping
+- **API-based**: Uses LinkedIn's internal Voyager API (not browser scraping). Subject to Cloudflare blocking.
 - **Stateless**: Each request is independent, no session management needed
 - **Transport**: Supports stdio (local) and Streamable HTTP (remote)
-- **Auth**: Cookie-based authentication (all 36 tools); OAuth experimental
+- **Auth**: Cookie-based authentication with required CSRF token (JSESSIONID). OAuth config is accepted but no tools use `restGet`/`restPost`.
 - **Persistent credentials**: Saved to `~/.linkedin-mcp/credentials.json`
 
 ## Development

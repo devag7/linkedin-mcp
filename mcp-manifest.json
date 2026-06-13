@@ -2,8 +2,8 @@
   "schema_version": "v1",
   "name_for_model": "linkedin",
   "name_for_human": "LinkedIn MCP",
-  "description_for_model": "Access LinkedIn data and perform actions. Get profiles, search people/companies/jobs, send messages, manage connections, create posts, react, comment, and more. 36 tools available.",
-  "description_for_human": "The most reliable LinkedIn MCP server for AI assistants. 36 tools, remote-first, minimal dependencies.",
+  "description_for_model": "LinkedIn MCP server with 36 tools targeting the Voyager API. Supports profiles, messaging, jobs, companies, network, and feed operations. Note: LinkedIn's Cloudflare bot-management may block requests — tools return clear errors when blocked.",
+  "description_for_human": "LinkedIn MCP server with 36 tools. Cookie auth, remote-first, minimal dependencies. Cloudflare may block on some networks.",
   "auth": {
     "type": "none"
   },

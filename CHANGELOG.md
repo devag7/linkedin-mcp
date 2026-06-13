@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.4] - 2026-06-13
+
+### Changed — Honesty Audit
+
+Live testing confirmed that all data tools fail against LinkedIn due to Cloudflare bot-management (302 redirect loops that plain HTTP cannot resolve). This release corrects all false/misleading claims across the project.
+
+#### Documentation Corrections
+- **README:** Removed "most reliable" tagline. Added Cloudflare limitation warning at top. Added "Known Limitations" section documenting Cloudflare blocking, OAuth dead code, and raw response format. Rewrote comparison table to be truthful (competitor's browser-based approach passes Cloudflare; ours doesn't).
+- **package.json:** Description changed from "most reliable" to honest summary with Cloudflare note.
+- **mcp-manifest.json:** Both `description_for_model` and `description_for_human` corrected.
+- **AGENTS.md:** Added Cloudflare limitation warning. Corrected architecture claims (OAuth has 0 call sites, not "experimental"). Fixed `health_check` description.
+
+#### Code Corrections
+- **`whoami` tool:** Added `note` field to capabilities: "Cloudflare bot-management may block requests on some networks."
+- **`health_check` tool:** Description now states it checks basic linkedin.com reachability, NOT Voyager API access. Explicitly warns that linkedin.com may be reachable while API calls are blocked.
+
 ## [1.0.3] - 2026-06-13
 
 ### Fixed

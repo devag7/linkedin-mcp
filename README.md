@@ -2,7 +2,7 @@
 
 # 🔗 LinkedIn MCP
 
-### The most reliable LinkedIn MCP server for AI assistants
+### A comprehensive LinkedIn MCP server for AI assistants
 
 [![npm version](https://img.shields.io/npm/v/linkedin-mcp-tools?color=cb0000&logo=npm)](https://www.npmjs.com/package/linkedin-mcp-tools)
 [![MIT License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
@@ -12,7 +12,7 @@
 [![CI](https://img.shields.io/github/actions/workflow/status/devag7/linkedin-mcp/ci.yml?label=CI&logo=github)](https://github.com/devag7/linkedin-mcp/actions)
 [![GitHub stars](https://img.shields.io/github/stars/devag7/linkedin-mcp?style=social)](https://github.com/devag7/linkedin-mcp/stargazers)
 
-**Give Claude, Cursor, and any MCP-compatible AI assistant full access to LinkedIn — profiles, messaging, jobs, companies, and more. Zero local dependencies.**
+**Give Claude, Cursor, and any MCP-compatible AI assistant access to LinkedIn — profiles, messaging, jobs, companies, and more.**
 
 ```bash
 npx -y linkedin-mcp-tools --login   # One-time setup
@@ -28,12 +28,13 @@ npx -y linkedin-mcp-tools --login   # One-time setup
 
 | | Feature | Description |
 |---|---|---|
-| 🚀 | **Remote-First** | Zero install — add a URL to your Claude config and go. No Python, no browser, no Docker required. |
-| 🔧 | **36 Tools** | The most comprehensive LinkedIn MCP available. Profiles, messaging, jobs, companies, network, feed, and more. |
-| 🔒 | **Secure** | Cookie authentication with CSRF protection. Rate limiting, configurable CORS, origin validation built-in. |
-| ⚡ | **Fast & Lightweight** | API-based — no headless browser needed. ~50KB bundle vs 500MB+ browser-based alternatives. |
-| 🌍 | **Reliable** | No session expiry loops, no browser crashes, no dialog collisions. Stateless HTTP design. |
-| 🌐 | **Locale-Independent** | Works worldwide. No English-only DOM selectors. API-based, not scraping. |
+| 🚀 | **Remote-First** | Zero install — add a URL to your Claude config and go. No Python, no Docker required. |
+| 🔧 | **36 Tools** | Profiles, messaging, jobs, companies, network, feed, and more. |
+| 🔒 | **Secure** | Cookie + CSRF authentication, rate limiting, configurable CORS. |
+| ⚡ | **Lightweight** | ~65KB bundle. TypeScript, official MCP SDK. |
+| 🏗️ | **Well-Engineered** | LRU cache, token-bucket rate limiting, exponential backoff, structured errors. |
+
+> **⚠️ Important Limitation:** LinkedIn's Voyager API is protected by Cloudflare bot-management. On many networks/IPs, Cloudflare returns 302 redirect loops that cannot be resolved with plain HTTP — even with a valid cookie and full cookie jar. If you experience `"Too many redirects"` errors, this is a Cloudflare block, not a bug. See [Known Limitations](#-known-limitations) for details.
 
 ---
 
@@ -219,23 +220,47 @@ export LINKEDIN_ACCESS_TOKEN="your_oauth_token"
 
 | Feature | **LinkedIn MCP** | stickerdaniel/linkedin-mcp-server |
 |---|---|---|
-| **Architecture** | ✅ API-based (Voyager/REST) | ❌ Browser scraping (Patchright + Chromium) |
-| **Transport** | ✅ Remote HTTP + stdio | ⚠️ stdio + experimental HTTP |
-| **Install Required** | ✅ No — `npx linkedin-mcp-tools` | ❌ Python + uv + Chromium (~500MB) |
+| **Architecture** | API-based (Voyager) | Browser-based (Patchright + Chromium) |
+| **Cloudflare bypass** | ⚠️ Blocked on many IPs — Cloudflare 302 loops | ✅ Real browser passes Cloudflare |
+| **Transport** | Remote HTTP + stdio | stdio + experimental HTTP |
+| **Install** | `npx linkedin-mcp-tools` | Python + uv + Chromium (~500MB) |
 | **Language** | TypeScript (official MCP SDK) | Python (fastmcp — 3rd party) |
-| **Tools** | **36** | 17 |
-| **Auth Methods** | Cookie (all 36 tools) | Browser login only |
-| **Multiline Messages** | ✅ Native support | ❌ Buggy (#441 — splits into multiple) |
-| **Session Stability** | ✅ Stateless — no session to expire | ❌ Browser session expiry loops |
-| **Connection Requests** | ✅ API-based, reliable | ❌ 4 open bugs (#407, #432, #448, #454) |
-| **Post/React/Comment** | ✅ Create, react, comment, search | ❌ Feed read-only |
-| **Network Management** | ✅ Connections, invitations, withdraw | ❌ No network tools |
+| **Tools** | **36** (when Cloudflare allows) | 17 |
+| **Auth Methods** | Cookie + CSRF (li_at + JSESSIONID) | Browser login |
 | **Rate Limiting** | ✅ Built-in token bucket | ❌ None |
 | **Response Caching** | ✅ LRU with TTL | ❌ None |
 | **Retry Logic** | ✅ Exponential backoff | ❌ None |
-| **Locale Support** | ✅ Worldwide (API returns JSON) | ⚠️ DOM-based, locale issues (#454) |
-| **Docker Image** | ~50MB (Alpine) | ~500MB+ (includes Chromium) |
-| **Known Critical Bugs** | 0 | 7+ open issues |
+| **Bundle Size** | ~65KB | ~500MB+ (includes Chromium) |
+
+> **Trade-off:** This project is lightweight and well-engineered but relies on plain HTTP to LinkedIn's Voyager API. The browser-based alternative is heavier but bypasses Cloudflare because it uses a real browser. Choose based on whether Cloudflare blocks your network.
+
+---
+
+## ⚠️ Known Limitations
+
+### 1. Cloudflare Bot-Management (Critical)
+
+LinkedIn's Voyager API is protected by Cloudflare. On many networks and IP addresses, Cloudflare returns **HTTP 302 redirect loops** with `Set-Cookie: __cf_bm` that cannot be resolved with plain HTTP — even with:
+- A valid `li_at` cookie
+- A proper `JSESSIONID` (CSRF token)
+- A full cookie jar capturing and replaying `__cf_bm`
+
+**Result:** All data tools return `"Too many redirects (5)"` instead of data.
+
+**Why:** Cloudflare's bot detection evaluates TLS fingerprint, JavaScript execution, and browser behavior. Plain Node `fetch()` (and `curl`) cannot satisfy these checks.
+
+**Workarounds:**
+- Try from a different network/IP (residential IPs sometimes pass)
+- Use the browser-based alternative ([stickerdaniel/linkedin-mcp-server](https://github.com/stickerdaniel/linkedin-mcp-server)) which uses a real browser
+- Deploy behind a residential proxy
+
+### 2. OAuth Backs 0 Tools
+
+All 36 tools use LinkedIn's internal Voyager API (`voyagerGet`/`voyagerPost`). The `restGet`/`restPost` methods (for OAuth's official REST API) have zero call sites. OAuth configuration is accepted but produces no working tools.
+
+### 3. Raw Response Format
+
+Voyager API responses are returned as-is: `{ data, included[] }` with URN references unresolved. Responses can be large and are not optimized for LLM consumption.
 
 ---
 

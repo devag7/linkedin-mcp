@@ -1,7 +1,7 @@
 {
   "name": "linkedin-mcp-tools",
-  "version": "1.0.3",
-  "description": "The most reliable LinkedIn MCP server. 36 tools, remote-first, minimal dependencies. Works with Claude, Cursor, and any MCP client.",
+  "version": "1.0.4",
+  "description": "LinkedIn MCP server with 36 tools. Targets LinkedIn's Voyager API (cookie auth). Note: Cloudflare bot-management may block requests on some networks.",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
