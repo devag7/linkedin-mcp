@@ -15,6 +15,9 @@ import {
   shapeProfileView,
   shapeFeed,
   shapeNotifications,
+  shapeJobs,
+  shapeInbox,
+  ownFsdId,
   collectComponentEntries,
   type NormalizedResponse,
 } from './normalize.js';
@@ -156,8 +159,21 @@ export async function runSpike(config: EnvConfig, logger: Logger): Promise<void>
     await probe('company(microsoft)', ep.companyGraphql('microsoft'), 'Company');
     await probe('feed', ep.mainFeed(0, 5), 'Update');
     await probe('notifications', ep.notificationCards(0, 10), 'Card');
-    await probe('jobsSearch', ep.jobCardsSearch('software engineer', undefined, 0, 5), 'JobPostingCard');
+    await probe('jobsSearch', ep.jobCardsSearch('software engineer', undefined, 0, 5), 'JobPosting');
     if (fsdId) await probe('inbox', ep.inboxConversations(fsdId), 'Conversation');
+
+    try {
+      const jobs = await voyager.voyagerGet<NormalizedResponse>(ep.jobCardsSearch('software engineer', undefined, 0, 5));
+      process.stderr.write('\n— search_jobs (shaped, first 5) —\n' + JSON.stringify(shapeJobs(jobs).slice(0, 5), null, 2) + '\n');
+      const meResp = await voyager.voyagerGet<NormalizedResponse>(ep.me());
+      const ownFsd = ownFsdId(meResp);
+      if (ownFsd) {
+        const inbox = await voyager.voyagerGet<NormalizedResponse>(ep.inboxConversations(ownFsd));
+        process.stderr.write('\n— get_inbox (shaped, first 5) —\n' + JSON.stringify(shapeInbox(inbox).slice(0, 5), null, 2) + '\n');
+      }
+    } catch (e) {
+      process.stderr.write(`\n(jobs/inbox preview failed: ${e instanceof Error ? e.message : String(e)})\n`);
+    }
 
     // Confirm the experience/education component walker.
     if (fsdId) {

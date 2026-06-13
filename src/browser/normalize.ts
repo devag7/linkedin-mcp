@@ -111,6 +111,67 @@ export function fsdProfileId(resp: NormalizedResponse): string | undefined {
   return urn?.match(/urn:li:fsd_profile:([^,)]+)/)?.[1];
 }
 
+/**
+ * Resolve the authenticated member's fsd_profile id from a `/me` response
+ * (the mini-profile URN id, shared with the fsd_profile URN).
+ */
+export function ownFsdId(me: NormalizedResponse): string | undefined {
+  for (const e of me.included ?? []) {
+    const urn = (e as Record<string, unknown>)['entityUrn'];
+    const m = typeof urn === 'string' ? urn.match(/urn:li:fs[d]?_(?:mini)?[Pp]rofile:([^,)]+)/) : null;
+    if (m) return m[1];
+  }
+  return undefined;
+}
+
+export interface ShapedConversation {
+  title?: string;
+  lastActivityAt?: number;
+  unreadCount?: number;
+  read?: boolean;
+  conversationUrn?: string;
+}
+
+/** Shape an inbox conversations response into a compact list. */
+export function shapeInbox(resp: NormalizedResponse): ShapedConversation[] {
+  const out: ShapedConversation[] = [];
+  for (const e of resp.included ?? []) {
+    if (typeof e.$type !== 'string' || !e.$type.endsWith('.Conversation')) continue;
+    const c = e as Record<string, unknown>;
+    out.push({
+      title: asText(c['title']) ?? asText(c['headlineText']) ?? asText(c['shortHeadlineText']),
+      lastActivityAt: typeof c['lastActivityAt'] === 'number' ? (c['lastActivityAt'] as number) : undefined,
+      unreadCount: typeof c['unreadCount'] === 'number' ? (c['unreadCount'] as number) : undefined,
+      read: typeof c['read'] === 'boolean' ? (c['read'] as boolean) : undefined,
+      conversationUrn: typeof c['entityUrn'] === 'string' ? (c['entityUrn'] as string) : undefined,
+    });
+  }
+  return out;
+}
+
+export interface ShapedJob {
+  title?: string;
+  location?: string;
+  listedAt?: number;
+  jobUrn?: string;
+}
+
+/** Shape a job-search response from the JobPosting entities (not the thin Card). */
+export function shapeJobs(resp: NormalizedResponse): ShapedJob[] {
+  const out: ShapedJob[] = [];
+  for (const e of resp.included ?? []) {
+    if (typeof e.$type !== 'string' || !e.$type.endsWith('.JobPosting')) continue;
+    const j = e as Record<string, unknown>;
+    out.push({
+      title: asText(j['title']),
+      location: asText(j['formattedLocation']) ?? asText(j['location']),
+      listedAt: typeof j['listedAt'] === 'number' ? (j['listedAt'] as number) : undefined,
+      jobUrn: typeof j['entityUrn'] === 'string' ? (j['entityUrn'] as string) : undefined,
+    });
+  }
+  return out;
+}
+
 export interface ComponentEntry {
   title?: string;
   subtitle?: string;

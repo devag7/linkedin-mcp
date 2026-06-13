@@ -23,6 +23,7 @@ import { CircuitBreaker } from './safety/circuit-breaker.js';
 import { registerSessionTools } from './tools/session.js';
 import { registerProfileTools } from './tools/profile.js';
 import { registerFeedTools } from './tools/feed.js';
+import { registerDiscoveryTools } from './tools/discovery.js';
 
 const VERSION = '2.0.0-alpha.1';
 
@@ -54,8 +55,9 @@ export function createServer(logger: Logger): CreatedServer {
   registerSessionTools(server, engine, logger, () => count);
   registerProfileTools(server, voyager, guard, logger);
   registerFeedTools(server, voyager, guard, logger);
-  // session(3) + profile(2) + feed(2).
-  count = 7;
+  registerDiscoveryTools(server, voyager, guard, logger);
+  // session(3) + profile(2) + feed(2) + discovery(2).
+  count = 9;
 
   logger.info('MCP server created', { version: VERSION, tools: count });
   return { server, engine };
