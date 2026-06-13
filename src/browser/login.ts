@@ -106,6 +106,36 @@ export async function runSpike(config: EnvConfig, logger: Logger): Promise<void>
 
     process.stderr.write('\n— shaped output —\n');
     process.stderr.write(JSON.stringify(shapeProfileView(prof), null, 2) + '\n');
+
+    // Resolve own fsd_profile id (for components probe).
+    const fsdId =
+      (profileEntity?.['entityUrn'] as string | undefined)?.match(
+        /urn:li:fsd_profile:([^,)]+)/,
+      )?.[1] ?? '';
+
+    // Probe the next batch of endpoints; dump structure to lock shapers.
+    const probe = async (label: string, path: string): Promise<void> => {
+      try {
+        const r = await voyager.voyagerGet<NormalizedResponse>(path);
+        const types = new Map<string, number>();
+        for (const e of r.included ?? []) {
+          const t = typeof e.$type === 'string' ? e.$type.split('.').pop()! : '?';
+          types.set(t, (types.get(t) ?? 0) + 1);
+        }
+        const hist = [...types.entries()].sort((a, b) => b[1] - a[1]).map(([t, n]) => `${n}x ${t}`);
+        process.stderr.write(
+          `\n▶ ${label} → ✅ 200  data:[${Object.keys(r.data ?? {}).join(',')}]  included[${(r.included ?? []).length}]: ${hist.join(', ')}\n`,
+        );
+      } catch (e) {
+        process.stderr.write(`\n▶ ${label} → ❌ ${e instanceof Error ? e.message : String(e)}\n`);
+      }
+    };
+
+    if (fsdId) await probe('profileComponents(experience)', ep.profileComponents(fsdId, 'experience'));
+    await probe('company(microsoft)', ep.companyGraphql('microsoft'));
+    await probe('feed', ep.mainFeed(0, 5));
+    await probe('notifications', ep.notificationCards(0, 10));
+
     process.stderr.write('\n🎯 ARCHITECTURE CONFIRMED — in-page Voyager fetch returns structured JSON.\n');
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);

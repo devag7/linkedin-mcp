@@ -146,6 +146,26 @@ export function dashProfileByUrn(fsdProfileId: string): string {
   );
 }
 
+/** Profile section loaded lazily as UI components (experience/education/skills). */
+export type ProfileSection = 'experience' | 'education' | 'skills';
+
+/**
+ * A profile section's component cards (experience / education / skills).
+ * FullProfile-76 is top-card only; these sections lazy-load via components.
+ * Verified live 2026-06-13.
+ *
+ * @param fsdProfileId id portion of urn:li:fsd_profile:<id>
+ * @param section which section to load
+ */
+export function profileComponents(
+  fsdProfileId: string,
+  section: ProfileSection,
+  queryId: string = KNOWN_QUERY_IDS.profileSkills,
+): string {
+  const variables = `(profileUrn:urn:li:fsd_profile:${fsdProfileId},sectionType:${section})`;
+  return graphqlPath(queryId, variables);
+}
+
 /**
  * Top-level profile entity (header card: name, headline, location, picture).
  * BEST-KNOWN REST-li path.
@@ -296,6 +316,17 @@ export function companyByUniversalName(name: string): string {
 }
 
 /**
+ * Company by universal name via the current DASH GraphQL op.
+ * Verified live 2026-06-13: variables=(universalName:<name>).
+ */
+export function companyGraphql(
+  name: string,
+  queryId: string = KNOWN_QUERY_IDS.company,
+): string {
+  return graphqlPath(queryId, `(universalName:${name})`);
+}
+
+/**
  * Company entity by numeric organization id.
  * BEST-KNOWN REST-li path.
  */
@@ -377,7 +408,8 @@ export function mainFeed(
   count = 10,
   queryId: string = KNOWN_QUERY_IDS.mainFeed,
 ): string {
-  return graphqlPath(queryId, `(start:${start},count:${count})`);
+  // Verified live 2026-06-13: variables=(start,count,sortOrder:MEMBER_SETTING).
+  return graphqlPath(queryId, `(start:${start},count:${count},sortOrder:MEMBER_SETTING)`);
 }
 
 /**
