@@ -158,9 +158,9 @@ export function shapeProfileView(resp: NormalizedResponse): ShapedProfile {
   const p = profile as Record<string, unknown>;
   return {
     publicIdentifier: str(p['publicIdentifier']),
-    firstName: str(p['firstName']),
-    lastName: str(p['lastName']),
-    headline: str(p['headline']),
+    firstName: str(p['firstName'])?.trim(),
+    lastName: str(p['lastName'])?.trim(),
+    headline: str(p['headline'])?.trim(),
     summary: str(p['summary']),
     locationName: str(p['locationName']) ?? str(p['geoLocationName']),
     industryName: str(p['industryName']),

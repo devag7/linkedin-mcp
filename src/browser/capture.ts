@@ -21,6 +21,7 @@ interface CapturedCall {
   queryId?: string;
   decorationId?: string;
   q?: string;
+  variables?: string; // decoded graphql variables literal
   count: number;
 }
 
@@ -47,13 +48,14 @@ export async function runCapture(config: EnvConfig, logger: Logger): Promise<voi
       const queryId = u.searchParams.get('queryId') ?? undefined;
       const decorationId = u.searchParams.get('decorationId') ?? undefined;
       const q = u.searchParams.get('q') ?? undefined;
+      const variables = u.searchParams.get('variables') ?? undefined;
       // Key by path + queryId so distinct GraphQL ops are kept separate.
       const key = `${req.method()} ${path} ${queryId ?? ''} ${q ?? ''}`;
       const existing = calls.get(key);
       if (existing) {
         existing.count += 1;
       } else {
-        calls.set(key, { method: req.method(), path, queryId, decorationId, q, count: 1 });
+        calls.set(key, { method: req.method(), path, queryId, decorationId, q, variables, count: 1 });
       }
     } catch {
       /* ignore unparseable */
@@ -63,16 +65,14 @@ export async function runCapture(config: EnvConfig, logger: Logger): Promise<voi
   const page = await engine.getFeedPage();
 
   const sections: { name: string; url: string }[] = [
-    { name: 'OWN PROFILE', url: `${ORIGIN}/in/me/` },
-    { name: 'PROFILE DETAIL (skills)', url: `${ORIGIN}/in/me/details/skills/` },
+    { name: 'PROFILE EXPERIENCE', url: `${ORIGIN}/in/me/details/experience/` },
+    { name: 'PROFILE EDUCATION', url: `${ORIGIN}/in/me/details/education/` },
+    { name: 'PROFILE SKILLS', url: `${ORIGIN}/in/me/details/skills/` },
     { name: 'PEOPLE SEARCH', url: `${ORIGIN}/search/results/people/?keywords=engineer` },
     { name: 'JOBS SEARCH', url: `${ORIGIN}/jobs/search/?keywords=software%20engineer` },
     { name: 'COMPANY', url: `${ORIGIN}/company/microsoft/` },
-    { name: 'COMPANY PEOPLE', url: `${ORIGIN}/company/microsoft/people/` },
     { name: 'MESSAGING', url: `${ORIGIN}/messaging/` },
     { name: 'NOTIFICATIONS', url: `${ORIGIN}/notifications/` },
-    { name: 'MY NETWORK', url: `${ORIGIN}/mynetwork/invitation-manager/` },
-    { name: 'FEED', url: `${ORIGIN}/feed/` },
   ];
 
   for (const section of sections) {
@@ -98,6 +98,10 @@ export async function runCapture(config: EnvConfig, logger: Logger): Promise<voi
         ? `GRAPHQL queryId=${r.queryId}`
         : `REST-li${r.q ? ` q=${r.q}` : ''}${r.decorationId ? ` deco=${r.decorationId}` : ''}`;
       process.stderr.write(`  [${r.count}x] ${r.method} ${r.path}  ::  ${tag}\n`);
+      if (r.variables) {
+        const v = r.variables.length > 240 ? r.variables.slice(0, 240) + '…' : r.variables;
+        process.stderr.write(`           variables=${v}\n`);
+      }
     }
   }
 
