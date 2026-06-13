@@ -18,21 +18,24 @@ import { startServer } from './server.js';
 import type { ServerConfig, TransportType } from './types.js';
 import { Logger } from './types.js';
 import {
-  interactiveLogin,
   clearCredentials,
   applyStoredCredentials,
   hasStoredCredentials,
 } from './auth/store.js';
+import { interactiveBrowserLogin, runSpike } from './browser/login.js';
+import { loadConfig } from './config/env.js';
 
 /**
  * Parse command-line arguments.
  */
-function parseArgs(): ServerConfig & { action?: 'login' | 'logout' | 'status' } {
+function parseArgs(): ServerConfig & {
+  action?: 'login' | 'logout' | 'status' | 'spike';
+} {
   const args = process.argv.slice(2);
   let transport: TransportType = 'stdio';
   let port = 3000;
   let logLevel: 'debug' | 'info' | 'warn' | 'error' = 'info';
-  let action: 'login' | 'logout' | 'status' | undefined;
+  let action: 'login' | 'logout' | 'status' | 'spike' | undefined;
 
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
@@ -49,6 +52,10 @@ function parseArgs(): ServerConfig & { action?: 'login' | 'logout' | 'status' } 
 
       case '--status':
         action = 'status';
+        break;
+
+      case '--spike':
+        action = 'spike';
         break;
 
       case '--transport':
@@ -176,7 +183,12 @@ async function main(): Promise<void> {
 
   // Handle special commands
   if (config.action === 'login') {
-    await interactiveLogin();
+    const ok = await interactiveBrowserLogin(loadConfig(), logger);
+    process.exit(ok ? 0 : 1);
+  }
+
+  if (config.action === 'spike') {
+    await runSpike(loadConfig(), logger);
     process.exit(0);
   }
 

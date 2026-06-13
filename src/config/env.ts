@@ -19,6 +19,24 @@ const envSchema = z.object({
   CACHE_TTL: z.coerce.number().int().min(0).default(300),
   RATE_LIMIT_RPM: z.coerce.number().int().min(1).default(30),
   REQUEST_TIMEOUT: z.coerce.number().int().min(1000).default(30000),
+
+  // Browser engine (v2 stealth engine — patchright)
+  // Headful by default: a real window is the most reliable way to pass Cloudflare
+  // and to let a human complete login / solve a challenge.
+  LINKEDIN_HEADLESS: z
+    .enum(['true', 'false'])
+    .default('false')
+    .transform((v) => v === 'true'),
+  // Optional explicit Chrome binary path (else patchright's bundled/`channel:'chrome'`).
+  LINKEDIN_CHROME_PATH: z.string().optional(),
+  // Persistent profile dir (cookies + localStorage + cf clearance). Empty → store default.
+  LINKEDIN_PROFILE_DIR: z.string().optional(),
+  // Close the browser context after this much inactivity (ms). 0 disables.
+  LINKEDIN_IDLE_TIMEOUT_MS: z.coerce.number().int().min(0).default(300000),
+  // Max time (ms) to wait for a Cloudflare challenge to clear before giving up.
+  LINKEDIN_CF_TIMEOUT_MS: z.coerce.number().int().min(1000).default(20000),
+  // Serial by default. >1 is documented as ban-risky.
+  LINKEDIN_CONCURRENCY: z.coerce.number().int().min(1).default(1),
 });
 
 export type EnvConfig = z.infer<typeof envSchema>;

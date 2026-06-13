@@ -34,3 +34,8 @@ npm-debug.log*
 # Package manager
 .npm
 .yarn
+
+# Browser session profile (cookies, cf clearance — never commit)
+profile/
+.linkedin-mcp/
+local-test*.mjs
