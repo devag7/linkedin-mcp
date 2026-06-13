@@ -22,6 +22,7 @@ import { BudgetTracker } from './safety/budgets.js';
 import { CircuitBreaker } from './safety/circuit-breaker.js';
 import { registerSessionTools } from './tools/session.js';
 import { registerProfileTools } from './tools/profile.js';
+import { registerFeedTools } from './tools/feed.js';
 
 const VERSION = '2.0.0-alpha.1';
 
@@ -52,8 +53,9 @@ export function createServer(logger: Logger): CreatedServer {
   let count = 0;
   registerSessionTools(server, engine, logger, () => count);
   registerProfileTools(server, voyager, guard, logger);
-  // session(3) + profile(2). Update as groups are added.
-  count = 5;
+  registerFeedTools(server, voyager, guard, logger);
+  // session(3) + profile(2) + feed(2).
+  count = 7;
 
   logger.info('MCP server created', { version: VERSION, tools: count });
   return { server, engine };

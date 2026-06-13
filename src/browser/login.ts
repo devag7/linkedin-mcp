@@ -10,7 +10,13 @@
 import { BrowserEngine } from './engine.js';
 import { VoyagerClient } from './voyager.js';
 import * as ep from './endpoints.js';
-import { ownPublicId, shapeProfileView, type NormalizedResponse } from './normalize.js';
+import {
+  ownPublicId,
+  shapeProfileView,
+  shapeFeed,
+  shapeNotifications,
+  type NormalizedResponse,
+} from './normalize.js';
 import type { Logger } from '../types.js';
 import type { EnvConfig } from '../config/env.js';
 
@@ -135,9 +141,9 @@ export async function runSpike(config: EnvConfig, logger: Logger): Promise<void>
             const json = JSON.stringify(sample);
             process.stderr.write(`   ${dumpType} sample: ${json.length > 600 ? json.slice(0, 600) + '…' : json}\n`);
           }
-          // For components, also dump data shape (components live in data, not included).
-          if (label.includes('Components')) {
-            process.stderr.write(`   data sample: ${JSON.stringify(r.data).slice(0, 500)}…\n`);
+          // Company + components carry their real fields in data.data (GraphQL primary).
+          if (label.includes('Components') || label.includes('company')) {
+            process.stderr.write(`   data.data: ${JSON.stringify(r.data).slice(0, 900)}…\n`);
           }
         }
       } catch (e) {
@@ -149,6 +155,22 @@ export async function runSpike(config: EnvConfig, logger: Logger): Promise<void>
     await probe('company(microsoft)', ep.companyGraphql('microsoft'), 'Company');
     await probe('feed', ep.mainFeed(0, 5), 'Update');
     await probe('notifications', ep.notificationCards(0, 10), 'Card');
+
+    // Show the two newly-wired tools producing clean shaped output.
+    try {
+      const feed = await voyager.voyagerGet<NormalizedResponse>(ep.mainFeed(0, 5));
+      process.stderr.write(
+        '\n— get_feed (shaped, first 3) —\n' +
+          JSON.stringify(shapeFeed(feed).slice(0, 3), null, 2) + '\n',
+      );
+      const notifs = await voyager.voyagerGet<NormalizedResponse>(ep.notificationCards(0, 5));
+      process.stderr.write(
+        '\n— get_notifications (shaped, first 3) —\n' +
+          JSON.stringify(shapeNotifications(notifs).slice(0, 3), null, 2) + '\n',
+      );
+    } catch (e) {
+      process.stderr.write(`\n(shaped-output preview failed: ${e instanceof Error ? e.message : String(e)})\n`);
+    }
 
     process.stderr.write('\n🎯 ARCHITECTURE CONFIRMED — in-page Voyager fetch returns structured JSON.\n');
   } catch (err) {

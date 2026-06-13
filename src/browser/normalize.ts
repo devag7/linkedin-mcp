@@ -176,3 +176,66 @@ export function shapeProfileView(resp: NormalizedResponse): ShapedProfile {
 function str(v: unknown): string | undefined {
   return typeof v === 'string' ? v : undefined;
 }
+
+/**
+ * Pull display text out of LinkedIn's nested text models, tolerant of
+ * `"x"`, `{text:"x"}`, and `{text:{text:"x"}}` shapes.
+ */
+function asText(v: unknown): string | undefined {
+  if (typeof v === 'string') return v.trim() || undefined;
+  if (v && typeof v === 'object') {
+    const t = (v as { text?: unknown }).text;
+    if (typeof t === 'string') return t.trim() || undefined;
+    if (t && typeof t === 'object') {
+      const inner = (t as { text?: unknown }).text;
+      if (typeof inner === 'string') return inner.trim() || undefined;
+    }
+  }
+  return undefined;
+}
+
+export interface ShapedNotification {
+  headline?: string;
+  text?: string;
+  publishedAt?: number;
+  read?: boolean;
+}
+
+/** Shape a notifications cards response into a compact list. */
+export function shapeNotifications(resp: NormalizedResponse): ShapedNotification[] {
+  const out: ShapedNotification[] = [];
+  for (const e of resp.included ?? []) {
+    if (typeof e.$type !== 'string' || !e.$type.endsWith('.Card')) continue;
+    const c = e as Record<string, unknown>;
+    out.push({
+      headline: asText(c['headline']),
+      text: asText(c['contentPrimaryText']) ?? asText(c['subHeadline']),
+      publishedAt: typeof c['publishedAt'] === 'number' ? (c['publishedAt'] as number) : undefined,
+      read: typeof c['read'] === 'boolean' ? (c['read'] as boolean) : undefined,
+    });
+  }
+  return out;
+}
+
+export interface ShapedFeedPost {
+  actor?: string;
+  text?: string;
+  activityUrn?: string;
+}
+
+/** Shape a home-feed response into a compact list of posts. */
+export function shapeFeed(resp: NormalizedResponse): ShapedFeedPost[] {
+  const out: ShapedFeedPost[] = [];
+  for (const e of resp.included ?? []) {
+    if (typeof e.$type !== 'string' || !e.$type.endsWith('.Update')) continue;
+    const u = e as Record<string, unknown>;
+    const actorObj = u['actor'] as Record<string, unknown> | undefined;
+    const meta = u['metadata'] as Record<string, unknown> | undefined;
+    out.push({
+      actor: asText(actorObj?.['name']),
+      text: asText(u['commentary']),
+      activityUrn: typeof meta?.['backendUrn'] === 'string' ? (meta['backendUrn'] as string) : undefined,
+    });
+  }
+  return out;
+}
