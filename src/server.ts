@@ -56,8 +56,8 @@ export function createServer(logger: Logger): CreatedServer {
   registerProfileTools(server, voyager, guard, logger);
   registerFeedTools(server, voyager, guard, logger);
   registerDiscoveryTools(server, voyager, engine, guard, logger);
-  // session(3) + profile(2) + feed(2) + discovery(4: search_jobs, get_inbox, get_conversation, search_people).
-  count = 11;
+  // session(3) + profile(2) + feed(2) + discovery(5: search_jobs, get_inbox, get_conversation, search_people, get_company).
+  count = 12;
 
   logger.info('MCP server created', { version: VERSION, tools: count });
   return { server, engine };

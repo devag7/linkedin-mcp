@@ -111,3 +111,80 @@ export async function scrapePeopleSearch(
     await page.close().catch(() => {});
   }
 }
+
+export interface ScrapedCompany {
+  name?: string;
+  tagline?: string;
+  description?: string;
+  website?: string;
+  industry?: string;
+  companySize?: string;
+  headquarters?: string;
+  founded?: string;
+  universalName: string;
+}
+
+/**
+ * Scrape a company's About page (server-rendered; no clean Voyager XHR). Pulls
+ * the overview + the labelled detail rows (Website, Industry, Company size,
+ * Headquarters, Founded) via tolerant label-matching rather than brittle classes.
+ */
+export async function scrapeCompany(
+  engine: BrowserEngine,
+  universalName: string,
+  logger: Logger,
+): Promise<ScrapedCompany> {
+  const url = `${ORIGIN}/company/${encodeURIComponent(universalName)}/about/`;
+  const page = await engine.newPage();
+  try {
+    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    await page.waitForSelector('h1', { timeout: 15000 }).catch(() => {});
+    await page.waitForTimeout(1500);
+
+    const data = await page.evaluate(() => {
+      const clean = (s: string | null | undefined): string | undefined =>
+        (s ?? '').replace(/\s+/g, ' ').trim() || undefined;
+
+      const name = clean(document.querySelector('h1')?.textContent);
+
+      // Description: the longest paragraph in an "about"/"description" region.
+      let description: string | undefined;
+      const paras = Array.from(
+        document.querySelectorAll<HTMLElement>('[class*="description"] p, [class*="about"] p, p'),
+      );
+      for (const p of paras) {
+        const t = clean(p.textContent);
+        if (t && t.length > (description?.length ?? 60)) description = t;
+      }
+
+      // Labelled detail rows: find dt/dd or heading/value pairs by label text.
+      const fields: Record<string, string | undefined> = {};
+      const labels = ['Website', 'Industry', 'Company size', 'Headquarters', 'Founded', 'Specialties'];
+      const dts = Array.from(document.querySelectorAll<HTMLElement>('dt, h3, h4'));
+      for (const dt of dts) {
+        const label = clean(dt.textContent);
+        if (!label) continue;
+        const match = labels.find((l) => label.toLowerCase().startsWith(l.toLowerCase()));
+        if (!match) continue;
+        const dd = dt.nextElementSibling;
+        const val = clean(dd?.textContent) ?? clean((dt.parentElement?.querySelector('dd'))?.textContent);
+        if (val) fields[match] = val;
+      }
+
+      return {
+        name,
+        description,
+        website: fields['Website'],
+        industry: fields['Industry'],
+        companySize: fields['Company size'],
+        headquarters: fields['Headquarters'],
+        founded: fields['Founded'],
+      };
+    });
+
+    logger.debug('scrapeCompany', { universalName, hasName: !!data.name });
+    return { ...data, universalName };
+  } finally {
+    await page.close().catch(() => {});
+  }
+}

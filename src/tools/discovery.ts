@@ -18,7 +18,7 @@ import {
   ownFsdId,
   type NormalizedResponse,
 } from '../browser/normalize.js';
-import { scrapePeopleSearch } from '../browser/dom.js';
+import { scrapePeopleSearch, scrapeCompany } from '../browser/dom.js';
 import * as ep from '../browser/endpoints.js';
 import { ok, run } from './result.js';
 
@@ -79,6 +79,21 @@ export function registerDiscoveryTools(
           return shapeInbox(raw);
         });
         return ok(data);
+      }),
+  );
+
+  server.tool(
+    'get_company',
+    'Get a company by its LinkedIn URL slug (e.g. "google", "microsoft"). Returns name, description, website, industry, size, HQ.',
+    {
+      universal_name: z.string().min(1).describe('Company URL slug, e.g. "google"'),
+    },
+    async ({ universal_name }) =>
+      run(logger, 'get_company', async () => {
+        const company = await guard.run(ACTIONS.readGeneric, () =>
+          scrapeCompany(engine, universal_name, logger),
+        );
+        return ok(company, 'dom');
       }),
   );
 
