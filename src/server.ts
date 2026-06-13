@@ -15,6 +15,11 @@ import { connectStdio } from './transports/stdio.js';
 import { startHttpServer } from './transports/http.js';
 import { BrowserEngine } from './browser/engine.js';
 import { VoyagerClient } from './browser/voyager.js';
+import { Guard } from './browser/guard.js';
+import { SerialQueue } from './safety/queue.js';
+import { HumanPacer } from './safety/pacer.js';
+import { BudgetTracker } from './safety/budgets.js';
+import { CircuitBreaker } from './safety/circuit-breaker.js';
 import { registerSessionTools } from './tools/session.js';
 import { registerProfileTools } from './tools/profile.js';
 
@@ -36,10 +41,17 @@ export function createServer(logger: Logger): CreatedServer {
   const engine = new BrowserEngine(config, logger);
   const voyager = new VoyagerClient(engine, logger);
 
+  // Safety stack — every data/action call is gated through the Guard.
+  const queue = new SerialQueue({ concurrency: config.LINKEDIN_CONCURRENCY, logger });
+  const pacer = new HumanPacer({ logger });
+  const budget = new BudgetTracker('default', { logger });
+  const breaker = new CircuitBreaker({ logger });
+  const guard = new Guard(queue, pacer, budget, breaker, logger);
+
   // Registered tool groups (grows per build milestones M1–M4).
   let count = 0;
   registerSessionTools(server, engine, logger, () => count);
-  registerProfileTools(server, voyager, logger);
+  registerProfileTools(server, voyager, guard, logger);
   // session(3) + profile(2). Update as groups are added.
   count = 5;
 

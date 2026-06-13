@@ -68,6 +68,7 @@ export class VoyagerClient {
    * voyagerGet('/identity/profiles/<id>/profileView'). Returns parsed JSON.
    */
   async voyagerGet<T = unknown>(apiPath: string): Promise<T> {
+    this.logger.debug('voyagerGet', { path: apiPath });
     const page = await this.engine.getFeedPage();
     const url = `/voyager/api${apiPath}`;
     const raw = await this.inPageFetch(page, url, 'GET');
@@ -109,7 +110,7 @@ export class VoyagerClient {
       async ({ url, method, body, accept, track }) => {
         // CSRF token must equal the JSESSIONID cookie value (quotes stripped).
         const m = document.cookie.match(/JSESSIONID="?([^";]+)"?/);
-        const csrf = m ? m[1] : '';
+        const csrf = m?.[1] ?? '';
         const headers: Record<string, string> = {
           accept,
           'csrf-token': csrf,

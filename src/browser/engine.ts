@@ -143,8 +143,10 @@ export class BrowserEngine {
     this.feedPage = undefined;
     if (!context) return;
 
-    const proc = context.browser()?.process();
-    const pid = proc?.pid;
+    // For a persistent context, closing the context closes its browser. We also
+    // close the Browser handle explicitly as belt-and-suspenders against the
+    // competitor's zombie-Chrome leak.
+    const browser = context.browser();
     try {
       await Promise.race([
         context.close(),
@@ -155,15 +157,10 @@ export class BrowserEngine {
         error: err instanceof Error ? err.message : String(err),
       });
     }
-    // Force-kill if the process survived the graceful close.
-    if (pid) {
-      try {
-        process.kill(pid, 0); // throws if already dead
-        process.kill(pid, 'SIGKILL');
-        this.logger.warn('Force-killed surviving Chrome process', { pid });
-      } catch {
-        /* already dead — good */
-      }
+    try {
+      await browser?.close();
+    } catch {
+      /* already gone — good */
     }
   }
 

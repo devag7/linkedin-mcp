@@ -78,8 +78,11 @@ export async function startHttpServer(
         // Read request body
         const body = await readBody(req);
 
-        // Create a fresh server for this request
-        const server = createServer(logger);
+        // Create a fresh server for this request.
+        // NOTE: HTTP mode creates a per-request browser engine (lazy — only
+        // launches if a data tool runs). stdio is the primary transport for the
+        // stateful browser session; a shared-engine HTTP mode is a future step.
+        const { server } = createServer(logger);
 
         // Create stateless transport (sessionIdGenerator: undefined = stateless)
         const transport = new StreamableHTTPServerTransport({

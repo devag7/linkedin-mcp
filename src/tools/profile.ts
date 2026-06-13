@@ -6,13 +6,17 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import type { VoyagerClient } from '../browser/voyager.js';
+import type { Guard } from '../browser/guard.js';
+import { ACTIONS } from '../browser/guard.js';
 import type { Logger } from '../types.js';
 import { shapeProfileView, type NormalizedResponse } from '../browser/normalize.js';
+import * as ep from '../browser/endpoints.js';
 import { ok, run } from './result.js';
 
 export function registerProfileTools(
   server: McpServer,
   voyager: VoyagerClient,
+  guard: Guard,
   logger: Logger,
 ): void {
   server.tool(
@@ -21,8 +25,8 @@ export function registerProfileTools(
     {},
     async () =>
       run(logger, 'get_my_profile', async () => {
-        const raw = await voyager.voyagerGet<NormalizedResponse>(
-          '/identity/profiles/me/profileView',
+        const raw = await guard.run(ACTIONS.getProfile, () =>
+          voyager.voyagerGet<NormalizedResponse>(ep.profileView('me')),
         );
         return ok(shapeProfileView(raw));
       }),
@@ -39,8 +43,8 @@ export function registerProfileTools(
     },
     async ({ username }) =>
       run(logger, 'get_profile', async () => {
-        const raw = await voyager.voyagerGet<NormalizedResponse>(
-          `/identity/profiles/${encodeURIComponent(username)}/profileView`,
+        const raw = await guard.run(ACTIONS.getProfile, () =>
+          voyager.voyagerGet<NormalizedResponse>(ep.profileView(username)),
         );
         return ok(shapeProfileView(raw));
       }),
