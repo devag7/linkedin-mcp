@@ -12,6 +12,8 @@ services:
       - LINKEDIN_CSRF_TOKEN=${LINKEDIN_CSRF_TOKEN}
       - CACHE_TTL=${CACHE_TTL:-300}
       - RATE_LIMIT_RPM=${RATE_LIMIT_RPM:-30}
+      - REQUEST_TIMEOUT=${REQUEST_TIMEOUT:-30000}
+      - CORS_ORIGIN=${CORS_ORIGIN:-}
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "node", "-e", "fetch('http://localhost:3000/health').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]

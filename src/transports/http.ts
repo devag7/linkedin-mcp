@@ -2,40 +2,51 @@
  * Streamable HTTP Transport — for remote, zero-install usage.
  *
  * Uses the official MCP SDK StreamableHTTPServerTransport in STATELESS mode.
- * Each request creates a fresh server + transport pair, then tears down.
+ * Each request creates a fresh server + transport pair, but SHARES the
+ * underlying LinkedInClient (with rate limiting and caching) across requests.
  *
- * This is the simplest, most reliable approach:
- * - No session management needed
- * - No stale state
- * - Works behind load balancers
- * - Compatible with serverless (Cloudflare Workers, Vercel, etc.)
+ * Architecture:
+ * - Shared: AuthManager, LinkedInClient, RateLimiter, Cache
+ * - Per-request: McpServer, StreamableHTTPServerTransport
+ *
+ * This ensures rate limiting and caching work correctly while maintaining
+ * the stateless HTTP semantics required by the MCP SDK.
  *
  * Based on the official SDK example: simpleStatelessStreamableHttp.js
  */
 
 import http from 'node:http';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { Logger } from '../types.js';
-import { createServer } from '../server.js';
+import { createServer, createSharedDependencies, VERSION } from '../server.js';
+
+/** Maximum request body size (1 MB) */
+const MAX_BODY_SIZE = 1 * 1024 * 1024;
 
 /**
  * Start an HTTP server with Streamable HTTP transport (stateless mode).
  *
- * Each incoming POST /mcp creates a fresh McpServer + Transport pair,
- * handles the request, then tears down. This is the pattern recommended
- * by the MCP SDK for stateless deployments.
+ * Creates shared dependencies (auth, client with rate limiter + cache) once,
+ * then reuses them across all requests. Each request gets a fresh MCP server
+ * and transport for stateless semantics, but they share the LinkedIn client.
  */
 export async function startHttpServer(
   _server: McpServer,
   port: number,
   logger: Logger,
 ): Promise<void> {
+  // Create shared dependencies ONCE — rate limiter and cache persist across requests
+  const shared = createSharedDependencies(logger);
+
+  // Read CORS origin from environment, default to restrictive localhost
+  const corsOrigin = process.env['CORS_ORIGIN'] ?? `http://localhost:${port}`;
+
   const httpServer = http.createServer(async (req, res) => {
     const url = new URL(req.url ?? '/', `http://localhost:${port}`);
 
-    // CORS headers for remote access
-    res.setHeader('Access-Control-Allow-Origin', '*');
+    // CORS headers — configurable via CORS_ORIGIN env var
+    res.setHeader('Access-Control-Allow-Origin', corsOrigin);
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
     res.setHeader(
       'Access-Control-Allow-Headers',
@@ -57,7 +68,7 @@ export async function startHttpServer(
         JSON.stringify({
           status: 'ok',
           server: 'linkedin-mcp',
-          version: '1.0.0',
+          version: VERSION,
           transport: 'streamable-http',
           endpoint: '/mcp',
         }),
@@ -72,14 +83,14 @@ export async function startHttpServer(
       return;
     }
 
-    // Handle POST /mcp — stateless: create server + transport per request
+    // Handle POST /mcp — stateless: create server + transport per request, reuse shared deps
     if (req.method === 'POST') {
       try {
-        // Read request body
-        const body = await readBody(req);
+        // Read request body with size limit
+        const body = await readBody(req, MAX_BODY_SIZE);
 
-        // Create a fresh server for this request
-        const server = createServer(logger);
+        // Create a fresh MCP server that reuses shared auth + client
+        const server = createServer(logger, shared);
 
         // Create stateless transport (sessionIdGenerator: undefined = stateless)
         const transport = new StreamableHTTPServerTransport({
@@ -98,9 +109,27 @@ export async function startHttpServer(
           server.close().catch(() => {});
         });
       } catch (error) {
-        logger.error('Error handling MCP request', {
-          error: error instanceof Error ? error.message : String(error),
-        });
+        const message = error instanceof Error ? error.message : String(error);
+
+        // Handle body too large
+        if (message === 'Request body too large') {
+          if (!res.headersSent) {
+            res.writeHead(413, { 'Content-Type': 'application/json' });
+            res.end(
+              JSON.stringify({
+                jsonrpc: '2.0',
+                error: {
+                  code: -32600,
+                  message: 'Request body too large (max 1 MB)',
+                },
+                id: null,
+              }),
+            );
+          }
+          return;
+        }
+
+        logger.error('Error handling MCP request', { error: message });
         if (!res.headersSent) {
           res.writeHead(500, { 'Content-Type': 'application/json' });
           res.end(
@@ -161,12 +190,23 @@ export async function startHttpServer(
 }
 
 /**
- * Read the full request body as parsed JSON.
+ * Read the full request body as parsed JSON, with size limit.
  */
-function readBody(req: http.IncomingMessage): Promise<unknown> {
+function readBody(req: http.IncomingMessage, maxSize: number): Promise<unknown> {
   return new Promise((resolve, reject) => {
+    let totalSize = 0;
     const chunks: Buffer[] = [];
-    req.on('data', (chunk: Buffer) => chunks.push(chunk));
+
+    req.on('data', (chunk: Buffer) => {
+      totalSize += chunk.length;
+      if (totalSize > maxSize) {
+        req.destroy();
+        reject(new Error('Request body too large'));
+        return;
+      }
+      chunks.push(chunk);
+    });
+
     req.on('end', () => {
       try {
         const raw = Buffer.concat(chunks).toString('utf-8');
@@ -175,6 +215,7 @@ function readBody(req: http.IncomingMessage): Promise<unknown> {
         reject(e);
       }
     });
+
     req.on('error', reject);
   });
 }

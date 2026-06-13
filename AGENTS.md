@@ -68,24 +68,24 @@ Add to `claude_desktop_config.json`:
 - `accept_invitation` — Accept connection request
 - `get_network_stats` — Network growth metrics
 
-### Feed Tools
+### Feed & Content Tools
 - `get_feed` — Get home feed posts
 - `create_post` — Create a new post
 - `react_to_post` — React to a post (like, celebrate, etc.)
 - `comment_on_post` — Add a comment to a post
 - `search_posts` — Search posts by keyword
+- `get_notifications` — Get recent notifications
 
 ### Utility Tools
 - `whoami` — Server info and capabilities
 - `health_check` — Check server and LinkedIn connectivity
-- `get_notifications` — Get recent notifications
 
 ## Architecture
 
 - **API-based**: Uses LinkedIn Voyager/REST API, not browser scraping
 - **Stateless**: Each request is independent, no session management needed
 - **Transport**: Supports stdio (local) and Streamable HTTP (remote)
-- **Auth**: OAuth 2.0 or cookie-based authentication
+- **Auth**: Cookie-based authentication (all 36 tools); OAuth experimental
 - **Persistent credentials**: Saved to `~/.linkedin-mcp/credentials.json`
 
 ## Development

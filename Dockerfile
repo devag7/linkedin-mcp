@@ -6,7 +6,7 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 
 # Install dependencies
-RUN npm ci --production=false
+RUN npm ci --include=dev
 
 # Copy source
 COPY tsconfig.json tsup.config.ts ./
@@ -22,7 +22,7 @@ WORKDIR /app
 
 # Install only production dependencies
 COPY package.json package-lock.json ./
-RUN npm ci --production && npm cache clean --force
+RUN npm ci --omit=dev && npm cache clean --force
 
 # Copy built output
 COPY --from=builder /app/dist ./dist
@@ -37,5 +37,8 @@ ENV PORT=3000
 ENV LOG_LEVEL=info
 
 EXPOSE 3000
+
+HEALTHCHECK --interval=30s --timeout=10s --retries=3 --start-period=10s \
+  CMD node -e "fetch('http://localhost:3000/health').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"
 
 ENTRYPOINT ["node", "dist/index.js"]

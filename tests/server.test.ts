@@ -1,8 +1,10 @@
 import { describe, it, expect } from 'vitest';
 
 describe('LinkedIn MCP Server', () => {
-  it('should have correct version', () => {
-    expect('1.0.0').toBe('1.0.0');
+  it('should export a valid version', async () => {
+    const { VERSION } = await import('../src/server.js');
+    expect(typeof VERSION).toBe('string');
+    expect(VERSION).toMatch(/^\d+\.\d+\.\d+/);
   });
 });
 
@@ -15,6 +17,7 @@ describe('Config', () => {
     expect(config.LOG_LEVEL).toBe('info');
     expect(config.CACHE_TTL).toBe(300);
     expect(config.RATE_LIMIT_RPM).toBe(30);
+    expect(config.CORS_ORIGIN).toBeUndefined();
   });
 
   it('should detect no auth when no credentials set', async () => {

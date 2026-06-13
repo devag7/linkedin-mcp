@@ -30,7 +30,7 @@ import { dirname, join } from 'path';
 // Read version from package.json at build time (tsup inlines it)
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-let PKG_VERSION = '1.0.1';
+let PKG_VERSION = '1.0.2';
 try {
   const pkg = JSON.parse(readFileSync(join(__dirname, '..', 'package.json'), 'utf-8'));
   PKG_VERSION = pkg.version;

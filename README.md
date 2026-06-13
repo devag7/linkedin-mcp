@@ -30,7 +30,7 @@ npx -y linkedin-mcp-tools --login   # One-time setup
 |---|---|---|
 | 🚀 | **Remote-First** | Zero install — add a URL to your Claude config and go. No Python, no browser, no Docker required. |
 | 🔧 | **36 Tools** | The most comprehensive LinkedIn MCP available. Profiles, messaging, jobs, companies, network, feed, and more. |
-| 🔒 | **Secure** | OAuth 2.0 + cookie authentication. Rate limiting, CORS, origin validation built-in. |
+| 🔒 | **Secure** | Cookie authentication with CSRF protection. Rate limiting, configurable CORS, origin validation built-in. |
 | ⚡ | **Fast & Lightweight** | API-based — no headless browser needed. ~50KB bundle vs 500MB+ browser-based alternatives. |
 | 🌍 | **Reliable** | No session expiry loops, no browser crashes, no dialog collisions. Stateless HTTP design. |
 | 🌐 | **Locale-Independent** | Works worldwide. No English-only DOM selectors. API-based, not scraping. |
@@ -148,7 +148,7 @@ npm run dev
 | Tool | Description |
 |---|---|
 | `get_feed` | Get posts from the home feed |
-| `create_post` | Create a new text or image post |
+| `create_post` | Create a new text post |
 | `react_to_post` | React to a post (like, celebrate, support, etc.) |
 | `comment_on_post` | Add a comment to a post |
 | `search_posts` | Search posts by keyword or hashtag |
@@ -190,7 +190,10 @@ npx linkedin-mcp-tools --logout
 3. Copy the `li_at` cookie value
 4. Run `linkedin-mcp --login` and paste when prompted
 
-### OAuth 2.0 (Official API)
+### OAuth 2.0 (Experimental)
+
+OAuth support is experimental and intended for future official REST API tools.
+Currently, all 36 tools use LinkedIn's internal Voyager API which requires cookie auth.
 
 1. Create an app at [LinkedIn Developer Portal](https://www.linkedin.com/developers/)
 2. Get your access token
@@ -217,7 +220,7 @@ export LINKEDIN_ACCESS_TOKEN="your_oauth_token"
 | **Install Required** | ✅ No — `npx linkedin-mcp-tools` | ❌ Python + uv + Chromium (~500MB) |
 | **Language** | TypeScript (official MCP SDK) | Python (fastmcp — 3rd party) |
 | **Tools** | **36** | 17 |
-| **Auth Methods** | OAuth 2.0 + Cookie | Browser login only |
+| **Auth Methods** | Cookie (all 36 tools) | Browser login only |
 | **Multiline Messages** | ✅ Native support | ❌ Buggy (#441 — splits into multiple) |
 | **Session Stability** | ✅ Stateless — no session to expire | ❌ Browser session expiry loops |
 | **Connection Requests** | ✅ API-based, reliable | ❌ 4 open bugs (#407, #432, #448, #454) |
@@ -245,6 +248,7 @@ export LINKEDIN_ACCESS_TOKEN="your_oauth_token"
 | `CACHE_TTL` | No | `300` | Cache TTL in seconds |
 | `RATE_LIMIT_RPM` | No | `30` | Max requests per minute |
 | `REQUEST_TIMEOUT` | No | `30000` | Request timeout in milliseconds |
+| `CORS_ORIGIN` | No | `localhost` | Allowed CORS origin for HTTP transport |
 
 ---
 

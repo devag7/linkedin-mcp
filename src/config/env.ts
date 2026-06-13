@@ -14,6 +14,7 @@ const envSchema = z.object({
   PORT: z.coerce.number().int().min(1).max(65535).default(3000),
   TRANSPORT: z.enum(['stdio', 'http']).default('stdio'),
   LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).default('info'),
+  CORS_ORIGIN: z.string().optional(),
 
   // Performance
   CACHE_TTL: z.coerce.number().int().min(0).default(300),

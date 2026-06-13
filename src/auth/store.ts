@@ -133,7 +133,7 @@ export async function interactiveLogin(): Promise<void> {
   console.error('You only need to do this once. Environment variables override saved credentials.\n');
   console.error('Choose authentication method:\n');
   console.error('  1. Cookie Auth (recommended — works with all 36 tools)');
-  console.error('  2. OAuth Token (official API — limited tools)\n');
+  console.error('  2. OAuth Token (experimental — limited to official REST API endpoints)\n');
 
   const method = await ask('Enter choice (1 or 2): ');
 

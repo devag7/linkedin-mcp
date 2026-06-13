@@ -247,7 +247,7 @@ Add to `.cursor/mcp.json` in your project:
 
 ---
 
-### 📰 Feed Tools (5 tools)
+### 📰 Feed & Content Tools (6 tools)
 
 **Read your feed:**
 > "What's on my LinkedIn feed?"
@@ -264,18 +264,18 @@ Add to `.cursor/mcp.json` in your project:
 **Search posts:**
 > "Search LinkedIn for posts about 'artificial intelligence'"
 
+**Notifications:**
+> "Show me my LinkedIn notifications"
+
 ---
 
-### 🔧 Utility Tools (3 tools)
+### 🔧 Utility Tools (2 tools)
 
 **Server info:**
 > "What LinkedIn MCP tools do you have available?"
 
 **Health check:**
 > "Is the LinkedIn MCP connection working?"
-
-**Notifications:**
-> "Show me my LinkedIn notifications"
 
 ---
 

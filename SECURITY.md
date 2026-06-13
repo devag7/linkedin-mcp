@@ -11,7 +11,7 @@
 If you discover a security vulnerability, please report it responsibly:
 
 1. **Do NOT** create a public GitHub issue
-2. **Email**: Send details to the project maintainer
+2. **Email**: Send details to [devagarwalla2016@gmail.com](mailto:devagarwalla2016@gmail.com)
 3. **Include**: Description, steps to reproduce, potential impact
 
 We will respond within 48 hours and aim to release a fix within 7 days for critical issues.
@@ -43,7 +43,7 @@ We will respond within 48 hours and aim to release a fix within 7 days for criti
 
 ## Best Practices for Users
 
-1. Use **OAuth** authentication when possible (official, TOS-compliant)
+1. Use **cookie authentication** (works with all 36 tools)
 2. Set **strict rate limits** to avoid LinkedIn account restrictions
 3. Run in **Docker** or **remote mode** to isolate from your local environment
 4. Regularly **rotate** session cookies if using cookie-based auth

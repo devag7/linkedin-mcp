@@ -63,7 +63,8 @@ npm run test:coverage # Coverage report
 3. Add Zod schema validation for all parameters
 4. Add tests in `tests/`
 5. Update `README.md` tool list
-6. Update the tool count in `whoami`
+6. Update the tool count in `whoami` (in `registerUtilityTools`)
+7. Update `AGENTS.md`, `SETUP_GUIDE.md`, and `CHANGELOG.md`
 
 ### Tool Template
 

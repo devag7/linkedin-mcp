@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { createServer } from '../src/server.js';
+import { createServer, createSharedDependencies, VERSION } from '../src/server.js';
 import { Logger } from '../src/types.js';
 
 // Mock fetch for tools that make network calls
@@ -13,6 +13,26 @@ describe('Tool Registration', () => {
 
     // Verify server was created
     expect(server).toBeDefined();
+  });
+
+  it('should accept shared dependencies', () => {
+    const logger = new Logger('error');
+    const shared = createSharedDependencies(logger);
+    const server = createServer(logger, shared);
+    expect(server).toBeDefined();
+  });
+
+  it('should reuse shared dependencies across multiple createServer calls', () => {
+    const logger = new Logger('error');
+    const shared = createSharedDependencies(logger);
+
+    // Create two servers with the same shared deps — simulates HTTP mode
+    const server1 = createServer(logger, shared);
+    const server2 = createServer(logger, shared);
+
+    expect(server1).toBeDefined();
+    expect(server2).toBeDefined();
+    // Both should work without errors
   });
 });
 
@@ -98,5 +118,52 @@ describe('Input Validation', () => {
     expect(schema.safeParse('').success).toBe(false);
     expect(schema.safeParse('Hello world').success).toBe(true);
     expect(schema.safeParse('x'.repeat(3001)).success).toBe(false);
+  });
+});
+
+describe('VERSION', () => {
+  it('should export a version string', () => {
+    expect(typeof VERSION).toBe('string');
+    expect(VERSION).toMatch(/^\d+\.\d+\.\d+/);
+  });
+
+  it('should match package.json version', async () => {
+    const { readFileSync } = await import('fs');
+    const { join, dirname } = await import('path');
+    const { fileURLToPath } = await import('url');
+
+    // Read package.json directly
+    const pkgPath = join(dirname(fileURLToPath(import.meta.url)), '..', 'package.json');
+    const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'));
+    expect(VERSION).toBe(pkg.version);
+  });
+});
+
+describe('SharedDependencies', () => {
+  it('should create auth and client', () => {
+    const logger = new Logger('error');
+    const shared = createSharedDependencies(logger);
+
+    expect(shared).toBeDefined();
+    expect(shared.auth).toBeDefined();
+    expect(shared.client).toBeDefined();
+  });
+
+  it('should detect no auth when unconfigured', () => {
+    const logger = new Logger('error');
+    const shared = createSharedDependencies(logger);
+
+    expect(shared.auth.isConfigured()).toBe(false);
+    expect(shared.auth.getMethod()).toBe('none');
+  });
+
+  it('should include cache stats in client', () => {
+    const logger = new Logger('error');
+    const shared = createSharedDependencies(logger);
+
+    const stats = shared.client.getCacheStats();
+    expect(stats).toHaveProperty('size');
+    expect(stats).toHaveProperty('maxSize');
+    expect(stats.size).toBe(0);
   });
 });

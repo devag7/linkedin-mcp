@@ -23,6 +23,7 @@ describe('LinkedInClient', () => {
       PORT: 3000,
       TRANSPORT: 'stdio' as const,
       LOG_LEVEL: 'error' as const,
+      CORS_ORIGIN: undefined,
       CACHE_TTL: 300,
       RATE_LIMIT_RPM: 60,
       REQUEST_TIMEOUT: 5000,

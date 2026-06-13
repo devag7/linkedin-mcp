@@ -15,13 +15,51 @@ import { startHttpServer } from './transports/http.js';
 import { AuthManager } from './auth/manager.js';
 import { LinkedInClient, LinkedInApiError } from './client/linkedin.js';
 import type { AuthError } from './auth/manager.js';
+import { readFileSync } from 'fs';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
 
-const VERSION = '1.0.0';
+// Read version from package.json (single source of truth)
+let VERSION = '1.0.2';
+try {
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = dirname(__filename);
+  const pkg = JSON.parse(readFileSync(join(__dirname, '..', 'package.json'), 'utf-8'));
+  VERSION = pkg.version;
+} catch {
+  // fallback to hardcoded version
+}
+
+export { VERSION };
 
 /**
  * Create the MCP server with all tools registered.
  */
-export function createServer(logger: Logger): McpServer {
+export interface SharedDependencies {
+  auth: AuthManager;
+  client: LinkedInClient;
+}
+
+/**
+ * Create shared auth + client dependencies.
+ * Extracted so HTTP transport can reuse them across requests.
+ */
+export function createSharedDependencies(logger: Logger): SharedDependencies {
+  const config = loadConfig();
+  const auth = new AuthManager(config, logger);
+  const client = new LinkedInClient(auth, logger, {
+    rateLimitRpm: config.RATE_LIMIT_RPM,
+    cacheTtlSeconds: config.CACHE_TTL,
+    requestTimeoutMs: config.REQUEST_TIMEOUT,
+  });
+  return { auth, client };
+}
+
+/**
+ * Create the MCP server with all tools registered.
+ * Optionally accepts shared dependencies (for HTTP transport reuse).
+ */
+export function createServer(logger: Logger, shared?: SharedDependencies): McpServer {
   const server = new McpServer(
     {
       name: 'linkedin-mcp',
@@ -34,14 +72,8 @@ export function createServer(logger: Logger): McpServer {
     },
   );
 
-  // Initialize auth and client
-  const config = loadConfig();
-  const auth = new AuthManager(config, logger);
-  const client = new LinkedInClient(auth, logger, {
-    rateLimitRpm: config.RATE_LIMIT_RPM,
-    cacheTtlSeconds: config.CACHE_TTL,
-    requestTimeoutMs: config.REQUEST_TIMEOUT,
-  });
+  // Use shared dependencies or create new ones
+  const { auth, client } = shared ?? createSharedDependencies(logger);
 
   // Register all tools
   registerUtilityTools(server, auth, client, logger);
@@ -92,8 +124,8 @@ function registerUtilityTools(
                     'company (5 tools)',
                     'jobs (4 tools)',
                     'network (6 tools)',
-                    'feed (5 tools)',
-                    'utility (3 tools)',
+                    'feed & content (6 tools)',
+                    'utility (2 tools)',
                   ],
                 },
                 uptime: Math.floor(process.uptime()),
@@ -267,17 +299,13 @@ function registerProfileTools(
     },
     async ({ keywords, count, start, connectionOf, network }) => {
       return safeToolCall(logger, 'search_people', async () => {
-        const params = new URLSearchParams({
-          keywords,
-          count: String(count),
-          start: String(start),
-          origin: 'GLOBAL_SEARCH_HEADER',
-        });
-        if (connectionOf) params.set('connectionOf', connectionOf);
-        if (network) params.set('network', network);
+        // Build dynamic query parameters
+        let queryParts = `resultType:List(PEOPLE),keywords:List(${encodeURIComponent(keywords)})`;
+        if (connectionOf) queryParts += `,connectionOf:List(${encodeURIComponent(connectionOf)})`;
+        if (network) queryParts += `,network:List(${network})`;
 
         const data = await client.voyagerGet(
-          `/search/dash/clusters?q=all&query=(flagshipSearchIntent:SEARCH_SRP,queryParameters:(resultType:List(PEOPLE),keywords:List(${encodeURIComponent(keywords)})))&count=${count}&start=${start}`,
+          `/search/dash/clusters?q=all&query=(flagshipSearchIntent:SEARCH_SRP,queryParameters:(${queryParts}))&count=${count}&start=${start}`,
         );
         return formatResult(data);
       });
@@ -760,10 +788,6 @@ function registerFeedTools(
     },
     async ({ text, visibility }) => {
       return safeToolCall(logger, 'create_post', async () => {
-        const visibilityMap = {
-          PUBLIC: 'PUBLIC',
-          CONNECTIONS: 'CONNECTIONS',
-        };
         const data = await client.voyagerPost(
           '/contentcreation/normShares',
           {
@@ -774,7 +798,7 @@ function registerFeedTools(
             allowedCommentersScope: 'ALL',
             postState: 'PUBLISHED',
             mediaCategory: 'NONE',
-            visibility: { 'com.linkedin.ugc.MemberNetworkVisibility': visibilityMap[visibility] },
+            visibility: { 'com.linkedin.ugc.MemberNetworkVisibility': visibility },
           },
         );
         return formatResult({ success: true, data });
