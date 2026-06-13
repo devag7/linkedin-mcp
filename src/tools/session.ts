@@ -8,7 +8,7 @@ import type { BrowserEngine } from '../browser/engine.js';
 import type { Logger } from '../types.js';
 import { ok, run } from './result.js';
 
-const VERSION = '2.0.0';
+const VERSION = '2.0.0-alpha.1';
 
 export function registerSessionTools(
   server: McpServer,

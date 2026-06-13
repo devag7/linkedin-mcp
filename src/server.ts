@@ -23,7 +23,7 @@ import { CircuitBreaker } from './safety/circuit-breaker.js';
 import { registerSessionTools } from './tools/session.js';
 import { registerProfileTools } from './tools/profile.js';
 
-const VERSION = '2.0.0';
+const VERSION = '2.0.0-alpha.1';
 
 export interface CreatedServer {
   server: McpServer;
