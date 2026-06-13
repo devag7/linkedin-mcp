@@ -358,6 +358,20 @@ export function messagingConversationEvents(conversationId: string): string {
 }
 
 /**
+ * Inbox conversations via the messaging GraphQL host (a distinct base from the
+ * main /graphql). Verified live 2026-06-13: variables=(mailboxUrn:<own profile urn>).
+ *
+ * @param ownFsdProfileId id portion of the authenticated member's urn:li:fsd_profile:<id>
+ */
+export function inboxConversations(
+  ownFsdProfileId: string,
+  queryId: string = KNOWN_QUERY_IDS.messagingConversations,
+): string {
+  const mailbox = encodeURIComponent(`urn:li:fsd_profile:${ownFsdProfileId}`);
+  return `/voyagerMessagingGraphQL/graphql?queryId=${encodeURIComponent(queryId)}&variables=(mailboxUrn:${mailbox})`;
+}
+
+/**
  * DASH/GraphQL variant of the messaging conversations list.
  * `queryId` ROTATES — re-capture live.
  */

@@ -156,6 +156,8 @@ export async function runSpike(config: EnvConfig, logger: Logger): Promise<void>
     await probe('company(microsoft)', ep.companyGraphql('microsoft'), 'Company');
     await probe('feed', ep.mainFeed(0, 5), 'Update');
     await probe('notifications', ep.notificationCards(0, 10), 'Card');
+    await probe('jobsSearch', ep.jobCardsSearch('software engineer', undefined, 0, 5), 'JobPostingCard');
+    if (fsdId) await probe('inbox', ep.inboxConversations(fsdId), 'Conversation');
 
     // Confirm the experience/education component walker.
     if (fsdId) {
