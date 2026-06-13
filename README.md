@@ -75,6 +75,23 @@ npm run spike                # verify: should fetch your profile as JSON
 
 `login` persists your session to `~/.linkedin-mcp/profile/`. After that, point your MCP client at the server:
 
+### Headless / server deployment
+
+The **one-time `--login` needs a real window** (to clear the Cloudflare
+challenge and let you solve any captcha/2FA). After that, the persistent
+profile carries the Cloudflare clearance + session, so the server runs
+**headless** — verified returning live data:
+
+```bash
+LINKEDIN_HEADLESS=true node dist/index.js     # server/CI friendly, no display
+```
+
+Run `--login` once on a machine with a display (or via VNC/remote desktop),
+copy `~/.linkedin-mcp/profile/` to your server, then run headless there. Use a
+**residential IP** — datacenter/VPN IPs are frequently pre-flagged by Cloudflare
+regardless of headless vs headful.
+
+
 ```json
 {
   "mcpServers": {
