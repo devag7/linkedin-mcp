@@ -149,6 +149,25 @@ export function shapeInbox(resp: NormalizedResponse): ShapedConversation[] {
   return out;
 }
 
+export interface ShapedMessage {
+  text?: string;
+  deliveredAt?: number;
+}
+
+/** Shape a conversation's messages (tolerant; field names may vary by deploy). */
+export function shapeConversationMessages(resp: NormalizedResponse): ShapedMessage[] {
+  const out: ShapedMessage[] = [];
+  for (const e of resp.included ?? []) {
+    if (typeof e.$type !== 'string' || !e.$type.endsWith('.Message')) continue;
+    const m = e as Record<string, unknown>;
+    out.push({
+      text: asText(m['body']) ?? asText(m['previewText']),
+      deliveredAt: typeof m['deliveredAt'] === 'number' ? (m['deliveredAt'] as number) : undefined,
+    });
+  }
+  return out;
+}
+
 export interface ShapedJob {
   title?: string;
   location?: string;

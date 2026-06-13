@@ -13,6 +13,7 @@ import type { Logger } from '../types.js';
 import {
   shapeJobs,
   shapeInbox,
+  shapeConversationMessages,
   ownFsdId,
   type NormalizedResponse,
 } from '../browser/normalize.js';
@@ -59,6 +60,24 @@ export function registerDiscoveryTools(
           return shapeInbox(raw);
         });
         return ok(data);
+      }),
+  );
+
+  server.tool(
+    'get_conversation',
+    'Read messages in a LinkedIn conversation by its URN (get the URN from get_inbox).',
+    {
+      conversation_urn: z
+        .string()
+        .min(1)
+        .describe('Full urn:li:msg_conversation:(...) from a get_inbox result'),
+    },
+    async ({ conversation_urn }) =>
+      run(logger, 'get_conversation', async () => {
+        const raw = await guard.run(ACTIONS.readGeneric, () =>
+          voyager.voyagerGet<NormalizedResponse>(ep.conversationMessages(conversation_urn)),
+        );
+        return ok(shapeConversationMessages(raw));
       }),
   );
 

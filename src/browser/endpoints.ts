@@ -372,6 +372,20 @@ export function inboxConversations(
 }
 
 /**
+ * Messages in a conversation via the messaging GraphQL host.
+ * Verified shape 2026-06-13: variables=(conversationUrn:<full msg_conversation urn>).
+ *
+ * @param conversationUrn the full urn:li:msg_conversation:(...) (e.g. from get_inbox)
+ */
+export function conversationMessages(
+  conversationUrn: string,
+  queryId: string = KNOWN_QUERY_IDS.messagingMessages,
+): string {
+  const urn = encodeURIComponent(conversationUrn);
+  return `/voyagerMessagingGraphQL/graphql?queryId=${encodeURIComponent(queryId)}&variables=(conversationUrn:${urn})`;
+}
+
+/**
  * DASH/GraphQL variant of the messaging conversations list.
  * `queryId` ROTATES — re-capture live.
  */

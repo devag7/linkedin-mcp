@@ -48,12 +48,14 @@ This is an honest, in-progress v2. Here's exactly where it stands:
 
 | Area | State |
 |---|---|
-| Stealth browser engine (patchright) | ✅ built |
-| In-page Voyager fetch (the core mechanism) | ✅ built, architecture verified |
+| Stealth browser engine (patchright) | ✅ built, **live-proven** |
+| In-page Voyager fetch (the core mechanism) | ✅ **live-verified** (returns structured JSON) |
 | Safety layer (queue / pacer / budgets / circuit-breaker) | ✅ built, 130+ unit tests |
-| Tools: `whoami`, `health_check`, `close_session`, `get_my_profile`, `get_profile` | ✅ wired |
-| Tools: search, companies, jobs, messaging, network, feed, posting | 🚧 in progress |
-| End-to-end live verification on your machine | ⏳ run `--login` then `--spike` (see below) |
+| **Profile** — `get_profile`, `get_my_profile` (name, headline, summary, experience, education) | ✅ live-verified |
+| **Feed / notifications** — `get_feed`, `get_notifications` | ✅ live-verified |
+| **Jobs / messaging** — `search_jobs`, `get_inbox`, `get_conversation` | ✅ live-verified |
+| **Session** — `whoami`, `health_check`, `close_session` | ✅ |
+| Companies, people-search, network, posting | 🚧 next (endpoints captured) |
 
 The live data path requires a **headful** Chrome (a real window) — that's what passes Cloudflare. Headless/server environments are unreliable and frequently IP-flagged.
 

@@ -5,6 +5,43 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0-alpha.1] - 2026-06-13
+
+Complete rewrite of the data layer. v1 returned **zero data** in practice:
+LinkedIn fronts the Voyager API with Cloudflare bot-management that rejects
+stateless `fetch`/`curl` (endless 302 redirect even with a valid cookie).
+
+### Changed — architecture
+- **Stealth browser engine** ([patchright](https://github.com/Kaliiiiiiiiii-Vinyzu/patchright),
+  an undetected Playwright fork) clears the Cloudflare challenge with a real
+  browser fingerprint.
+- **In-page Voyager fetch**: queries run inside the authenticated, challenge-passed
+  page (same-origin, the exact path LinkedIn's web app uses) → structured JSON,
+  not scraped DOM. Locale-independent, resilient to UI redesigns.
+- One persistent browser per process; signal-handled teardown + process reap.
+
+### Added — safety/reliability layer (130+ unit tests)
+- Serial queue, human-paced jittered delays, per-action daily budgets, account
+  warmup ramp, pending-invite ceiling, and a circuit breaker that hard-stops on
+  any checkpoint/captcha/rate-limit (never auto-solves a challenge).
+
+### Added — tools (live-verified)
+- `get_my_profile`, `get_profile` (name, headline, summary, experience, education)
+- `get_feed`, `get_notifications`, `search_jobs`, `get_inbox`, `get_conversation`
+- `whoami`, `health_check`, `close_session`
+
+### Added — CLI
+- `--login` (headful interactive), `--spike` (verify), `--capture` (record live
+  Voyager endpoints), plus `--status` / `--logout`.
+
+### Removed
+- v1's stateless Voyager tools (proven 0-data). OAuth path (backed no working
+  tool). False README claims + the competitor comparison table.
+
+### Notes
+- Pre-release. Requires headful Chrome + a one-time `--login`. **No LinkedIn
+  automation is ban-proof** — see [DISCLAIMER.md](DISCLAIMER.md).
+
 ## [1.0.0] - 2026-06-08
 
 ### Added
