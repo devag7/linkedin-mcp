@@ -188,7 +188,10 @@ npx linkedin-mcp-tools --logout
 1. Log in to LinkedIn in your browser
 2. Open DevTools (F12) → Application → Cookies → `linkedin.com`
 3. Copy the `li_at` cookie value
-4. Run `linkedin-mcp --login` and paste when prompted
+4. Copy the `JSESSIONID` cookie value (**required** — used as CSRF token)
+5. Run `linkedin-mcp --login` and paste when prompted
+
+> **Note:** Both `li_at` and `JSESSIONID` are required. The JSESSIONID provides CSRF protection that LinkedIn's API requires for authenticated requests.
 
 ### OAuth 2.0 (Experimental)
 
@@ -205,6 +208,7 @@ For CI/Docker, you can use env vars instead (they override saved credentials):
 
 ```bash
 export LINKEDIN_COOKIE="your_li_at_cookie_value"
+export LINKEDIN_CSRF_TOKEN="your_jsessionid_value"  # Required for cookie auth
 # or
 export LINKEDIN_ACCESS_TOKEN="your_oauth_token"
 ```
@@ -241,7 +245,7 @@ export LINKEDIN_ACCESS_TOKEN="your_oauth_token"
 |---|---|---|---|
 | `LINKEDIN_ACCESS_TOKEN` | One of these | — | LinkedIn OAuth access token |
 | `LINKEDIN_COOKIE` | One of these | — | LinkedIn `li_at` session cookie |
-| `LINKEDIN_CSRF_TOKEN` | No | — | LinkedIn `JSESSIONID` for CSRF protection |
+| `LINKEDIN_CSRF_TOKEN` | Yes (with cookie) | — | LinkedIn `JSESSIONID` cookie — required for CSRF protection |
 | `PORT` | No | `3000` | HTTP server port |
 | `TRANSPORT` | No | `stdio` | Transport mode: `stdio` or `http` |
 | `LOG_LEVEL` | No | `info` | Log level: `debug`, `info`, `warn`, `error` |

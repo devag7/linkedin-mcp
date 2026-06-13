@@ -1,6 +1,6 @@
 {
   "name": "linkedin-mcp-tools",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "The most reliable LinkedIn MCP server. 36 tools, remote-first, minimal dependencies. Works with Claude, Cursor, and any MCP client.",
   "type": "module",
   "main": "dist/index.js",

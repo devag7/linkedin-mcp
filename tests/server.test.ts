@@ -50,6 +50,12 @@ describe('Cookie Auth', () => {
     expect(auth.csrfToken).toBe('test_csrf');
   });
 
+  it('should throw when CSRF token is missing', async () => {
+    const { createCookieAuth } = await import('../src/auth/cookie.js');
+    expect(() => createCookieAuth('my_cookie')).toThrow('LINKEDIN_CSRF_TOKEN is required');
+    expect(() => createCookieAuth('my_cookie', undefined)).toThrow('LINKEDIN_CSRF_TOKEN is required');
+  });
+
   it('should generate proper headers', async () => {
     const { createCookieAuth, getCookieAuthHeaders } = await import('../src/auth/cookie.js');
     const auth = createCookieAuth('my_li_at', 'my_csrf');

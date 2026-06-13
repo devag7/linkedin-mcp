@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.3] - 2026-06-13
+
+### Fixed
+
+#### Critical
+- **Cloudflare 302 cookie-bounce now handled.** All data tools were failing against live LinkedIn because Cloudflare's bot-management returns a 302 redirect with `Set-Cookie: __cf_bm`. Node `fetch()` auto-followed without capturing the cookie, causing an infinite redirect loop → "fetch failed" after 29s. Now uses `redirect: 'manual'` and a persistent cookie jar to capture and resend `__cf_bm`, `lidc`, `bcookie`, etc.
+- **CSRF token (`LINKEDIN_CSRF_TOKEN`) is now required** for cookie authentication. Previously, a fabricated `ajax:<timestamp>` was used as placeholder when CSRF was missing — LinkedIn rejects this. Now throws a clear error with instructions to copy the `JSESSIONID` cookie.
+
+#### Moderate
+- **Cookie validation (`validateCookie`) also fixed** for Cloudflare bounces — uses `redirect: 'manual'` and captures Set-Cookie during validation.
+- **429 rate limit no longer retried 3x** — immediately surfaces the error with the `retry-after` value.
+
+### Changed
+- `LINKEDIN_CSRF_TOKEN` marked as **required** in README, `.env.example`, and env var table.
+- Cookie auth instructions now include step to copy `JSESSIONID` cookie.
+- HTTP client uses `redirect: 'manual'` for all requests (enables cookie jar to work).
+
+### Tests
+- Added Cloudflare 302 bounce test (302 → capture Set-Cookie → retry with cookies → 200).
+- Added too-many-redirects test (5+ bounces → clear error).
+- Added cookie jar merge test (auth cookies preserved, jar cookies appended).
+- Added CSRF-required test (missing CSRF → throws with instructions).
+- 53 total tests, all passing.
+
 ## [1.0.2] - 2026-06-13
 
 ### Fixed

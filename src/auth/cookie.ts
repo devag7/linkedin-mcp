@@ -8,14 +8,15 @@
  * 1. Log in to LinkedIn in your browser
  * 2. Open DevTools → Application → Cookies → linkedin.com
  * 3. Copy the `li_at` cookie value
- * 4. Set LINKEDIN_COOKIE environment variable
+ * 4. Copy the `JSESSIONID` cookie value (required for CSRF)
+ * 5. Set LINKEDIN_COOKIE and LINKEDIN_CSRF_TOKEN environment variables
  */
 
 import type { Logger } from '../types.js';
 
 export interface CookieAuth {
   cookie: string;
-  csrfToken?: string;
+  csrfToken: string;
 }
 
 export interface CookieAuthHeaders {
@@ -28,13 +29,22 @@ export interface CookieAuthHeaders {
 
 /**
  * Validate and prepare cookie-based authentication headers.
+ * Both cookie and csrfToken are required for LinkedIn API access.
  */
 export function createCookieAuth(cookie: string, csrfToken?: string): CookieAuth {
   // Clean the cookie value — remove quotes if present
   const cleanCookie = cookie.replace(/^["']|["']$/g, '');
 
+  if (!csrfToken) {
+    throw new Error(
+      'LINKEDIN_CSRF_TOKEN is required for cookie authentication. ' +
+      'Copy the JSESSIONID cookie value from your browser ' +
+      '(DevTools → Application → Cookies → linkedin.com → JSESSIONID).',
+    );
+  }
+
   // Clean CSRF token — remove quotes if present
-  const cleanCsrf = csrfToken ? csrfToken.replace(/^["']|["']$/g, '') : undefined;
+  const cleanCsrf = csrfToken.replace(/^["']|["']$/g, '');
 
   return {
     cookie: cleanCookie,
@@ -46,12 +56,9 @@ export function createCookieAuth(cookie: string, csrfToken?: string): CookieAuth
  * Generate the HTTP headers needed for authenticated LinkedIn API requests.
  */
 export function getCookieAuthHeaders(auth: CookieAuth): CookieAuthHeaders {
-  // The CSRF token is either provided or derived from JSESSIONID
-  const csrf = auth.csrfToken || generateCsrfPlaceholder();
-
   return {
-    Cookie: `li_at=${auth.cookie}; JSESSIONID="${csrf}"`,
-    'csrf-token': csrf,
+    Cookie: `li_at=${auth.cookie}; JSESSIONID="${auth.csrfToken}"`,
+    'csrf-token': auth.csrfToken,
     'x-li-lang': 'en_US',
     'x-li-track': JSON.stringify({
       clientVersion: '1.13.0',
@@ -67,37 +74,67 @@ export function getCookieAuthHeaders(auth: CookieAuth): CookieAuthHeaders {
 
 /**
  * Validate that a cookie is still valid by making a lightweight API call.
+ * Uses redirect:'manual' to handle Cloudflare cookie bounces.
  */
 export async function validateCookie(auth: CookieAuth, logger: Logger): Promise<boolean> {
   try {
     const headers = getCookieAuthHeaders(auth);
+    const allHeaders: Record<string, string> = {
+      ...headers,
+      Accept: 'application/vnd.linkedin.normalized+json+2.1',
+      'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+    };
 
-    const response = await fetch(
-      'https://www.linkedin.com/voyager/api/me',
-      {
+    // Follow up to 3 Cloudflare bounces
+    let url = 'https://www.linkedin.com/voyager/api/me';
+    for (let bounce = 0; bounce < 3; bounce++) {
+      const response = await fetch(url, {
         method: 'GET',
-        headers: {
-          ...headers,
-          Accept: 'application/vnd.linkedin.normalized+json+2.1',
-          'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
-        },
+        headers: allHeaders,
         signal: AbortSignal.timeout(10000),
-      },
-    );
+        redirect: 'manual',
+      });
 
-    if (response.ok) {
-      logger.debug('Cookie validation successful');
-      return true;
-    }
+      // Capture Set-Cookie and merge into headers
+      const setCookies = response.headers.getSetCookie?.() ?? [];
+      for (const sc of setCookies) {
+        const nameValue = sc.split(';')[0]?.trim();
+        if (!nameValue) continue;
+        const eqIdx = nameValue.indexOf('=');
+        if (eqIdx < 0) continue;
+        const name = nameValue.substring(0, eqIdx).trim();
+        const value = nameValue.substring(eqIdx + 1).trim();
+        if (name && value && name !== 'li_at' && name !== 'JSESSIONID') {
+          // Append to Cookie header
+          allHeaders['Cookie'] = `${allHeaders['Cookie']}; ${name}=${value}`;
+        }
+      }
 
-    if (response.status === 401 || response.status === 403) {
-      logger.warn('Cookie expired or invalid', { status: response.status });
+      // Handle redirect bounce
+      if (response.status >= 300 && response.status < 400) {
+        const location = response.headers.get('location');
+        url = location ? new URL(location, url).toString() : url;
+        logger.debug('Cookie validation redirect bounce', { status: response.status, bounce });
+        continue;
+      }
+
+      if (response.ok) {
+        logger.debug('Cookie validation successful');
+        return true;
+      }
+
+      if (response.status === 401 || response.status === 403) {
+        logger.warn('Cookie expired or invalid', { status: response.status });
+        return false;
+      }
+
+      logger.warn('Cookie validation returned unexpected status', {
+        status: response.status,
+      });
       return false;
     }
 
-    logger.warn('Cookie validation returned unexpected status', {
-      status: response.status,
-    });
+    logger.warn('Cookie validation failed: too many redirects (Cloudflare bounce)');
     return false;
   } catch (error) {
     logger.error('Cookie validation failed', {
@@ -105,12 +142,4 @@ export async function validateCookie(auth: CookieAuth, logger: Logger): Promise<
     });
     return false;
   }
-}
-
-/**
- * Generate a placeholder CSRF token.
- * LinkedIn sometimes accepts requests with a custom CSRF value.
- */
-function generateCsrfPlaceholder(): string {
-  return `ajax:${Date.now()}`;
 }

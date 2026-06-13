@@ -6,8 +6,9 @@
  * - Automatic rate limiting
  * - Response caching
  * - Retry with exponential backoff
+ * - Cookie jar for Cloudflare bot-management bounces
  * - Structured error handling
- * - Support for both Voyager (cookie) and REST (OAuth) APIs
+ * - Voyager response parsing
  */
 
 import type { Logger } from '../types.js';
@@ -18,6 +19,9 @@ import type { LinkedInApiResponse } from './types.js';
 
 const USER_AGENT =
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36';
+
+/** Maximum number of redirect bounces to follow per request */
+const MAX_REDIRECTS = 5;
 
 export interface LinkedInClientConfig {
   rateLimitRpm: number;
@@ -43,6 +47,9 @@ export interface RequestOptions {
 
 /**
  * LinkedIn API Client — the core data access layer.
+ *
+ * Handles Cloudflare's bot-management cookie bounces by using
+ * redirect: 'manual' and maintaining a persistent cookie jar.
  */
 export class LinkedInClient {
   private auth: AuthManager;
@@ -50,6 +57,13 @@ export class LinkedInClient {
   private cache: Cache;
   private logger: Logger;
   private config: LinkedInClientConfig;
+
+  /**
+   * Persistent cookie jar — stores Cloudflare and LinkedIn session cookies
+   * (e.g. __cf_bm, lidc, bcookie) across requests so that 302 cookie
+   * bounces are handled automatically.
+   */
+  private cookieJar: Map<string, string> = new Map();
 
   constructor(auth: AuthManager, logger: Logger, config?: Partial<LinkedInClientConfig>) {
     this.auth = auth;
@@ -142,7 +156,8 @@ export class LinkedInClient {
   // ─── Private Methods ────────────────────────────────────
 
   /**
-   * Core request method with rate limiting, caching, and retries.
+   * Core request method with rate limiting, caching, retries,
+   * and Cloudflare cookie-bounce handling.
    */
   private async request<T>(url: string, options?: RequestOptions): Promise<T> {
     const method = options?.method ?? 'GET';
@@ -168,7 +183,7 @@ export class LinkedInClient {
     // Ensure auth is configured
     const authHeaders = this.auth.requireAuth();
 
-    // Build request headers
+    // Build request headers — merge auth headers with cookie jar
     const headers: Record<string, string> = {
       ...authHeaders,
       'User-Agent': USER_AGENT,
@@ -180,6 +195,9 @@ export class LinkedInClient {
       headers['Content-Type'] = 'application/json';
     }
 
+    // Merge cookie jar into the Cookie header
+    this.mergeCookieJar(headers);
+
     // Retry loop
     let lastError: Error | undefined;
     for (let attempt = 1; attempt <= this.config.maxRetries; attempt++) {
@@ -190,50 +208,7 @@ export class LinkedInClient {
           attempt,
         });
 
-        const response = await fetch(url, {
-          method,
-          headers,
-          body: options?.body ? JSON.stringify(options.body) : undefined,
-          signal: AbortSignal.timeout(this.config.requestTimeoutMs),
-        });
-
-        // Handle specific error codes
-        if (response.status === 401 || response.status === 403) {
-          throw new AuthError(
-            `LinkedIn authentication failed (${response.status}). Your credentials may have expired.`,
-          );
-        }
-
-        if (response.status === 429) {
-          // Rate limited by LinkedIn
-          const retryAfter = parseInt(response.headers.get('retry-after') ?? '60', 10);
-          this.logger.warn('LinkedIn rate limit hit', { retryAfter, attempt });
-
-          if (attempt < this.config.maxRetries) {
-            await this.sleep(retryAfter * 1000);
-            continue;
-          }
-          throw new LinkedInApiError(
-            'Rate limited by LinkedIn. Try again later.',
-            429,
-          );
-        }
-
-        if (response.status === 404) {
-          throw new LinkedInApiError('Resource not found on LinkedIn.', 404);
-        }
-
-        if (!response.ok) {
-          const body = await response.text().catch(() => '');
-          throw new LinkedInApiError(
-            `LinkedIn API error: ${response.status} ${response.statusText}`,
-            response.status,
-            body,
-          );
-        }
-
-        // Parse response
-        const data = (await response.json()) as T;
+        const data = await this.fetchWithRedirects<T>(url, method, headers, options);
 
         // Cache GET responses
         if (method === 'GET' && !options?.skipCache) {
@@ -261,6 +236,185 @@ export class LinkedInClient {
     }
 
     throw lastError ?? new Error('Request failed after retries');
+  }
+
+  /**
+   * Execute a fetch with manual redirect handling.
+   *
+   * Cloudflare bot-management returns 302 → same URL with Set-Cookie: __cf_bm.
+   * Standard fetch auto-follows without capturing Set-Cookie, causing infinite loops.
+   * We use redirect:'manual', capture cookies, and re-request.
+   */
+  private async fetchWithRedirects<T>(
+    url: string,
+    method: string,
+    headers: Record<string, string>,
+    options?: RequestOptions,
+  ): Promise<T> {
+    let currentUrl = url;
+
+    for (let redirectCount = 0; redirectCount < MAX_REDIRECTS; redirectCount++) {
+      const response = await fetch(currentUrl, {
+        method,
+        headers,
+        body: options?.body ? JSON.stringify(options.body) : undefined,
+        signal: AbortSignal.timeout(this.config.requestTimeoutMs),
+        redirect: 'manual',
+      });
+
+      // Capture Set-Cookie headers from every response
+      this.captureSetCookies(response);
+
+      // Handle redirects (301, 302, 303, 307, 308)
+      if (response.status >= 300 && response.status < 400) {
+        const location = response.headers.get('location');
+
+        // Resolve relative or same-URL redirects
+        let nextUrl: string;
+        if (location) {
+          try {
+            nextUrl = new URL(location, currentUrl).toString();
+          } catch {
+            nextUrl = currentUrl; // Same-URL bounce
+          }
+        } else {
+          nextUrl = currentUrl; // No location = same-URL bounce
+        }
+
+        this.logger.debug('Redirect bounce', {
+          status: response.status,
+          from: this.sanitizeUrl(currentUrl),
+          to: this.sanitizeUrl(nextUrl),
+          cookies: this.cookieJar.size,
+        });
+
+        // Update Cookie header with new jar contents
+        this.mergeCookieJar(headers);
+        currentUrl = nextUrl;
+        continue;
+      }
+
+      // Handle specific error codes
+      if (response.status === 401 || response.status === 403) {
+        throw new AuthError(
+          `LinkedIn authentication failed (${response.status}). Your credentials may have expired.`,
+        );
+      }
+
+      if (response.status === 429) {
+        const retryAfter = parseInt(response.headers.get('retry-after') ?? '60', 10);
+        this.logger.warn('LinkedIn rate limit hit', { retryAfter });
+        throw new LinkedInApiError(
+          'Rate limited by LinkedIn. Try again later.',
+          429,
+        );
+      }
+
+      if (response.status === 404) {
+        throw new LinkedInApiError('Resource not found on LinkedIn.', 404);
+      }
+
+      if (!response.ok) {
+        const body = await response.text().catch(() => '');
+        throw new LinkedInApiError(
+          `LinkedIn API error: ${response.status} ${response.statusText}`,
+          response.status,
+          body,
+        );
+      }
+
+      // Parse response
+      return (await response.json()) as T;
+    }
+
+    throw new LinkedInApiError(
+      `Too many redirects (${MAX_REDIRECTS}). LinkedIn may be blocking this request with Cloudflare bot-management. Try refreshing your li_at cookie.`,
+      302,
+    );
+  }
+
+  /**
+   * Parse Set-Cookie headers from a response and store in the cookie jar.
+   * Handles multiple Set-Cookie headers and extracts name=value pairs.
+   */
+  private captureSetCookies(response: Response): void {
+    // getSetCookie() returns an array of Set-Cookie header values
+    const setCookies = response.headers.getSetCookie?.() ?? [];
+
+    for (const setCookie of setCookies) {
+      // Extract "name=value" from "name=value; Path=/; ..."
+      const parts = setCookie.split(';');
+      const nameValue = parts[0]?.trim();
+      if (!nameValue) continue;
+
+      const eqIndex = nameValue.indexOf('=');
+      if (eqIndex < 0) continue;
+
+      const name = nameValue.substring(0, eqIndex).trim();
+      const value = nameValue.substring(eqIndex + 1).trim();
+
+      if (name && value) {
+        this.cookieJar.set(name, value);
+        this.logger.debug('Cookie captured', { name, valueLen: value.length });
+      }
+    }
+
+    // Fallback: try raw 'set-cookie' header (some Node versions)
+    if (setCookies.length === 0) {
+      const raw = response.headers.get('set-cookie');
+      if (raw) {
+        // May contain multiple cookies comma-separated (RFC 6265 ambiguity)
+        for (const part of raw.split(/,(?=[^ ])/)) {
+          const nameValue = part.split(';')[0]?.trim();
+          if (!nameValue) continue;
+          const eqIndex = nameValue.indexOf('=');
+          if (eqIndex < 0) continue;
+          const name = nameValue.substring(0, eqIndex).trim();
+          const value = nameValue.substring(eqIndex + 1).trim();
+          if (name && value) {
+            this.cookieJar.set(name, value);
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * Merge cookie jar contents into the request's Cookie header.
+   * Preserves existing auth cookies (li_at, JSESSIONID) and appends
+   * jar cookies (__cf_bm, lidc, bcookie, etc.).
+   */
+  private mergeCookieJar(headers: Record<string, string>): void {
+    if (this.cookieJar.size === 0) return;
+
+    const existingCookie = headers['Cookie'] ?? '';
+
+    // Parse existing cookies into a map
+    const cookieMap = new Map<string, string>();
+    for (const pair of existingCookie.split(';')) {
+      const trimmed = pair.trim();
+      if (!trimmed) continue;
+      const eqIndex = trimmed.indexOf('=');
+      if (eqIndex < 0) continue;
+      const name = trimmed.substring(0, eqIndex).trim();
+      const value = trimmed.substring(eqIndex + 1).trim();
+      cookieMap.set(name, value);
+    }
+
+    // Merge jar cookies (jar values take precedence for non-auth cookies)
+    for (const [name, value] of this.cookieJar) {
+      // Don't overwrite the auth cookies from the auth manager
+      if (name === 'li_at' || name === 'JSESSIONID') continue;
+      cookieMap.set(name, value);
+    }
+
+    // Rebuild Cookie header
+    const parts: string[] = [];
+    for (const [name, value] of cookieMap) {
+      parts.push(`${name}=${value}`);
+    }
+
+    headers['Cookie'] = parts.join('; ');
   }
 
   private getCacheKey(url: string): string {
