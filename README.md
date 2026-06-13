@@ -42,6 +42,21 @@ That last point is the edge over DOM-scraping tools: in-page API calls are **loc
 
 ---
 
+## How it compares
+
+| | DOM-scraping LinkedIn MCPs | **This** |
+|---|---|---|
+| Data | scraped page text (brittle, locale-bound) | **structured API JSON** |
+| Resilience | breaks on UI tweaks / translations | **API + embedded-JSON, locale-proof** |
+| Headless / server | flaky | **✅ verified** |
+| Safety (caps, pacing, circuit breaker) | none | **✅ built-in, 135 tests** |
+| Zombie browser processes | common | **✅ reaped on close** |
+| Language | Python | TypeScript + official MCP SDK |
+
+We hit LinkedIn's own API from inside the challenge-passed browser — so you get
+the structured response, not parsed HTML. (Shipping checklist + launch notes:
+[LAUNCH.md](LAUNCH.md).)
+
 ## 📦 Status
 
 This is an honest, in-progress v2. Here's exactly where it stands:
