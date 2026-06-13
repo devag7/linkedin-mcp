@@ -23,19 +23,20 @@ import {
   hasStoredCredentials,
 } from './auth/store.js';
 import { interactiveBrowserLogin, runSpike } from './browser/login.js';
+import { runCapture } from './browser/capture.js';
 import { loadConfig } from './config/env.js';
 
 /**
  * Parse command-line arguments.
  */
 function parseArgs(): ServerConfig & {
-  action?: 'login' | 'logout' | 'status' | 'spike';
+  action?: 'login' | 'logout' | 'status' | 'spike' | 'capture';
 } {
   const args = process.argv.slice(2);
   let transport: TransportType = 'stdio';
   let port = 3000;
   let logLevel: 'debug' | 'info' | 'warn' | 'error' = 'info';
-  let action: 'login' | 'logout' | 'status' | 'spike' | undefined;
+  let action: 'login' | 'logout' | 'status' | 'spike' | 'capture' | undefined;
 
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
@@ -56,6 +57,10 @@ function parseArgs(): ServerConfig & {
 
       case '--spike':
         action = 'spike';
+        break;
+
+      case '--capture':
+        action = 'capture';
         break;
 
       case '--transport':
@@ -189,6 +194,11 @@ async function main(): Promise<void> {
 
   if (config.action === 'spike') {
     await runSpike(loadConfig(), logger);
+    process.exit(0);
+  }
+
+  if (config.action === 'capture') {
+    await runCapture(loadConfig(), logger);
     process.exit(0);
   }
 
