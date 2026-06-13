@@ -153,7 +153,9 @@ export function collectComponentEntries(resp: NormalizedResponse): ComponentEntr
     for (const v of Object.values(obj)) visit(v);
   };
 
+  // Entries live in the PagedListComponent inside included[], not only in data.
   visit(resp.data);
+  visit(resp.included);
   return out;
 }
 
