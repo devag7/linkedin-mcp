@@ -9,7 +9,11 @@ import type { VoyagerClient } from '../browser/voyager.js';
 import type { Guard } from '../browser/guard.js';
 import { ACTIONS } from '../browser/guard.js';
 import type { Logger } from '../types.js';
-import { shapeProfileView, type NormalizedResponse } from '../browser/normalize.js';
+import {
+  shapeProfileView,
+  ownPublicId,
+  type NormalizedResponse,
+} from '../browser/normalize.js';
 import * as ep from '../browser/endpoints.js';
 import { ok, run } from './result.js';
 
@@ -25,9 +29,13 @@ export function registerProfileTools(
     {},
     async () =>
       run(logger, 'get_my_profile', async () => {
-        const raw = await guard.run(ACTIONS.getProfile, () =>
-          voyager.voyagerGet<NormalizedResponse>(ep.profileView('me')),
-        );
+        const raw = await guard.run(ACTIONS.getProfile, async () => {
+          // Resolve own vanity slug from /me, then fetch the full DASH profile.
+          const me = await voyager.voyagerGet<NormalizedResponse>(ep.me());
+          const publicId = ownPublicId(me);
+          if (!publicId) throw new Error('Could not resolve own publicIdentifier from /me.');
+          return voyager.voyagerGet<NormalizedResponse>(ep.dashProfile(publicId));
+        });
         return ok(shapeProfileView(raw));
       }),
   );
@@ -44,7 +52,7 @@ export function registerProfileTools(
     async ({ username }) =>
       run(logger, 'get_profile', async () => {
         const raw = await guard.run(ACTIONS.getProfile, () =>
-          voyager.voyagerGet<NormalizedResponse>(ep.profileView(username)),
+          voyager.voyagerGet<NormalizedResponse>(ep.dashProfile(username)),
         );
         return ok(shapeProfileView(raw));
       }),

@@ -32,17 +32,32 @@
  * MUST be re-captured live. Treat them as fallbacks/examples, never guarantees.
  */
 export const KNOWN_QUERY_IDS = {
-  /** SRP (search-results-page) DASH clusters — people/company/job universal search. */
-  searchClusters: 'voyagerSearchDashClusters.4c4a3f9e1f4c8a7b6d5e2f1a0b9c8d7e',
-  /** Jobs search via the jobs DASH cluster collection. */
-  jobsSearch: 'voyagerJobsDashJobCards.2b1c0d9e8f7a6b5c4d3e2f1a0b9c8d7e',
-  /** Single job posting card. */
-  jobPosting: 'voyagerJobsDashJobPostingCards.7e6d5c4b3a2f1e0d9c8b7a6f5e4d3c2b',
-  /** Profile skills tab (DASH). */
-  profileSkills: 'voyagerIdentityDashProfileComponents.1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d',
-  /** Messaging conversations list (DASH). */
-  messagingConversations: 'voyagerMessagingDashMessengerConversations.9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c',
+  /** SRP DASH clusters — people/company search. Captured 2026-06-13. */
+  searchClusters: 'voyagerSearchDashClusters.9a78a658089851e133c5b7bb2b4baee5',
+  /** Jobs search DASH cards (GraphQL variant). Captured 2026-06-13. */
+  jobsSearch: 'voyagerJobsDashJobCards.9c135b2568ee44623733b4a578d25279',
+  /** Job posting detail sections. Captured 2026-06-13. */
+  jobPosting: 'voyagerJobsDashJobPostingDetailSections.77cb64956921ef397a36de4f7f8bce47',
+  /** Profile cards (DASH). Captured 2026-06-13. */
+  profileSkills: 'voyagerIdentityDashProfileComponents.86824295e1093fb0f5acdd8d57213aaa',
+  /** Messaging conversations list (messaging GraphQL host). Captured 2026-06-13. */
+  messagingConversations: 'messengerConversations.0d5e6781bbee71c3e51c8843c6519f48',
+  /** A single conversation's messages (messaging GraphQL host). Captured 2026-06-13. */
+  messagingMessages: 'messengerMessages.5846eeb71c981f11e0134cb6626cc314',
+  /** Home feed updates (DASH). Captured 2026-06-13. */
+  mainFeed: 'voyagerFeedDashMainFeed.923020905727c01516495a0ac90bb475',
+  /** Company by universal name (DASH). Captured 2026-06-13. */
+  company: 'voyagerOrganizationDashCompanies.148b1aebfadd0a455f32806df656c3c1',
+  /** Company page updates / posts (DASH). Captured 2026-06-13. */
+  companyPosts: 'voyagerFeedDashOrganizationalPageUpdates.827e11d165078dd7a5afaf1cba734121',
 } as const;
+
+/**
+ * Decoration id for the full profile aggregate (header + experience + education
+ * + skills). Captured live 2026-06-13 — increments on LinkedIn deploys.
+ */
+export const FULL_PROFILE_DECO =
+  'com.linkedin.voyager.dash.deco.identity.profile.FullProfile-76';
 
 /** Keys of {@link KNOWN_QUERY_IDS}. */
 export type KnownQueryIdKey = keyof typeof KNOWN_QUERY_IDS;
@@ -96,12 +111,39 @@ export function me(): string {
 }
 
 /**
- * Full `profileView` for a member by public identifier (vanity slug) or URN id.
- * This is the classic experience/education/skills aggregate.
- * BEST-KNOWN REST-li path.
+ * @deprecated LinkedIn returns HTTP 410 for this legacy REST-li path (verified
+ * live 2026-06-13). Use {@link dashProfile} / {@link dashProfileByUrn} instead.
  */
 export function profileView(id: string): string {
   return `/identity/profiles/${encodeURIComponent(id)}/profileView`;
+}
+
+/**
+ * Full profile by public identifier (vanity slug) via the DASH finder. This is
+ * the current, working aggregate (header + experience + education + skills).
+ * Verified live 2026-06-13: `q=memberIdentity` with the FullProfile decoration.
+ *
+ * @param publicId vanity slug, e.g. "williamhgates" (or the member's publicId)
+ */
+export function dashProfile(publicId: string): string {
+  return (
+    `/identity/dash/profiles?q=memberIdentity` +
+    `&memberIdentity=${encodeURIComponent(publicId)}` +
+    `&decorationId=${FULL_PROFILE_DECO}`
+  );
+}
+
+/**
+ * Full profile by `fsd_profile` URN id (the opaque id, e.g. "ACoAA...").
+ * Verified live 2026-06-13 — the exact call the profile page makes.
+ *
+ * @param fsdProfileId the id portion of urn:li:fsd_profile:<id>
+ */
+export function dashProfileByUrn(fsdProfileId: string): string {
+  return (
+    `/identity/dash/profiles/urn:li:fsd_profile:${encodeURIComponent(fsdProfileId)}` +
+    `?decorationId=${FULL_PROFILE_DECO}`
+  );
 }
 
 /**
@@ -189,6 +231,32 @@ export function jobsSearch(
     `(start:${start},count:${count},` +
     `query:(keywords:${encodeURIComponent(keywords)},origin:JOB_SEARCH_PAGE_QUERY_EXPANSION${geo}))`;
   return graphqlPath(queryId, variables);
+}
+
+/**
+ * Jobs search via the REST-li jobs DASH cards collection (`q=jobSearch`).
+ * Verified live 2026-06-13 — the exact call the jobs SRP makes.
+ *
+ * @param keywords free-text job query
+ * @param locationGeoId optional LinkedIn geo URN id
+ * @param start zero-based pagination offset
+ * @param count page size
+ */
+export function jobCardsSearch(
+  keywords: string,
+  locationGeoId?: string,
+  start = 0,
+  count = 25,
+): string {
+  const deco = 'com.linkedin.voyager.dash.deco.jobs.search.JobSearchCardsCollection-220';
+  const geo = locationGeoId ? `,locationUnion:(geoId:${encodeURIComponent(locationGeoId)})` : '';
+  const query =
+    `(origin:JOB_SEARCH_PAGE_QUERY_EXPANSION,` +
+    `keywords:${encodeURIComponent(keywords)}${geo})`;
+  return (
+    `/voyagerJobsDashJobCards?decorationId=${deco}` +
+    `&count=${count}&q=jobSearch&query=${query}&start=${start}`
+  );
 }
 
 /**
@@ -283,6 +351,33 @@ export function invitationsReceived(start = 0, count = 50): string {
  */
 export function invitationsSent(start = 0, count = 50): string {
   return `/relationships/sentInvitationViewsV2?start=${start}&count=${count}`;
+}
+
+/* ─────────────────────────────── Notifications ──────────────────────────── */
+
+/**
+ * The member's notifications feed (cards collection).
+ * Verified live 2026-06-13 — the exact call the notifications page makes.
+ */
+export function notificationCards(start = 0, count = 20): string {
+  const deco = 'com.linkedin.voyager.dash.deco.identity.notifications.CardsCollection-80';
+  return (
+    `/voyagerIdentityDashNotificationCards?decorationId=${deco}` +
+    `&count=${count}&q=notifications&start=${start}`
+  );
+}
+
+/* ──────────────────────────────────── Feed ──────────────────────────────── */
+
+/**
+ * Home feed updates (DASH GraphQL). `queryId` ROTATES — re-capture live.
+ */
+export function mainFeed(
+  start = 0,
+  count = 10,
+  queryId: string = KNOWN_QUERY_IDS.mainFeed,
+): string {
+  return graphqlPath(queryId, `(start:${start},count:${count})`);
 }
 
 /**

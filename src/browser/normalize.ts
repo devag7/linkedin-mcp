@@ -75,6 +75,30 @@ export function fmtDate(d: unknown): string | undefined {
   return month ? `${year}-${String(month).padStart(2, '0')}` : `${year}`;
 }
 
+/**
+ * Extract a "start"/"end" date from an entity that uses either the legacy
+ * `timePeriod:{startDate,endDate}` shape or the DASH `dateRange:{start,end}` shape.
+ */
+function entityDates(e: Record<string, unknown>): { start?: string; end?: string } {
+  const tp = e['timePeriod'] as Record<string, unknown> | undefined;
+  const dr = e['dateRange'] as Record<string, unknown> | undefined;
+  if (tp) return { start: fmtDate(tp['startDate']), end: fmtDate(tp['endDate']) };
+  if (dr) return { start: fmtDate(dr['start']), end: fmtDate(dr['end']) };
+  return {};
+}
+
+/**
+ * Resolve the authenticated member's public identifier (vanity slug) from a
+ * `/me` response — used to then fetch the full DASH profile.
+ */
+export function ownPublicId(me: NormalizedResponse): string | undefined {
+  for (const e of me.included ?? []) {
+    const pid = (e as Record<string, unknown>)['publicIdentifier'];
+    if (typeof pid === 'string' && pid) return pid;
+  }
+  return undefined;
+}
+
 export interface ShapedProfile {
   publicIdentifier?: string;
   firstName?: string;
@@ -111,20 +135,22 @@ export function shapeProfileView(resp: NormalizedResponse): ShapedProfile {
     const t = typeof e.$type === 'string' ? e.$type : '';
     if (t.endsWith('Position')) {
       const tp = e as Record<string, unknown>;
+      const d = entityDates(tp);
       experience.push({
         title: str(tp['title']),
         company: str(tp['companyName']),
-        start: fmtDate((tp['timePeriod'] as Record<string, unknown>)?.['startDate']),
-        end: fmtDate((tp['timePeriod'] as Record<string, unknown>)?.['endDate']),
+        start: d.start,
+        end: d.end,
       });
     } else if (t.endsWith('Education')) {
       const ed = e as Record<string, unknown>;
+      const d = entityDates(ed);
       education.push({
         school: str(ed['schoolName']),
         degree: str(ed['degreeName']),
         field: str(ed['fieldOfStudy']),
-        start: fmtDate((ed['timePeriod'] as Record<string, unknown>)?.['startDate']),
-        end: fmtDate((ed['timePeriod'] as Record<string, unknown>)?.['endDate']),
+        start: d.start,
+        end: d.end,
       });
     }
   }

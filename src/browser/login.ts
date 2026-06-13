@@ -9,6 +9,8 @@
 
 import { BrowserEngine } from './engine.js';
 import { VoyagerClient } from './voyager.js';
+import * as ep from './endpoints.js';
+import { ownPublicId, shapeProfileView, type NormalizedResponse } from './normalize.js';
 import type { Logger } from '../types.js';
 import type { EnvConfig } from '../config/env.js';
 
@@ -67,27 +69,43 @@ export async function runSpike(config: EnvConfig, logger: Logger): Promise<void>
   try {
     await engine.ensureContext();
     if (!(await engine.isLoggedIn())) {
-      process.stderr.write('\n❌ Not logged in. Run `--login` first.\n');
+      process.stderr.write('\n❌ Not logged in. Run `npm run login` first.\n');
       return;
     }
 
-    process.stderr.write('\n▶ voyagerGet("/me") …\n');
-    const me = await voyager.voyagerGet<Record<string, unknown>>('/me');
-    const meKeys = Object.keys(me ?? {});
-    process.stderr.write(`  ✅ 200 JSON, top keys: [${meKeys.join(', ')}]\n`);
+    process.stderr.write('\n▶ /me …\n');
+    const me = await voyager.voyagerGet<NormalizedResponse>(ep.me());
+    const publicId = ownPublicId(me);
+    process.stderr.write(`  ✅ 200. publicIdentifier = ${publicId ?? '(not found)'}\n`);
+    if (!publicId) throw new Error('No publicIdentifier in /me');
 
-    // Resolve own public identifier from /me, then fetch the full profileView.
-    const miniProfileUrn = findMiniProfileUrn(me);
-    process.stderr.write(`  self miniProfile: ${miniProfileUrn ?? '(not found)'}\n`);
+    process.stderr.write(`\n▶ full DASH profile for "${publicId}" …\n`);
+    const prof = await voyager.voyagerGet<NormalizedResponse>(ep.dashProfile(publicId));
+    process.stderr.write(`  ✅ 200. data keys: [${Object.keys(prof.data ?? {}).join(', ')}]\n`);
 
-    process.stderr.write(
-      '\n▶ voyagerGet("/identity/profiles/me/profileView") …\n',
+    // Histogram of included $type (last segment) so the shaper can be tuned.
+    const hist = new Map<string, number>();
+    for (const e of prof.included ?? []) {
+      const t = typeof e.$type === 'string' ? e.$type.split('.').pop()! : '?';
+      hist.set(t, (hist.get(t) ?? 0) + 1);
+    }
+    process.stderr.write(`  included[${(prof.included ?? []).length}] $types:\n`);
+    for (const [t, n] of [...hist.entries()].sort((a, b) => b[1] - a[1])) {
+      process.stderr.write(`    ${n}x ${t}\n`);
+    }
+    const profileEntity = (prof.included ?? []).find((e) => 'firstName' in e);
+    if (profileEntity) {
+      process.stderr.write(`  profile entity keys: [${Object.keys(profileEntity).join(', ')}]\n`);
+    }
+    const positionEntity = (prof.included ?? []).find(
+      (e) => typeof e.$type === 'string' && e.$type.endsWith('Position'),
     );
-    const pv = await voyager.voyagerGet<Record<string, unknown>>(
-      '/identity/profiles/me/profileView',
-    );
-    const pvKeys = Object.keys(pv ?? {});
-    process.stderr.write(`  ✅ 200 JSON, top keys: [${pvKeys.join(', ')}]\n`);
+    if (positionEntity) {
+      process.stderr.write(`  Position keys: [${Object.keys(positionEntity).join(', ')}]\n`);
+    }
+
+    process.stderr.write('\n— shaped output —\n');
+    process.stderr.write(JSON.stringify(shapeProfileView(prof), null, 2) + '\n');
     process.stderr.write('\n🎯 ARCHITECTURE CONFIRMED — in-page Voyager fetch returns structured JSON.\n');
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
@@ -95,13 +113,4 @@ export async function runSpike(config: EnvConfig, logger: Logger): Promise<void>
   } finally {
     await engine.shutdown();
   }
-}
-
-function findMiniProfileUrn(me: unknown): string | undefined {
-  if (me && typeof me === 'object' && 'data' in me) {
-    const data = (me as { data?: Record<string, unknown> }).data;
-    const urn = data?.['*miniProfile'] ?? data?.['entityUrn'];
-    if (typeof urn === 'string') return urn;
-  }
-  return undefined;
 }
