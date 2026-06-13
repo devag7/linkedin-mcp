@@ -1,6 +1,8 @@
 /**
  * Profile read tools (M1, P0). Query Voyager via the in-page fetch and return
- * shaped, compact profiles instead of the raw normalized firehose.
+ * shaped, compact profiles. The full profile is assembled from the DASH profile
+ * core (name/headline/summary) plus the lazy-loaded experience/education
+ * component sections.
  */
 
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
@@ -12,10 +14,47 @@ import type { Logger } from '../types.js';
 import {
   shapeProfileView,
   ownPublicId,
+  fsdProfileId,
+  collectComponentEntries,
   type NormalizedResponse,
 } from '../browser/normalize.js';
 import * as ep from '../browser/endpoints.js';
 import { ok, run } from './result.js';
+
+/** Fetch the DASH core profile + experience/education components and merge. */
+async function buildProfile(voyager: VoyagerClient, slug: string): Promise<unknown> {
+  const profileResp = await voyager.voyagerGet<NormalizedResponse>(ep.dashProfile(slug));
+  const core = shapeProfileView(profileResp);
+  const fsd = fsdProfileId(profileResp);
+
+  let experience: unknown[] = [];
+  let education: unknown[] = [];
+  if (fsd) {
+    const expResp = await voyager.voyagerGet<NormalizedResponse>(
+      ep.profileComponents(fsd, 'experience'),
+    );
+    experience = collectComponentEntries(expResp).map((e) => ({
+      title: e.title,
+      company: e.subtitle,
+      dates: e.caption,
+      location: e.meta,
+    }));
+    const eduResp = await voyager.voyagerGet<NormalizedResponse>(
+      ep.profileComponents(fsd, 'education'),
+    );
+    education = collectComponentEntries(eduResp).map((e) => ({
+      school: e.title,
+      degree: e.subtitle,
+      dates: e.caption,
+    }));
+  }
+
+  // Drop the (empty) typed arrays from the core and attach the rich ones.
+  const { experience: _e, education: _ed, ...rest } = core;
+  void _e;
+  void _ed;
+  return { ...rest, experience, education };
+}
 
 export function registerProfileTools(
   server: McpServer,
@@ -29,14 +68,13 @@ export function registerProfileTools(
     {},
     async () =>
       run(logger, 'get_my_profile', async () => {
-        const raw = await guard.run(ACTIONS.getProfile, async () => {
-          // Resolve own vanity slug from /me, then fetch the full DASH profile.
+        const data = await guard.run(ACTIONS.getProfile, async () => {
           const me = await voyager.voyagerGet<NormalizedResponse>(ep.me());
           const publicId = ownPublicId(me);
           if (!publicId) throw new Error('Could not resolve own publicIdentifier from /me.');
-          return voyager.voyagerGet<NormalizedResponse>(ep.dashProfile(publicId));
+          return buildProfile(voyager, publicId);
         });
-        return ok(shapeProfileView(raw));
+        return ok(data);
       }),
   );
 
@@ -51,10 +89,8 @@ export function registerProfileTools(
     },
     async ({ username }) =>
       run(logger, 'get_profile', async () => {
-        const raw = await guard.run(ACTIONS.getProfile, () =>
-          voyager.voyagerGet<NormalizedResponse>(ep.dashProfile(username)),
-        );
-        return ok(shapeProfileView(raw));
+        const data = await guard.run(ACTIONS.getProfile, () => buildProfile(voyager, username));
+        return ok(data);
       }),
   );
 

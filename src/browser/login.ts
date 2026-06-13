@@ -15,6 +15,7 @@ import {
   shapeProfileView,
   shapeFeed,
   shapeNotifications,
+  collectComponentEntries,
   type NormalizedResponse,
 } from './normalize.js';
 import type { Logger } from '../types.js';
@@ -155,6 +156,18 @@ export async function runSpike(config: EnvConfig, logger: Logger): Promise<void>
     await probe('company(microsoft)', ep.companyGraphql('microsoft'), 'Company');
     await probe('feed', ep.mainFeed(0, 5), 'Update');
     await probe('notifications', ep.notificationCards(0, 10), 'Card');
+
+    // Confirm the experience/education component walker.
+    if (fsdId) {
+      try {
+        const exp = await voyager.voyagerGet<NormalizedResponse>(ep.profileComponents(fsdId, 'experience'));
+        process.stderr.write('\n— experience (shaped) —\n' + JSON.stringify(collectComponentEntries(exp), null, 2) + '\n');
+        const edu = await voyager.voyagerGet<NormalizedResponse>(ep.profileComponents(fsdId, 'education'));
+        process.stderr.write('\n— education (shaped) —\n' + JSON.stringify(collectComponentEntries(edu), null, 2) + '\n');
+      } catch (e) {
+        process.stderr.write(`\n(exp/edu preview failed: ${e instanceof Error ? e.message : String(e)})\n`);
+      }
+    }
 
     // Show the two newly-wired tools producing clean shaped output.
     try {

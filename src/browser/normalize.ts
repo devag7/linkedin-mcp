@@ -99,6 +99,64 @@ export function ownPublicId(me: NormalizedResponse): string | undefined {
   return undefined;
 }
 
+/**
+ * Extract the `fsd_profile` URN id from a DASH profile response (the Profile
+ * entity's entityUrn), needed to fetch its lazy-loaded component sections.
+ */
+export function fsdProfileId(resp: NormalizedResponse): string | undefined {
+  const p = (resp.included ?? []).find((e) => 'firstName' in e) as
+    | Record<string, unknown>
+    | undefined;
+  const urn = typeof p?.['entityUrn'] === 'string' ? (p['entityUrn'] as string) : undefined;
+  return urn?.match(/urn:li:fsd_profile:([^,)]+)/)?.[1];
+}
+
+export interface ComponentEntry {
+  title?: string;
+  subtitle?: string;
+  caption?: string;
+  meta?: string;
+}
+
+/**
+ * Walk a profile-components response (experience/education/skills) and collect
+ * the entries. LinkedIn renders each as an `entityComponent` with title /
+ * subtitle / caption text models; we recurse the whole response and pull every
+ * such node, tolerant of the exact nesting (grouped roles, sub-components).
+ */
+export function collectComponentEntries(resp: NormalizedResponse): ComponentEntry[] {
+  const out: ComponentEntry[] = [];
+  const seen = new Set<string>();
+
+  const visit = (node: unknown): void => {
+    if (!node || typeof node !== 'object') return;
+    if (Array.isArray(node)) {
+      for (const v of node) visit(v);
+      return;
+    }
+    const obj = node as Record<string, unknown>;
+    const ec = obj['entityComponent'];
+    if (ec && typeof ec === 'object') {
+      const e = ec as Record<string, unknown>;
+      const entry: ComponentEntry = {
+        title: asText(e['titleV2']) ?? asText(e['title']),
+        subtitle: asText(e['subtitle']),
+        caption: asText(e['caption']),
+        meta: asText(e['metadata']),
+      };
+      const key = `${entry.title}|${entry.subtitle}|${entry.caption}`;
+      if ((entry.title || entry.subtitle) && !seen.has(key)) {
+        seen.add(key);
+        out.push(entry);
+      }
+    }
+    for (const v of Object.values(obj)) visit(v);
+  };
+
+  visit(resp.data);
+  return out;
+}
+
 export interface ShapedProfile {
   publicIdentifier?: string;
   firstName?: string;
