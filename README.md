@@ -54,8 +54,9 @@ This is an honest, in-progress v2. Here's exactly where it stands:
 | **Profile** — `get_profile`, `get_my_profile` (name, headline, summary, experience, education) | ✅ live-verified |
 | **Feed / notifications** — `get_feed`, `get_notifications` | ✅ live-verified |
 | **Jobs / messaging** — `search_jobs`, `get_inbox`, `get_conversation` | ✅ live-verified |
+| **People / companies** — `search_people`, `get_company` (DOM fallback) | ✅ live-verified |
 | **Session** — `whoami`, `health_check`, `close_session` | ✅ |
-| Companies, people-search, network, posting | 🚧 next (endpoints captured) |
+| Network + write tools (connect / message / post) | 🚧 next (gated by daily caps) |
 
 The live data path requires a **headful** Chrome (a real window) — that's what passes Cloudflare. Headless/server environments are unreliable and frequently IP-flagged.
 
