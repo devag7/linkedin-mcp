@@ -162,8 +162,10 @@ export function profileComponents(
   section: ProfileSection,
   queryId: string = KNOWN_QUERY_IDS.profileSkills,
 ): string {
-  const variables = `(profileUrn:urn:li:fsd_profile:${fsdProfileId},sectionType:${section})`;
-  return graphqlPath(queryId, variables);
+  // The profileUrn VALUE is itself a URN; its ':' chars must be encoded while
+  // the outer (key:value,...) structure stays literal.
+  const urn = encodeURIComponent(`urn:li:fsd_profile:${fsdProfileId}`);
+  return graphqlPath(queryId, `(profileUrn:${urn},sectionType:${section})`);
 }
 
 /**
@@ -299,7 +301,9 @@ export function jobPostingGraphql(
   id: string,
   queryId: string = KNOWN_QUERY_IDS.jobPosting,
 ): string {
-  return graphqlPath(queryId, `(jobPostingUrn:urn:li:fsd_jobPosting:${encodeURIComponent(id)})`);
+  // The jobPostingUrn VALUE is a URN; encode its ':' chars, keep structure literal.
+  const urn = encodeURIComponent(`urn:li:fsd_jobPosting:${id}`);
+  return graphqlPath(queryId, `(jobPostingUrn:${urn})`);
 }
 
 /* ──────────────────────────────── Organizations ─────────────────────────── */

@@ -114,7 +114,7 @@ export async function runSpike(config: EnvConfig, logger: Logger): Promise<void>
       )?.[1] ?? '';
 
     // Probe the next batch of endpoints; dump structure to lock shapers.
-    const probe = async (label: string, path: string): Promise<void> => {
+    const probe = async (label: string, path: string, dumpType?: string): Promise<void> => {
       try {
         const r = await voyager.voyagerGet<NormalizedResponse>(path);
         const types = new Map<string, number>();
@@ -126,15 +126,29 @@ export async function runSpike(config: EnvConfig, logger: Logger): Promise<void>
         process.stderr.write(
           `\n▶ ${label} → ✅ 200  data:[${Object.keys(r.data ?? {}).join(',')}]  included[${(r.included ?? []).length}]: ${hist.join(', ')}\n`,
         );
+        if (dumpType) {
+          const sample = (r.included ?? []).find(
+            (e) => typeof e.$type === 'string' && e.$type.endsWith(dumpType),
+          );
+          if (sample) {
+            process.stderr.write(`   ${dumpType} keys: [${Object.keys(sample).join(', ')}]\n`);
+            const json = JSON.stringify(sample);
+            process.stderr.write(`   ${dumpType} sample: ${json.length > 600 ? json.slice(0, 600) + '…' : json}\n`);
+          }
+          // For components, also dump data shape (components live in data, not included).
+          if (label.includes('Components')) {
+            process.stderr.write(`   data sample: ${JSON.stringify(r.data).slice(0, 500)}…\n`);
+          }
+        }
       } catch (e) {
         process.stderr.write(`\n▶ ${label} → ❌ ${e instanceof Error ? e.message : String(e)}\n`);
       }
     };
 
-    if (fsdId) await probe('profileComponents(experience)', ep.profileComponents(fsdId, 'experience'));
-    await probe('company(microsoft)', ep.companyGraphql('microsoft'));
-    await probe('feed', ep.mainFeed(0, 5));
-    await probe('notifications', ep.notificationCards(0, 10));
+    if (fsdId) await probe('profileComponents(experience)', ep.profileComponents(fsdId, 'experience'), 'Position');
+    await probe('company(microsoft)', ep.companyGraphql('microsoft'), 'Company');
+    await probe('feed', ep.mainFeed(0, 5), 'Update');
+    await probe('notifications', ep.notificationCards(0, 10), 'Card');
 
     process.stderr.write('\n🎯 ARCHITECTURE CONFIRMED — in-page Voyager fetch returns structured JSON.\n');
   } catch (err) {
