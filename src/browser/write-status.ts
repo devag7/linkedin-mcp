@@ -38,6 +38,39 @@ export interface WriteOutcome {
   detail?: string;
 }
 
+/**
+ * GraphQL mutations (create_post, …) return HTTP 200 with a nested
+ * `errors:[{message,extensions:{exceptionClass,classification}}]` array on
+ * failure (and a null result). Deep-walk for the first such non-empty errors
+ * array and return its message — so a 200-with-errors is never read as success.
+ */
+function findGraphqlErrors(node: unknown, depth = 0): string | undefined {
+  if (!node || typeof node !== 'object' || depth > 6) return undefined;
+  if (Array.isArray(node)) {
+    for (const v of node) {
+      const r = findGraphqlErrors(v, depth + 1);
+      if (r) return r;
+    }
+    return undefined;
+  }
+  const o = node as Record<string, unknown>;
+  const errs = o['errors'];
+  if (Array.isArray(errs) && errs.length > 0) {
+    const first = errs[0] as Record<string, unknown> | undefined;
+    if (first && typeof first === 'object' && ('message' in first || 'extensions' in first || 'classification' in first)) {
+      if (typeof first['message'] === 'string' && first['message']) return first['message'] as string;
+      const ext = first['extensions'] as Record<string, unknown> | undefined;
+      if (ext && typeof ext['exceptionClass'] === 'string') return ext['exceptionClass'] as string;
+      return 'GraphQL mutation returned errors';
+    }
+  }
+  for (const v of Object.values(o)) {
+    const r = findGraphqlErrors(v, depth + 1);
+    if (r) return r;
+  }
+  return undefined;
+}
+
 /** Pull a human-ish error detail (message or code) out of a Voyager error body. */
 function errorDetail(json: unknown, body: string): string | undefined {
   if (json && typeof json === 'object') {
@@ -79,6 +112,19 @@ export function classifyWrite(
   if (raw.ok) {
     if (raw.json && typeof raw.json === 'object') {
       const o = raw.json as Record<string, unknown>;
+      // A GraphQL mutation that 200'd but carries a nested errors[] array failed.
+      const gqlErr = findGraphqlErrors(raw.json);
+      if (gqlErr) {
+        const hay2 = `${gqlErr} ${raw.body}`;
+        return (
+          mapByBody(hay2, kind, raw.status, gqlErr) ?? {
+            status: 'failed',
+            ok: false,
+            httpStatus: raw.status,
+            detail: gqlErr,
+          }
+        );
+      }
       // An explicit error object inside a 200 body.
       if (o['exceptionClass'] || (typeof o['status'] === 'number' && (o['status'] as number) >= 400)) {
         return (

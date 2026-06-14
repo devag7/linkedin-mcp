@@ -149,6 +149,30 @@ export class VoyagerClient {
   }
 
   /**
+   * DELETE a Voyager resource, returning the raw result (status + parsed body)
+   * without throwing on a non-2xx status. Used by verification cleanup (e.g.
+   * deleting a probe post). Throws only on the auth/Cloudflare redirect loop.
+   */
+  async voyagerDeleteRaw(apiPath: string): Promise<RawPostResult> {
+    const page = await this.engine.getFeedPage();
+    const url = `/voyager/api${apiPath}`;
+    const raw = await this.inPageFetch(page, url, 'DELETE');
+    if (raw.type === 'opaqueredirect' || raw.status === 0 || raw.status === 401) {
+      throw new VoyagerError('AUTH_REQUIRED', `Auth required for DELETE ${apiPath}.`, raw.status || 401);
+    }
+    let json: unknown;
+    const trimmed = raw.body.trimStart();
+    if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+      try {
+        json = JSON.parse(raw.body);
+      } catch {
+        json = undefined;
+      }
+    }
+    return { status: raw.status, ok: raw.ok, body: raw.body, json };
+  }
+
+  /**
    * Query a Voyager GraphQL endpoint by queryId + variables.
    * queryIds rotate — callers should source them from endpoints.ts, never hardcode.
    */
@@ -166,7 +190,7 @@ export class VoyagerClient {
   private async inPageFetch(
     page: Page,
     url: string,
-    method: 'GET' | 'POST',
+    method: 'GET' | 'POST' | 'DELETE',
     body?: unknown,
   ): Promise<RawFetchResult> {
     return page.evaluate(

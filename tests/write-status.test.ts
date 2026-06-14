@@ -44,6 +44,20 @@ describe('classifyWrite — success', () => {
     const o = classifyWrite(raw(200, '{"value":"urn:li:fsd_invitation:abc"}'), 'connect');
     expect(o.status).toBe('ok');
   });
+
+  it('catches a nested GraphQL errors[] array in a 200 (the create_post mutation case)', () => {
+    const body =
+      '{"data":{"data":{"createContentcreationDashShares":null},"errors":[{"path":["createContentcreationDashShares"],"extensions":{"classification":"DataFetchingException","exceptionClass":"com.linkedin.voyager.common.VoyagerUserVisibleException"},"message":"Invalid share"}]}}';
+    const o = classifyWrite(raw(200, body), 'post');
+    expect(o.ok).toBe(false);
+    expect(o.status).toBe('failed');
+    expect(o.detail).toContain('Invalid share');
+  });
+
+  it('does not flag a 200 with an empty errors[] array', () => {
+    const o = classifyWrite(raw(200, '{"data":{"data":{"result":"urn:li:share:1"},"errors":[]}}'), 'post');
+    expect(o.status).toBe('ok');
+  });
 });
 
 describe('classifyWrite — HTTP-status driven', () => {

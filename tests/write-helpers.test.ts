@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { threadIdFrom, trackingId } from '../src/tools/write.js';
+import { threadIdFrom } from '../src/tools/write.js';
 
 describe('threadIdFrom', () => {
   it('extracts the thread id tail from a full conversation urn', () => {
@@ -26,14 +26,8 @@ describe('threadIdFrom', () => {
   it('falls back to the input when there is no thread id', () => {
     expect(threadIdFrom('nonsense')).toBe('nonsense');
   });
-});
 
-describe('trackingId', () => {
-  it('is URL-safe base64url: no +, /, or = padding', () => {
-    for (let i = 0; i < 50; i++) {
-      const id = trackingId();
-      expect(id).not.toMatch(/[+/=]/);
-      expect(id.length).toBeGreaterThan(0);
-    }
+  it('normalizes a full conversation urn ending in )', () => {
+    expect(threadIdFrom('urn:li:msg_conversation:(urn:li:fsd_profile:ACoAAX,2-Zm9v==)')).toBe('2-Zm9v==');
   });
 });

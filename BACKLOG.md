@@ -36,7 +36,7 @@ exact write request shapes).
 | **`get_company_posts`** | ✅ done | DOM fallback (`scrapeCompanyPosts`), consistent with the other company tools. |
 | **`search_companies`** | ✅ done | DOM fallback (prior commit). |
 | **`get_pending_invitations`** (received + sent) | ✅ done | Voyager `invitationsReceived`/`invitationsSent` + tolerant `shapePendingInvitations`; partial-tolerant. **Live-verify pending** (burner logged out). |
-| **Harden the 5 alpha write tools** ⚠️ | ✅ hardened (live-verify pending) | `voyagerPostRaw` + `classifyWrite` → structured statuses (no false-positive success); `send_message` `thread_id` reply path + `?action=create`; invite `trackingId`. Payloads still need a burner live-fire to confirm. |
+| **Harden the 5 alpha write tools** ⚠️ | ✅ hardened; connect + create_post capture-verified | `voyagerPostRaw` + `classifyWrite` → structured statuses (catches HTTP-200 GraphQL `errors[]` + plain-text 200 errors — proven live). **connect** rewired to `voyagerRelationshipsDashMemberRelationships?action=verifyQuotaAndCreateV2` and **create_post** to the `voyagerContentcreationDashShares` GraphQL mutation — both byte-matched to the live SPA via `--writecapture`. react/comment/message still REST-li best-known (couldn't capture: the burner is a fresh account and LinkedIn restricts it from posting, so no feed post / recipient to act on — even the SPA's own post hits the same 200-restriction). |
 | **`get_company_employees`** | ✅ done | DOM fallback (`scrapeCompanyEmployees`) off the company People tab. |
 | **Deepen `health_check` + expose cap/rate-limit status** | ✅ done | Live Voyager `/me` probe + budget snapshot (used/cap/remaining + pending invites); status `healthy`/`degraded`/`logged_out`. |
 

@@ -11,11 +11,20 @@
  *     STRUCTURED status (ok / duplicate / already_connected / restricted /
  *     quota_exhausted / not_allowed / failed) instead of a blind `sent:true`.
  *
- * Payloads are best-known for the current Voyager deploy. Verify on a SECONDARY
- * / throwaway account first (`--writecapture` records the live request shapes).
+ * Payload verification status (via `--writecapture` / `--writeprobe` on a burner,
+ * 2026-06-14):
+ *   - connect_with_person — request shape VERIFIED (matches the live SPA exactly:
+ *     voyagerRelationshipsDashMemberRelationships?action=verifyQuotaAndCreateV2).
+ *   - create_post — payload VERIFIED (byte-identical to the SPA's GraphQL share
+ *     mutation). NB: a brand-new/unverified account is restricted from posting —
+ *     LinkedIn returns an HTTP-200 GraphQL error which the classifier reports as
+ *     `failed` (the SPA itself hits the same restriction on a fresh account).
+ *   - react / comment / message — BEST-KNOWN REST-li; not yet capture-verified
+ *     (capturing them needs a feed post / a recipient, blocked on the burner's
+ *     posting restriction). Treat their success as unconfirmed until captured on
+ *     a warmed account.
  */
 
-import { randomBytes } from 'node:crypto';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import type { VoyagerClient } from '../browser/voyager.js';
@@ -36,13 +45,9 @@ const confirmField = {
     .describe('Must be true to actually execute. Omit/false = refuse (safety).'),
 };
 
-/**
- * A LinkedIn-style tracking id: 16 random bytes as base64url (RFC 4648 — no
- * padding, `+`→`-`, `/`→`_`). The invite endpoint's trackingId field is a
- * URL-safe token; standard base64's `+`/`/` can be rejected.
- */
-export function trackingId(): string {
-  return randomBytes(16).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+/** Normalize a profile id (bare `ACoAA…` or a full urn) to a fsd_profile urn. */
+function toProfileUrn(id: string): string {
+  return id.startsWith('urn:li:fsd_profile:') ? id : `urn:li:fsd_profile:${id}`;
 }
 
 /**
@@ -105,15 +110,14 @@ export function registerWriteTools(
     async ({ profile_id, message, confirm }) =>
       run(logger, 'connect_with_person', async () => {
         if (!confirm) return ok({ refused: true, reason: CONFIRM_HINT }, 'engine');
+        // Verified-live payload (--writecapture 2026-06-14): the relationships-dash
+        // invite action, invitee addressed by fsd_profile urn under inviteeUnion.
         const body: Record<string, unknown> = {
-          trackingId: trackingId(),
-          invitee: {
-            'com.linkedin.voyager.growth.invitation.InviteeProfile': { profileId: profile_id },
-          },
+          invitee: { inviteeUnion: { memberProfile: toProfileUrn(profile_id) } },
         };
-        if (message) body['message'] = message.slice(0, 300);
+        if (message) body['customMessage'] = message.slice(0, 300);
         const raw = await guard.run(ACTIONS.connect, () =>
-          voyager.voyagerPostRaw(ep.normInvitations(), body),
+          voyager.voyagerPostRaw(ep.memberRelationshipsInvite(), body),
         );
         return ok(outcomePayload('connect_with_person', classifyWrite(raw, 'connect')));
       }),
@@ -187,17 +191,24 @@ export function registerWriteTools(
     async ({ text, visibility, confirm }) =>
       run(logger, 'create_post', async () => {
         if (!confirm) return ok({ refused: true, reason: CONFIRM_HINT }, 'engine');
+        // Verified-live GraphQL share mutation (--writecapture 2026-06-14). The
+        // queryId must appear BOTH in the path and the body.
+        const queryId = ep.KNOWN_QUERY_IDS.createShare;
         const body = {
-          visibleToConnectionsOnly: visibility === 'CONNECTIONS',
-          commentaryV2: { text, attributes: [] },
-          origin: 'MEMBER_SHARE',
-          allowedCommentersScope: 'ALL',
-          postState: 'PUBLISHED',
-          mediaCategory: 'NONE',
-          visibility: { 'com.linkedin.ugc.MemberNetworkVisibility': visibility },
+          variables: {
+            post: {
+              allowedCommentersScope: 'ALL',
+              intendedShareLifeCycleState: 'PUBLISHED',
+              origin: 'FEED',
+              visibilityDataUnion: { visibilityType: visibility === 'CONNECTIONS' ? 'CONNECTIONS_ONLY' : 'ANYONE' },
+              commentary: { text, attributesV2: [] },
+            },
+          },
+          queryId,
+          includeWebMetadata: true,
         };
         const raw = await guard.run(ACTIONS.comment, () =>
-          voyager.voyagerPostRaw(ep.normShares(), body),
+          voyager.voyagerPostRaw(ep.createShareMutation(queryId), body),
         );
         return ok(outcomePayload('create_post', classifyWrite(raw, 'post')));
       }),

@@ -17,6 +17,7 @@ import {
   invitationsReceived,
   invitationsSent,
   normInvitations,
+  memberRelationshipsInvite,
   messagingCreate,
   messagingEventCreate,
   normShares,
@@ -159,8 +160,14 @@ describe('endpoints — messaging + invitations builders', () => {
 });
 
 describe('endpoints — write builders', () => {
-  it('normInvitations() is the invite POST path', () => {
+  it('normInvitations() is the legacy (deprecated) invite POST path', () => {
     expect(normInvitations()).toBe('/growth/normInvitations');
+  });
+
+  it('memberRelationshipsInvite() is the verified-live invite action', () => {
+    const p = memberRelationshipsInvite();
+    expect(p.startsWith('/voyagerRelationshipsDashMemberRelationships?action=verifyQuotaAndCreateV2')).toBe(true);
+    expect(p).toContain('decorationId=com.linkedin.voyager.dash.deco.relationships.InvitationCreationResultWithInvitee-2');
   });
 
   it('messagingCreate() carries the REQUIRED ?action=create (the new-thread fix)', () => {

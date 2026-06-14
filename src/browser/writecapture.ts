@@ -81,6 +81,16 @@ export async function runWriteCapture(config: EnvConfig, logger: Logger): Promis
         /* ignore */
       }
       observed.push({ method: req.method(), path: p, status: res.status(), queryId });
+      // Diagnostic: when the SPA's OWN share mutation is allowed through, log its
+      // response — does the live SPA itself succeed at posting on this account?
+      if (req.method() === 'POST' && /voyagerContentcreationDashShares\./.test(p)) {
+        res
+          .text()
+          .then((b) =>
+            process.stderr.write(`\n  📬 SPA SHARE-MUTATION RESPONSE: HTTP ${res.status()} :: ${b.slice(0, 400)}\n`),
+          )
+          .catch(() => {});
+      }
     });
 
     let currentLabel = 'unknown';
@@ -93,6 +103,13 @@ export async function runWriteCapture(config: EnvConfig, logger: Logger): Promis
       const req = route.request();
       const p = shortPath(req.url());
       if (req.method() === 'POST') {
+        // Diagnostic mode: let the SPA's OWN share mutation actually send, to see
+        // whether posting works at all on this account (replay-gap vs restriction).
+        if (process.env.CAPTURE_LET_POST === '1' && p && /voyagerContentcreationDashShares\./.test(p)) {
+          process.stderr.write(`\n  ➡️  [${currentLabel}] LETTING SHARE MUTATION THROUGH (diagnostic) ${p}\n`);
+          await route.continue();
+          return;
+        }
         if (p && looksLikeWrite(req.method(), p)) {
           captured.push({ label: currentLabel, method: req.method(), path: p, postData: req.postData() ?? undefined });
           process.stderr.write(`\n  🎯 [${currentLabel}] CAPTURED POST ${p}\n`);
@@ -176,23 +193,60 @@ export async function runWriteCapture(config: EnvConfig, logger: Logger): Promis
   }
 }
 
-/** Click "Start a post", type, and hit Post — the POST is intercepted+aborted. */
+/** Open the composer, type, and hit Post — the POST is intercepted+aborted. */
 async function capturePost(page: Page, logger: Logger): Promise<void> {
   try {
     await page.goto(`${ORIGIN}/feed/`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    await page.waitForTimeout(4000);
+
+    // The composer trigger varies (button vs div[role=button], class/text rotate).
+    // Try a battery of selectors; dump the share-box region if none match.
+    const triggerSelectors = [
+      'button.share-box-feed-entry__trigger',
+      '[class*="share-box-feed-entry__trigger"]',
+      'button[aria-label*="Start a post" i]',
+      '[aria-label*="Start a post" i]',
+      '[aria-label*="Create a post" i]',
+      'button:has-text("Start a post")',
+      '[class*="share-box"] button',
+    ];
+    let opened = false;
+    for (const sel of triggerSelectors) {
+      const loc = page.locator(sel).first();
+      if (await loc.count().catch(() => 0)) {
+        try {
+          await loc.click({ timeout: 4000 });
+          opened = true;
+          process.stderr.write(`  (composer opened via: ${sel})\n`);
+          break;
+        } catch {
+          /* try next */
+        }
+      }
+    }
+    if (!opened) {
+      const html = await page
+        .evaluate(() => {
+          const el =
+            document.querySelector('[class*="share-box"]') ??
+            document.querySelector('main') ??
+            document.body;
+          return (el?.outerHTML ?? '').slice(0, 1800);
+        })
+        .catch(() => '');
+      process.stderr.write(`  (capturePost: no composer trigger matched; share-box region:)\n  ${html}\n`);
+      return;
+    }
+
     await page.waitForTimeout(2500);
-    // The composer trigger button on the feed.
-    const trigger = page
-      .locator('button:has-text("Start a post"), button.share-box-feed-entry__trigger')
+    const editor = page
+      .locator('div.ql-editor[contenteditable="true"], [contenteditable="true"][role="textbox"], [data-placeholder][contenteditable="true"]')
       .first();
-    await trigger.click({ timeout: 10000 });
-    await page.waitForTimeout(2000);
-    const editor = page.locator('div.ql-editor[contenteditable="true"], div[role="textbox"]').first();
     await editor.click({ timeout: 8000 });
     await editor.type('writecapture probe — DO NOT SEND', { delay: 10 });
-    await page.waitForTimeout(1500);
+    await page.waitForTimeout(1800);
     const postBtn = page
-      .locator('button.share-actions__primary-action, button:has-text("Post")')
+      .locator('button.share-actions__primary-action, [class*="share-actions__primary"], button[aria-label="Post"], button:has-text("Post")')
       .last();
     await postBtn.click({ timeout: 8000 });
     await page.waitForTimeout(2500);
@@ -202,13 +256,31 @@ async function capturePost(page: Page, logger: Logger): Promise<void> {
   }
 }
 
-/** Click the first feed post's Like button — reaction POST intercepted. */
+/** Click a feed post's Like button — the reaction POST is intercepted. */
 async function captureReaction(page: Page, logger: Logger): Promise<void> {
   try {
     await page.goto(`${ORIGIN}/feed/`, { waitUntil: 'domcontentloaded', timeout: 30000 });
-    await page.waitForTimeout(3000);
-    const like = page.locator('button[aria-label*="React Like" i], button:has-text("Like")').first();
-    await like.click({ timeout: 10000 });
+    await page.waitForSelector('div.feed-shared-update-v2, [data-urn*="urn:li:activity"]', { timeout: 15000 }).catch(() => {});
+    await page.waitForTimeout(2500);
+    const likeSelectors = [
+      'button[aria-label*="Like" i][aria-label*="post" i]',
+      'button[aria-label="Like"]',
+      'button[aria-label*="React Like" i]',
+      'button.react-button__trigger',
+      '[class*="social-actions"] button:has-text("Like")',
+    ];
+    for (const sel of likeSelectors) {
+      const loc = page.locator(sel).first();
+      if (await loc.count().catch(() => 0)) {
+        try {
+          await loc.click({ timeout: 4000 });
+          process.stderr.write(`  (like clicked via: ${sel})\n`);
+          break;
+        } catch {
+          /* next */
+        }
+      }
+    }
     await page.waitForTimeout(2000);
   } catch (e) {
     logger.warn('captureReaction failed', { error: e instanceof Error ? e.message : String(e) });
@@ -216,20 +288,38 @@ async function captureReaction(page: Page, logger: Logger): Promise<void> {
   }
 }
 
-/** Open the first post's comment box, type, submit — comment POST intercepted. */
+/** Open a post's comment box, type, submit — the comment POST is intercepted. */
 async function captureComment(page: Page, logger: Logger): Promise<void> {
   try {
     await page.goto(`${ORIGIN}/feed/`, { waitUntil: 'domcontentloaded', timeout: 30000 });
-    await page.waitForTimeout(3000);
+    await page.waitForSelector('div.feed-shared-update-v2, [data-urn*="urn:li:activity"]', { timeout: 15000 }).catch(() => {});
+    await page.waitForTimeout(2500);
     const commentBtn = page.locator('button[aria-label*="Comment" i]').first();
-    await commentBtn.click({ timeout: 10000 });
-    await page.waitForTimeout(1500);
-    const box = page.locator('div.ql-editor[contenteditable="true"], div[role="textbox"]').first();
+    await commentBtn.click({ timeout: 8000 });
+    await page.waitForTimeout(1800);
+    const box = page.locator('div.ql-editor[contenteditable="true"], [contenteditable="true"][role="textbox"]').first();
     await box.click({ timeout: 8000 });
-    await box.type('writecapture probe', { delay: 10 });
-    await page.waitForTimeout(1000);
-    const submit = page.locator('button.comments-comment-box__submit-button, button:has-text("Post")').last();
-    await submit.click({ timeout: 8000 });
+    await box.type('writecapture probe', { delay: 12 });
+    await page.waitForTimeout(1500);
+    // Submit button is enabled+visible only after text; try several.
+    const submitSelectors = [
+      'button.comments-comment-box__submit-button:not([disabled])',
+      '[class*="comments-comment-box__submit-button"]:not([disabled])',
+      'button[class*="comments-comment-box"]:has-text("Post")',
+      'form button:has-text("Post")',
+    ];
+    for (const sel of submitSelectors) {
+      const loc = page.locator(sel).last();
+      if (await loc.count().catch(() => 0)) {
+        try {
+          await loc.click({ timeout: 4000 });
+          process.stderr.write(`  (comment submitted via: ${sel})\n`);
+          break;
+        } catch {
+          /* next */
+        }
+      }
+    }
     await page.waitForTimeout(2000);
   } catch (e) {
     logger.warn('captureComment failed', { error: e instanceof Error ? e.message : String(e) });

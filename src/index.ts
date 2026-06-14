@@ -25,19 +25,20 @@ import {
 import { interactiveBrowserLogin, runSpike } from './browser/login.js';
 import { runCapture } from './browser/capture.js';
 import { runWriteCapture } from './browser/writecapture.js';
+import { runWriteProbe } from './browser/writeprobe.js';
 import { loadConfig } from './config/env.js';
 
 /**
  * Parse command-line arguments.
  */
 function parseArgs(): ServerConfig & {
-  action?: 'login' | 'logout' | 'status' | 'spike' | 'capture' | 'writecapture';
+  action?: 'login' | 'logout' | 'status' | 'spike' | 'capture' | 'writecapture' | 'writeprobe';
 } {
   const args = process.argv.slice(2);
   let transport: TransportType = 'stdio';
   let port = 3000;
   let logLevel: 'debug' | 'info' | 'warn' | 'error' = 'info';
-  let action: 'login' | 'logout' | 'status' | 'spike' | 'capture' | 'writecapture' | undefined;
+  let action: 'login' | 'logout' | 'status' | 'spike' | 'capture' | 'writecapture' | 'writeprobe' | undefined;
 
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
@@ -66,6 +67,10 @@ function parseArgs(): ServerConfig & {
 
       case '--writecapture':
         action = 'writecapture';
+        break;
+
+      case '--writeprobe':
+        action = 'writeprobe';
         break;
 
       case '--transport':
@@ -209,6 +214,11 @@ async function main(): Promise<void> {
 
   if (config.action === 'writecapture') {
     await runWriteCapture(loadConfig(), logger);
+    process.exit(0);
+  }
+
+  if (config.action === 'writeprobe') {
+    await runWriteProbe(loadConfig(), logger);
     process.exit(0);
   }
 

@@ -50,6 +50,8 @@ export const KNOWN_QUERY_IDS = {
   company: 'voyagerOrganizationDashCompanies.148b1aebfadd0a455f32806df656c3c1',
   /** Company page updates / posts (DASH). Captured 2026-06-13. */
   companyPosts: 'voyagerFeedDashOrganizationalPageUpdates.827e11d165078dd7a5afaf1cba734121',
+  /** Create-share mutation (the post composer). Verified live 2026-06-14 via --writecapture. */
+  createShare: 'voyagerContentcreationDashShares.279996efa5064c01775d5aff003d9377',
 } as const;
 
 /**
@@ -434,9 +436,25 @@ export function invitationsSent(start = 0, count = 50): string {
  * Voyager — payloads may need a live tune on a throwaway account. All write
  * tools are gated behind an explicit confirm flag + the daily-cap safety layer. */
 
-/** Send a connection invitation. POST. */
+/**
+ * @deprecated The legacy invite path. Verified STALE on the current deploy —
+ * use {@link memberRelationshipsInvite}. Kept only for reference.
+ */
 export function normInvitations(): string {
   return '/growth/normInvitations';
+}
+/**
+ * Send a connection invitation (current Voyager relationships-dash action).
+ * VERIFIED LIVE 2026-06-14 via `--writecapture`: this is the exact call the web
+ * SPA's Connect button fires. Body shape:
+ *   {"invitee":{"inviteeUnion":{"memberProfile":"urn:li:fsd_profile:<id>"}}}
+ * (add "customMessage" for an invite note).
+ */
+export function memberRelationshipsInvite(): string {
+  return (
+    '/voyagerRelationshipsDashMemberRelationships?action=verifyQuotaAndCreateV2' +
+    '&decorationId=com.linkedin.voyager.dash.deco.relationships.InvitationCreationResultWithInvitee-2'
+  );
 }
 /**
  * Create a NEW conversation (first message to a member). POST.
@@ -457,9 +475,23 @@ export function messagingCreate(): string {
 export function messagingEventCreate(conversationId: string): string {
   return `/messaging/conversations/${encodeURIComponent(conversationId)}/events?action=create`;
 }
-/** Create a share/post. POST. */
+/**
+ * @deprecated Legacy REST-li share path — verified STALE (HTTP 400) on the
+ * current deploy. Use {@link createShareMutation}.
+ */
 export function normShares(): string {
   return '/contentcreation/normShares';
+}
+/**
+ * Create a post via the GraphQL share mutation. POST.
+ * VERIFIED LIVE 2026-06-14 via `--writecapture` — the exact call the composer's
+ * Post button fires. `queryId` ROTATES; the body must repeat it. Body shape:
+ *   {"variables":{"post":{allowedCommentersScope,intendedShareLifeCycleState,
+ *     origin,visibilityDataUnion:{visibilityType},commentary:{text,attributesV2}}},
+ *    "queryId":<same>,"includeWebMetadata":true}
+ */
+export function createShareMutation(queryId: string = KNOWN_QUERY_IDS.createShare): string {
+  return `/graphql?action=execute&queryId=${encodeURIComponent(queryId)}`;
 }
 /** Delete a share/post by its urn (cleanup after a verification post). POST/DELETE. */
 export function deleteShare(shareUrn: string): string {

@@ -29,11 +29,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `voyagerPostRaw` keeps the response body, and every write is run through a
   classifier that returns a structured status — `ok` / `duplicate` /
   `already_connected` / `restricted` / `quota_exhausted` / `not_allowed` /
-  `failed` — instead of a blind `{ sent: true }`.
+  `failed` — instead of a blind `{ sent: true }`. The classifier also catches
+  the two sneaky live cases proven on the burner: an **HTTP-200 body with a
+  nested GraphQL `errors[]`** (how the share mutation reports failure) and a
+  **plain-text error in a 200**.
+- **`connect_with_person` rewired to the verified-live endpoint**: the old
+  `/growth/normInvitations` path was dead. `--writecapture` recovered the exact
+  call the SPA fires — `voyagerRelationshipsDashMemberRelationships?action=
+  verifyQuotaAndCreateV2` with `{invitee:{inviteeUnion:{memberProfile:<urn>}}}`.
+- **`create_post` rewired to the verified-live GraphQL share mutation**
+  (`voyagerContentcreationDashShares`); the old `normShares` REST-li 400'd. The
+  payload is byte-identical to the SPA's (confirmed by letting the SPA's own
+  request through — it returns the same result). NB: brand-new/unverified
+  accounts are posting-restricted; both our call and the SPA's get an HTTP-200
+  GraphQL restriction error, which the classifier now reports as `failed`.
 - **`send_message` no longer always spawns a new thread** (#483/#434): pass
   `thread_id` to reply into an existing conversation (the events sub-collection);
   the new-thread path now sends the required `?action=create` (was missing).
-- Connection invites now send a real `trackingId`.
+- `react` / `comment` / `send_message` payloads remain BEST-KNOWN — capturing
+  them needs a feed post / a recipient, blocked by the burner's posting
+  restriction; verify on a warmed account.
+
+### Added — tooling
+- `--writeprobe`: live-fires create_post (+ react/comment on its own post) and
+  prints the classified status, with self-cleanup — the burner-side verification
+  loop for the writes.
 
 ### Added — tooling
 - `--writecapture`: drives the authenticated burner UI to the moment each write
