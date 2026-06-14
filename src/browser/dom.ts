@@ -248,3 +248,128 @@ export async function scrapeCompany(
     await page.close().catch(() => {});
   }
 }
+
+export interface ScrapedCompanyPost {
+  text?: string;
+  meta?: string;
+}
+
+/**
+ * Scrape a company's recent posts from its Posts tab (server-rendered, no clean
+ * Voyager XHR for the org page feed). Returns each post's visible text plus a
+ * short meta line (relative time / reactions). Scrolls once to load more.
+ */
+export async function scrapeCompanyPosts(
+  engine: BrowserEngine,
+  universalName: string,
+  count: number,
+  logger: Logger,
+): Promise<ScrapedCompanyPost[]> {
+  const url = `${ORIGIN}/company/${encodeURIComponent(universalName)}/posts/`;
+  const page = await engine.newPage();
+  try {
+    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    await page.waitForSelector('div.feed-shared-update-v2, [data-urn*="activity"]', { timeout: 15000 }).catch(() => {});
+    await page.waitForTimeout(1500);
+    await page.mouse.wheel(0, 3000).catch(() => {});
+    await page.waitForTimeout(1500);
+
+    const posts = await page.evaluate((max: number) => {
+      const clean = (s: string | null | undefined): string | undefined =>
+        (s ?? '').replace(/\s+/g, ' ').trim() || undefined;
+      const cards = Array.from(
+        document.querySelectorAll<HTMLElement>('div.feed-shared-update-v2, [data-urn*="urn:li:activity"]'),
+      );
+      const seen = new Set<string>();
+      const out: Array<Record<string, string | undefined>> = [];
+      for (const card of cards) {
+        const textEl = card.querySelector<HTMLElement>(
+          '.feed-shared-update-v2__description, .update-components-text, [class*="commentary"]',
+        );
+        const text = clean(textEl?.textContent);
+        if (!text || seen.has(text)) continue;
+        seen.add(text);
+        const meta = clean(
+          card.querySelector<HTMLElement>('.update-components-actor__sub-description, time, [class*="sub-description"]')
+            ?.textContent,
+        );
+        out.push({ text, meta });
+        if (out.length >= max) break;
+      }
+      return out;
+    }, count);
+
+    logger.debug('scrapeCompanyPosts', { universalName, found: posts.length });
+    return posts as ScrapedCompanyPost[];
+  } finally {
+    await page.close().catch(() => {});
+  }
+}
+
+export interface ScrapedEmployee {
+  name?: string;
+  headline?: string;
+  publicIdentifier?: string;
+  profileUrl?: string;
+}
+
+/**
+ * Scrape a company's People tab — the employees LinkedIn surfaces for the org.
+ * Returns name + headline + public identifier (feed the slug to get_profile).
+ * SSR like people search; tolerant anchor-on-`/in/` extraction.
+ */
+export async function scrapeCompanyEmployees(
+  engine: BrowserEngine,
+  universalName: string,
+  count: number,
+  logger: Logger,
+): Promise<ScrapedEmployee[]> {
+  const url = `${ORIGIN}/company/${encodeURIComponent(universalName)}/people/`;
+  const page = await engine.newPage();
+  try {
+    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    await page.waitForSelector('a[href*="/in/"]', { timeout: 15000 }).catch(() => {});
+    await page.waitForTimeout(1500);
+    await page.mouse.wheel(0, 2500).catch(() => {});
+    await page.waitForTimeout(1500);
+
+    const employees = await page.evaluate((max: number) => {
+      const clean = (s: string | null | undefined): string | undefined =>
+        (s ?? '').replace(/\s+/g, ' ').trim() || undefined;
+      const anchors = Array.from(document.querySelectorAll<HTMLAnchorElement>('a[href*="/in/"]'));
+      const seen = new Set<string>();
+      const out: Array<Record<string, string | undefined>> = [];
+      for (const a of anchors) {
+        const href = a.href.split('?')[0] ?? a.href;
+        const m = href.match(/\/in\/([^/]+)\/?$/);
+        if (!m || !m[1]) continue;
+        const slug = decodeURIComponent(m[1]);
+        if (seen.has(slug)) continue;
+        // Mark seen at extraction — before any name/card filtering — so a later
+        // anchor with the same slug can't slip past the dedup if this one is dropped.
+        seen.add(slug);
+        const card =
+          a.closest('li') ?? a.closest('[class*="org-people-profile-card"]') ?? a.parentElement?.parentElement ?? undefined;
+        if (!card) continue;
+        let name =
+          clean(card.querySelector('[class*="profile-card__title"], [class*="entity-result__title"]')?.textContent) ??
+          clean(a.querySelector('span[aria-hidden="true"]')?.textContent) ??
+          clean(a.textContent);
+        if (name) name = name.split(/\s*[•·]\s*/)[0]?.trim();
+        if (!name || /^(view|connect|message|follow|status is)/i.test(name)) continue;
+        const headline = clean(
+          card.querySelector('[class*="profile-card__subtitle"], [class*="entity-result__primary-subtitle"], [class*="subtitle"]')
+            ?.textContent,
+        );
+        out.push({ name, headline, publicIdentifier: slug, profileUrl: href });
+        if (out.length >= max) break;
+      }
+      return out;
+    }, count);
+
+    logger.debug('scrapeCompanyEmployees', { universalName, found: employees.length });
+    return employees as ScrapedEmployee[];
+  } finally {
+    await page.close().catch(() => {});
+  }
+}

@@ -11,6 +11,9 @@ export default defineConfig({
       include: ['src/**/*.ts'],
       exclude: ['src/index.ts'],
     },
-    testTimeout: 10000,
+    // Some legacy suites use per-test `await import(...)`; the FIRST one pays the
+    // cold esbuild-transform cost (10–16s on a loaded machine) and tripped the
+    // old 10s ceiling. Raised so cold imports don't flake. Logic is unaffected.
+    testTimeout: 30000,
   },
 });

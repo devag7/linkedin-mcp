@@ -5,6 +5,43 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - 2026-06-14
+
+22 tools. Reads are live-verified; the 5 write tools are hardened and gated.
+
+### Added — tools
+- `get_company_posts`, `get_company_employees` (DOM fallback, like the other
+  company tools).
+- `get_pending_invitations` — received + sent, partial-tolerant (returns
+  whichever queue answers and reports per-direction errors).
+
+### Changed — reads
+- `get_profile` now also returns **skills, certifications, and languages**
+  (sections lazy-loaded in parallel via profile components). No 30-item
+  truncation — every walked entry is collected (avoids competitor #360).
+- `health_check` is now a **deep** check: cookie state **plus a live Voyager
+  probe** (confirms the API actually answers, not just that a cookie exists)
+  **plus** today's safety-budget headroom (per-action used/cap/remaining +
+  pending invites). Status is `healthy` / `degraded` / `logged_out`.
+
+### Changed — writes (hardening; ⚠️ alpha, verify on a throwaway account)
+- **No more false-positive success** (#365/#448): a new non-throwing
+  `voyagerPostRaw` keeps the response body, and every write is run through a
+  classifier that returns a structured status — `ok` / `duplicate` /
+  `already_connected` / `restricted` / `quota_exhausted` / `not_allowed` /
+  `failed` — instead of a blind `{ sent: true }`.
+- **`send_message` no longer always spawns a new thread** (#483/#434): pass
+  `thread_id` to reply into an existing conversation (the events sub-collection);
+  the new-thread path now sends the required `?action=create` (was missing).
+- Connection invites now send a real `trackingId`.
+
+### Added — tooling
+- `--writecapture`: drives the authenticated burner UI to the moment each write
+  fires, intercepts the outgoing Voyager POST, and `abort()`s it — recovering the
+  exact path + payload the live SPA sends with **zero side effects** (no real
+  post/invite/message/reaction/comment). This is how write payloads get verified
+  rather than guessed.
+
 ## [2.0.0-alpha.1] - 2026-06-13
 
 Complete rewrite of the data layer. v1 returned **zero data** in practice:

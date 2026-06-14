@@ -23,16 +23,22 @@ Data-source tags: `voyager-inpage` | `dom-fallback` | `official-oauth`. ⚠️ =
 
 ## P0 — table stakes + cheap wins (plumbing mostly exists)
 
-| Capability | Source | Notes |
+**Status: P0 cleared (2026-06-14).** All P0 rows landed in v2.0.0. Writes are
+hardened + gated but their live payloads still need a burner re-verify (the
+2026-06-14 read-spike, run with pacing disabled on a brand-new account, tripped
+a session logout — re-login the burner and run `--writecapture` to lock the
+exact write request shapes).
+
+| Capability | Status | Notes |
 |---|---|---|
-| **Expand `get_profile` sections**: skills, certifications, languages, honors, projects, contact_info, recommendations | `voyager-inpage` | `profileSkillsGraphql` exists; `ProfileSection` type already allows `skills`. Wire into `buildProfile`. **Do NOT truncate at 30** (their #360). |
-| **`get_job_details`** | `voyager-inpage` | `jobPostingGraphql` already defined — pure wiring. Highest-demand missing read. |
-| **`get_company_posts`** | `voyager-inpage` | `companyPosts` queryId already in `KNOWN_QUERY_IDS`. |
-| **`search_companies`** | `voyager-inpage` | `COMPANIES` vertical already supported by `searchClusters`. |
-| **`get_pending_invitations`** (received + sent) | `voyager-inpage` | `invitationsReceived`/`invitationsSent` endpoints already exist (their #446/#390/PR #447). |
-| **Harden the 5 alpha write tools** ⚠️ | `voyager-inpage` | See bug list — parse Voyager response for real status, add `thread_id` reply path to `send_message`, structured statuses. This is the single highest-leverage P0. |
-| **`get_company_employees`** | `voyager-inpage` | `searchClusters` PEOPLE + currentCompany filter — prospecting core, plumbing exists. |
-| **Deepen `health_check` + expose cap/rate-limit status** | `voyager-inpage` | Current `health_check` admits "does not guarantee Voyager access". Add a live Voyager probe + surface daily-cap/budget state (we already track it in `src/safety/budgets.ts`). Competitors have `get_rate_limit_status`/`get_auth_status`. |
+| **Expand `get_profile` sections**: skills, certifications, languages, honors, projects, contact_info, recommendations | ✅ skills/certs/languages | `buildProfile` fetches sections in parallel, no 30-cap (#360 avoided). honors/projects/contact_info/recommendations still open (P1 depth). |
+| **`get_job_details`** | ✅ done | `jobPostingGraphql` + deep-walk shaper (prior commit). |
+| **`get_company_posts`** | ✅ done | DOM fallback (`scrapeCompanyPosts`), consistent with the other company tools. |
+| **`search_companies`** | ✅ done | DOM fallback (prior commit). |
+| **`get_pending_invitations`** (received + sent) | ✅ done | Voyager `invitationsReceived`/`invitationsSent` + tolerant `shapePendingInvitations`; partial-tolerant. **Live-verify pending** (burner logged out). |
+| **Harden the 5 alpha write tools** ⚠️ | ✅ hardened (live-verify pending) | `voyagerPostRaw` + `classifyWrite` → structured statuses (no false-positive success); `send_message` `thread_id` reply path + `?action=create`; invite `trackingId`. Payloads still need a burner live-fire to confirm. |
+| **`get_company_employees`** | ✅ done | DOM fallback (`scrapeCompanyEmployees`) off the company People tab. |
+| **Deepen `health_check` + expose cap/rate-limit status** | ✅ done | Live Voyager `/me` probe + budget snapshot (used/cap/remaining + pending invites); status `healthy`/`degraded`/`logged_out`. |
 
 ## P1 — differentiators / outreach + content core
 

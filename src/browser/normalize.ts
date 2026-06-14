@@ -285,6 +285,73 @@ export function collectComponentEntries(resp: NormalizedResponse): ComponentEntr
   return out;
 }
 
+export interface ShapedInvitation {
+  fromName?: string;
+  fromHeadline?: string;
+  sentAt?: number;
+  message?: string;
+  invitationUrn?: string;
+  sharedSecret?: string;
+}
+
+/**
+ * Shape a received/sent invitations response. Voyager nests the inviter inside
+ * `fromMember`/`invitation` with rotating shapes, so we deep-walk and pull every
+ * invitation-like node tolerantly (name + headline + the urn/sharedSecret needed
+ * to accept/withdraw later).
+ */
+export function shapePendingInvitations(resp: NormalizedResponse): ShapedInvitation[] {
+  const out: ShapedInvitation[] = [];
+  const seen = new Set<string>();
+
+  const visit = (node: unknown): void => {
+    if (!node || typeof node !== 'object') return;
+    if (Array.isArray(node)) {
+      for (const v of node) visit(v);
+      return;
+    }
+    const o = node as Record<string, unknown>;
+    const t = typeof o['$type'] === 'string' ? (o['$type'] as string) : '';
+    const looksInvite =
+      t.endsWith('.Invitation') ||
+      ('invitationType' in o && ('fromMember' in o || 'invitationUrn' in o)) ||
+      ('sharedSecret' in o && 'entityUrn' in o);
+    if (looksInvite) {
+      const from = (o['fromMember'] ?? o['fromMemberProfile'] ?? o['inviter']) as
+        | Record<string, unknown>
+        | undefined;
+      const name =
+        asText(from?.['firstName']) && asText(from?.['lastName'])
+          ? `${asText(from?.['firstName'])} ${asText(from?.['lastName'])}`
+          : asText(from?.['title']) ?? asText(o['title']);
+      const urn =
+        (typeof o['entityUrn'] === 'string' ? (o['entityUrn'] as string) : undefined) ??
+        (typeof o['invitationUrn'] === 'string' ? (o['invitationUrn'] as string) : undefined);
+      const key = urn ?? `${name}|${asText(o['sentTime'])}`;
+      if ((name || urn) && !seen.has(key)) {
+        seen.add(key);
+        out.push({
+          fromName: name?.trim(),
+          fromHeadline: asText(from?.['headline']) ?? asText(from?.['occupation']),
+          sentAt:
+            typeof o['sentTime'] === 'number'
+              ? (o['sentTime'] as number)
+              : typeof o['sentAt'] === 'number'
+                ? (o['sentAt'] as number)
+                : undefined,
+          message: asText(o['message']),
+          invitationUrn: urn,
+          sharedSecret: typeof o['sharedSecret'] === 'string' ? (o['sharedSecret'] as string) : undefined,
+        });
+      }
+    }
+    for (const v of Object.values(o)) visit(v);
+  };
+  visit(resp.data);
+  visit(resp.included);
+  return out;
+}
+
 export interface ShapedProfile {
   publicIdentifier?: string;
   firstName?: string;

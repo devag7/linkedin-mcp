@@ -16,10 +16,17 @@ import {
   shapeJobDetails,
   shapeInbox,
   shapeConversationMessages,
+  shapePendingInvitations,
   ownFsdId,
   type NormalizedResponse,
 } from '../browser/normalize.js';
-import { scrapePeopleSearch, scrapeCompany, scrapeCompanySearch } from '../browser/dom.js';
+import {
+  scrapePeopleSearch,
+  scrapeCompany,
+  scrapeCompanySearch,
+  scrapeCompanyPosts,
+  scrapeCompanyEmployees,
+} from '../browser/dom.js';
 import * as ep from '../browser/endpoints.js';
 import { ok, run } from './result.js';
 
@@ -126,6 +133,76 @@ export function registerDiscoveryTools(
           scrapeCompany(engine, universal_name, logger),
         );
         return ok(company, 'dom');
+      }),
+  );
+
+  server.tool(
+    'get_company_posts',
+    "Get a company's recent posts by its LinkedIn URL slug (e.g. \"google\"). Returns post text + a short meta line.",
+    {
+      universal_name: z.string().min(1).describe('Company URL slug, e.g. "google"'),
+      count: z.number().int().min(1).max(25).default(10).describe('Posts to return (default 10)'),
+    },
+    async ({ universal_name, count }) =>
+      run(logger, 'get_company_posts', async () => {
+        const posts = await guard.run(ACTIONS.readGeneric, () =>
+          scrapeCompanyPosts(engine, universal_name, count, logger),
+        );
+        return ok(posts, 'dom');
+      }),
+  );
+
+  server.tool(
+    'get_company_employees',
+    'List employees LinkedIn surfaces for a company (by URL slug). Returns name, headline, and public identifier (feed the slug to get_profile). Prospecting core.',
+    {
+      universal_name: z.string().min(1).describe('Company URL slug, e.g. "anthropicresearch"'),
+      count: z.number().int().min(1).max(25).default(10).describe('Employees to return (default 10)'),
+    },
+    async ({ universal_name, count }) =>
+      run(logger, 'get_company_employees', async () => {
+        const people = await guard.run(ACTIONS.search, () =>
+          scrapeCompanyEmployees(engine, universal_name, count, logger),
+        );
+        return ok(people, 'dom');
+      }),
+  );
+
+  server.tool(
+    'get_pending_invitations',
+    'List your pending connection invitations — received (inbound, with the urn/sharedSecret to accept later) and sent (outbound). Read-only.',
+    {
+      direction: z
+        .enum(['received', 'sent', 'both'])
+        .default('both')
+        .describe('Which queue to return (default both)'),
+      count: z.number().int().min(1).max(100).default(50).describe('Max per direction (default 50)'),
+    },
+    async ({ direction, count }) =>
+      run(logger, 'get_pending_invitations', async () => {
+        const result: { received?: unknown[]; sent?: unknown[]; errors?: Record<string, string> } = {};
+        const errors: Record<string, string> = {};
+        await guard.run(ACTIONS.readGeneric, async () => {
+          if (direction === 'received' || direction === 'both') {
+            try {
+              const raw = await voyager.voyagerGet<NormalizedResponse>(ep.invitationsReceived(0, count));
+              result.received = shapePendingInvitations(raw);
+            } catch (e) {
+              errors.received = e instanceof Error ? e.message : String(e);
+            }
+          }
+          if (direction === 'sent' || direction === 'both') {
+            try {
+              const raw = await voyager.voyagerGet<NormalizedResponse>(ep.invitationsSent(0, count));
+              result.sent = shapePendingInvitations(raw);
+            } catch (e) {
+              errors.sent = e instanceof Error ? e.message : String(e);
+            }
+          }
+        });
+        const partial = Object.keys(errors).length > 0;
+        if (partial) result.errors = errors;
+        return ok(result, 'voyager', partial);
       }),
   );
 

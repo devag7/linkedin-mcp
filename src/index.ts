@@ -24,19 +24,20 @@ import {
 } from './auth/store.js';
 import { interactiveBrowserLogin, runSpike } from './browser/login.js';
 import { runCapture } from './browser/capture.js';
+import { runWriteCapture } from './browser/writecapture.js';
 import { loadConfig } from './config/env.js';
 
 /**
  * Parse command-line arguments.
  */
 function parseArgs(): ServerConfig & {
-  action?: 'login' | 'logout' | 'status' | 'spike' | 'capture';
+  action?: 'login' | 'logout' | 'status' | 'spike' | 'capture' | 'writecapture';
 } {
   const args = process.argv.slice(2);
   let transport: TransportType = 'stdio';
   let port = 3000;
   let logLevel: 'debug' | 'info' | 'warn' | 'error' = 'info';
-  let action: 'login' | 'logout' | 'status' | 'spike' | 'capture' | undefined;
+  let action: 'login' | 'logout' | 'status' | 'spike' | 'capture' | 'writecapture' | undefined;
 
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
@@ -61,6 +62,10 @@ function parseArgs(): ServerConfig & {
 
       case '--capture':
         action = 'capture';
+        break;
+
+      case '--writecapture':
+        action = 'writecapture';
         break;
 
       case '--transport':
@@ -101,7 +106,7 @@ function parseArgs(): ServerConfig & {
       case '--version':
       case '-v':
         // eslint-disable-next-line no-console -- CLI output before MCP transport starts
-        console.log('linkedin-mcp v1.0.0');
+        console.log('linkedin-mcp v2.0.0');
         process.exit(0);
         break;
 
@@ -138,7 +143,7 @@ function parseArgs(): ServerConfig & {
 function printHelp(): void {
   // eslint-disable-next-line no-console -- CLI help text before MCP transport starts
   console.log(`
-🔗 LinkedIn MCP Server v1.0.0
+🔗 LinkedIn MCP Server v2.0.0
    The most reliable LinkedIn MCP server for AI assistants.
 
 USAGE:
@@ -199,6 +204,11 @@ async function main(): Promise<void> {
 
   if (config.action === 'capture') {
     await runCapture(loadConfig(), logger);
+    process.exit(0);
+  }
+
+  if (config.action === 'writecapture') {
+    await runWriteCapture(loadConfig(), logger);
     process.exit(0);
   }
 

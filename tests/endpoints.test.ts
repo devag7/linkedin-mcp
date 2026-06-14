@@ -16,6 +16,13 @@ import {
   messagingConversationsGraphql,
   invitationsReceived,
   invitationsSent,
+  normInvitations,
+  messagingCreate,
+  messagingEventCreate,
+  normShares,
+  deleteShare,
+  reactions,
+  comments,
   encodeRestliList,
   KNOWN_QUERY_IDS,
 } from '../src/browser/endpoints.js';
@@ -148,6 +155,39 @@ describe('endpoints — messaging + invitations builders', () => {
     expect(invitationsSent(10, 25)).toBe(
       '/relationships/sentInvitationViewsV2?start=10&count=25',
     );
+  });
+});
+
+describe('endpoints — write builders', () => {
+  it('normInvitations() is the invite POST path', () => {
+    expect(normInvitations()).toBe('/growth/normInvitations');
+  });
+
+  it('messagingCreate() carries the REQUIRED ?action=create (the new-thread fix)', () => {
+    expect(messagingCreate()).toBe('/messaging/conversations?action=create');
+  });
+
+  it('messagingEventCreate() targets an existing thread (the reply fix)', () => {
+    expect(messagingEventCreate('2-abc==')).toBe(
+      '/messaging/conversations/2-abc%3D%3D/events?action=create',
+    );
+  });
+
+  it('normShares() / deleteShare() build the share paths', () => {
+    expect(normShares()).toBe('/contentcreation/normShares');
+    expect(deleteShare('urn:li:share:123')).toBe(
+      '/contentcreation/normShares/urn%3Ali%3Ashare%3A123',
+    );
+  });
+
+  it('reactions() encodes the thread urn into the query', () => {
+    expect(reactions('urn:li:activity:7')).toBe(
+      '/voyagerSocialDashReactions?threadUrn=urn%3Ali%3Aactivity%3A7',
+    );
+  });
+
+  it('comments() is the comment POST path', () => {
+    expect(comments()).toBe('/feed/comments');
   });
 });
 

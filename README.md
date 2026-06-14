@@ -66,12 +66,15 @@ This is an honest, in-progress v2. Here's exactly where it stands:
 | Stealth browser engine (patchright) | ✅ built, **live-proven** |
 | In-page Voyager fetch (the core mechanism) | ✅ **live-verified** (returns structured JSON) |
 | Safety layer (queue / pacer / budgets / circuit-breaker) | ✅ built, 130+ unit tests |
-| **Profile** — `get_profile`, `get_my_profile` (name, headline, summary, experience, education) | ✅ live-verified |
+| **Profile** — `get_profile`, `get_my_profile` (name, headline, summary, experience, education, skills, certifications, languages) | ✅ live-verified |
 | **Feed / notifications** — `get_feed`, `get_notifications` | ✅ live-verified |
-| **Jobs / messaging** — `search_jobs`, `get_inbox`, `get_conversation` | ✅ live-verified |
-| **People / companies** — `search_people`, `get_company` (DOM fallback) | ✅ live-verified |
-| **Session** — `whoami`, `health_check`, `close_session` | ✅ |
-| Network + write tools (connect / message / post) | 🚧 next (gated by daily caps) |
+| **Jobs / messaging** — `search_jobs`, `get_job_details`, `get_inbox`, `get_conversation` | ✅ live-verified |
+| **People / companies** — `search_people`, `search_companies`, `get_company`, `get_company_posts`, `get_company_employees` (DOM fallback) | ✅ live-verified |
+| **Network** — `get_pending_invitations` (received + sent) | ✅ |
+| **Session** — `whoami`, `health_check` (live Voyager probe + budget headroom), `close_session` | ✅ |
+| **Write tools** — `connect_with_person`, `send_message`, `create_post`, `react_to_post`, `comment_on_post` | ⚠️ alpha — hardened + gated (`confirm:true` + caps), structured statuses; live payload verify pending |
+
+**22 tools.**
 
 The live data path requires a **headful** Chrome (a real window) — that's what passes Cloudflare. Headless/server environments are unreliable and frequently IP-flagged.
 

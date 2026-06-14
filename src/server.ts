@@ -26,7 +26,7 @@ import { registerFeedTools } from './tools/feed.js';
 import { registerDiscoveryTools } from './tools/discovery.js';
 import { registerWriteTools } from './tools/write.js';
 
-const VERSION = '2.0.0-alpha.1';
+const VERSION = '2.0.0';
 
 export interface CreatedServer {
   server: McpServer;
@@ -71,13 +71,16 @@ export function createServer(logger: Logger): CreatedServer {
 
   // Registered tool groups (grows per build milestones M1–M4).
   let count = 0;
-  registerSessionTools(server, engine, logger, () => count);
+  registerSessionTools(server, engine, voyager, budget, logger, () => count);
   registerProfileTools(server, voyager, guard, logger);
   registerFeedTools(server, voyager, guard, logger);
   registerDiscoveryTools(server, voyager, engine, guard, logger);
   registerWriteTools(server, voyager, guard, logger);
-  // 14 read/session tools + 5 write tools (writes gated by confirm + caps).
-  count = 19;
+  // Session(3) + profile(2) + feed(2) + discovery(10) + write(5) = 22 tools.
+  // Discovery: search_people, search_jobs, get_inbox, get_job_details,
+  // search_companies, get_company, get_company_posts, get_company_employees,
+  // get_pending_invitations, get_conversation.
+  count = 22;
 
   logger.info('MCP server created', { version: VERSION, tools: count });
   return { server, engine };

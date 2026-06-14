@@ -334,6 +334,52 @@ export class BudgetTracker {
     return this.getAccount().pendingInvites;
   }
 
+  /**
+   * A read-only snapshot of today's budget state for surfacing in health_check:
+   * account age, pending invites, and per-action used/cap/remaining. Does not
+   * mutate counters.
+   */
+  snapshot(): {
+    day: string;
+    ageWeek: number;
+    pendingInvites: number;
+    actions: Record<ActionType, { used: number; cap: number; remaining: number }>;
+  } {
+    // Read-only: do NOT call rollOverIfNeeded() (it persists). Instead derive the
+    // rolled-over view in memory — if the stored day is stale, today's counts are
+    // all zero — so a diagnostic health_check never mutates persisted state.
+    const today = this.dayKey();
+    const stored = this.state.accounts[this.accountId];
+    const account: AccountRecord = stored
+      ? stored.today.day === today
+        ? stored
+        : { ...stored, today: { day: today, counts: {} } }
+      : this.freshAccount();
+    const types: ActionType[] = [
+      'connections',
+      'messages',
+      'likes',
+      'comments',
+      'follows',
+      'endorsements',
+      'event-invites',
+      'profile-views',
+      'searches',
+    ];
+    const actions = {} as Record<ActionType, { used: number; cap: number; remaining: number }>;
+    for (const t of types) {
+      const cap = this.effectiveDailyCap(t, account.ageWeek);
+      const used = this.count(account, t);
+      actions[t] = { used, cap, remaining: Math.max(0, cap - used) };
+    }
+    return {
+      day: account.today.day,
+      ageWeek: account.ageWeek,
+      pendingInvites: account.pendingInvites,
+      actions,
+    };
+  }
+
   // --- internal helpers -----------------------------------------------------
 
   /** Effective daily cap for an action, applying the warmup ramp where relevant. */

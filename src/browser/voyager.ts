@@ -47,6 +47,18 @@ interface RawFetchResult {
   body: string;
 }
 
+/** Raw result of a write POST, surfaced to the caller for status classification. */
+export interface RawPostResult {
+  /** HTTP status code (e.g. 200, 201, 400, 403, 429). */
+  status: number;
+  /** Whether the status is in the 2xx range. */
+  ok: boolean;
+  /** Raw response body text (may be empty for a 201/204). */
+  body: string;
+  /** Parsed JSON body when the response was JSON, else undefined. */
+  json: unknown;
+}
+
 const NORMALIZED_ACCEPT = 'application/vnd.linkedin.normalized+json+2.1';
 const X_LI_TRACK = JSON.stringify({
   clientVersion: '1.13.0',
@@ -83,6 +95,57 @@ export class VoyagerClient {
     const url = `/voyager/api${apiPath}`;
     const raw = await this.inPageFetch(page, url, 'POST', body);
     return this.handle<T>(raw, apiPath);
+  }
+
+  /**
+   * POST a write action and return the RAW result (status + parsed body) instead
+   * of throwing on a non-2xx HTTP status. Write tools need the response body to
+   * classify the real outcome (duplicate / restricted / quota-exhausted / …),
+   * which {@link voyagerPost}'s throw-on-error path discards.
+   *
+   * Still throws a typed {@link VoyagerError} for the two cases that are never a
+   * write outcome and always mean "stop": an auth/Cloudflare redirect loop
+   * (`AUTH_REQUIRED`) and an HTML challenge page (`CLOUDFLARE_BLOCKED`). A 401 is
+   * also auth. Everything else (400/403/409/422/429/2xx) is returned for the
+   * caller to interpret — e.g. 403 on a write is usually a *restriction*, not a
+   * dead session.
+   */
+  async voyagerPostRaw(apiPath: string, body: unknown): Promise<RawPostResult> {
+    const page = await this.engine.getFeedPage();
+    const url = `/voyager/api${apiPath}`;
+    const raw = await this.inPageFetch(page, url, 'POST', body);
+
+    if (raw.type === 'opaqueredirect' || raw.status === 0) {
+      throw new VoyagerError(
+        'AUTH_REQUIRED',
+        `Voyager redirected (not authenticated or Cloudflare challenge) for ${apiPath}. Run --login.`,
+        302,
+      );
+    }
+    if (raw.status === 401) {
+      throw new VoyagerError(
+        'AUTH_REQUIRED',
+        `LinkedIn rejected the request (401) for ${apiPath}. Session may have expired — run --login.`,
+        401,
+      );
+    }
+    const trimmed = raw.body.trimStart();
+    if (trimmed.startsWith('<')) {
+      throw new VoyagerError(
+        'CLOUDFLARE_BLOCKED',
+        `Expected JSON but got HTML for ${apiPath} — likely a Cloudflare challenge. Try --login (headful) on a clean IP.`,
+        raw.status,
+      );
+    }
+    let json: unknown;
+    if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+      try {
+        json = JSON.parse(raw.body);
+      } catch {
+        json = undefined;
+      }
+    }
+    return { status: raw.status, ok: raw.ok, body: raw.body, json };
   }
 
   /**

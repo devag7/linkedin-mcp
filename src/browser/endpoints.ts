@@ -146,8 +146,21 @@ export function dashProfileByUrn(fsdProfileId: string): string {
   );
 }
 
-/** Profile section loaded lazily as UI components (experience/education/skills). */
-export type ProfileSection = 'experience' | 'education' | 'skills';
+/**
+ * Profile section loaded lazily as UI components. LinkedIn keys these by the
+ * `sectionType` token in the profileComponents finder; the richer sections
+ * (skills/certifications/languages/honors/projects) lazy-load the same way as
+ * experience/education.
+ */
+export type ProfileSection =
+  | 'experience'
+  | 'education'
+  | 'skills'
+  | 'certifications'
+  | 'languages'
+  | 'honors'
+  | 'projects'
+  | 'volunteering';
 
 /**
  * A profile section's component cards (experience / education / skills).
@@ -425,13 +438,32 @@ export function invitationsSent(start = 0, count = 50): string {
 export function normInvitations(): string {
   return '/growth/normInvitations';
 }
-/** Create a message / conversation. POST. */
+/**
+ * Create a NEW conversation (first message to a member). POST.
+ * The `?action=create` query is REQUIRED — REST-li dispatches the create action
+ * on it; omitting it (the prior bug) hits the collection finder and 400s.
+ */
 export function messagingCreate(): string {
-  return '/messaging/conversations';
+  return '/messaging/conversations?action=create';
+}
+/**
+ * Reply into an EXISTING conversation thread. POST. This is the fix for the
+ * "every reply spawns a new thread" bug (#483/#434): when the caller has a
+ * conversation/thread id, target its events sub-collection instead of creating
+ * a fresh conversation.
+ *
+ * @param conversationId the thread id (e.g. "2-abc…" from get_inbox's urn tail)
+ */
+export function messagingEventCreate(conversationId: string): string {
+  return `/messaging/conversations/${encodeURIComponent(conversationId)}/events?action=create`;
 }
 /** Create a share/post. POST. */
 export function normShares(): string {
   return '/contentcreation/normShares';
+}
+/** Delete a share/post by its urn (cleanup after a verification post). POST/DELETE. */
+export function deleteShare(shareUrn: string): string {
+  return `/contentcreation/normShares/${encodeURIComponent(shareUrn)}`;
 }
 /** React to a post. POST (threadUrn = the activity/share urn). */
 export function reactions(threadUrn: string): string {
