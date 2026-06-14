@@ -36,8 +36,8 @@ export const KNOWN_QUERY_IDS = {
   searchClusters: 'voyagerSearchDashClusters.9a78a658089851e133c5b7bb2b4baee5',
   /** Jobs search DASH cards (GraphQL variant). Captured 2026-06-13. */
   jobsSearch: 'voyagerJobsDashJobCards.9c135b2568ee44623733b4a578d25279',
-  /** Job posting detail sections. Captured 2026-06-13. */
-  jobPosting: 'voyagerJobsDashJobPostingDetailSections.77cb64956921ef397a36de4f7f8bce47',
+  /** Single job posting entity by urn (takes only jobPostingUrn). Captured 2026-06-13. */
+  jobPosting: 'voyagerJobsDashJobPostings.891aed7916d7453a37e4bbf5f1f60de4',
   /** Profile cards (DASH). Captured 2026-06-13. */
   profileSkills: 'voyagerIdentityDashProfileComponents.86824295e1093fb0f5acdd8d57213aaa',
   /** Messaging conversations list (messaging GraphQL host). Captured 2026-06-13. */

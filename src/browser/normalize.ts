@@ -159,23 +159,39 @@ export interface ShapedJobDetails {
   listedAt?: number;
 }
 
-/** Shape a single job posting (tolerant — fields vary by deploy). */
+/** Shape a single job posting. Deep-walks the response — the job node may live
+ *  in data.data or included depending on the query — and picks the richest
+ *  job-like object (has a title + job-ish fields). Tolerant by design. */
 export function shapeJobDetails(resp: NormalizedResponse): ShapedJobDetails {
-  const inc = resp.included ?? [];
-  const job = (inc.find((e) => typeof e.$type === 'string' && e.$type.endsWith('.JobPosting')) ??
-    {}) as Record<string, unknown>;
-  const company = inc.find((e) => typeof e.$type === 'string' && e.$type.endsWith('.Company')) as
-    | Record<string, unknown>
-    | undefined;
-  const descNode = job['description'];
+  let job: Record<string, unknown> | undefined;
+  let company: Record<string, unknown> | undefined;
+
+  const looksJob = (o: Record<string, unknown>): boolean =>
+    typeof o['title'] === 'string' &&
+    ('description' in o || 'jobState' in o || 'companyDetails' in o || 'formattedLocation' in o || 'workRemoteAllowed' in o);
+
+  const visit = (n: unknown): void => {
+    if (!n || typeof n !== 'object') return;
+    if (Array.isArray(n)) { n.forEach(visit); return; }
+    const o = n as Record<string, unknown>;
+    const t = typeof o['$type'] === 'string' ? (o['$type'] as string) : '';
+    if (!job && looksJob(o)) job = o;
+    if (!company && t.endsWith('.Company') && typeof o['name'] === 'string') company = o;
+    for (const v of Object.values(o)) visit(v);
+  };
+  visit(resp.data);
+  visit(resp.included);
+
+  const j = job ?? {};
   return {
-    title: asText(job['title']),
-    description: asText(descNode),
-    company: asText(company?.['name']),
-    location: asText(job['formattedLocation']) ?? asText(job['location']),
-    workplaceType: asText(job['workplaceType']) ?? asText(job['workRemoteAllowed']),
-    jobUrn: typeof job['entityUrn'] === 'string' ? (job['entityUrn'] as string) : undefined,
-    listedAt: typeof job['listedAt'] === 'number' ? (job['listedAt'] as number) : undefined,
+    title: asText(j['title']),
+    description: asText(j['description']),
+    company: asText(company?.['name']) ?? asText((j['companyDetails'] as Record<string, unknown>)?.['name']),
+    location: asText(j['formattedLocation']) ?? asText(j['location']),
+    workplaceType:
+      j['workRemoteAllowed'] === true ? 'Remote allowed' : asText(j['workplaceType']),
+    jobUrn: typeof j['entityUrn'] === 'string' ? (j['entityUrn'] as string) : undefined,
+    listedAt: typeof j['listedAt'] === 'number' ? (j['listedAt'] as number) : undefined,
   };
 }
 
