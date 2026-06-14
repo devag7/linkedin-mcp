@@ -112,6 +112,66 @@ export async function scrapePeopleSearch(
   }
 }
 
+export interface ScrapedCompanyResult {
+  name?: string;
+  universalName?: string;
+  companyUrl?: string;
+  subtitle?: string;
+}
+
+/** Scrape company-search results (SSR, like people search). Returns name +
+ *  universalName (slug) — pass the slug to get_company for full details. */
+export async function scrapeCompanySearch(
+  engine: BrowserEngine,
+  keywords: string,
+  count: number,
+  logger: Logger,
+): Promise<ScrapedCompanyResult[]> {
+  const url = `${ORIGIN}/search/results/companies/?keywords=${encodeURIComponent(keywords)}`;
+  const page = await engine.newPage();
+  try {
+    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    await page.waitForSelector('a[href*="/company/"]', { timeout: 15000 }).catch(() => {});
+    await page.waitForTimeout(1500);
+    const results = await page.evaluate((max: number) => {
+      const clean = (s: string | null | undefined): string | undefined =>
+        (s ?? '').replace(/\s+/g, ' ').trim() || undefined;
+      const anchors = Array.from(document.querySelectorAll<HTMLAnchorElement>('a[href*="/company/"]'));
+      const seen = new Set<string>();
+      const out: Array<Record<string, string | undefined>> = [];
+      for (const a of anchors) {
+        const href = a.href.split('?')[0] ?? a.href;
+        const m = href.match(/\/company\/([^/]+)\/?$/);
+        if (!m || !m[1]) continue;
+        const slug = decodeURIComponent(m[1]);
+        if (seen.has(slug)) continue;
+        const card =
+          a.closest('li') ?? a.closest('[data-chameleon-result-urn]') ?? a.parentElement?.parentElement ?? undefined;
+        let name =
+          clean(a.querySelector('span[aria-hidden="true"]')?.textContent) ?? clean(a.textContent);
+        if (name) {
+          name = name.split(/\s*[•·]\s*/)[0]?.trim();
+          // Company cards concat name+subtitle with no separator; collapse the
+          // leading duplicated token ("Fintech Fintech …" → "Fintech …").
+          if (name) name = name.replace(/^(\S.*?)\s+\1(\s|$)/, '$1$2').trim();
+        }
+        if (!name || /^(view|follow)/i.test(name)) continue;
+        const subtitle = card
+          ? clean(card.querySelector('[class*="subtitle"]')?.textContent)
+          : undefined;
+        seen.add(slug);
+        out.push({ name, universalName: slug, companyUrl: href, subtitle });
+        if (out.length >= max) break;
+      }
+      return out;
+    }, count);
+    logger.debug('scrapeCompanySearch', { keywords, found: results.length });
+    return results as ScrapedCompanyResult[];
+  } finally {
+    await page.close().catch(() => {});
+  }
+}
+
 export interface ScrapedCompany {
   name?: string;
   tagline?: string;

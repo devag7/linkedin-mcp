@@ -19,7 +19,7 @@ import {
   ownFsdId,
   type NormalizedResponse,
 } from '../browser/normalize.js';
-import { scrapePeopleSearch, scrapeCompany } from '../browser/dom.js';
+import { scrapePeopleSearch, scrapeCompany, scrapeCompanySearch } from '../browser/dom.js';
 import * as ep from '../browser/endpoints.js';
 import { ok, run } from './result.js';
 
@@ -95,6 +95,22 @@ export function registerDiscoveryTools(
           voyager.voyagerGet<NormalizedResponse>(ep.jobPostingGraphql(job_id)),
         );
         return ok(shapeJobDetails(raw));
+      }),
+  );
+
+  server.tool(
+    'search_companies',
+    'Search LinkedIn companies by keywords. Returns name + universalName slug (pass that to get_company for full details).',
+    {
+      keywords: z.string().min(1).describe('Search keywords, e.g. "fintech bangalore"'),
+      count: z.number().int().min(1).max(25).default(10).describe('Results (default 10)'),
+    },
+    async ({ keywords, count }) =>
+      run(logger, 'search_companies', async () => {
+        const companies = await guard.run(ACTIONS.search, () =>
+          scrapeCompanySearch(engine, keywords, count, logger),
+        );
+        return ok(companies, 'dom');
       }),
   );
 

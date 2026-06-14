@@ -58,8 +58,8 @@ export function createServer(logger: Logger): CreatedServer {
   registerFeedTools(server, voyager, guard, logger);
   registerDiscoveryTools(server, voyager, engine, guard, logger);
   registerWriteTools(server, voyager, guard, logger);
-  // 13 read/session tools + 5 write tools (writes gated by confirm + caps).
-  count = 18;
+  // 14 read/session tools + 5 write tools (writes gated by confirm + caps).
+  count = 19;
 
   logger.info('MCP server created', { version: VERSION, tools: count });
   return { server, engine };
