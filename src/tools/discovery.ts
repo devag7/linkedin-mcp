@@ -13,6 +13,7 @@ import { ACTIONS } from '../browser/guard.js';
 import type { Logger } from '../types.js';
 import {
   shapeJobs,
+  shapeJobDetails,
   shapeInbox,
   shapeConversationMessages,
   ownFsdId,
@@ -79,6 +80,21 @@ export function registerDiscoveryTools(
           return shapeInbox(raw);
         });
         return ok(data);
+      }),
+  );
+
+  server.tool(
+    'get_job_details',
+    'Get full details for a job posting by its numeric id (the digits in /jobs/view/<id> or from search_jobs jobUrn).',
+    {
+      job_id: z.string().min(1).describe('Numeric job id, e.g. "4423697734"'),
+    },
+    async ({ job_id }) =>
+      run(logger, 'get_job_details', async () => {
+        const raw = await guard.run(ACTIONS.readGeneric, () =>
+          voyager.voyagerGet<NormalizedResponse>(ep.jobPostingGraphql(job_id)),
+        );
+        return ok(shapeJobDetails(raw));
       }),
   );
 

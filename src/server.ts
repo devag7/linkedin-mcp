@@ -24,6 +24,7 @@ import { registerSessionTools } from './tools/session.js';
 import { registerProfileTools } from './tools/profile.js';
 import { registerFeedTools } from './tools/feed.js';
 import { registerDiscoveryTools } from './tools/discovery.js';
+import { registerWriteTools } from './tools/write.js';
 
 const VERSION = '2.0.0-alpha.1';
 
@@ -56,8 +57,9 @@ export function createServer(logger: Logger): CreatedServer {
   registerProfileTools(server, voyager, guard, logger);
   registerFeedTools(server, voyager, guard, logger);
   registerDiscoveryTools(server, voyager, engine, guard, logger);
-  // session(3) + profile(2) + feed(2) + discovery(5: search_jobs, get_inbox, get_conversation, search_people, get_company).
-  count = 12;
+  registerWriteTools(server, voyager, guard, logger);
+  // 13 read/session tools + 5 write tools (writes gated by confirm + caps).
+  count = 18;
 
   logger.info('MCP server created', { version: VERSION, tools: count });
   return { server, engine };

@@ -21,11 +21,13 @@ const envSchema = z.object({
   REQUEST_TIMEOUT: z.coerce.number().int().min(1000).default(30000),
 
   // Browser engine (v2 stealth engine — patchright)
-  // Headful by default: a real window is the most reliable way to pass Cloudflare
-  // and to let a human complete login / solve a challenge.
+  // Headless by DEFAULT: normal operation is invisible (no window) — the user
+  // never sees the browser. `--login` forces a visible window for the one-time
+  // sign-in (and to solve any captcha). After login the warm profile lets
+  // headless pass Cloudflare. Set LINKEDIN_HEADLESS=false to force a window.
   LINKEDIN_HEADLESS: z
     .enum(['true', 'false'])
-    .default('false')
+    .default('true')
     .transform((v) => v === 'true'),
   // Optional explicit Chrome binary path (else patchright's bundled/`channel:'chrome'`).
   LINKEDIN_CHROME_PATH: z.string().optional(),

@@ -149,6 +149,36 @@ export function shapeInbox(resp: NormalizedResponse): ShapedConversation[] {
   return out;
 }
 
+export interface ShapedJobDetails {
+  title?: string;
+  description?: string;
+  company?: string;
+  location?: string;
+  workplaceType?: string;
+  jobUrn?: string;
+  listedAt?: number;
+}
+
+/** Shape a single job posting (tolerant — fields vary by deploy). */
+export function shapeJobDetails(resp: NormalizedResponse): ShapedJobDetails {
+  const inc = resp.included ?? [];
+  const job = (inc.find((e) => typeof e.$type === 'string' && e.$type.endsWith('.JobPosting')) ??
+    {}) as Record<string, unknown>;
+  const company = inc.find((e) => typeof e.$type === 'string' && e.$type.endsWith('.Company')) as
+    | Record<string, unknown>
+    | undefined;
+  const descNode = job['description'];
+  return {
+    title: asText(job['title']),
+    description: asText(descNode),
+    company: asText(company?.['name']),
+    location: asText(job['formattedLocation']) ?? asText(job['location']),
+    workplaceType: asText(job['workplaceType']) ?? asText(job['workRemoteAllowed']),
+    jobUrn: typeof job['entityUrn'] === 'string' ? (job['entityUrn'] as string) : undefined,
+    listedAt: typeof job['listedAt'] === 'number' ? (job['listedAt'] as number) : undefined,
+  };
+}
+
 export interface ShapedMessage {
   text?: string;
   deliveredAt?: number;

@@ -416,6 +416,32 @@ export function invitationsSent(start = 0, count = 50): string {
   return `/relationships/sentInvitationViewsV2?start=${start}&count=${count}`;
 }
 
+/* ───────────────────────────────── Writes ───────────────────────────────── */
+/* BEST-KNOWN write endpoints (linkedin-api lineage). UNVERIFIED against current
+ * Voyager — payloads may need a live tune on a throwaway account. All write
+ * tools are gated behind an explicit confirm flag + the daily-cap safety layer. */
+
+/** Send a connection invitation. POST. */
+export function normInvitations(): string {
+  return '/growth/normInvitations';
+}
+/** Create a message / conversation. POST. */
+export function messagingCreate(): string {
+  return '/messaging/conversations';
+}
+/** Create a share/post. POST. */
+export function normShares(): string {
+  return '/contentcreation/normShares';
+}
+/** React to a post. POST (threadUrn = the activity/share urn). */
+export function reactions(threadUrn: string): string {
+  return `/voyagerSocialDashReactions?threadUrn=${encodeURIComponent(threadUrn)}`;
+}
+/** Comment on a post. POST. */
+export function comments(): string {
+  return '/feed/comments';
+}
+
 /* ─────────────────────────────── Notifications ──────────────────────────── */
 
 /**
