@@ -46,7 +46,25 @@ export function createServer(logger: Logger): CreatedServer {
 
   // Safety stack — every data/action call is gated through the Guard.
   const queue = new SerialQueue({ concurrency: config.LINKEDIN_CONCURRENCY, logger });
-  const pacer = new HumanPacer({ logger });
+  const pacer = config.LINKEDIN_PACING_DISABLED
+    ? new HumanPacer({
+        logger,
+        readDelay: { minMs: 0, maxMs: 0 },
+        writeDelay: { minMs: 0, maxMs: 0 },
+        writeFloorMs: 0,
+        shortBreak: { everyMin: 1e9, everyMax: 1e9, pauseMinMs: 0, pauseMaxMs: 0 },
+        longBreak: { everyMin: 1e9, everyMax: 1e9, pauseMinMs: 0, pauseMaxMs: 0 },
+        workingHours: {
+          enabled: false,
+          startHour: 0,
+          endHour: 24,
+          lunchStartHour: 0,
+          lunchEndHour: 0,
+          closedDays: [],
+          utcOffsetMinutes: 0,
+        },
+      })
+    : new HumanPacer({ logger });
   const budget = new BudgetTracker('default', { logger });
   const breaker = new CircuitBreaker({ logger });
   const guard = new Guard(queue, pacer, budget, breaker, logger);

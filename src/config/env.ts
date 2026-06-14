@@ -39,6 +39,12 @@ const envSchema = z.object({
   LINKEDIN_CF_TIMEOUT_MS: z.coerce.number().int().min(1000).default(20000),
   // Serial by default. >1 is documented as ban-risky.
   LINKEDIN_CONCURRENCY: z.coerce.number().int().min(1).default(1),
+  // Disable human-pacing delays (testing / power users who accept higher ban
+  // risk). Daily caps + circuit breaker still apply. Default off.
+  LINKEDIN_PACING_DISABLED: z
+    .enum(['true', 'false'])
+    .default('false')
+    .transform((v) => v === 'true'),
 });
 
 export type EnvConfig = z.infer<typeof envSchema>;
