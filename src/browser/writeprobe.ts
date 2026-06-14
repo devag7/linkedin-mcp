@@ -64,6 +64,36 @@ export async function runWriteProbe(config: EnvConfig, logger: Logger): Promise<
     const who = ownPublicId(me);
     process.stderr.write(`\n✅ Logged in as ${who ?? '(unknown)'} — probing writes (self-targeted, reversible).\n`);
 
+    // Cleanup mode: delete a probe post by its share urn.
+    const delUrn = process.env.TARGET_DELETE_URN;
+    if (delUrn) {
+      const del = await voyager.voyagerDeleteRaw(ep.deleteShare(delUrn));
+      process.stderr.write(`\n🧹 delete ${delUrn}: HTTP ${del.status} ${del.ok ? '(removed)' : `(body: ${del.body.slice(0, 200)})`}\n`);
+      return;
+    }
+
+    // Targeted mode: react + comment on an existing post (its ACTIVITY urn), to
+    // verify those two payloads live without creating a fresh post.
+    const targetActivity = process.env.TARGET_ACTIVITY_URN;
+    if (targetActivity) {
+      process.stderr.write(`\n▶ targeted react/comment on ${targetActivity}\n`);
+      const rq = ep.KNOWN_QUERY_IDS.reactions;
+      const r = await voyager.voyagerPostRaw(ep.reactionsMutation(rq), {
+        variables: { entity: { reactionType: 'LIKE' }, threadUrn: targetActivity },
+        queryId: rq,
+        includeWebMetadata: true,
+      });
+      report('react_to_post', r, 'react');
+      await sleep(6000);
+      const c = await voyager.voyagerPostRaw(ep.normCommentsCreate(), {
+        commentary: { text: 'v2 write-probe comment', attributesV2: [], $type: 'com.linkedin.voyager.dash.common.text.TextViewModel' },
+        threadUrn: targetActivity,
+      });
+      report('comment_on_post', c, 'comment');
+      process.stderr.write('\n🎯 Targeted react/comment probe complete.\n');
+      return;
+    }
+
     // 1) create_post (verified-live GraphQL share mutation) -------------------
     const text = `v2 write-probe ${new Date().toISOString()} — automated test post, will self-delete`;
     const queryId = ep.KNOWN_QUERY_IDS.createShare;

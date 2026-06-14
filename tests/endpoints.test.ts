@@ -21,9 +21,12 @@ import {
   messagingCreate,
   messagingEventCreate,
   normShares,
+  createShareMutation,
   deleteShare,
   reactions,
+  reactionsMutation,
   comments,
+  normCommentsCreate,
   encodeRestliList,
   KNOWN_QUERY_IDS,
 } from '../src/browser/endpoints.js';
@@ -180,21 +183,33 @@ describe('endpoints — write builders', () => {
     );
   });
 
-  it('normShares() / deleteShare() build the share paths', () => {
+  it('normShares() (deprecated) / deleteShare() build the share paths', () => {
     expect(normShares()).toBe('/contentcreation/normShares');
     expect(deleteShare('urn:li:share:123')).toBe(
       '/contentcreation/normShares/urn%3Ali%3Ashare%3A123',
     );
   });
 
-  it('reactions() encodes the thread urn into the query', () => {
+  it('createShareMutation() is the verified-live GraphQL share mutation', () => {
+    const p = createShareMutation();
+    expect(p.startsWith('/graphql?action=execute&queryId=')).toBe(true);
+    expect(p).toContain(encodeURIComponent(KNOWN_QUERY_IDS.createShare));
+  });
+
+  it('reactions() (deprecated) vs reactionsMutation() (verified-live)', () => {
     expect(reactions('urn:li:activity:7')).toBe(
       '/voyagerSocialDashReactions?threadUrn=urn%3Ali%3Aactivity%3A7',
     );
+    const m = reactionsMutation();
+    expect(m.startsWith('/graphql?action=execute&queryId=')).toBe(true);
+    expect(m).toContain(encodeURIComponent(KNOWN_QUERY_IDS.reactions));
   });
 
-  it('comments() is the comment POST path', () => {
+  it('comments() (deprecated) vs normCommentsCreate() (verified-live)', () => {
     expect(comments()).toBe('/feed/comments');
+    expect(normCommentsCreate()).toBe(
+      '/voyagerSocialDashNormComments?decorationId=com.linkedin.voyager.dash.deco.social.NormComment-43',
+    );
   });
 });
 

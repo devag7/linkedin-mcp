@@ -43,12 +43,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   request through — it returns the same result). NB: brand-new/unverified
   accounts are posting-restricted; both our call and the SPA's get an HTTP-200
   GraphQL restriction error, which the classifier now reports as `failed`.
+- **`react_to_post` rewired + VERIFIED LIVE** (HTTP 200 `ok`): the social-dash
+  reactions GraphQL mutation (`voyagerSocialDashReactions`), `{variables:{entity:
+  {reactionType},threadUrn:<activity urn>}}`. Old `/voyagerSocialDashReactions?
+  threadUrn=` 400'd. Targets the post's ACTIVITY urn.
+- **`comment_on_post` rewired + VERIFIED LIVE** (HTTP 201 `ok`): the social-dash
+  `voyagerSocialDashNormComments` collection, `{commentary:{text,attributesV2,
+  $type:TextViewModel},threadUrn:<activity urn>}`. Old `/feed/comments` 500'd.
 - **`send_message` no longer always spawns a new thread** (#483/#434): pass
   `thread_id` to reply into an existing conversation (the events sub-collection);
   the new-thread path now sends the required `?action=create` (was missing).
-- `react` / `comment` / `send_message` payloads remain BEST-KNOWN — capturing
-  them needs a feed post / a recipient, blocked by the burner's posting
-  restriction; verify on a warmed account.
+  Payload is still BEST-KNOWN — not yet capture-verified (needs an existing
+  conversation / a connection, which the test burner lacks).
+
+**4 of 5 writes are now capture/live-verified** (connect, create_post, react,
+comment); only send_message awaits a messageable account to capture.
 
 ### Added — tooling
 - `--writeprobe`: live-fires create_post (+ react/comment on its own post) and

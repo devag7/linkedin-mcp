@@ -52,6 +52,8 @@ export const KNOWN_QUERY_IDS = {
   companyPosts: 'voyagerFeedDashOrganizationalPageUpdates.827e11d165078dd7a5afaf1cba734121',
   /** Create-share mutation (the post composer). Verified live 2026-06-14 via --writecapture. */
   createShare: 'voyagerContentcreationDashShares.279996efa5064c01775d5aff003d9377',
+  /** React-to-post mutation (social dash). Verified live 2026-06-14 via --writecapture. */
+  reactions: 'voyagerSocialDashReactions.b731222600772fd42464c0fe19bd722b',
 } as const;
 
 /**
@@ -497,13 +499,39 @@ export function createShareMutation(queryId: string = KNOWN_QUERY_IDS.createShar
 export function deleteShare(shareUrn: string): string {
   return `/contentcreation/normShares/${encodeURIComponent(shareUrn)}`;
 }
-/** React to a post. POST (threadUrn = the activity/share urn). */
+/**
+ * @deprecated Legacy REST-li reaction path — verified STALE (HTTP 400). Use
+ * {@link reactionsMutation}.
+ */
 export function reactions(threadUrn: string): string {
   return `/voyagerSocialDashReactions?threadUrn=${encodeURIComponent(threadUrn)}`;
 }
-/** Comment on a post. POST. */
+/**
+ * React to a post via the social-dash reactions GraphQL mutation. POST.
+ * VERIFIED LIVE 2026-06-14 via `--writecapture`. `queryId` ROTATES and is also
+ * repeated in the body. Body shape:
+ *   {"variables":{"entity":{"reactionType":<TYPE>},"threadUrn":"urn:li:activity:<id>"},
+ *    "queryId":<same>,"includeWebMetadata":true}
+ */
+export function reactionsMutation(queryId: string = KNOWN_QUERY_IDS.reactions): string {
+  return `/graphql?action=execute&queryId=${encodeURIComponent(queryId)}`;
+}
+/**
+ * @deprecated Legacy REST-li comment path — verified STALE (HTTP 500). Use
+ * {@link normCommentsCreate}.
+ */
 export function comments(): string {
   return '/feed/comments';
+}
+/**
+ * Comment on a post via the social-dash NormComments collection. POST.
+ * VERIFIED LIVE 2026-06-14 via `--writecapture`. Body shape:
+ *   {"commentary":{"text":<t>,"attributesV2":[],
+ *     "$type":"com.linkedin.voyager.dash.common.text.TextViewModel"},
+ *    "threadUrn":"urn:li:activity:<id>"}
+ */
+export function normCommentsCreate(): string {
+  return '/voyagerSocialDashNormComments?decorationId=com.linkedin.voyager.dash.deco.social.NormComment-43';
 }
 
 /* ─────────────────────────────── Notifications ──────────────────────────── */

@@ -11,18 +11,22 @@
  *     STRUCTURED status (ok / duplicate / already_connected / restricted /
  *     quota_exhausted / not_allowed / failed) instead of a blind `sent:true`.
  *
- * Payload verification status (via `--writecapture` / `--writeprobe` on a burner,
- * 2026-06-14):
+ * Payload verification status (via `--writecapture` / `--writeprobe` on a warmed
+ * burner, 2026-06-14) — 4 of 5 VERIFIED:
  *   - connect_with_person — request shape VERIFIED (matches the live SPA exactly:
  *     voyagerRelationshipsDashMemberRelationships?action=verifyQuotaAndCreateV2).
- *   - create_post — payload VERIFIED (byte-identical to the SPA's GraphQL share
- *     mutation). NB: a brand-new/unverified account is restricted from posting —
- *     LinkedIn returns an HTTP-200 GraphQL error which the classifier reports as
+ *   - create_post — VERIFIED LIVE (HTTP 200 `ok`, post created) via the GraphQL
+ *     share mutation. NB: brand-new/unverified accounts are posting-restricted;
+ *     LinkedIn returns an HTTP-200 GraphQL error the classifier reports as
  *     `failed` (the SPA itself hits the same restriction on a fresh account).
- *   - react / comment / message — BEST-KNOWN REST-li; not yet capture-verified
- *     (capturing them needs a feed post / a recipient, blocked on the burner's
- *     posting restriction). Treat their success as unconfirmed until captured on
- *     a warmed account.
+ *   - react_to_post — VERIFIED LIVE (HTTP 200 `ok`) via the social-dash reactions
+ *     GraphQL mutation. Target is the post's ACTIVITY urn.
+ *   - comment_on_post — VERIFIED LIVE (HTTP 201 `ok`) via the social-dash
+ *     NormComments collection. Target is the post's ACTIVITY urn.
+ *   - send_message — BEST-KNOWN REST-li, NOT yet capture-verified: capturing it
+ *     needs an existing conversation / a connection to send into, and the test
+ *     burner has neither. Treat its success as unconfirmed until captured on an
+ *     account with a messageable contact.
  */
 
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
@@ -218,7 +222,7 @@ export function registerWriteTools(
     'react_to_post',
     '[ALPHA, write] React to a post. Gated: requires confirm:true. Returns a structured status.',
     {
-      post_urn: z.string().min(1).describe('The activity/share URN to react to'),
+      post_urn: z.string().min(1).describe('The post ACTIVITY urn, e.g. urn:li:activity:7472… (not the share urn)'),
       reaction: z
         .enum(['LIKE', 'PRAISE', 'EMPATHY', 'INTEREST', 'APPRECIATION', 'ENTERTAINMENT'])
         .default('LIKE'),
@@ -227,9 +231,15 @@ export function registerWriteTools(
     async ({ post_urn, reaction, confirm }) =>
       run(logger, 'react_to_post', async () => {
         if (!confirm) return ok({ refused: true, reason: CONFIRM_HINT }, 'engine');
-        const body = { reactionType: reaction };
+        // Verified-live social-dash reactions GraphQL mutation (--writecapture).
+        const queryId = ep.KNOWN_QUERY_IDS.reactions;
+        const body = {
+          variables: { entity: { reactionType: reaction }, threadUrn: post_urn },
+          queryId,
+          includeWebMetadata: true,
+        };
         const raw = await guard.run(ACTIONS.like, () =>
-          voyager.voyagerPostRaw(ep.reactions(post_urn), body),
+          voyager.voyagerPostRaw(ep.reactionsMutation(queryId), body),
         );
         return ok(outcomePayload('react_to_post', classifyWrite(raw, 'react')));
       }),
@@ -239,16 +249,24 @@ export function registerWriteTools(
     'comment_on_post',
     '[ALPHA, write] Comment on a post. Gated: requires confirm:true. Returns a structured status.',
     {
-      post_urn: z.string().min(1).describe('The activity/share URN to comment on'),
+      post_urn: z.string().min(1).describe('The post ACTIVITY urn, e.g. urn:li:activity:7472… (not the share urn)'),
       text: z.string().min(1).max(1250).describe('Comment text'),
       ...confirmField,
     },
     async ({ post_urn, text, confirm }) =>
       run(logger, 'comment_on_post', async () => {
         if (!confirm) return ok({ refused: true, reason: CONFIRM_HINT }, 'engine');
-        const body = { object: post_urn, message: { text, attributes: [] } };
+        // Verified-live social-dash NormComments collection (--writecapture).
+        const body = {
+          commentary: {
+            text,
+            attributesV2: [],
+            $type: 'com.linkedin.voyager.dash.common.text.TextViewModel',
+          },
+          threadUrn: post_urn,
+        };
         const raw = await guard.run(ACTIONS.comment, () =>
-          voyager.voyagerPostRaw(ep.comments(), body),
+          voyager.voyagerPostRaw(ep.normCommentsCreate(), body),
         );
         return ok(outcomePayload('comment_on_post', classifyWrite(raw, 'comment')));
       }),

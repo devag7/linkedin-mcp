@@ -18,6 +18,9 @@
  */
 
 import { BrowserEngine } from './engine.js';
+import { VoyagerClient } from './voyager.js';
+import * as ep from './endpoints.js';
+import { ownPublicId, type NormalizedResponse } from './normalize.js';
 import type { Logger } from '../types.js';
 import type { EnvConfig } from '../config/env.js';
 import type { Page, Route } from 'patchright';
@@ -126,19 +129,31 @@ export async function runWriteCapture(config: EnvConfig, logger: Logger): Promis
 
     const page = await engine.getFeedPage();
 
+    // Resolve own publicId — react/comment target the member's OWN post on their
+    // recent-activity page (a fresh account's HOME feed is empty / hides own posts).
+    let ownPid: string | undefined;
+    try {
+      const voyager = new VoyagerClient(engine, logger);
+      const me = await voyager.voyagerGet<NormalizedResponse>(ep.me());
+      ownPid = ownPublicId(me);
+      process.stderr.write(`\n(own publicId: ${ownPid ?? 'unknown'})\n`);
+    } catch {
+      /* fall back to /feed/ */
+    }
+
     // ── create_post ─────────────────────────────────────────────────────────
     currentLabel = 'create_post';
     process.stderr.write('\n========== create_post ==========\n');
     await capturePost(page, logger);
 
-    // ── react_to_post + comment_on_post (operate on first feed post) ─────────
+    // ── react_to_post + comment_on_post (operate on own recent-activity post) ─
     currentLabel = 'react_to_post';
     process.stderr.write('\n========== react_to_post ==========\n');
-    await captureReaction(page, logger);
+    await captureReaction(page, logger, ownPid);
 
     currentLabel = 'comment_on_post';
     process.stderr.write('\n========== comment_on_post ==========\n');
-    await captureComment(page, logger);
+    await captureComment(page, logger, ownPid);
 
     // ── connect_with_person (target a well-known profile) ───────────────────
     currentLabel = 'connect_with_person';
@@ -256,71 +271,78 @@ async function capturePost(page: Page, logger: Logger): Promise<void> {
   }
 }
 
-/** Click a feed post's Like button — the reaction POST is intercepted. */
-async function captureReaction(page: Page, logger: Logger): Promise<void> {
+/** Click a post's Like button (via in-page JS) — reaction POST intercepted. */
+async function captureReaction(page: Page, logger: Logger, ownPid?: string): Promise<void> {
   try {
-    await page.goto(`${ORIGIN}/feed/`, { waitUntil: 'domcontentloaded', timeout: 30000 });
-    await page.waitForSelector('div.feed-shared-update-v2, [data-urn*="urn:li:activity"]', { timeout: 15000 }).catch(() => {});
-    await page.waitForTimeout(2500);
-    const likeSelectors = [
-      'button[aria-label*="Like" i][aria-label*="post" i]',
-      'button[aria-label="Like"]',
-      'button[aria-label*="React Like" i]',
-      'button.react-button__trigger',
-      '[class*="social-actions"] button:has-text("Like")',
-    ];
-    for (const sel of likeSelectors) {
-      const loc = page.locator(sel).first();
-      if (await loc.count().catch(() => 0)) {
-        try {
-          await loc.click({ timeout: 4000 });
-          process.stderr.write(`  (like clicked via: ${sel})\n`);
-          break;
-        } catch {
-          /* next */
-        }
+    const url = ownPid ? `${ORIGIN}/in/${ownPid}/recent-activity/all/` : `${ORIGIN}/feed/`;
+    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    await page.waitForSelector('button', { timeout: 15000 }).catch(() => {});
+    await page.waitForTimeout(3000);
+    await page.mouse.wheel(0, 600).catch(() => {});
+    await page.waitForTimeout(1500);
+    // Click in-page (bypasses Playwright's visibility/stability checks that the
+    // LinkedIn overlay DOM keeps tripping). Pick the first post's Like button.
+    const clicked = await page.evaluate(() => {
+      const btns = Array.from(document.querySelectorAll('button'));
+      const like = btns.find((b) => {
+        const al = (b.getAttribute('aria-label') || '').trim();
+        return /^(react\s+)?like$/i.test(al) || (/\bLike\b/.test(al) && /react|reaction/i.test(al));
+      });
+      if (like) {
+        (like as HTMLButtonElement).click();
+        return like.getAttribute('aria-label') || 'like';
       }
-    }
-    await page.waitForTimeout(2000);
+      return null;
+    });
+    process.stderr.write(`  (like in-page click: ${clicked ?? 'NOT FOUND'})\n`);
+    await page.waitForTimeout(2500);
   } catch (e) {
     logger.warn('captureReaction failed', { error: e instanceof Error ? e.message : String(e) });
     process.stderr.write(`  (captureReaction: ${e instanceof Error ? e.message : String(e)})\n`);
   }
 }
 
-/** Open a post's comment box, type, submit — the comment POST is intercepted. */
-async function captureComment(page: Page, logger: Logger): Promise<void> {
+/** Open a post's comment box (in-page), type, submit — comment POST intercepted. */
+async function captureComment(page: Page, logger: Logger, ownPid?: string): Promise<void> {
   try {
-    await page.goto(`${ORIGIN}/feed/`, { waitUntil: 'domcontentloaded', timeout: 30000 });
-    await page.waitForSelector('div.feed-shared-update-v2, [data-urn*="urn:li:activity"]', { timeout: 15000 }).catch(() => {});
-    await page.waitForTimeout(2500);
-    const commentBtn = page.locator('button[aria-label*="Comment" i]').first();
-    await commentBtn.click({ timeout: 8000 });
-    await page.waitForTimeout(1800);
+    const url = ownPid ? `${ORIGIN}/in/${ownPid}/recent-activity/all/` : `${ORIGIN}/feed/`;
+    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    await page.waitForSelector('button', { timeout: 15000 }).catch(() => {});
+    await page.waitForTimeout(3000);
+    await page.mouse.wheel(0, 600).catch(() => {});
+    await page.waitForTimeout(1500);
+    const opened = await page.evaluate(() => {
+      const btns = Array.from(document.querySelectorAll('button'));
+      const c = btns.find((b) => /\bcomment\b/i.test((b.getAttribute('aria-label') || '').trim()));
+      if (c) {
+        (c as HTMLButtonElement).click();
+        return true;
+      }
+      return false;
+    });
+    process.stderr.write(`  (comment button in-page click: ${opened})\n`);
+    await page.waitForTimeout(2000);
     const box = page.locator('div.ql-editor[contenteditable="true"], [contenteditable="true"][role="textbox"]').first();
     await box.click({ timeout: 8000 });
     await box.type('writecapture probe', { delay: 12 });
     await page.waitForTimeout(1500);
-    // Submit button is enabled+visible only after text; try several.
-    const submitSelectors = [
-      'button.comments-comment-box__submit-button:not([disabled])',
-      '[class*="comments-comment-box__submit-button"]:not([disabled])',
-      'button[class*="comments-comment-box"]:has-text("Post")',
-      'form button:has-text("Post")',
-    ];
-    for (const sel of submitSelectors) {
-      const loc = page.locator(sel).last();
-      if (await loc.count().catch(() => 0)) {
-        try {
-          await loc.click({ timeout: 4000 });
-          process.stderr.write(`  (comment submitted via: ${sel})\n`);
-          break;
-        } catch {
-          /* next */
-        }
+    const submitted = await page.evaluate(() => {
+      const btns = Array.from(document.querySelectorAll('button'));
+      // The enabled submit button in a comment box.
+      const submit = btns.find(
+        (b) =>
+          !b.hasAttribute('disabled') &&
+          (/comments-comment-box__submit/.test(b.className) ||
+            (/\bpost\b/i.test((b.textContent || '').trim()) && /comment/i.test(b.className))),
+      );
+      if (submit) {
+        (submit as HTMLButtonElement).click();
+        return true;
       }
-    }
-    await page.waitForTimeout(2000);
+      return false;
+    });
+    process.stderr.write(`  (comment submit in-page click: ${submitted})\n`);
+    await page.waitForTimeout(2500);
   } catch (e) {
     logger.warn('captureComment failed', { error: e instanceof Error ? e.message : String(e) });
     process.stderr.write(`  (captureComment: ${e instanceof Error ? e.message : String(e)})\n`);
@@ -352,21 +374,46 @@ async function captureConnect(page: Page, logger: Logger): Promise<void> {
   }
 }
 
-/** Visit a profile, click Message, type, send — message POST intercepted. */
+/** Open an existing conversation, type, send — message POST intercepted. */
 async function captureMessage(page: Page, logger: Logger): Promise<void> {
   try {
-    await page.goto(`${ORIGIN}/in/williamhgates/`, { waitUntil: 'domcontentloaded', timeout: 30000 });
-    await page.waitForTimeout(3000);
-    const msgBtn = page.locator('main button:has-text("Message")').first();
-    await msgBtn.click({ timeout: 10000 });
-    await page.waitForTimeout(2000);
-    const box = page.locator('div.msg-form__contenteditable[contenteditable="true"], div[role="textbox"]').first();
+    await page.goto(`${ORIGIN}/messaging/`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    await page.waitForTimeout(4000);
+    // Click the first conversation in the list (in-page, tolerant).
+    const opened = await page.evaluate(() => {
+      const item =
+        document.querySelector('a[href*="/messaging/thread/"]') ??
+        document.querySelector('.msg-conversation-listitem__link') ??
+        document.querySelector('[class*="conversation-listitem"] a');
+      if (item) {
+        (item as HTMLElement).click();
+        return true;
+      }
+      return false;
+    });
+    process.stderr.write(`  (message: opened a conversation: ${opened})\n`);
+    if (!opened) {
+      process.stderr.write('  (captureMessage: no existing conversation — burner has no threads to send into)\n');
+      return;
+    }
+    await page.waitForTimeout(2500);
+    const box = page.locator('div.msg-form__contenteditable[contenteditable="true"], [contenteditable="true"][role="textbox"]').first();
     await box.click({ timeout: 8000 });
-    await box.type('writecapture probe', { delay: 10 });
-    await page.waitForTimeout(1000);
-    const send = page.locator('button.msg-form__send-button, button[type="submit"]:has-text("Send")').first();
-    await send.click({ timeout: 8000 });
-    await page.waitForTimeout(2000);
+    await box.type('writecapture probe', { delay: 12 });
+    await page.waitForTimeout(1200);
+    const sent = await page.evaluate(() => {
+      const btns = Array.from(document.querySelectorAll('button'));
+      const send = btns.find(
+        (b) => !b.hasAttribute('disabled') && (/msg-form__send-button/.test(b.className) || /^send$/i.test((b.textContent || '').trim())),
+      );
+      if (send) {
+        (send as HTMLButtonElement).click();
+        return true;
+      }
+      return false;
+    });
+    process.stderr.write(`  (message send in-page click: ${sent})\n`);
+    await page.waitForTimeout(2500);
   } catch (e) {
     logger.warn('captureMessage failed', { error: e instanceof Error ? e.message : String(e) });
     process.stderr.write(`  (captureMessage: ${e instanceof Error ? e.message : String(e)})\n`);
