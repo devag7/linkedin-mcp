@@ -391,12 +391,66 @@ async function captureConnect(page: Page, logger: Logger): Promise<void> {
   }
 }
 
-/** Open an existing conversation, type, send — message POST intercepted. */
+/**
+ * Send a message and intercept the POST. Two modes:
+ *  - default: open the first EXISTING conversation (captures the reply shape).
+ *  - MSG_COMPOSE=1: open the Compose flow, pick a recipient from the typeahead
+ *    (type TARGET_MSG_QUERY, default "a"), and send — captures the NEW-thread
+ *    shape (hostRecipientUrns) IF that recipient has no existing thread.
+ */
 async function captureMessage(page: Page, logger: Logger): Promise<void> {
   try {
     await page.goto(`${ORIGIN}/messaging/`, { waitUntil: 'domcontentloaded', timeout: 30000 });
     await page.waitForTimeout(4000);
-    // Click the first conversation in the list (in-page, tolerant).
+
+    if (process.env.MSG_COMPOSE === '1') {
+      // ── Compose a NEW message: go straight to the compose view ─────────────
+      await page.goto(`${ORIGIN}/messaging/compose/`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+      await page.waitForTimeout(4000);
+      // Dump the recipient-area controls for diagnosis if the field isn't found.
+      const recipExists = await page.evaluate(() => {
+        const inputs = Array.from(document.querySelectorAll('input'));
+        return inputs.map((i) => i.getAttribute('placeholder') || i.getAttribute('aria-label') || i.name || i.type).slice(0, 8);
+      });
+      process.stderr.write(`  (compose inputs: ${JSON.stringify(recipExists)})\n`);
+
+      // Type into the recipient typeahead, then pick the first suggestion.
+      const query = process.env.TARGET_MSG_QUERY || 'a';
+      const recip = page
+        .locator('input[placeholder*="Type a name" i], input[aria-label*="recipient" i], input[aria-label*="messaging" i], [class*="typeahead"] input, input[type="text"]')
+        .first();
+      await recip.click({ timeout: 8000 });
+      await recip.type(query, { delay: 60 });
+      await page.waitForTimeout(2500);
+      const picked = await page.evaluate(() => {
+        const opt =
+          document.querySelector('[class*="typeahead"] [role="option"]') ??
+          document.querySelector('[class*="typeahead__suggestion"]') ??
+          document.querySelector('[role="option"]') ??
+          document.querySelector('[class*="connections-result"]');
+        if (opt) { (opt as HTMLElement).click(); return (opt.textContent || 'option').trim().slice(0, 40); }
+        return null;
+      });
+      process.stderr.write(`  (recipient picked: ${picked ?? 'NONE — no suggestion'})\n`);
+      if (!picked) return;
+      await page.waitForTimeout(2000);
+
+      const box = page.locator('div.msg-form__contenteditable[contenteditable="true"], [contenteditable="true"][role="textbox"]').first();
+      await box.click({ timeout: 8000 });
+      await box.type('writecapture probe', { delay: 12 });
+      await page.waitForTimeout(1200);
+      const sentNew = await page.evaluate(() => {
+        const btns = Array.from(document.querySelectorAll('button'));
+        const send = btns.find((b) => !b.hasAttribute('disabled') && (/msg-form__send-button/.test(b.className) || /^send$/i.test((b.textContent || '').trim())));
+        if (send) { (send as HTMLButtonElement).click(); return true; }
+        return false;
+      });
+      process.stderr.write(`  (new-message send click: ${sentNew})\n`);
+      await page.waitForTimeout(2500);
+      return;
+    }
+
+    // ── Reply into the first EXISTING conversation ───────────────────────────
     const opened = await page.evaluate(() => {
       const item =
         document.querySelector('a[href*="/messaging/thread/"]') ??
