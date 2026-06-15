@@ -88,6 +88,30 @@ export async function runWriteProbe(config: EnvConfig, logger: Logger): Promise<
       return;
     }
 
+    // Targeted send_message NEW THREAD: createMessage with hostRecipientUrns
+    // (best-known) to a recipient with no existing conversation.
+    const recipUrn = process.env.TARGET_RECIPIENT_URN;
+    if (recipUrn) {
+      const ownId = ownFsdId(me);
+      const mailboxUrn = `urn:li:fsd_profile:${ownId}`;
+      process.stderr.write(`\n▶ send_message NEW thread to ${recipUrn}\n`);
+      const r = await voyager.voyagerPostRaw(ep.messengerMessagesCreate(), {
+        message: {
+          body: { attributes: [], text: `v2 write-probe new-thread ${new Date().toISOString()}` },
+          renderContentUnions: [],
+          originToken: randomUUID(),
+        },
+        hostRecipientUrns: [recipUrn],
+        mailboxUrn,
+        trackingId: randomBytes(16).toString('latin1'),
+        dedupeByClientGeneratedToken: false,
+      });
+      const outcome = classifyWrite(r, 'message');
+      process.stderr.write(`▶ send_message(new): HTTP ${r.status} → status=${outcome.status}${outcome.detail ? ` (${outcome.detail})` : ''}\n`);
+      process.stderr.write(`   body: ${r.body.slice(0, 400)}\n`);
+      return;
+    }
+
     // Cleanup mode: delete a probe post by its share urn.
     const delUrn = process.env.TARGET_DELETE_URN;
     if (delUrn) {

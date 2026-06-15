@@ -97,7 +97,7 @@ const RE = {
   connected: /already\s*connected|existing\s*connection|is\s*already\s*your\s*connection/i,
   quota: /weekly\s*invitation|invitation\s*limit|quota|reached\s*the\s*(weekly|maximum)|too\s*many\s*invitations|limit\s*reached/i,
   restricted: /restrict|blocked|not\s*permitted|unauthorized\s*action|account\s*.*flag|security\s*challenge|account.*challenge|challenge.*account|verification\s*challenge/i,
-  notAllowed: /not\s*allowed|cannot\s*message|out\s*of\s*network|inmail|premium\s*required|connection\s*required/i,
+  notAllowed: /not\s*allowed|cannot\s*(?:be\s*)?messag|out\s*of\s*network|inmail|premium\s*required|connection\s*required|not\s*a\s*connection|NOT_FIRST_DEGREE/i,
 };
 
 /**

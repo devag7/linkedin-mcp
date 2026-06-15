@@ -25,8 +25,11 @@
  *     NormComments collection. Target is the post's ACTIVITY urn.
  *   - send_message — REPLY path VERIFIED LIVE (HTTP 200 `ok`) via the
  *     messenger-messages createMessage action. The NEW-thread path
- *     (hostRecipientUrns, no existing conversation) is BEST-KNOWN — not yet
- *     capture-verified.
+ *     (hostRecipientUrns) is STRUCTURALLY VERIFIED: a live fire to a
+ *     non-connection returned HTTP 422 RECIPIENT_NOT_FIRST_DEGREE_CONNECTION —
+ *     i.e. the server parsed hostRecipientUrns + the body and rejected only on
+ *     the business rule (recipient must be a 1st-degree connection), confirming
+ *     the request shape. A clean 200 just needs an accepted connection.
  */
 
 import { randomBytes, randomUUID } from 'node:crypto';

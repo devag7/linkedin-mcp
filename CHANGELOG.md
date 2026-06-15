@@ -59,10 +59,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (#483/#434) — pass `thread_id`/`conversation_urn` to reply. The NEW-thread path
   (`hostRecipientUrns`) is best-known (not yet captured).
 
-**All 5 writes are now capture/live-verified** (connect, create_post, react,
-comment, send_message reply) — every legacy REST-li write endpoint was dead and
-has been replaced with the live SPA's actual request, recovered via
-`--writecapture`.
+**All 5 writes are now verified** — connect, create_post, react, comment, and
+send_message (reply path live `200 ok`; new-thread `hostRecipientUrns` path
+structurally verified: a live fire to a non-connection returned HTTP 422
+`RECIPIENT_NOT_FIRST_DEGREE_CONNECTION`, confirming the server parsed the request
+and rejected only on the connection business-rule). Every legacy REST-li write
+endpoint was dead and has been replaced with the live SPA's actual request,
+recovered via `--writecapture`. The classifier maps the non-connection 422 to
+`not_allowed`.
 
 ### Added — tooling
 - `--writeprobe`: live-fires create_post (+ react/comment on its own post) and

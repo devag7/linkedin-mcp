@@ -98,6 +98,11 @@ describe('classifyWrite — body-signal driven', () => {
     expect(classifyWrite(raw(403, body), 'message').status).toBe('not_allowed');
   });
 
+  it('detects new-thread to a non-connection (422 RECIPIENT_NOT_FIRST_DEGREE_CONNECTION)', () => {
+    const body = '{"data":{"code":"RECIPIENT_NOT_FIRST_DEGREE_CONNECTION","message":"This member cannot be messaged because they are not a connection.","status":422}}';
+    expect(classifyWrite(raw(422, body), 'message').status).toBe('not_allowed');
+  });
+
   it('falls back to failed with detail for an unrecognized 400', () => {
     const body = '{"message":"Some novel server error"}';
     const o = classifyWrite(raw(400, body), 'post');
