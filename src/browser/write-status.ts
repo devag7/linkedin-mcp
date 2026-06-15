@@ -57,11 +57,18 @@ function findGraphqlErrors(node: unknown, depth = 0): string | undefined {
   const errs = o['errors'];
   if (Array.isArray(errs) && errs.length > 0) {
     const first = errs[0] as Record<string, unknown> | undefined;
-    if (first && typeof first === 'object' && ('message' in first || 'extensions' in first || 'classification' in first)) {
+    if (first && typeof first === 'object') {
       if (typeof first['message'] === 'string' && first['message']) return first['message'] as string;
       const ext = first['extensions'] as Record<string, unknown> | undefined;
-      if (ext && typeof ext['exceptionClass'] === 'string') return ext['exceptionClass'] as string;
-      return 'GraphQL mutation returned errors';
+      if (ext && typeof ext === 'object') {
+        for (const k of ['exceptionClass', 'code', 'classification'] as const) {
+          if (typeof ext[k] === 'string' && ext[k]) return ext[k] as string;
+        }
+      }
+      if (typeof first['classification'] === 'string' && first['classification']) return first['classification'] as string;
+      if ('message' in first || 'extensions' in first || 'classification' in first) {
+        return 'GraphQL mutation returned errors';
+      }
     }
   }
   for (const v of Object.values(o)) {

@@ -140,29 +140,21 @@ export async function runWriteProbe(config: EnvConfig, logger: Logger): Promise<
     process.stderr.write(`   created urn: ${shareUrn ?? '(none found — payload may be wrong)'}\n`);
     await sleep(6000);
 
-    // 2) react + 3) comment on the just-created post --------------------------
+    // create_post returns a SHARE urn; react/comment need the post's ACTIVITY
+    // urn (a different id, not derivable by string-swap). So this create-flow
+    // verifies create_post only — to verify react/comment, run with
+    // TARGET_ACTIVITY_URN (the activity urn of any post). Cleanup deletes the
+    // probe post unless KEEP_POST=1 leaves it up as a capture target.
     if (shareUrn) {
-      const reactRaw = await voyager.voyagerPostRaw(ep.reactions(shareUrn), { reactionType: 'LIKE' });
-      report('react_to_post', reactRaw, 'react');
-      await sleep(6000);
-
-      const commentRaw = await voyager.voyagerPostRaw(ep.comments(), {
-        object: shareUrn,
-        message: { text: 'v2 write-probe comment', attributes: [] },
-      });
-      report('comment_on_post', commentRaw, 'comment');
-      await sleep(6000);
-
-      // 4) cleanup — delete the probe post (unless asked to keep it as a
-      //    react/comment capture target via KEEP_POST=1).
       if (process.env.KEEP_POST === '1') {
         process.stderr.write(`\n📌 KEEP_POST=1 — leaving the post up: ${shareUrn}\n`);
+        process.stderr.write('   (re-run with TARGET_ACTIVITY_URN=<activity urn> to verify react/comment)\n');
       } else {
         const del = await voyager.voyagerDeleteRaw(ep.deleteShare(shareUrn));
         process.stderr.write(`\n🧹 delete probe post: HTTP ${del.status} ${del.ok ? '(removed)' : '(manual cleanup may be needed)'}\n`);
       }
     } else {
-      process.stderr.write('\n⚠️  No share urn from create_post — skipping react/comment + cleanup. Inspect the create_post body above to fix the payload.\n');
+      process.stderr.write('\n⚠️  No share urn from create_post — payload may be wrong (or the account is posting-restricted).\n');
     }
 
     process.stderr.write('\n🎯 Write-probe complete. Inspect each status above (ok = payload verified live).\n');
