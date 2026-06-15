@@ -50,14 +50,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **`comment_on_post` rewired + VERIFIED LIVE** (HTTP 201 `ok`): the social-dash
   `voyagerSocialDashNormComments` collection, `{commentary:{text,attributesV2,
   $type:TextViewModel},threadUrn:<activity urn>}`. Old `/feed/comments` 500'd.
-- **`send_message` no longer always spawns a new thread** (#483/#434): pass
-  `thread_id` to reply into an existing conversation (the events sub-collection);
-  the new-thread path now sends the required `?action=create` (was missing).
-  Payload is still BEST-KNOWN — not yet capture-verified (needs an existing
-  conversation / a connection, which the test burner lacks).
+- **`send_message` rewired + reply path VERIFIED LIVE** (HTTP 200 `ok`): the
+  messenger-messages `createMessage` action (`voyagerMessagingDashMessengerMessages
+  ?action=createMessage`), body `{message:{body:{text,attributes:[]},
+  renderContentUnions:[],conversationUrn,originToken},mailboxUrn,trackingId,
+  dedupeByClientGeneratedToken:false}`. Old `/messaging/conversations?action=
+  create` was stale; this also fixes the "every reply spawns a new thread" bug
+  (#483/#434) — pass `thread_id`/`conversation_urn` to reply. The NEW-thread path
+  (`hostRecipientUrns`) is best-known (not yet captured).
 
-**4 of 5 writes are now capture/live-verified** (connect, create_post, react,
-comment); only send_message awaits a messageable account to capture.
+**All 5 writes are now capture/live-verified** (connect, create_post, react,
+comment, send_message reply) — every legacy REST-li write endpoint was dead and
+has been replaced with the live SPA's actual request, recovered via
+`--writecapture`.
 
 ### Added — tooling
 - `--writeprobe`: live-fires create_post (+ react/comment on its own post) and

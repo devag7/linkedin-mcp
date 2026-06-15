@@ -467,15 +467,26 @@ export function messagingCreate(): string {
   return '/messaging/conversations?action=create';
 }
 /**
- * Reply into an EXISTING conversation thread. POST. This is the fix for the
- * "every reply spawns a new thread" bug (#483/#434): when the caller has a
- * conversation/thread id, target its events sub-collection instead of creating
- * a fresh conversation.
+ * @deprecated Legacy REST-li reply path. Superseded by the messenger-messages
+ * createMessage action — see {@link messengerMessagesCreate}.
  *
  * @param conversationId the thread id (e.g. "2-abc…" from get_inbox's urn tail)
  */
 export function messagingEventCreate(conversationId: string): string {
   return `/messaging/conversations/${encodeURIComponent(conversationId)}/events?action=create`;
+}
+/**
+ * Send a message via the messenger-messages createMessage action. POST.
+ * VERIFIED LIVE 2026-06-14 via `--writecapture` — the exact call the messaging
+ * UI fires. Body shape (reply into an existing conversation):
+ *   {"message":{"body":{"attributes":[],"text":<t>},"renderContentUnions":[],
+ *     "conversationUrn":"urn:li:msg_conversation:(<mailbox urn>,2-<thread>)",
+ *     "originToken":<uuid>},
+ *    "mailboxUrn":"urn:li:fsd_profile:<own id>","trackingId":<16 bytes>,
+ *    "dedupeByClientGeneratedToken":false}
+ */
+export function messengerMessagesCreate(): string {
+  return '/voyagerMessagingDashMessengerMessages?action=createMessage';
 }
 /**
  * @deprecated Legacy REST-li share path — verified STALE (HTTP 400) on the

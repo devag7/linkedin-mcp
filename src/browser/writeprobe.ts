@@ -15,11 +15,12 @@
  * the first time).
  */
 
+import { randomBytes, randomUUID } from 'node:crypto';
 import { BrowserEngine } from './engine.js';
 import { VoyagerClient } from './voyager.js';
 import { classifyWrite } from './write-status.js';
 import * as ep from './endpoints.js';
-import { ownPublicId, type NormalizedResponse } from './normalize.js';
+import { ownPublicId, ownFsdId, type NormalizedResponse } from './normalize.js';
 import type { Logger } from '../types.js';
 import type { EnvConfig } from '../config/env.js';
 
@@ -63,6 +64,29 @@ export async function runWriteProbe(config: EnvConfig, logger: Logger): Promise<
     const me = await voyager.voyagerGet<NormalizedResponse>(ep.me());
     const who = ownPublicId(me);
     process.stderr.write(`\n✅ Logged in as ${who ?? '(unknown)'} — probing writes (self-targeted, reversible).\n`);
+
+    // Targeted send_message: reply into an existing conversation (verified shape).
+    const convUrn = process.env.TARGET_CONVERSATION_URN;
+    if (convUrn) {
+      const ownId = ownFsdId(me);
+      const mailboxUrn = `urn:li:fsd_profile:${ownId}`;
+      process.stderr.write(`\n▶ send_message reply into ${convUrn}\n`);
+      const r = await voyager.voyagerPostRaw(ep.messengerMessagesCreate(), {
+        message: {
+          body: { attributes: [], text: `v2 write-probe message ${new Date().toISOString()}` },
+          renderContentUnions: [],
+          conversationUrn: convUrn,
+          originToken: randomUUID(),
+        },
+        mailboxUrn,
+        trackingId: randomBytes(16).toString('latin1'),
+        dedupeByClientGeneratedToken: false,
+      });
+      const outcome = classifyWrite(r, 'message');
+      process.stderr.write(`▶ send_message: HTTP ${r.status} → status=${outcome.status}${outcome.detail ? ` (${outcome.detail})` : ''}\n`);
+      process.stderr.write(`   body: ${r.body.slice(0, 300)}\n`);
+      return;
+    }
 
     // Cleanup mode: delete a probe post by its share urn.
     const delUrn = process.env.TARGET_DELETE_URN;

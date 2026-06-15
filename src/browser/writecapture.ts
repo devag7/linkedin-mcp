@@ -141,32 +141,49 @@ export async function runWriteCapture(config: EnvConfig, logger: Logger): Promis
       /* fall back to /feed/ */
     }
 
+    // WC_ONLY=<section> runs a single section (fast iteration). Default: all.
+    const only = process.env.WC_ONLY;
+    const want = (s: string): boolean => !only || only === s;
+
     // ── create_post ─────────────────────────────────────────────────────────
-    currentLabel = 'create_post';
-    process.stderr.write('\n========== create_post ==========\n');
-    await capturePost(page, logger);
+    if (want('create_post')) {
+      currentLabel = 'create_post';
+      process.stderr.write('\n========== create_post ==========\n');
+      await capturePost(page, logger);
+    }
 
     // ── react_to_post + comment_on_post (operate on own recent-activity post) ─
-    currentLabel = 'react_to_post';
-    process.stderr.write('\n========== react_to_post ==========\n');
-    await captureReaction(page, logger, ownPid);
+    if (want('react_to_post')) {
+      currentLabel = 'react_to_post';
+      process.stderr.write('\n========== react_to_post ==========\n');
+      await captureReaction(page, logger, ownPid);
+    }
 
-    currentLabel = 'comment_on_post';
-    process.stderr.write('\n========== comment_on_post ==========\n');
-    await captureComment(page, logger, ownPid);
+    if (want('comment_on_post')) {
+      currentLabel = 'comment_on_post';
+      process.stderr.write('\n========== comment_on_post ==========\n');
+      await captureComment(page, logger, ownPid);
+    }
 
     // ── connect_with_person (target a well-known profile) ───────────────────
-    currentLabel = 'connect_with_person';
-    process.stderr.write('\n========== connect_with_person ==========\n');
-    await captureConnect(page, logger);
+    if (want('connect_with_person')) {
+      currentLabel = 'connect_with_person';
+      process.stderr.write('\n========== connect_with_person ==========\n');
+      await captureConnect(page, logger);
+    }
 
-    // ── send_message (target same profile's Message button) ─────────────────
-    currentLabel = 'send_message';
-    process.stderr.write('\n========== send_message ==========\n');
-    await captureMessage(page, logger);
+    // ── send_message (target an existing conversation) ──────────────────────
+    if (want('send_message')) {
+      currentLabel = 'send_message';
+      process.stderr.write('\n========== send_message ==========\n');
+      await captureMessage(page, logger);
+    }
 
     // ── diagnose the 401 surfaces: let the SPA load them and watch statuses ──
     currentLabel = 'diagnose';
+    if (only) {
+      process.stderr.write('\n(WC_ONLY set — skipping diagnose sweep)\n');
+    } else
     for (const [name, url] of [
       ['JOBS', `${ORIGIN}/jobs/search/?keywords=engineer`],
       ['NOTIFICATIONS', `${ORIGIN}/notifications/`],

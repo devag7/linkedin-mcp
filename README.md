@@ -72,7 +72,7 @@ This is an honest, in-progress v2. Here's exactly where it stands:
 | **People / companies** — `search_people`, `search_companies`, `get_company`, `get_company_posts`, `get_company_employees` (DOM fallback) | ✅ live-verified |
 | **Network** — `get_pending_invitations` (received + sent) | ✅ |
 | **Session** — `whoami`, `health_check` (live Voyager probe + budget headroom), `close_session` | ✅ |
-| **Write tools** — `connect_with_person`, `send_message`, `create_post`, `react_to_post`, `comment_on_post` | ⚠️ alpha — hardened + gated (`confirm:true` + caps), structured statuses; live payload verify pending |
+| **Write tools** — `connect_with_person`, `send_message`, `create_post`, `react_to_post`, `comment_on_post` | ⚠️ alpha — gated (`confirm:true` + caps), structured statuses; all 5 endpoints capture/live-verified on a burner |
 
 **22 tools.**
 

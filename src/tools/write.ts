@@ -12,7 +12,7 @@
  *     quota_exhausted / not_allowed / failed) instead of a blind `sent:true`.
  *
  * Payload verification status (via `--writecapture` / `--writeprobe` on a warmed
- * burner, 2026-06-14) — 4 of 5 VERIFIED:
+ * burner, 2026-06-14/15) — all 5 endpoints CAPTURE/LIVE-VERIFIED:
  *   - connect_with_person — request shape VERIFIED (matches the live SPA exactly:
  *     voyagerRelationshipsDashMemberRelationships?action=verifyQuotaAndCreateV2).
  *   - create_post — VERIFIED LIVE (HTTP 200 `ok`, post created) via the GraphQL
@@ -23,18 +23,20 @@
  *     GraphQL mutation. Target is the post's ACTIVITY urn.
  *   - comment_on_post — VERIFIED LIVE (HTTP 201 `ok`) via the social-dash
  *     NormComments collection. Target is the post's ACTIVITY urn.
- *   - send_message — BEST-KNOWN REST-li, NOT yet capture-verified: capturing it
- *     needs an existing conversation / a connection to send into, and the test
- *     burner has neither. Treat its success as unconfirmed until captured on an
- *     account with a messageable contact.
+ *   - send_message — REPLY path VERIFIED LIVE (HTTP 200 `ok`) via the
+ *     messenger-messages createMessage action. The NEW-thread path
+ *     (hostRecipientUrns, no existing conversation) is BEST-KNOWN — not yet
+ *     capture-verified.
  */
 
+import { randomBytes, randomUUID } from 'node:crypto';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import type { VoyagerClient } from '../browser/voyager.js';
 import type { Guard } from '../browser/guard.js';
 import { ACTIONS } from '../browser/guard.js';
 import { classifyWrite, type WriteOutcome } from '../browser/write-status.js';
+import { ownFsdId, type NormalizedResponse } from '../browser/normalize.js';
 import type { Logger } from '../types.js';
 import * as ep from '../browser/endpoints.js';
 import { ok, run } from './result.js';
@@ -72,17 +74,27 @@ export function threadIdFrom(s: string): string {
   return m ? m[0] : s;
 }
 
-/** Build the MessageCreate event value shared by new-thread and reply paths. */
-function messageEventValue(text: string): Record<string, unknown> {
+/** A 16-byte tracking id as a latin1 string (the messenger createMessage shape). */
+function messagingTrackingId(): string {
+  return randomBytes(16).toString('latin1');
+}
+
+/**
+ * Build the verified-live `createMessage` body (--writecapture 2026-06-14).
+ * `mailboxUrn` is the sender's own fsd_profile urn; `conversationUrn` is the
+ * full msg_conversation urn of the thread being replied into.
+ */
+function createMessageBody(text: string, mailboxUrn: string, conversationUrn: string): Record<string, unknown> {
   return {
-    value: {
-      'com.linkedin.voyager.messaging.create.MessageCreate': {
-        body: text,
-        attachments: [],
-        attributedBody: { text, attributes: [] },
-        mediaAttachments: [],
-      },
+    message: {
+      body: { attributes: [], text },
+      renderContentUnions: [],
+      conversationUrn,
+      originToken: randomUUID(),
     },
+    mailboxUrn,
+    trackingId: messagingTrackingId(),
+    dedupeByClientGeneratedToken: false,
   };
 }
 
@@ -129,7 +141,7 @@ export function registerWriteTools(
 
   server.tool(
     'send_message',
-    '[ALPHA, write] Send a message. Pass thread_id (or conversation_urn) to REPLY into an existing conversation; otherwise a new thread is created to recipient_urn. Gated: requires confirm:true. Returns a structured status. Counts against the daily message cap.',
+    '[ALPHA, write] Send a message. Pass thread_id / conversation_urn to REPLY into an existing conversation (verified); otherwise a new thread is started to recipient_urn (best-known). Gated: requires confirm:true. Returns a structured status. Counts against the daily message cap.',
     {
       recipient_urn: z
         .string()
@@ -138,7 +150,7 @@ export function registerWriteTools(
       thread_id: z
         .string()
         .optional()
-        .describe('Existing conversation/thread id or urn to reply into (preferred over recipient_urn).'),
+        .describe('Existing thread id (2-…) or full msg_conversation urn to reply into (preferred over recipient_urn).'),
       message: z.string().min(1).describe('Message body (multiline supported)'),
       ...confirmField,
     },
@@ -163,22 +175,38 @@ export function registerWriteTools(
           );
         }
 
-        const raw = await guard.run(ACTIONS.message, () => {
-          // Priority: reply into an existing thread > create a new conversation.
+        const raw = await guard.run(ACTIONS.message, async () => {
+          // The createMessage action needs the sender's own mailbox urn.
+          const me = await voyager.voyagerGet<NormalizedResponse>(ep.me());
+          const ownId = ownFsdId(me);
+          if (!ownId) throw new Error('Could not resolve own mailbox id from /me.');
+          const mailboxUrn = `urn:li:fsd_profile:${ownId}`;
+
+          // Reply into an existing conversation (VERIFIED-live shape).
           if (thread_id) {
-            const id = threadIdFrom(thread_id);
-            const body = { eventCreate: messageEventValue(message) };
-            return voyager.voyagerPostRaw(ep.messagingEventCreate(id), body);
+            const conversationUrn = thread_id.includes('msg_conversation')
+              ? thread_id
+              : `urn:li:msg_conversation:(${mailboxUrn},${threadIdFrom(thread_id)})`;
+            return voyager.voyagerPostRaw(
+              ep.messengerMessagesCreate(),
+              createMessageBody(message, mailboxUrn, conversationUrn),
+            );
           }
+
+          // Start a NEW thread (BEST-KNOWN: hostRecipientUrns instead of a
+          // conversationUrn — not capture-verified yet).
           const body = {
-            keyVersion: 'LEGACY_INBOX',
-            conversationCreate: {
-              eventCreate: messageEventValue(message),
-              recipients: [recipient_urn],
-              subtype: 'MEMBER_TO_MEMBER',
+            message: {
+              body: { attributes: [], text: message },
+              renderContentUnions: [],
+              originToken: randomUUID(),
             },
+            hostRecipientUrns: [recipient_urn],
+            mailboxUrn,
+            trackingId: messagingTrackingId(),
+            dedupeByClientGeneratedToken: false,
           };
-          return voyager.voyagerPostRaw(ep.messagingCreate(), body);
+          return voyager.voyagerPostRaw(ep.messengerMessagesCreate(), body);
         });
         return ok(outcomePayload('send_message', classifyWrite(raw, 'message')));
       }),

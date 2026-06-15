@@ -20,6 +20,7 @@ import {
   memberRelationshipsInvite,
   messagingCreate,
   messagingEventCreate,
+  messengerMessagesCreate,
   normShares,
   createShareMutation,
   deleteShare,
@@ -177,9 +178,15 @@ describe('endpoints — write builders', () => {
     expect(messagingCreate()).toBe('/messaging/conversations?action=create');
   });
 
-  it('messagingEventCreate() targets an existing thread (the reply fix)', () => {
+  it('messagingEventCreate() (deprecated) targets an existing thread', () => {
     expect(messagingEventCreate('2-abc==')).toBe(
       '/messaging/conversations/2-abc%3D%3D/events?action=create',
+    );
+  });
+
+  it('messengerMessagesCreate() is the verified-live createMessage action', () => {
+    expect(messengerMessagesCreate()).toBe(
+      '/voyagerMessagingDashMessengerMessages?action=createMessage',
     );
   });
 
