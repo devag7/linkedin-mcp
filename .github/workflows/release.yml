@@ -1,15 +1,27 @@
 name: Release
 
+# Releases are version-driven: bump `version` in package.json, commit, push to
+# main. If a tag for that version doesn't exist yet, this:
+#   1. creates a GitHub Release (tag v<version>, auto-generated notes)
+#   2. publishes to npm        (linkedin-mcp-tools)        — needs NPM_TOKEN secret
+#   3. publishes to GitHub Packages (@devag7/linkedin-mcp-tools) — shows in the
+#      repo's "Packages" sidebar; uses the built-in GITHUB_TOKEN (no secret)
+# Pushing again at the same version is a no-op (the tag already exists).
 on:
   push:
     branches: [main]
+  workflow_dispatch: {}
 
 permissions:
   contents: write
+  packages: write
 
 jobs:
   release:
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      is_new: ${{ steps.tag_check.outputs.exists == 'false' }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -22,57 +34,39 @@ jobs:
           cache: npm
           registry-url: https://registry.npmjs.org
 
-      - name: Install dependencies
-        run: npm ci
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
 
-      - name: Lint
-        run: npm run lint
-
-      - name: Type check
-        run: npm run typecheck
-
-      - name: Test
-        run: npm test
-
-      - name: Build
-        run: npm run build
+      - name: Verify build + version
+        run: |
+          test -f dist/index.js
+          echo "dist version: $(node dist/index.js --version)"
 
       - name: Get version
         id: version
-        run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
-
-      - name: Create Claude Desktop config
-        run: |
-          cat > claude-desktop-config.json << 'EOF'
-          {
-            "mcpServers": {
-              "linkedin": {
-                "command": "npx",
-                "args": ["-y", "linkedin-mcp-tools"]
-              }
-            }
-          }
-          EOF
+        run: echo "version=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
 
       - name: Check if tag exists
         id: tag_check
         run: |
           if git rev-parse "v${{ steps.version.outputs.version }}" >/dev/null 2>&1; then
-            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::v${{ steps.version.outputs.version }} already released — skipping."
           else
-            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "exists=false" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Create Release
+      - name: Create GitHub Release
         if: steps.tag_check.outputs.exists == 'false'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ steps.version.outputs.version }}
           name: v${{ steps.version.outputs.version }}
           generate_release_notes: true
-          files: |
-            claude-desktop-config.json
-            dist/index.js
+          files: dist/index.js
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -81,3 +75,28 @@ jobs:
         run: npm publish --access=public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  github-packages:
+    needs: release
+    if: needs.release.outputs.is_new == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node.js (GitHub Packages registry)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          registry-url: https://npm.pkg.github.com
+          scope: '@devag7'
+      - run: npm ci
+      - run: npm run build
+      - name: Scope the package to the owner (GitHub Packages requires @owner/name)
+        run: npm pkg set name="@devag7/linkedin-mcp-tools"
+      - name: Publish to GitHub Packages
+        run: npm publish --access=public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

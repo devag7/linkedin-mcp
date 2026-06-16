@@ -9,28 +9,43 @@ hard part and it's done — this is distribution.
 
 ---
 
-## 1. Publish to npm
+## 1. Releasing (automated — GitHub Actions)
+
+Releases are **version-driven and automatic**. CI (`.github/workflows/ci.yml`)
+lint/typecheck/test/builds every push + PR. `release.yml` fires on push to `main`:
+if `package.json`'s `version` has **no `v<version>` git tag yet**, it
+
+1. creates a **GitHub Release** (`v<version>`, auto-generated notes, `dist/index.js` attached),
+2. publishes to **npm** (`linkedin-mcp-tools`), and
+3. publishes to **GitHub Packages** (`@devag7/linkedin-mcp-tools`) — this is what
+   makes the package show up in the repo's **Packages** sidebar.
+
+So to cut a release:
 
 ```bash
-npm run build
-npm test                       # 166 tests must pass
-npm publish --tag next         # publish 2.0.0 WITHOUT moving `latest` yet
+npm version patch            # or minor / major — bumps package.json + tags locally
+#   ^ the version is the single source of truth; whoami / health_check /
+#     --version all read it (src/version.ts). Nothing else to edit.
+git push origin main         # CI runs, then release.yml publishes everywhere
 ```
 
-`--tag next` is deliberate: v2 is a breaking change (real browser + one-time
-`--login` instead of v1's cookie paste), so don't auto-upgrade existing
-`npx linkedin-mcp-tools` users. Smoke-test the published tag, then promote:
+Pushing again at the same version is a **no-op** (the tag already exists) — no
+double-publish, no spam releases.
 
-```bash
-npm dist-tag add linkedin-mcp-tools@2.0.0 latest   # make it the default install
-```
+**One-time setup (required for npm publishing to work):**
 
-Then tag + push the release:
+1. Create an **npm automation token**: npmjs.com → Access Tokens → Generate →
+   *Automation*. Copy it.
+2. Add it as a repo secret: GitHub repo → Settings → Secrets and variables →
+   Actions → New repository secret → name **`NPM_TOKEN`**, paste the token.
+3. GitHub Packages needs no secret — it uses the built-in `GITHUB_TOKEN`.
 
-```bash
-git push origin main
-git tag v2.0.0 && git push --tags
-```
+> First publish of `2.0.0` is a breaking change vs v1 (real browser + `--login`
+> instead of cookie paste). If you have existing v1 users on `latest`, consider
+> publishing the first v2 under a dist-tag instead of `latest`:
+> `npm publish --tag next` locally, smoke-test, then
+> `npm dist-tag add linkedin-mcp-tools@2.0.0 latest`. (The workflow publishes to
+> `latest` by default — fine for a fresh package.)
 
 ---
 

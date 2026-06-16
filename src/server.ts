@@ -25,8 +25,7 @@ import { registerProfileTools } from './tools/profile.js';
 import { registerFeedTools } from './tools/feed.js';
 import { registerDiscoveryTools } from './tools/discovery.js';
 import { registerWriteTools } from './tools/write.js';
-
-const VERSION = '2.0.0';
+import { VERSION } from './version.js';
 
 export interface CreatedServer {
   server: McpServer;

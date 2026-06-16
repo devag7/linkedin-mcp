@@ -12,9 +12,8 @@ import type { BudgetTracker } from '../safety/budgets.js';
 import * as ep from '../browser/endpoints.js';
 import { ownPublicId, type NormalizedResponse } from '../browser/normalize.js';
 import type { Logger } from '../types.js';
+import { VERSION } from '../version.js';
 import { ok, run } from './result.js';
-
-const VERSION = '2.0.0';
 
 export function registerSessionTools(
   server: McpServer,

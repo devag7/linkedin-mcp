@@ -27,6 +27,7 @@ import { interactiveBrowserLogin, runSpike } from './browser/login.js';
 import { runCapture } from './browser/capture.js';
 import { runWriteCapture } from './browser/writecapture.js';
 import { runWriteProbe } from './browser/writeprobe.js';
+import { VERSION } from './version.js';
 import { loadConfig } from './config/env.js';
 
 /**
@@ -112,7 +113,7 @@ function parseArgs(): ServerConfig & {
       case '--version':
       case '-v':
         // eslint-disable-next-line no-console -- CLI output before MCP transport starts
-        console.log('linkedin-mcp v2.0.0');
+        console.log(`linkedin-mcp v${VERSION}`);
         process.exit(0);
         break;
 
@@ -149,7 +150,7 @@ function parseArgs(): ServerConfig & {
 function printHelp(): void {
   // eslint-disable-next-line no-console -- CLI help text before MCP transport starts
   console.log(`
-🔗 LinkedIn MCP Server v2.0.0
+🔗 LinkedIn MCP Server v${VERSION}
    LinkedIn for AI assistants — structured JSON via a real stealth-browser session.
 
 USAGE:
