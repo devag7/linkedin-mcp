@@ -13,23 +13,23 @@ hard part and it's done — this is distribution.
 
 ```bash
 npm run build
-npm test                       # 135 tests must pass
-npm publish --tag alpha        # ships 2.0.0-alpha.1 WITHOUT moving `latest`
+npm test                       # 166 tests must pass
+npm publish --tag next         # publish 2.0.0 WITHOUT moving `latest` yet
 ```
 
-`--tag alpha` is important: it keeps v1 as `latest` so existing `npx linkedin-mcp-tools`
-users aren't broken by the headful/login requirement. Promote when stable:
+`--tag next` is deliberate: v2 is a breaking change (real browser + one-time
+`--login` instead of v1's cookie paste), so don't auto-upgrade existing
+`npx linkedin-mcp-tools` users. Smoke-test the published tag, then promote:
 
 ```bash
-npm dist-tag add linkedin-mcp-tools@2.0.0 latest   # later, once out of alpha
+npm dist-tag add linkedin-mcp-tools@2.0.0 latest   # make it the default install
 ```
 
 Then tag + push the release:
 
 ```bash
-git push -u origin v2-stealth-engine
-git tag v2.0.0-alpha.1 && git push --tags
-# open a PR v2-stealth-engine -> main, or merge if you're confident
+git push origin main
+git tag v2.0.0 && git push --tags
 ```
 
 ---
@@ -49,9 +49,11 @@ Each of these is a ranked list people browse to find MCP servers — high-intent
 
 One-liner for directory entries:
 
-> **LinkedIn MCP** — profiles, search, jobs, companies, feed, and messaging as
-> structured JSON. Stealth-browser engine (passes Cloudflare), headless-capable,
-> with built-in rate-limiting and a safety circuit-breaker.
+> **LinkedIn MCP** — profiles, people/job/company search, feed, and messaging as
+> structured JSON, plus **gated writes** (connect, message, post, react, comment)
+> that hit LinkedIn's API directly instead of clicking buttons. Stealth-browser
+> engine (passes Cloudflare), headless-capable, built-in rate-limiting + safety
+> circuit-breaker. 22 tools, 166 tests.
 
 ---
 
@@ -85,12 +87,21 @@ Tools: Kap / Gifox (macOS) → drop the GIF at the top of the README.
 > same-origin, the exact path the web app uses — so you get the structured API
 > response, not parsed page text. It's locale-independent and survives redesigns.
 >
-> It logs in headful once, then runs headless on a server. There's a built-in
-> safety layer (per-action daily caps, human-paced delays, and a circuit breaker
-> that hard-stops on any checkpoint) — risk reduction, not a guarantee. I'm
-> upfront in the README: no LinkedIn automation is ban-proof.
+> The writes (connect / message / post / react / comment) work the same way:
+> instead of clicking rendered buttons — which is where most LinkedIn automation
+> breaks (the Connect button hides under a "More" menu, the message composer is a
+> race) — it POSTs the exact requests the web app sends. I captured each one off
+> the live SPA and verified them on a burner, and every write returns a structured
+> status (ok / duplicate / already_connected / restricted / quota_exhausted)
+> instead of a hopeful "I clicked it."
 >
-> TypeScript, 12 tools, 135 tests. Feedback welcome, especially on the
+> It logs in headful once, then runs headless on a server. Built-in safety layer
+> (per-action daily caps, human-paced delays, circuit breaker that hard-stops on
+> any checkpoint) — risk reduction, not a guarantee. I'm upfront in the README:
+> no LinkedIn automation is ban-proof (I burned through a few test accounts
+> proving it).
+>
+> TypeScript, 22 tools, 166 tests. Feedback welcome, especially on the
 > Cloudflare/stealth approach.
 >
 > Repo: https://github.com/devag7/linkedin-mcp
@@ -119,9 +130,13 @@ forever. So it runs a real stealth browser to pass the challenge, then calls the
 API *from inside the page*. Structured data, not scraped DOM — survives UI
 changes + works in any locale.
 
-3/ Logs in once with a window, then runs headless on a server. Built-in daily
+3/ Writes too — connect, message, post, react, comment — but as direct API
+POSTs, not button-clicking (where LinkedIn bots usually break). Each one captured
+off the live app + verified, returning a real status, not "I clicked it."
+
+4/ Logs in once with a window, then runs headless on a server. Built-in daily
 caps + human pacing + a kill-switch on any checkpoint. No tool is ban-proof and
-I say so in the README. TS, 12 tools, 135 tests. ⭐ + feedback welcome: [repo]
+I say so in the README. TS, 22 tools, 166 tests. ⭐ + feedback welcome: [repo]
 
 ---
 
@@ -129,9 +144,13 @@ I say so in the README. TS, 12 tools, 135 tests. ⭐ + feedback welcome: [repo]
 
 | | DOM-scraping LinkedIn MCPs | This |
 |---|---|---|
-| Data | scraped page text (brittle, locale-bound) | **structured API JSON** |
+| Reads | scraped page text (brittle, locale-bound) | **structured API JSON** |
+| Writes | click rendered buttons (break on UI changes) | **direct Voyager `POST`, captured + verified** |
+| Write feedback | "clicked it" → hope | **structured status** (ok/duplicate/restricted/…) |
 | Headless | flaky | **verified** |
-| Safety (caps/pacing/breaker) | none | **built-in** |
+| Safety (caps/pacing/breaker) | none | **built-in, 166 tests** |
 | Zombie browser processes | common | **reaped on close** |
 
 Lead with this. It's true, specific, and credible — which is what earns the star.
+The writes row is the freshest, hardest-to-copy edge: most LinkedIn MCPs only
+read, or write by clicking; verified API writes with real status codes are rare.

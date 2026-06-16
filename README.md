@@ -9,9 +9,11 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![MCP](https://img.shields.io/badge/MCP-Compatible-purple?logo=anthropic&logoColor=white)](https://modelcontextprotocol.io/)
 
-**Give Claude, Cursor, and any MCP client access to LinkedIn — profiles, search, jobs, companies, messaging, and your network — as clean structured JSON.**
+**Give Claude, Cursor, and any MCP client access to LinkedIn — profiles, people/job/company search, feed, messaging, and your network — as clean structured JSON.**
 
-> ⚠️ **v2 is a work in progress.** The architecture and safety layer are built and tested; the tool surface is being expanded. Read [Status](#-status) and the [Disclaimer](DISCLAIMER.md) before use. There is **no such thing as a ban-proof LinkedIn tool** — see [Account safety](#-account-safety).
+**22 tools** · reads + **gated writes** (connect, message, post, react, comment) · a real **safety layer** (daily caps, human pacing, circuit breaker) · **166 tests**.
+
+> ⚠️ Automating LinkedIn violates its User Agreement and can get an account restricted. **No tool is ban-proof — and this one says so up front.** Use a secondary account; read [Account safety](#-account-safety) and [DISCLAIMER.md](DISCLAIMER.md) first.
 
 </div>
 
@@ -35,10 +37,11 @@ That last point is the edge over DOM-scraping tools: in-page API calls are **loc
 | | |
 |---|---|
 | 🧩 **Structured JSON** | In-page Voyager API calls return normalized data, shaped into compact objects — not brittle innerText scraping. |
-| 🔥 **One warm session** | A single persistent browser per process (cookies + Cloudflare clearance survive restarts). No per-call relaunch, explicit `close_session`, signal-handled teardown — no zombie Chrome. |
+| ✍️ **Writes are API calls, not button-clicking** | `connect` / `message` / `post` / `react` / `comment` POST straight to Voyager — the **exact requests the web app sends, captured and verified live**. No hunting for a "Connect" button under a sticky navbar, no composer-dialog race. Every write returns a **structured status** (`ok` / `duplicate` / `already_connected` / `restricted` / `quota_exhausted` / …) — never a blind "sent: true". |
 | 🛡️ **Safety layer built in** | Serial queue, human-paced jittered delays, per-action **daily budgets**, account **warmup ramp**, and a **circuit breaker** that hard-stops on any checkpoint/captcha. (Risk reduction — *not* a safety guarantee.) |
-| 🌍 **Locale-independent** | API + embedded-JSON parsing, not English-only DOM selectors. |
-| 🔒 **Local & private** | Session stored under `~/.linkedin-mcp/` with `0700/0600` perms; cookie values are never logged. |
+| 🔥 **One warm session** | A single persistent browser per process (cookies + Cloudflare clearance survive restarts). Explicit `close_session`, signal-handled teardown — no zombie Chrome. |
+| 🌍 **Locale-independent** | API + embedded-JSON parsing, not English-only DOM selectors — survives UI redesigns and translations. |
+| 🔒 **Local & private** | Session stored under `~/.linkedin-mcp/` with `0700/0600` perms; no cookies/tokens to paste, none ever logged. |
 
 ---
 
@@ -46,83 +49,100 @@ That last point is the edge over DOM-scraping tools: in-page API calls are **loc
 
 | | DOM-scraping LinkedIn MCPs | **This** |
 |---|---|---|
-| Data | scraped page text (brittle, locale-bound) | **structured API JSON** |
+| Reads | scraped page text (brittle, locale-bound) | **structured API JSON** |
+| Writes (connect/message/post) | click rendered buttons (break on sticky navbars, dialog races, localized labels) | **direct Voyager `POST`, captured + verified live** |
+| Write feedback | "clicked it" → hope | **structured status** (ok / duplicate / restricted / quota_exhausted / …) |
 | Resilience | breaks on UI tweaks / translations | **API + embedded-JSON, locale-proof** |
-| Headless / server | flaky | **✅ verified** |
-| Safety (caps, pacing, circuit breaker) | none | **✅ built-in, 135 tests** |
+| Safety (caps, pacing, circuit breaker) | none | **✅ built-in, 166 tests** |
 | Zombie browser processes | common | **✅ reaped on close** |
 | Language | Python | TypeScript + official MCP SDK |
 
-We hit LinkedIn's own API from inside the challenge-passed browser — so you get
-the structured response, not parsed HTML. (Shipping checklist + launch notes:
-[LAUNCH.md](LAUNCH.md).)
+We hit LinkedIn's own API from inside the challenge-passed browser — reads *and*
+writes — so you get the structured response and a real status, not parsed HTML
+and a hopeful click. (Shipping checklist + launch notes: [LAUNCH.md](LAUNCH.md).)
 
 ## 📦 Status
 
-This is an honest, in-progress v2. Here's exactly where it stands:
+Full transparency — exactly where every piece stands (and what's still alpha):
 
 | Area | State |
 |---|---|
 | Stealth browser engine (patchright) | ✅ built, **live-proven** |
 | In-page Voyager fetch (the core mechanism) | ✅ **live-verified** (returns structured JSON) |
-| Safety layer (queue / pacer / budgets / circuit-breaker) | ✅ built, 130+ unit tests |
+| Safety layer (queue / pacer / budgets / circuit-breaker) | ✅ built, 166 unit tests |
 | **Profile** — `get_profile`, `get_my_profile` (name, headline, summary, experience, education, skills, certifications, languages) | ✅ live-verified |
 | **Feed / notifications** — `get_feed`, `get_notifications` | ✅ live-verified |
 | **Jobs / messaging** — `search_jobs`, `get_job_details`, `get_inbox`, `get_conversation` | ✅ live-verified |
 | **People / companies** — `search_people`, `search_companies`, `get_company`, `get_company_posts`, `get_company_employees` (DOM fallback) | ✅ live-verified |
 | **Network** — `get_pending_invitations` (received + sent) | ✅ |
 | **Session** — `whoami`, `health_check` (live Voyager probe + budget headroom), `close_session` | ✅ |
-| **Write tools** — `connect_with_person`, `send_message`, `create_post`, `react_to_post`, `comment_on_post` | ⚠️ alpha — gated (`confirm:true` + caps), structured statuses; all 5 endpoints capture/live-verified on a burner |
+| **Write tools** — `connect_with_person`, `send_message`, `create_post`, `react_to_post`, `comment_on_post` | ✅ all 5 endpoints captured + live-verified on a burner; gated (`confirm:true` + daily caps), structured statuses. Still ⚠️ **alpha** — these take real, often irreversible actions; use a throwaway account. |
 
-**22 tools.**
+**22 tools.** typecheck + 166 tests green.
 
-The live data path requires a **headful** Chrome (a real window) — that's what passes Cloudflare. Headless/server environments are unreliable and frequently IP-flagged.
+**Login is headful, the server is headless.** The one-time `--login` opens a real
+Chrome window (to clear Cloudflare and let you solve any captcha/2FA). After that
+the persistent profile carries the clearance, so the server runs **headless** —
+verified returning live data. Use a **residential IP**; datacenter/VPN IPs are
+often pre-flagged by Cloudflare regardless of headless vs headful.
 
 ---
 
 ## 🚀 Quick start
 
-```bash
-git clone https://github.com/devag7/linkedin-mcp.git
-cd linkedin-mcp
-npm install
-npm run setup:browser        # installs the Chrome patchright drives
-
-npm run login                # opens a real Chrome — log in to LinkedIn once
-npm run spike                # verify: should fetch your profile as JSON
-```
-
-`login` persists your session to `~/.linkedin-mcp/profile/`. After that, point your MCP client at the server:
-
-### Headless / server deployment
-
-The **one-time `--login` needs a real window** (to clear the Cloudflare
-challenge and let you solve any captcha/2FA). After that, the persistent
-profile carries the Cloudflare clearance + session, so the server runs
-**headless** — verified returning live data:
+**1. Log in once** (opens a real Chrome window — sign in, solve any captcha/2FA):
 
 ```bash
-LINKEDIN_HEADLESS=true node dist/index.js     # server/CI friendly, no display
+npx -y linkedin-mcp-tools@latest --login
 ```
 
-Run `--login` once on a machine with a display (or via VNC/remote desktop),
-copy `~/.linkedin-mcp/profile/` to your server, then run headless there. Use a
-**residential IP** — datacenter/VPN IPs are frequently pre-flagged by Cloudflare
-regardless of headless vs headful.
+Needs Google Chrome installed (or run `npx patchright install chrome` once). Your
+session — Cloudflare clearance and all — persists to `~/.linkedin-mcp/profile/`.
 
+**2. Point your MCP client at it.** Claude Desktop / Cursor / Claude Code config:
 
 ```json
 {
   "mcpServers": {
     "linkedin": {
-      "command": "node",
-      "args": ["/absolute/path/to/linkedin-mcp/dist/index.js"]
+      "command": "npx",
+      "args": ["-y", "linkedin-mcp-tools@latest"]
     }
   }
 }
 ```
 
-Run `npm run build` first to produce `dist/`.
+Then just ask: *"Get my LinkedIn profile and summarize my experience"* or *"Find 5
+recruiters at Google."*
+
+<details>
+<summary><b>From source / contributing</b></summary>
+
+```bash
+git clone https://github.com/devag7/linkedin-mcp.git
+cd linkedin-mcp
+npm install
+npm run setup:browser     # installs the Chrome patchright drives
+npm run login             # log in once
+npm run spike             # verify: fetches your profile as JSON
+npm run build             # produces dist/
+```
+
+MCP config: `"command": "node", "args": ["/absolute/path/to/dist/index.js"]`.
+</details>
+
+### Headless / server deployment
+
+The one-time `--login` needs a window; the server then runs **headless** (verified
+returning live data). Run `--login` on a machine with a display (or via VNC),
+copy `~/.linkedin-mcp/profile/` to your server, and run there:
+
+```bash
+LINKEDIN_HEADLESS=true npx -y linkedin-mcp-tools@latest   # no display needed
+```
+
+Use a **residential IP** — datacenter/VPN IPs are frequently pre-flagged by
+Cloudflare regardless of headless vs headful.
 
 ---
 
@@ -146,7 +166,7 @@ Defaults err conservative:
 
 | Variable | Default | Description |
 |---|---|---|
-| `LINKEDIN_HEADLESS` | `false` | Headful is strongly recommended (passes Cloudflare; allows manual login). |
+| `LINKEDIN_HEADLESS` | `true` | Server runs headless. `--login` always opens a real window regardless. Set `false` to watch the browser. |
 | `LINKEDIN_CHROME_PATH` | — | Explicit Chrome binary path (else patchright's). |
 | `LINKEDIN_PROFILE_DIR` | `~/.linkedin-mcp/profile` | Persistent browser profile. |
 | `LINKEDIN_IDLE_TIMEOUT_MS` | `300000` | Close the browser after this idle time (0 disables). |

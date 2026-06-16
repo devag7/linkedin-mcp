@@ -4,7 +4,6 @@
   "description": "LinkedIn MCP server — structured LinkedIn data via a real stealth-browser session. Profiles, search, jobs, companies, messaging, network. Works with Claude, Cursor, and any MCP client.",
   "type": "module",
   "main": "dist/index.js",
-  "types": "dist/index.d.ts",
   "bin": {
     "linkedin-mcp": "dist/index.js"
   },
@@ -55,7 +54,12 @@
     "anthropic",
     "cursor",
     "ai-assistant",
-    "remote-mcp"
+    "voyager",
+    "recruiting",
+    "sales",
+    "prospecting",
+    "web-scraping",
+    "playwright"
   ],
   "license": "MIT",
   "author": "Dev Agarwalla",

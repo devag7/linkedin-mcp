@@ -3,13 +3,14 @@
 /**
  * LinkedIn MCP Server — Entry Point
  *
- * The most reliable LinkedIn MCP server for AI assistants.
- * 36 tools, remote-first, zero local dependencies.
+ * 22 tools (reads + gated writes) for Claude, Cursor, and any MCP client.
+ * Drives a real stealth Chrome to clear Cloudflare, then queries LinkedIn's
+ * Voyager API from inside the authenticated page → structured JSON.
  *
  * Usage:
- *   npx linkedin-mcp-tools                     # stdio mode (default)
+ *   npx linkedin-mcp-tools --login              # one-time: opens Chrome, log in
+ *   npx linkedin-mcp-tools                      # stdio mode (default)
  *   npx linkedin-mcp-tools --transport http     # HTTP mode on port 3000
- *   npx linkedin-mcp-tools --login              # One-time credential setup
  *
  * @see https://github.com/devag7/linkedin-mcp
  */
@@ -149,15 +150,17 @@ function printHelp(): void {
   // eslint-disable-next-line no-console -- CLI help text before MCP transport starts
   console.log(`
 🔗 LinkedIn MCP Server v2.0.0
-   The most reliable LinkedIn MCP server for AI assistants.
+   LinkedIn for AI assistants — structured JSON via a real stealth-browser session.
 
 USAGE:
   linkedin-mcp [OPTIONS]
 
 COMMANDS:
-  --login                  Save LinkedIn credentials (one-time setup)
-  --logout                 Clear saved credentials
-  --status                 Show current auth status
+  --login                  Open a real Chrome window and sign in to LinkedIn
+                           once; the session is saved to the browser profile.
+  --status                 Show the current login/profile status
+  --logout                 Clear the saved session
+  --spike                  Verify the live data path (fetches your profile)
 
 OPTIONS:
   -t, --transport <type>   Transport mode: stdio (default) or http
@@ -166,23 +169,21 @@ OPTIONS:
   -h, --help               Show this help message
   -v, --version            Show version
 
-EXAMPLES:
-  # One-time login (saves to ~/.linkedin-mcp/credentials.json)
+GETTING STARTED:
+  # 1) One-time login (opens Chrome; solve any captcha/2FA yourself)
   linkedin-mcp --login
 
-  # Run with stdio (for Claude Desktop / Claude Code)
+  # 2) Run for Claude Desktop / Cursor / Claude Code (stdio)
   linkedin-mcp
 
-  # Run with HTTP (for remote access)
+  # Or HTTP transport for an MCP client over the network
   linkedin-mcp --transport http --port 3000
 
-  # Run with environment variables (overrides saved credentials)
-  LINKEDIN_COOKIE="your_li_at_cookie" linkedin-mcp
-
 AUTHENTICATION:
-  Credentials are loaded in this order (first wins):
-  1. Environment variables (LINKEDIN_COOKIE, LINKEDIN_ACCESS_TOKEN)
-  2. Saved credentials (~/.linkedin-mcp/credentials.json via --login)
+  No cookies or tokens to paste. You log in once in a real browser window
+  (--login); the authenticated, Cloudflare-cleared session persists in
+  LINKEDIN_PROFILE_DIR (default ~/.linkedin-mcp/profile). Requires Google
+  Chrome installed, or run \`patchright install chrome\` once.
 
 DOCUMENTATION:
   https://github.com/devag7/linkedin-mcp

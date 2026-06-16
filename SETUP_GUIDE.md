@@ -1,142 +1,100 @@
-# 📘 LinkedIn MCP — Complete Setup & Usage Guide
+# 📘 LinkedIn MCP — Setup & Usage Guide
 
-> Get your AI assistant (Claude, Cursor, etc.) fully connected to LinkedIn in 5 minutes.
+> Connect Claude, Cursor, or any MCP client to LinkedIn in a few minutes.
 
 ---
 
-## Table of Contents
+## Contents
 
-- [Quick Setup (2 minutes)](#quick-setup-2-minutes)
-- [Authentication Setup](#authentication-setup)
-- [Claude Desktop Setup](#claude-desktop-setup)
-- [Claude Code (CLI) Setup](#claude-code-cli-setup)
-- [Cursor Setup](#cursor-setup)
-- [Tool Reference & Usage Examples](#tool-reference--usage-examples)
+- [Requirements](#requirements)
+- [Quick setup](#quick-setup)
+- [Claude Desktop](#claude-desktop)
+- [Claude Code (CLI)](#claude-code-cli)
+- [Cursor](#cursor)
+- [Tool reference](#tool-reference)
+- [Headless / server](#headless--server)
 - [Troubleshooting](#troubleshooting)
+- [Account safety](#account-safety)
 
 ---
 
-## Quick Setup (2 minutes)
+## Requirements
 
-### Step 1: One-Time Login
+- **Node.js ≥ 20**
+- **Google Chrome** installed (the engine drives your real Chrome). No Chrome?
+  Run `npx patchright install chrome` once to install the bundled build.
+- A LinkedIn account — ideally a **secondary/throwaway** one (see
+  [Account safety](#account-safety)).
 
-```bash
-npx -y linkedin-mcp-tools --login
-```
-
-This will prompt you to paste your LinkedIn `li_at` cookie. Here's how to get it:
-
-1. Open **linkedin.com** in your browser and sign in
-2. Open DevTools: `F12` (Windows/Linux) or `Cmd+Option+I` (Mac)
-3. Go to **Application** → **Cookies** → **https://www.linkedin.com**
-4. Find the cookie named **`li_at`** — copy its value
-5. Paste it when prompted
-
-Your credentials are saved to `~/.linkedin-mcp/credentials.json` — you never need to do this again unless the cookie expires (typically lasts 6-12 months).
-
-### Step 2: Verify Setup
-
-```bash
-npx -y linkedin-mcp-tools --status
-```
-
-Expected output:
-```
-🔗 LinkedIn MCP — Auth Status
-
-  Saved credentials:  ✅ Found (~/.linkedin-mcp/credentials.json)
-  Env LINKEDIN_COOKIE: ❌ Not set
-  Env LINKEDIN_ACCESS_TOKEN: ❌ Not set
-
-  Active method: Saved credentials
-```
-
-### Step 3: Add to Your AI Client
-
-See the sections below for Claude Desktop, Claude Code, or Cursor.
+There are **no cookies or API tokens to paste.** You sign in once in a real
+browser window; the session persists locally.
 
 ---
 
-## Authentication Setup
+## Quick setup
 
-### Option A: Cookie Auth (Recommended — All 36 Tools)
-
-```bash
-npx -y linkedin-mcp-tools --login
-# Select option 1 (Cookie Auth)
-# Paste your li_at cookie
-```
-
-### Option B: OAuth 2.0 (Official API — Limited Tools)
-
-1. Go to [LinkedIn Developer Portal](https://www.linkedin.com/developers/)
-2. Create an app → Get access token
-3. Run:
+### 1. Log in once
 
 ```bash
-npx -y linkedin-mcp-tools --login
-# Select option 2 (OAuth)
-# Paste your access token
+npx -y linkedin-mcp-tools@latest --login
 ```
 
-### Option C: Environment Variables (CI/Docker)
+A real Chrome window opens. Sign in to LinkedIn (solve any captcha/2FA yourself).
+The authenticated, Cloudflare-cleared session is saved to
+`~/.linkedin-mcp/profile/`. You won't need to do this again until the session
+expires.
+
+### 2. Verify
 
 ```bash
-export LINKEDIN_COOKIE="your_li_at_cookie_value"
-npx -y linkedin-mcp-tools
+npx -y linkedin-mcp-tools@latest --status   # shows login/profile state
+npx -y linkedin-mcp-tools@latest --spike    # fetches your profile as JSON
 ```
 
-> **Priority order:** Env vars → Saved credentials → None
+### 3. Add it to your AI client
+
+Pick your client below.
 
 ---
 
-## Claude Desktop Setup
+## Claude Desktop
 
-### Method 1: Download Config File
-
-1. Download `claude-desktop-config.json` from the [latest release](https://github.com/devag7/linkedin-mcp/releases)
-2. Open Claude Desktop → Settings → Developer → Edit Config
-3. Merge the contents into your config file
-4. Restart Claude Desktop
-
-### Method 2: Manual Config
-
-Add this to `~/Library/Application Support/Claude/claude_desktop_config.json` (Mac) or `%APPDATA%\Claude\claude_desktop_config.json` (Windows):
+Edit `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS) or
+`%APPDATA%\Claude\claude_desktop_config.json` (Windows):
 
 ```json
 {
   "mcpServers": {
     "linkedin": {
       "command": "npx",
-      "args": ["-y", "linkedin-mcp-tools"]
+      "args": ["-y", "linkedin-mcp-tools@latest"]
     }
   }
 }
 ```
 
-> **Note:** Make sure you've run `npx -y linkedin-mcp-tools --login` first!
+Restart Claude Desktop. (Make sure you ran `--login` first.)
 
 ---
 
-## Claude Code (CLI) Setup
+## Claude Code (CLI)
 
 ```bash
-# Add LinkedIn MCP to Claude Code
-claude mcp add linkedin -- npx -y linkedin-mcp-tools
+claude mcp add linkedin -- npx -y linkedin-mcp-tools@latest
 ```
 
 ---
 
-## Cursor Setup
+## Cursor
 
-Add to `.cursor/mcp.json` in your project:
+Add to `.cursor/mcp.json` in your project (or the global Cursor MCP settings):
 
 ```json
 {
   "mcpServers": {
     "linkedin": {
       "command": "npx",
-      "args": ["-y", "linkedin-mcp-tools"]
+      "args": ["-y", "linkedin-mcp-tools@latest"]
     }
   }
 }
@@ -144,181 +102,96 @@ Add to `.cursor/mcp.json` in your project:
 
 ---
 
-## Tool Reference & Usage Examples
+## Tool reference
 
-### 📋 Profile Tools (7 tools)
+**22 tools.** Reads return structured JSON. Writes are **gated** — they require
+`confirm: true` and count against daily safety caps.
 
-**Get someone's profile:**
-> "Get the LinkedIn profile of satyanadella"
+### Profile
+| Tool | What it does |
+|---|---|
+| `get_my_profile` | Your own profile (experience, education, skills, certs, languages) |
+| `get_profile` | A profile by public id, e.g. *"Get the profile of satyanadella"* |
 
-**Get your own profile:**
-> "Show me my LinkedIn profile"
+### Search & discovery
+| Tool | What it does |
+|---|---|
+| `search_people` | *"Find 5 recruiters at Google"* |
+| `search_jobs` | *"Search software-engineer jobs in San Francisco"* |
+| `get_job_details` | Full posting by job id |
+| `search_companies` | *"Search for AI startups"* |
+| `get_company` | Company overview by slug, e.g. *"Tell me about anthropicresearch"* |
+| `get_company_posts` | A company's recent posts |
+| `get_company_employees` | People LinkedIn surfaces for a company |
 
-**Get someone's skills with endorsements:**
-> "What skills does billgates have on LinkedIn?"
+### Feed & messaging
+| Tool | What it does |
+|---|---|
+| `get_feed` | Your home feed |
+| `get_notifications` | Your notifications |
+| `get_inbox` | Your messaging conversations |
+| `get_conversation` | Messages in one conversation |
+| `get_pending_invitations` | Pending invites (received + sent) |
 
-**Get recommendations:**
-> "Show me recommendations for elonmusk"
+### Writes ⚠️ (gated: `confirm: true` + daily caps)
+| Tool | What it does |
+|---|---|
+| `connect_with_person` | Send a connection request (optional note) |
+| `send_message` | Message a member, or reply into an existing thread |
+| `create_post` | Publish a text post to your feed |
+| `react_to_post` | React (LIKE / PRAISE / …) to a post |
+| `comment_on_post` | Comment on a post |
 
-**Get someone's recent activity:**
-> "What has satyanadella been posting about recently?"
+Every write returns a **structured status** (`ok` / `duplicate` /
+`already_connected` / `restricted` / `quota_exhausted` / `not_allowed` /
+`failed`) — never a blind success.
 
-**Get related profiles:**
-> "Show me profiles similar to sundarpichai"
-
----
-
-### 💬 Messaging Tools (6 tools)
-
-**Read your inbox:**
-> "Show me my LinkedIn messages"
-
-**Read a specific conversation:**
-> "Show me my conversation with John Smith"
-
-**Search messages:**
-> "Search my LinkedIn messages for 'interview'"
-
-**Send a message:**
-> "Send a LinkedIn message to johndoe saying 'Great connecting with you!'"
-
-**Reply to a thread:**
-> "Reply to my latest LinkedIn conversation with 'Thanks for the update!'"
-
-**Mark as read:**
-> "Mark my LinkedIn conversation with Jane as read"
-
----
-
-### 🏢 Company Tools (5 tools)
-
-**Get company info:**
-> "Tell me about Google on LinkedIn"
-
-**Get company posts:**
-> "What has Microsoft been posting on LinkedIn?"
-
-**Search companies:**
-> "Search for AI startups on LinkedIn"
-
-**Get employees:**
-> "Who are the engineers at OpenAI on LinkedIn?"
-
-**Get company jobs:**
-> "What jobs are open at Google?"
+### Session
+| Tool | What it does |
+|---|---|
+| `whoami` | Server version, login state, tool count |
+| `health_check` | Live Voyager probe + today's safety-budget headroom |
+| `close_session` | Close the browser, free resources |
 
 ---
 
-### 💼 Jobs Tools (4 tools)
+## Headless / server
 
-**Search jobs:**
-> "Search for software engineer jobs in San Francisco on LinkedIn"
+The one-time `--login` needs a real window. After that the server runs
+**headless** (verified). Run `--login` on a machine with a display (or via VNC),
+copy `~/.linkedin-mcp/profile/` to your server, then:
 
-**Get job details:**
-> "Get details about this LinkedIn job: [job URL or ID]"
+```bash
+LINKEDIN_HEADLESS=true npx -y linkedin-mcp-tools@latest
+```
 
-**Get saved jobs:**
-> "Show me my saved LinkedIn jobs"
-
-**Get applicants (recruiters):**
-> "Who applied to our senior developer position?"
-
----
-
-### 🤝 Network Tools (6 tools)
-
-**Send connection request:**
-> "Connect with satyanadella on LinkedIn with the note 'Loved your recent post!'"
-
-**View connections:**
-> "Show me my recent LinkedIn connections"
-
-**View pending invitations:**
-> "Show me my pending LinkedIn connection requests"
-
-**Accept invitation:**
-> "Accept the connection request from Sarah"
-
-**Withdraw invitation:**
-> "Cancel my connection request to that person"
-
-**Network stats:**
-> "How many LinkedIn connections do I have?"
-
----
-
-### 📰 Feed Tools (5 tools)
-
-**Read your feed:**
-> "What's on my LinkedIn feed?"
-
-**Create a post:**
-> "Create a LinkedIn post about my new open-source project"
-
-**React to a post:**
-> "Like the latest post from sundarpichai"
-
-**Comment on a post:**
-> "Comment 'Great insights!' on that post"
-
-**Search posts:**
-> "Search LinkedIn for posts about 'artificial intelligence'"
-
----
-
-### 🔧 Utility Tools (3 tools)
-
-**Server info:**
-> "What LinkedIn MCP tools do you have available?"
-
-**Health check:**
-> "Is the LinkedIn MCP connection working?"
-
-**Notifications:**
-> "Show me my LinkedIn notifications"
+Use a **residential IP** — datacenter/VPN IPs are often pre-flagged by Cloudflare.
 
 ---
 
 ## Troubleshooting
 
-### "Authentication error" when calling tools
+**"Run --login" / auth errors when calling tools** — the session expired or never
+completed. Re-run `npx -y linkedin-mcp-tools@latest --login`.
 
-```bash
-# Check your auth status
-npx -y linkedin-mcp-tools --status
+**Cloudflare challenge / HTML instead of JSON** — re-run `--login` headful on a
+clean residential IP; datacenter IPs get challenged.
 
-# Re-login if needed
-npx -y linkedin-mcp-tools --login
-```
+**Client doesn't detect the server** — confirm `npx` is on your PATH, the config
+path is correct, and restart the client. Test directly with
+`npx -y linkedin-mcp-tools@latest --spike`.
 
-### Cookie expired
-
-LinkedIn cookies typically last 6-12 months. If you get auth errors:
-
-1. Get a fresh `li_at` cookie from your browser
-2. Run `npx -y linkedin-mcp-tools --login` and paste the new cookie
-
-### Claude Desktop not detecting the server
-
-1. Verify config file location:
-   - **Mac**: `~/Library/Application Support/Claude/claude_desktop_config.json`
-   - **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
-2. Make sure `npx` is in your PATH
-3. Restart Claude Desktop completely
-
-### Rate limiting
-
-The server includes built-in rate limiting (30 requests/minute by default). If you hit limits:
-
-```bash
-# Increase the limit via env var
-RATE_LIMIT_RPM=60 npx -y linkedin-mcp-tools
-```
+**Chrome won't launch** — install Google Chrome, or run
+`npx patchright install chrome` once.
 
 ---
 
-## Need Help?
+## Account safety
 
-- 🐛 [Report a bug](https://github.com/devag7/linkedin-mcp/issues/new?template=bug_report.md)
-- 💡 [Request a feature](https://github.com/devag7/linkedin-mcp/issues/new?template=feature_request.md)
-- ⭐ [Star the repo](https://github.com/devag7/linkedin-mcp) to support the project!
+Automating LinkedIn violates its User Agreement and **can get an account
+restricted or banned — no tool prevents that.** The built-in safety layer (daily
+caps, human-paced delays, account warmup, and a circuit breaker that hard-stops
+on any checkpoint) **reduces risk; it does not eliminate it.**
+
+Use a **secondary account**, a **residential IP**, and warm it up slowly. Full
+notice: [DISCLAIMER.md](DISCLAIMER.md).
