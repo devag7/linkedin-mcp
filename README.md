@@ -4,6 +4,7 @@
 
 ### LinkedIn for AI assistants — structured data via a real, stealth browser session
 
+[![CI](https://github.com/devag7/linkedin-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/devag7/linkedin-mcp/actions/workflows/ci.yml)
 [![npm version](https://img.shields.io/npm/v/linkedin-mcp-tools?color=cb0000&logo=npm)](https://www.npmjs.com/package/linkedin-mcp-tools)
 [![MIT License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
