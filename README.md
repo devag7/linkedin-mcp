@@ -9,6 +9,7 @@
 [![MIT License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![MCP](https://img.shields.io/badge/MCP-Compatible-purple?logo=anthropic&logoColor=white)](https://modelcontextprotocol.io/)
+[![Glama score](https://glama.ai/mcp/servers/devag7/linkedin-mcp/badges/score.svg)](https://glama.ai/mcp/servers/devag7/linkedin-mcp)
 
 **Give Claude, Cursor, and any MCP client access to LinkedIn — profiles, people/job/company search, feed, messaging, and your network — as clean structured JSON.**
 
