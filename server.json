@@ -1,7 +1,7 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.devag7/linkedin-mcp",
-  "description": "LinkedIn for AI assistants — profiles, people/job/company search, feed and messaging as structured JSON, plus gated writes (connect/message/post/react/comment) via LinkedIn's API instead of DOM-clicking. Stealth-browser engine that passes Cloudflare; built-in safety layer.",
+  "description": "LinkedIn for AI assistants — search, profiles, jobs, feed, messaging, and gated writes.",
   "repository": {
     "url": "https://github.com/devag7/linkedin-mcp",
     "source": "github"

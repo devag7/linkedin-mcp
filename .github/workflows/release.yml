@@ -109,6 +109,9 @@ jobs:
     needs: release
     if: needs.release.outputs.is_new == 'true'
     runs-on: ubuntu-latest
+    # The MCP Registry is in preview — don't fail the whole release if it hiccups
+    # (npm + GitHub Packages are the real distribution).
+    continue-on-error: true
     permissions:
       id-token: write
       contents: read
