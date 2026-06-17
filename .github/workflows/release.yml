@@ -100,3 +100,30 @@ jobs:
         run: npm publish --access=public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # Publish metadata to the official MCP Registry (registry.modelcontextprotocol.io).
+  # Authenticates via GitHub OIDC (proves ownership of the io.github.devag7
+  # namespace — no secret needed). Runs after the npm publish so the registry can
+  # verify the package's mcpName.
+  mcp-registry:
+    needs: release
+    if: needs.release.outputs.is_new == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Sync server.json version to package.json (single source)
+        run: |
+          V=$(node -p "require('./package.json').version")
+          jq --arg v "$V" '.version = $v | .packages[0].version = $v' server.json > server.tmp && mv server.tmp server.json
+          cat server.json
+      - name: Install mcp-publisher
+        run: curl -L "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_$(uname -s | tr '[:upper:]' '[:lower:]')_$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/').tar.gz" | tar xz mcp-publisher
+      - name: Wait for npm to propagate the new version
+        run: sleep 20
+      - name: Authenticate to MCP Registry (GitHub OIDC)
+        run: ./mcp-publisher login github-oidc
+      - name: Publish to MCP Registry
+        run: ./mcp-publisher publish
