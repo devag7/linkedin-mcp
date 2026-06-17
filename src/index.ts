@@ -18,17 +18,21 @@
 import { startServer } from './server.js';
 import type { ServerConfig, TransportType } from './types.js';
 import { Logger } from './types.js';
-import {
-  clearCredentials,
-  applyStoredCredentials,
-  hasStoredCredentials,
-} from './auth/store.js';
+import * as os from 'node:os';
+import * as path from 'node:path';
+import { rmSync, existsSync } from 'node:fs';
+import { BrowserEngine } from './browser/engine.js';
 import { interactiveBrowserLogin, runSpike } from './browser/login.js';
 import { runCapture } from './browser/capture.js';
 import { runWriteCapture } from './browser/writecapture.js';
 import { runWriteProbe } from './browser/writeprobe.js';
 import { VERSION } from './version.js';
 import { loadConfig } from './config/env.js';
+
+/** Resolve the persistent browser-profile directory (mirrors BrowserEngine). */
+function profileDir(): string {
+  return process.env.LINKEDIN_PROFILE_DIR || path.join(os.homedir(), '.linkedin-mcp', 'profile');
+}
 
 /**
  * Parse command-line arguments.
@@ -225,31 +229,37 @@ async function main(): Promise<void> {
   }
 
   if (config.action === 'logout') {
-    const cleared = clearCredentials(logger);
-    if (cleared) {
-      console.error('✅ Saved credentials cleared.');
+    const dir = profileDir();
+    if (existsSync(dir)) {
+      rmSync(dir, { recursive: true, force: true });
+      console.error(`✅ Logged out — browser profile cleared (${dir}). Run --login to sign in again.`);
     } else {
-      console.error('ℹ️  No saved credentials found.');
+      console.error('ℹ️  No saved session found — nothing to clear.');
     }
     process.exit(0);
   }
 
   if (config.action === 'status') {
-    const hasStored = hasStoredCredentials();
-    const hasEnvCookie = !!process.env.LINKEDIN_COOKIE;
-    const hasEnvOAuth = !!process.env.LINKEDIN_ACCESS_TOKEN;
-
-    console.error('\n🔗 LinkedIn MCP — Auth Status\n');
-    console.error(`  Saved credentials:  ${hasStored ? '✅ Found (~/.linkedin-mcp/credentials.json)' : '❌ None'}`);
-    console.error(`  Env LINKEDIN_COOKIE: ${hasEnvCookie ? '✅ Set' : '❌ Not set'}`);
-    console.error(`  Env LINKEDIN_ACCESS_TOKEN: ${hasEnvOAuth ? '✅ Set' : '❌ Not set'}`);
-    console.error(`\n  Active method: ${hasEnvOAuth ? 'OAuth (env)' : hasEnvCookie ? 'Cookie (env)' : hasStored ? 'Saved credentials' : 'None — run --login'}\n`);
+    const dir = profileDir();
+    console.error('\n🔗 LinkedIn MCP — Status\n');
+    console.error(`  Version:      ${VERSION}`);
+    console.error(`  Profile dir:  ${dir}`);
+    if (!existsSync(dir)) {
+      console.error('  Session:      ❌ none — run `--login` to sign in once\n');
+      process.exit(0);
+    }
+    const engine = new BrowserEngine(loadConfig(), logger);
+    try {
+      await engine.ensureContext();
+      const loggedIn = await engine.isLoggedIn().catch(() => false);
+      console.error(`  Session:      ${loggedIn ? '✅ logged in' : '⚠️  profile exists but not logged in — run `--login`'}\n`);
+    } catch (err) {
+      console.error(`  Session:      ⚠️  could not check (${err instanceof Error ? err.message : String(err)})\n`);
+    } finally {
+      await engine.shutdown();
+    }
     process.exit(0);
   }
-
-  // Apply stored credentials before server starts
-  // (env vars take precedence — applyStoredCredentials only fills gaps)
-  applyStoredCredentials(logger);
 
   try {
     await startServer(config);

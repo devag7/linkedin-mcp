@@ -1,6 +1,6 @@
 {
   "name": "linkedin-mcp-tools",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "LinkedIn MCP server — structured LinkedIn data via a real stealth-browser session. Profiles, search, jobs, companies, messaging, network. Works with Claude, Cursor, and any MCP client.",
   "type": "module",
   "main": "dist/index.js",

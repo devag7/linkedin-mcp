@@ -1,0 +1,42 @@
+# LinkedIn MCP
+
+> An MCP (Model Context Protocol) server that gives AI assistants — Claude,
+> Cursor, and any MCP client — access to LinkedIn as clean structured JSON.
+> It drives a real stealth Chrome to clear Cloudflare, then queries LinkedIn's
+> internal Voyager API from inside the authenticated page (same-origin) instead
+> of scraping the DOM. 22 tools: reads plus gated writes. npm: `linkedin-mcp-tools`.
+
+## What it does
+
+- **Reads** (structured JSON): profiles (`get_profile`, `get_my_profile`),
+  people/job/company search (`search_people`, `search_jobs`, `get_job_details`,
+  `search_companies`, `get_company`, `get_company_posts`, `get_company_employees`),
+  feed and notifications (`get_feed`, `get_notifications`), messaging
+  (`get_inbox`, `get_conversation`), network (`get_pending_invitations`).
+- **Writes** (gated behind `confirm:true` + daily caps, return a structured
+  status): `connect_with_person`, `send_message`, `create_post`, `react_to_post`,
+  `comment_on_post`. These POST directly to LinkedIn's API — the exact requests
+  the web app sends, captured and verified live — not button-clicking.
+- **Session/health**: `whoami`, `health_check`, `close_session`.
+
+## Why it's different
+
+- Hits LinkedIn's own Voyager API from inside a challenge-passed browser, so the
+  data is structured and locale-independent (survives UI redesigns), and writes
+  are real API calls with structured status codes, not brittle DOM clicks.
+- Built-in safety layer: serial queue, human-paced delays, per-action daily caps,
+  account warmup, and a circuit breaker that hard-stops on any checkpoint. Risk
+  reduction, not a guarantee — no LinkedIn automation is ban-proof.
+
+## Install
+
+- One-time login (opens Chrome, sign in once): `npx -y linkedin-mcp-tools@latest --login`
+- MCP client config: command `npx`, args `["-y","linkedin-mcp-tools@latest"]`
+- Requires Google Chrome (or `npx patchright install chrome`).
+
+## Links
+
+- Repo: https://github.com/devag7/linkedin-mcp
+- npm: https://www.npmjs.com/package/linkedin-mcp-tools
+- Setup guide: https://github.com/devag7/linkedin-mcp/blob/main/SETUP_GUIDE.md
+- Safety/disclaimer: https://github.com/devag7/linkedin-mcp/blob/main/DISCLAIMER.md

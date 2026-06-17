@@ -1,0 +1,48 @@
+{
+  "$comment": "Discovery manifest for MCP registries/directories. Version is intentionally NOT pinned here — it lives only in package.json / npm (single source of truth). See https://www.npmjs.com/package/linkedin-mcp-tools for the current version.",
+  "name": "linkedin-mcp-tools",
+  "displayName": "LinkedIn MCP",
+  "description": "LinkedIn for AI assistants — profiles, people/job/company search, feed and messaging as structured JSON, plus gated writes (connect/message/post/react/comment) via LinkedIn's API instead of DOM-clicking. Stealth-browser engine that passes Cloudflare; built-in safety layer.",
+  "vendor": "Dev Agarwalla",
+  "license": "MIT",
+  "homepage": "https://github.com/devag7/linkedin-mcp",
+  "repository": "https://github.com/devag7/linkedin-mcp",
+  "npm": "https://www.npmjs.com/package/linkedin-mcp-tools",
+  "categories": ["productivity", "social", "automation", "search", "recruiting", "sales"],
+  "transports": ["stdio", "http"],
+  "runtime": {
+    "command": "npx",
+    "args": ["-y", "linkedin-mcp-tools@latest"],
+    "requires": "Node.js >= 20 and Google Chrome (one-time `--login` to authenticate)"
+  },
+  "capabilities": {
+    "tools": true,
+    "resources": false,
+    "prompts": false
+  },
+  "tools": [
+    { "name": "get_my_profile", "type": "read", "summary": "The authenticated user's own profile." },
+    { "name": "get_profile", "type": "read", "summary": "A profile by public identifier." },
+    { "name": "search_people", "type": "read", "summary": "Search people by keywords." },
+    { "name": "search_jobs", "type": "read", "summary": "Search jobs by keywords/location." },
+    { "name": "get_job_details", "type": "read", "summary": "Full details for a job posting." },
+    { "name": "search_companies", "type": "read", "summary": "Search companies by keywords." },
+    { "name": "get_company", "type": "read", "summary": "Company overview by slug." },
+    { "name": "get_company_posts", "type": "read", "summary": "A company's recent posts." },
+    { "name": "get_company_employees", "type": "read", "summary": "Employees surfaced for a company." },
+    { "name": "get_feed", "type": "read", "summary": "Your home feed." },
+    { "name": "get_notifications", "type": "read", "summary": "Your notifications." },
+    { "name": "get_inbox", "type": "read", "summary": "Your messaging conversations." },
+    { "name": "get_conversation", "type": "read", "summary": "Messages in a conversation." },
+    { "name": "get_pending_invitations", "type": "read", "summary": "Pending invites (received + sent)." },
+    { "name": "connect_with_person", "type": "write", "gated": true, "summary": "Send a connection request." },
+    { "name": "send_message", "type": "write", "gated": true, "summary": "Send/reply to a message." },
+    { "name": "create_post", "type": "write", "gated": true, "summary": "Publish a text post." },
+    { "name": "react_to_post", "type": "write", "gated": true, "summary": "React to a post." },
+    { "name": "comment_on_post", "type": "write", "gated": true, "summary": "Comment on a post." },
+    { "name": "whoami", "type": "meta", "summary": "Server version, login state, tool count." },
+    { "name": "health_check", "type": "meta", "summary": "Live API probe + safety-budget headroom." },
+    { "name": "close_session", "type": "meta", "summary": "Close the browser, free resources." }
+  ],
+  "safety": "Automating LinkedIn violates its User Agreement and can get an account restricted. Writes are gated (confirm + daily caps) and a circuit breaker hard-stops on any checkpoint. Risk reduction, not a guarantee — no LinkedIn tool is ban-proof. Use a secondary account."
+}
