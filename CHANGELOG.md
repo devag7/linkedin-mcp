@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.3] - 2026-06-17
+
+Stable release. The 5 write tools are promoted out of alpha — payloads captured
+and live-verified, each returning a structured status. All 22 tools shipping.
+
+### Added
+- Published across npm, GitHub Releases, GitHub Packages, and the official **MCP
+  Registry** (`io.github.devag7/linkedin-mcp`).
+- `glama.json` + Glama score/card badges; AI-discovery files (`llms.txt`,
+  `AGENTS.md`, `mcp-manifest.json`).
+- Single-source version (`src/version.ts`) wired through the server, CLI, and
+  `--version`; version-driven automated release pipeline.
+
+### Changed
+- Write tools (`connect_with_person`, `send_message`, `create_post`,
+  `react_to_post`, `comment_on_post`) classified into structured statuses
+  (`ok` / `duplicate` / `already_connected` / `restricted` / `quota_exhausted`
+  / `not_allowed` / `failed`) — no more blind `sent: true`.
+
 ## [2.0.0] - 2026-06-14
 
 22 tools. Reads are live-verified; the 5 write tools are hardened and gated.

@@ -39,3 +39,10 @@ npm-debug.log*
 profile/
 .linkedin-mcp/
 local-test*.mjs
+
+# Internal dev notes — not for distribution
+BACKLOG.md
+LAUNCH.md
+
+# Local AI-tool config
+.serena/

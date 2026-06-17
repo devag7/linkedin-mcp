@@ -61,11 +61,11 @@ That last point is the edge over DOM-scraping tools: in-page API calls are **loc
 
 We hit LinkedIn's own API from inside the challenge-passed browser — reads *and*
 writes — so you get the structured response and a real status, not parsed HTML
-and a hopeful click. (Shipping checklist + launch notes: [LAUNCH.md](LAUNCH.md).)
+and a hopeful click.
 
 ## 📦 Status
 
-Full transparency — exactly where every piece stands (and what's still alpha):
+**Stable — v2, all 22 tools shipping.** Full transparency on exactly where every piece stands:
 
 | Area | State |
 |---|---|
@@ -78,7 +78,7 @@ Full transparency — exactly where every piece stands (and what's still alpha):
 | **People / companies** — `search_people`, `search_companies`, `get_company`, `get_company_posts`, `get_company_employees` (DOM fallback) | ✅ live-verified |
 | **Network** — `get_pending_invitations` (received + sent) | ✅ |
 | **Session** — `whoami`, `health_check` (live Voyager probe + budget headroom), `close_session` | ✅ |
-| **Write tools** — `connect_with_person`, `send_message`, `create_post`, `react_to_post`, `comment_on_post` | ✅ all 5 endpoints captured + live-verified on a burner; gated (`confirm:true` + daily caps), structured statuses. Still ⚠️ **alpha** — these take real, often irreversible actions; use a throwaway account. |
+| **Write tools** — `connect_with_person`, `send_message`, `create_post`, `react_to_post`, `comment_on_post` | ✅ all 5 endpoints captured + live-verified on a burner; gated (`confirm:true` + daily caps), structured statuses. ⚠️ These take real, often irreversible actions — keep the gate on and use a throwaway account. |
 
 **22 tools.** typecheck + 166 tests green.
 
@@ -193,6 +193,8 @@ npm run build
 MIT — see [LICENSE](LICENSE). Not affiliated with LinkedIn. Use at your own risk; see [DISCLAIMER.md](DISCLAIMER.md).
 
 <div align="center">
+
+[![linkedin-mcp MCP server](https://glama.ai/mcp/servers/devag7/linkedin-mcp/badges/card.svg)](https://glama.ai/mcp/servers/devag7/linkedin-mcp)
 
 Made by [Dev Agarwalla](https://github.com/devag7)
 
