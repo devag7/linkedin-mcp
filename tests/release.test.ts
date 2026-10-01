@@ -1,12 +1,15 @@
 /** Actual release helpers with synthetic destinations; never publish in tests. */
 import { describe, expect, it, vi } from 'vitest';
 import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
 import {
   releaseIdentity,
   packIdentity,
   readMetadata,
   packageState,
   verifyPackage,
+  verifyPublicGithubPackage,
   registryState,
   verifyRegistry,
   githubRelease,
@@ -24,6 +27,57 @@ const metadata = (value = pkg, digest = integrity) => ({
   versions: { [value.version]: { ...value, dist: { integrity: digest } } },
 });
 const response = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status });
+describe('public scoped destination', () => {
+  const publicPackage = {
+    name: 'linkedin-mcp-tools',
+    package_type: 'npm',
+    visibility: 'public',
+    repository: { full_name: 'devag7/linkedin-mcp' },
+  };
+  it('checks public visibility without sending workflow credentials', async () => {
+    const fetchImpl = vi.fn(async () => response(publicPackage));
+    await verifyPublicGithubPackage({ fetchImpl, token: 'synthetic-secret' });
+    expect(fetchImpl.mock.calls[0][1].headers.Authorization).toBeUndefined();
+  });
+  it.each([
+    { visibility: 'private' },
+    { visibility: 'internal' },
+    { name: 'another-package' },
+    { package_type: 'container' },
+    { repository: { full_name: 'another/repository' } },
+  ])('rejects nonpublic or unrelated metadata %j', async (change) => {
+    await expect(
+      verifyPublicGithubPackage({
+        fetchImpl: async () => response({ ...publicPackage, ...change }),
+      }),
+    ).rejects.toThrow('GITHUB_PACKAGE_NOT_PUBLIC');
+  });
+  it('rejects missing public metadata', async () => {
+    await expect(
+      verifyPublicGithubPackage({ fetchImpl: async () => response({}, 404) }),
+    ).rejects.toThrow('GITHUB_PACKAGE_NOT_PUBLIC');
+  });
+});
+describe('actual workflow source guard', () => {
+  const workflow = readFileSync('.github/workflows/release.yml', 'utf8');
+  const script = workflow.match(/run: node -e '(if \(!\/[^\n]+)'/)![1];
+  it.each([
+    ['main', 'false', 0],
+    ['v3.0.0', 'false', 0],
+    ['v3.0.0', 'true', 0],
+    ['a'.repeat(40), 'true', 0],
+    ['a'.repeat(40), 'false', 1],
+    ['codex/arbitrary', 'true', 1],
+    ['v3x0x0', 'false', 1],
+    ['main;exit 0', 'true', 1],
+  ])('checks ref %s with dry run %s', (ref, dryRun, status) => {
+    expect(
+      spawnSync(process.execPath, ['-e', script], {
+        env: { ...process.env, RELEASE_REF: ref, MANUAL_DRY_RUN: dryRun },
+      }).status,
+    ).toBe(status);
+  });
+});
 const server = {
   name: 'io.github.devag7/linkedin-mcp',
   version: '2.0.4',
