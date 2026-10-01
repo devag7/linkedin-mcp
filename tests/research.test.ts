@@ -162,7 +162,10 @@ it('returns honest empty results without detail reads', async () => {
   searchRows = [];
   total = 0;
   const result = await brief();
-  expect(result.data.status).toBe('empty');
+  expect(result).toMatchObject({
+    data: { status: 'empty', entities: [] },
+    meta: { status: 'empty', partial: false },
+  });
   expect(result.data.bounds.toolCalls).toBe(1);
   expect(result.data.markdown).toContain('does not establish');
   expect(fetches).toHaveBeenCalledTimes(2);
@@ -260,4 +263,17 @@ it('retains search facts if extra identity work exhausts the ceiling before deta
   expect(result.data.status).toBe('partial');
   expect(result.data.reads[1].code).toBe('READ_LIMIT_REACHED');
   expect(fetches).toHaveBeenCalledTimes(3);
+});
+
+it('keeps an empty page with unknown completeness partial in both SDK result fields', async () => {
+  searchRows = [];
+  total = undefined;
+  const result = await brief();
+  expect(result).toMatchObject({
+    data: { status: 'partial', entities: [] },
+    meta: { status: 'partial', partial: true },
+  });
+  expect(result.data.reads[0].status).toBe('partial');
+  expect(result.data.bounds).toMatchObject({ readAttempts: 2, toolCalls: 1 });
+  expect(fetches).toHaveBeenCalledTimes(2);
 });

@@ -40,15 +40,18 @@ export function ok(
   data: unknown,
   source: ToolMeta['source'] = 'voyager',
   partial = false,
-  extra: Pick<ToolMeta, 'nextCursor' | 'pagination'> = {},
+  extra: Pick<ToolMeta, 'nextCursor' | 'pagination'> & Partial<Pick<ToolMeta, 'status'>> = {},
 ): McpText {
+  const { status, ...pagination } = extra;
   const meta: ToolMeta = {
     contractVersion: 1,
     fetchedAt: new Date().toISOString(),
     source,
     partial,
-    status: partial ? 'partial' : Array.isArray(data) && data.length === 0 ? 'empty' : 'ok',
-    ...extra,
+    status: partial
+      ? 'partial'
+      : (status ?? (Array.isArray(data) && data.length === 0 ? 'empty' : 'ok')),
+    ...pagination,
   };
   const structuredContent = { data, meta };
   return {

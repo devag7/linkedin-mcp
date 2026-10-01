@@ -252,7 +252,7 @@ export function registerResearchTools(server: McpServer, logger: Logger): void {
           brief.bounds.readAttempts = limit.attempts;
           brief.generatedAt = new Date().toISOString();
           const data = { ...brief, markdown: renderBrief(brief) };
-          return ok(data, 'engine', brief.status === 'partial');
+          return ok(data, 'engine', brief.status === 'partial', { status: brief.status });
         });
       }),
   );

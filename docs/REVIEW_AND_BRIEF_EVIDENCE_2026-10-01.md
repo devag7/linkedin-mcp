@@ -119,3 +119,27 @@ Original roadmap SHA256 remains726b77032825ba66753785633c5dade585da9d7afe40582ac
 pr_diff.txt remains58cd3df819058c0ce4fff6ca2de0a58db2c68144900e9fad37696139507af36f.
 GitHub metadata still reports10 stars on October1; neither adoption nor daily
 Trending inclusion is claimed from these code/CI results.
+
+## Subsequent empty-status fix and independent review
+
+The refreshed draft heads were PR #3 `62fcda8`, PR #4 `3189e6f`, PR #5 `5faf06c`.
+The complete-empty SDK assertion first reproduced data.status empty versus
+meta.status ok. The follow-up makes both statuses empty and adds unknown-empty
+coverage retaining partial in both fields.497 tests/27 suites, lint, typecheck,
+metadata, build and dirty-workspace exact15-entry package/installed client gates
+pass locally. These supersede496 as the local test count for the changed source;
+historical test and archive evidence above retains its original source scope.
+
+[Independent findings and exact head/line references](THREE_PR_RELEASE_REVIEW_2026-10-01.md)
+record two still-open P2 correctness blockers: contradictory totals can certify
+empty/complete pages, and standalone job details can cite a different requested
+ID. Both are shared by all three refreshed heads; two disposable SDK probes
+reproduced them with no browser/provider access. Their successful observations
+are not desired-behavior acceptance passes and are not included in497.
+
+The [next live protocol](LIVE_JOB_BRIEF_VALIDATION_PROTOCOL.md) is concrete but
+unexecuted. It requires those correctness fixes, resulting-head gates and fresh
+consent before one bounded read. All57 sync copies, pr_diff.txt, the ignored dist
+copy, older backups/evidence and the original roadmap remain preserved. New-head
+hosted results are recorded on draft PR #5 and in the private backup after push;
+none is assumed in this source document.
