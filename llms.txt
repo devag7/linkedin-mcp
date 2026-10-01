@@ -14,7 +14,9 @@ Official OAuth is unavailable in the active runtime. No fallback grants access.
 
 Writes are alpha and disabled by default. Preview with confirm omitted/false.
 Only after the human approves exact target/content may you call confirm:true,
-with the preview's operation ID and payload hash. Runtime opt-in is also required.
+with the preview's operation ID and short-lived preview_token. The token proves
+server issuance, not human consent; previously journaled IDs support lookup after
+restart/expiry without a fresh token. Runtime opt-in is also required.
 Return the status including unknown. Unknown completion requires manual inspection;
 reuse the same operation ID for lookup. Never automatically resend, mass-message,
 disable pacing or solve checkpoints. Stop automation on checkpoint signals.

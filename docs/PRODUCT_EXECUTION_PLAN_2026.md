@@ -255,3 +255,21 @@ Additional baseline: a repository-wide Prettier check reports nine unchanged leg
 files (auth, client, circuit breaker and capture/endpoint utilities). Changed source
 files are formatted; lint passes. Unrelated formatting was preserved, not silently
 folded into these review tracks.
+
+
+## Core-first3.0.0 decision — October2, 2026
+
+The maintainer authorizes PR #3 → #4 integration and automated core3.0.0 publication
+once its fresh22-tool source/package/hosted/dry-run gates pass. Keep PR #5 draft;
+its partial live check (3 entities/3 facts, first detail PROVIDER_ERROR, useful gate
+failed) is separate offline-first investigation. No new account request is allowed.
+No research tool/demo/release claim ships in3.0.0. The old23-tool dry run is not a
+core-artifact gate. [Core release evidence](RELEASE_READINESS_3.0.0.md) and
+[directory ledger](DISTRIBUTION_SUBMISSIONS_2026-10-02.md) govern current execution.
+
+P7 first-use/native client and P8 erasure/Windows privacy remain open; do not use
+release or offline fixture success to close them or for broad promotion. Existing
+maintenance/cash estimates and ambition remain; no mandatory service/expense is
+introduced. Any further provider diagnosis requires reviewed bounded instrumentation
+and fresh consent. Current counts/error code cannot identify a rotating endpoint
+or permission/normalization cause, so no speculative production fix is made.
