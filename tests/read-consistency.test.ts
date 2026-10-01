@@ -125,6 +125,32 @@ describe('SDK paging evidence', () => {
 });
 
 describe('SDK job-detail identity', () => {
+  it.each([true, false])(
+    'never attributes an unrelated included company (inline=%s)',
+    async (inline) => {
+      raw = {
+        data: {
+          title: 'Synthetic job',
+          description: 'Synthetic facts',
+          entityUrn: 'urn:li:fsd_jobPosting:123',
+          ...(inline ? { companyDetails: { name: 'Selected employer' } } : {}),
+        },
+        included: [
+          {
+            $type: 'fixture.Company',
+            name: 'Unrelated employer',
+            entityUrn: 'urn:li:fsd_company:999',
+          },
+        ],
+      };
+      const { result, envelope } = await call('get_job_details', { job_id: '123' });
+      expect(result.isError).not.toBe(true);
+      expect(envelope.data.company).toBe(inline ? 'Selected employer' : undefined);
+      expect(envelope.data.sourceUrl).toBe('https://www.linkedin.com/jobs/view/123/');
+      expect(fetches).toHaveBeenCalledTimes(2);
+    },
+  );
+
   it.each(['urn:li:jobPosting:123', 'urn:li:fsd_jobPosting:123'])(
     'attaches the exact source only for matching %s',
     async (urn) => {

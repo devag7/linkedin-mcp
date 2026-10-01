@@ -108,7 +108,7 @@ All proposals require source/contract/packed/hosted gates and an honest capabili
 | --- | --- | --- | --- | --- | --- |
 | P0 Safety review corrections | 5/5/2; 13 | Alias/junction deletion refused; issued proof for new writes; old outcome lookup; exact draft/tag SHA verification | PR #3 review + twelve hosted jobs; synthetic-only release tests | Implemented; 1–2 h/month review | $0 |
 | P1 Offline setup + client export | 5/5/1; 14 | Three formats, exact installed-build launch/env, useful failures, no account access, packed real SDK flow | PR #3 safety head; primary client docs; VS Code native launch/discovery observed; full UI read checks still needed | Implemented; 1–2 h/month format review | $0; paid clients optional/user-funded |
-| P2 Bounded source-linked research briefs | 5/4/2; 12 | One requested topic, maximum 3 explicit Voyager read attempts (including identity; browser assets/navigation excluded)/10 entities; source URL + fetchedAt per claim; explicit partial/unknown; no inference presented as source fact; deterministic export Markdown/JSON | Existing verified read primitives, schema/source review; consented end-to-end read required before live claim | Job brief implemented in separate draft; 2–4 h/month; other research scopes remain planned | $0 deterministic assembly; optional user-funded model summarization |
+| P2 Bounded source-linked research briefs | 5/4/2; 12 | One requested topic, maximum 3 provider requests/10 entities; source URL + fetchedAt per claim; explicit partial/unknown; no inference presented as source fact; deterministic export Markdown/JSON | Existing verified read primitives, schema/source review; consented end-to-end read required before live claim | 3–5 days; 2–4 h/month | $0 deterministic assembly; optional user-funded model summarization |
 | P3 Saved jobs | 5/2/3; 9 | Own saved jobs only, max25/request and max2 explicit pages; preserved source IDs/URLs, empty/changed-shape distinguished | Consented read capture of actual provider/UI route; no authorization currently. Competitor DOM implementation is feasibility evidence only | 3–6 days after capture; 3–6 h/month | $0 |
 | P4 Richer job filters | 4/3/3; 8 | Date/work type/employment/experience/sort supported only for verified mappings; unsupported combinations rejected; tests prove query and cursor binding | Capture/inspect each query parameter under new consent; locale fixtures and documented defaults | 2–4 days; 2–4 h/month | $0 |
 | P5 Conversation keyword search | 4/2/4; 6 | Own inbox only, explicit max2 pages/25 matches; no entire-inbox scan; source thread links where verified; completeness partial | Verify endpoint or implement bounded filtering over existing read results with clearly local semantics; sensitive-content retention review | 3–5 days; 3–6 h/month | $0 |
@@ -116,7 +116,7 @@ All proposals require source/contract/packed/hosted gates and an honest capabili
 | P7 Desktop client first-use matrix + packaging convenience | 5/3/2; 11, gated by access | Record app/OS/version/build, native config acceptance and cold setup; at least one authorized real first read per claimed pairing | Installed clients and renewed user consent; Windows/Linux volunteer machines; signed bundles only when feasible | 2–4 days + volunteers; 2 h/month | $0 with volunteer devices; code signing optional and outside required scope |
 | P8 Data inventory/erasure + Windows ACLs | 4/3/3; 8 | Inventory first; safe alias refusal; account/session cleanup after all owners stop; journal removal explicit and documented as safety-history loss; NTFS deny-other-user proof | Review privacy/state migration; fixture+Windows tests; no silent budget reset while runnable profile remains | 4–7 days; 2–4 h/month | $0 |
 | P9 Official identity/publishing provider pilot | 3/2/3; 5 | Actual OAuth scopes control discovery; unsupported browser reads never silently fall back; one approved identity/publish test per exposed action | Developer app, granted products/scopes, new action consent; no parity promise | 1–2 weeks after approval; 4–8 h/month | $0 planned API access; any paid third-party bridge optional/user-funded |
-| P10 Tutorials/demo/distribution + contributor loop | 5/4/2; 12, after release | Reproducible demo, three honest tutorials, submitted listings with receipt/status, weekly issue response, monthly measures below | Reviewed release and verified install URLs; ordered release/listing publication authorized after gates; no private outreach | 3–5 days initial; 2–3 h/week | $0 public docs/repository/local recording |
+| P10 Tutorials/demo/distribution + contributor loop | 5/4/2; 12, after release | Reproducible demo, three honest tutorials, submitted listings with receipt/status, weekly issue response, monthly measures below | Reviewed release and verified install URLs; no outreach/publication in current task | 3–5 days initial; 2–3 h/week | $0 public docs/repository/local recording |
 | P11 Local opt-in adoption and traffic ledger | 4/4/1; 11 | Counts/timings only, no identity/content; missing samples remain unknown; weekly traffic export and monthly report | Volunteers and owner-readable GitHub traffic; retention consent and aggregation rules | 1–2 days; 1 h/month | $0 local JSON/CSV + GitHub Insights |
 | P12 Development advisory follow-up | 4/3/1; 10 | Reassess October 8; compatible clean-install upgrade with all gates or documented mitigation; no forced dependency-tree break | Existing three dev-tool findings; production currently zero; npm installer issue tracked in evidence | 0.5–1 day; weekly until resolved | $0 |
 
@@ -129,9 +129,8 @@ Choose each provider feature only after value feedback and capture evidence exis
 
 1. Refresh PR #3, preserve `pr_diff.txt` and backup outside iCloud. Done: refreshed
    at `2562ff0`, corrected to `0017fe1`; no history rewrite/main push.
-2. Keep the stack draft until the required final-head checks and separately
-   consented validation pass. Then merge #3 → #4 → #5 with guarded head checks
-   and retained ancestry; release authorization now permits this integration.
+2. Keep PR #3 draft. Review alias deletion, token/journal migration and release
+   identity boundaries before merge consideration. Record hosted source SHA.
 3. Implement setup in a separate branch/stacked draft PR. Run lint/typecheck/tests,
    metadata/build, generated-entry and packed checks; hosted twelve-job matrix.
 4. Obtain native client UI evidence without requesting LinkedIn access. If a real
@@ -142,12 +141,8 @@ Choose each provider feature only after value feedback and capture evidence exis
    publish synthetic examples separately from authorized live samples.
 6. Capture P3/P4 only after renewed consent; preserve redacted route provenance and
    schema fixtures; reject unknown endpoints and mark live status unproven until observed.
-7. Follow [3.0.0 readiness](RELEASE_READINESS_3.0.0.md): publication is now
-   explicitly authorized after validation/gates. Prepare and rehearse independently
-   while account consent is pending; bump main once and use automated publishing.
-   P8 remains a broad-promotion/privacy gate, not a completed feature. Do not
-   promote Windows native privacy, erasure or a desktop first-read cohort without
-   their required proof; retain the October8 development-advisory follow-up.
+7. Complete P8 and advisory reassessment; follow release gates only under later
+   publication authorization. Current task prohibits merge/version bump/release.
 8. Run the distribution experiments below after reviewed release, preserve failures
    as well as successes, and choose the next backlog item from actual user failures.
 
@@ -183,8 +178,7 @@ lists and other directories whose current criteria can be met for free. Check te
 required fields and install URL at submission time; record URL/date/reviewer/status.
 Paid expedited listings or hosting are optional and user-funded. Prepare useful
 release notes and tutorial submissions for relevant communities under their rules;
-repository/directory submissions are authorized in the current release task;
-private outreach and account-content sharing remain separately authorized actions.
+posting/messages to people require explicit authorization and are not executed here.
 
 **Cadence:** launch week: one reproducible release demo + first tutorial, fix support
 failures daily. Weeks 2–4: publish two more substantive tutorials based on observed
@@ -247,138 +241,54 @@ on hosted Windows; NTFS ACL proof and complete erasure remain open.
 
 Original-roadmap coverage: Phase0 corrections now include preview issuance/alias
 safety; Phase1 setup gains configuration and exact next steps; Phase2 contracts and
-existing schemas remain; Phase3 first new-provider features await captures and the first job brief is implemented in a separate draft, with broader briefs and live validation still open; Phase4 official pilot remains unavailable; Phase5
+existing schemas remain; Phase3 first new-provider features await captures and briefs
+await a separate implementation; Phase4 official pilot remains unavailable; Phase5
 distribution is a measured, release-gated plan. See
 [coverage](ROADMAP_COVERAGE.md) for the earlier item-by-item inventory. Do not mark
 all phases complete because source/CI pass.
 
-Next milestone: independent review of three draft tracks and the new archive/setup/brief boundaries, remaining Claude/Cursor native-client acceptance without LinkedIn access, then a newly consented job-brief read before any live claim. Broader profile/company briefs need a separate request-budget design. Live first-read validation requires renewed consent.
+Next milestone: human review of the two draft tracks, remaining Claude/Cursor native-client acceptance
+without LinkedIn access, then P2 bounded source-linked brief implementation under the
+same endpoint and privacy limits. Live first-read validation requires renewed consent.
 
 Additional baseline: a repository-wide Prettier check reports nine unchanged legacy
 files (auth, client, circuit breaker and capture/endpoint utilities). Changed source
 files are formatted; lint passes. Unrelated formatting was preserved, not silently
 folded into these review tracks.
 
-## P2 TRD and acceptance update — bounded job research
 
-Implemented `research_jobs` in its own draft track stacked on PR #4. Value: one
-client call produces a job comparison and source-linked requirements for the first
-listing, with explicit unknowns and manual next steps. Scope deliberately uses
-existing search_jobs/get_job_details; six-section profile reads cannot satisfy the
-three-read ceiling. No rotating route or new provider mapping was invented.
+## Core-first3.0.0 decision — October2, 2026
 
-Acceptance: first page only; count1–10/default5; optional numeric existing geo ID;
-optional first-job detail/defaulttrue; max2 tool calls, max3 explicit Voyager GET
-attempts including identity, max10 deduplicated linked jobs. Async request-local
-bounds survive queue scheduling and stop before a fourth read. Browser navigation
-and asset traffic are outside this explicit API counter, not claimed bounded.
-Every fact has exact canonical job URL, source tool, observation timestamp and
-truncation flag. Unknowns, missing links, mismatched detail identity, conflicting
-titles, partial page metadata and read errors are visible. No inferred salary,
-fit, availability, automatic paging/retry/storage or writes. Markdown escapes
-untrusted source text; JSON retains query/provenance/status and recovery guidance.
-The client still controls its own storage/model behavior.
+The maintainer authorizes PR #3 → #4 integration and automated core3.0.0 publication
+once its fresh22-tool source/package/hosted/dry-run gates pass. Keep PR #5 draft;
+its partial live check (3 entities/3 facts, first detail PROVIDER_ERROR, useful gate
+failed) is separate offline-first investigation. No new account request is allowed.
+No research tool/demo/release claim ships in3.0.0. The old23-tool dry run is not a
+core-artifact gate. [Core release evidence](RELEASE_READINESS_3.0.0.md) and
+[directory ledger](DISTRIBUTION_SUBMISSIONS_2026-10-02.md) govern current execution.
 
-Dependencies: existing MCP SDK, Zod, Guard and Voyager; no new dependency or paid
-backend. Required cash $0; model-assisted interpretation is optional/user-funded.
-Maintenance estimate2–4h/month to review existing read schemas and client cases.
-Rollback: remove only research registration/catalog/schema/demo; preserve existing
-reads and safety history. Expanding to company/profile/saved-job scopes needs a
-separate reviewed bound and endpoint evidence.
+P7 first-use/native client and P8 erasure/Windows privacy remain open; do not use
+release or offline fixture success to close them or for broad promotion. Existing
+maintenance/cash estimates and ambition remain; no mandatory service/expense is
+introduced. Any further provider diagnosis requires reviewed bounded instrumentation
+and fresh consent. Current counts/error code cannot identify a rotating endpoint
+or permission/normalization cause, so no speculative production fix is made.
 
-Proof: synthetic real-SDK/registered-handler/Voyager tests; installed stdio stopped
-profile check; reproducible `npm run demo:brief`. No current LinkedIn compatibility
-is claimed. Packaging now excludes preserved sync copies via exact reviewed paths
-and validates every archive byte; broken setup aliases return actionable offline
-JSON with no commands. See [follow-up evidence](REVIEW_AND_BRIEF_EVIDENCE_2026-10-01.md).
-The10,000-star and daily Trending experiments, quality gates, monthly measurement
-contract and zero-mandatory-cash rules above remain unchanged.
+## PR #5 follow-up candidate — October2, 2026
 
-Review/implementation milestones on October1: current PR #3 head62fcda8 and
-PR #4 head3189e6f each pass all12 hosted gates after exact inventory, normal-pack
-JSON and invalid-setup-path fixes. [Draft PR #5](https://github.com/devag7/linkedin-mcp/pull/5)
-contains the first bounded job brief,496 local tests and clean/dirty15-file archive
-proof. Independent review and new consented live validation remain required before
-release/adoption claims. Original MD and57 sync copies remain preserved.
+PR #5 remains draft. The isolated3.1.0 candidate integrates the core safety/setup
+merge tree, keeps23 tools and preserves its additive bounded research_jobs contract.
+Its first page permits at most3 explicit Voyager attempts including identity,
+2 underlying tools and10 entities; no retries, pagination or inferred fit.
+The original live run returned3 titles only and failed usefulness. A separately
+consented shape-only diagnosis on0200276 observed detail data alongside provider
+errors; strict rejection remains intact. Search card generic text is not mapped
+to employer/location without semantic evidence. The diagnostic consent is consumed.
 
-The brief implementation at66a5c89 passes all12 hosted source/packed/offline
-Chrome checks in [run36877160263](https://github.com/devag7/linkedin-mcp/actions/runs/36877160263).
-Final document-head results are linked on draft PR #5 and backed up. This closes
-the implementation/fixture/platform milestone, not current provider, first-read
-cohort, repeat-use, release or distribution outcome gates.
-
-## Independent review follow-up — October 1
-
-The requested PR #5 empty-page status mismatch is fixed and asserted through the
-SDK in both fields; 497 local tests/27 suites and source/package gates pass.
-The historical [three-PR review](THREE_PR_RELEASE_REVIEW_2026-10-01.md) identified
-two shared P2 correctness blockers. The subsequent shared-source remediation
-fixes both and adds23 SDK cases; neither finding remains open in the reviewed
-resulting source. PR #5 adds separate brief-defense/partial SDK coverage. Exact
-resulting-head gates remain required, without live claims from fixtures.
-
-| Order | Proposal and acceptance | Dependencies | Effort / maintenance | Required cash |
-| --- | --- | --- | --- | --- |
-| Before release, R1 | Validate paging total against observed rows; contradictory zero/short pages cannot certify empty or complete. Real SDK tests retain true empty/final-page behavior and no implicit follow-up. | Shared pageResult/registered reads; existing synthetic SDK fixtures; propagate to both stacked feature drafts | 0.5–1 day; included in read-schema maintenance, about 1 h/month | $0 |
-| Before release, R2 | Verify get_job_details identity equals requested ID before assigning its source URL; mismatch is a typed error, no retry. Test both supported URN forms and preserve useful partial briefs. | Existing shaper/contract and brief identity defense; stacked draft propagation | 0.5 day; included in existing read-schema maintenance, about 1 h/month | $0 |
-| After correctness gates | One freshly consented read-only job brief under the [concrete protocol](LIVE_JOB_BRIEF_VALIDATION_PROTOCOL.md); record exact build, bounds, provenance checks, partial codes and verified cleanup | R1/R2 fixes, resulting-head local/hosted gates, fresh human consent, existing authenticated profile | 0.5 day per initial observed environment; later repeat-use cohorts tracked separately | $0 with existing local prerequisites |
-
-R1/R2 implementation and shared acceptance are complete in PR #3 commit5e6f25b,
-carried into PR #4 at1ee61b6 and PR #5 at888d001 with origin trailers. PR #3/#4
-pass499/504 local tests, source/package gates and12 current-head hosted jobs
-each. PR #5's independent brief identity check remains intact;524 local tests and
-source/package/installed client gates pass. Its final hosted results are recorded
-on the draft after the track-specific test follow-up.
-This closes the two code findings, not current provider compatibility or release.
-
-No further account request has been made. Keep all three drafts; do not merge,
-bump or publish. Native client chat/live compatibility, full erasure, NTFS ACLs
-and optional official integration remain open. The zero-mandatory-cash constraint
-does not relax the acceptance criteria or convenience work. The10,000-star and
-GitHub Trending daily goals remain measured distribution outcomes, not claims.
-
-## 3.0.0 integration and readiness update
-
-The maintainer now authorizes stack merges and automated publication after the
-existing gates and separately consented bounded job-brief validation pass. Earlier
-no-merge/no-publication restrictions are superseded; earlier account consent is not
-reused. See [readiness and migration](RELEASE_READINESS_3.0.0.md).
-
-Closed preparation requirements: justified major-version decision, exact upgrade
-steps with state/replay preservation, final-diff safety/contract review, issued-proof
-write guidance, truthful platform/client/provider scope, concise release notes and
-a reproducible synthetic demo. Workflow corrections enable a SHA-pinned dry run,
-fix resume tags and require independently public scoped metadata. New resulting
-source/package/hosted proof and the dry-run result are recorded in readiness.
-
-Required remaining release actions: resolve the failed useful-brief validation and obtain a separately authorized useful bounded read;
-actual npm OIDC publication (trusted-publisher setup is confirmed); ordered guarded merges; one main version
-bump/metadata sync; all four independent destination checks. No release is complete
-until the actual destinations match the intended artifact/source. Public directory
-updates have a separate [submission ledger](DISTRIBUTION_SUBMISSIONS_2026-10-01.md).
-
-P7/P8, optional official OAuth, new provider routes, development advisory reassessment
-and adoption measures remain open. Their acceptance criteria, quality expectations
-and $0 required-cash estimates are unchanged. Do not close those requirements on
-fixture evidence, launch dates or distribution activity. Broad promotion requires
-the existing first-use/privacy gates; the 10,000-star/daily-Trending ambitions remain
-measured experiments, with missing samples explicitly unknown.
-
-## Bounded live evidence and next gate — October2, 2026
-
-Fresh explicit consent was used exactly once under the job-brief protocol. SDK
-stdio on the frozen5ef228a build returned partial3 entities/3 facts, with first
-job detail stopped as PROVIDER_ERROR. Reported3 explicit Voyager attempts/2
-underlying tools;0 retries/writes.62 validation checks and shutdown passed;0
-useful entities under the runner's title-plus-another-observation criterion.
-[Execution record](LIVE_JOB_BRIEF_VALIDATION_PROTOCOL.md#consented-execution-record--october2-2026).
-
-The useful-brief release gate remains open. Do not relabel this as healthy provider
-compatibility or proceed to ordered merge/version/publication. Review existing
-normalization and typed error handling offline first; observed counts/code do not
-identify a rotating endpoint, permissions or nested error cause. New live
-provider-shape diagnosis requires a separately bounded protocol and renewed
-consent; do not retry or weaken validators. Maintenance estimate0.5–1 day initial
-triage, about1 h/month in existing read-schema maintenance; required cash$0.
-Native client/cohort, erasure/Windows privacy and broader read coverage remain
-separate open proposals.10,000 stars and daily Trending remain measured ambitions.
+Offline SDK regressions remove arbitrary unrelated-company attribution and fix
+the source diagnostic's serialized JSON comparison. They do not establish current
+provider compatibility. See [redacted result and protocol](JOB_BRIEF_SHAPE_CAPTURE_PROTOCOL_2026-10-02.md).
+The useful-brief gate, exact resulting-head local/package/hosted/dry-run gates and
+all four publication destinations must pass before feature release. Core must
+finish first. Native first-use/repeat cohorts, erasure/Windows privacy and broad
+promotion remain open; mandatory maintainer cash stays$0.

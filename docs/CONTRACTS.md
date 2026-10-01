@@ -25,6 +25,9 @@ coherent zero-total page can establish end; no page is followed automatically.
 `urn:li:fsd_jobPosting:<id>` matches the requested ID before attaching its canonical
 job source URL. An absent, unsupported or mismatched identity returns
 RESPONSE_SHAPE_CHANGED with null data and no provenance; it is never retried.
+Company attribution uses only the selected job's own companyDetails.name.
+Unassociated included Company entities are not evidence; missing employer stays
+unknown rather than borrowing a name from another job.
 
 Errors carry isError:true plus `{data:null,meta,error,tool,code,hint?}` in both
 representations. This works with clients that validate output schemas even for

@@ -147,6 +147,5 @@ partial/empty/error states instead of assuming successful arrays are complete.
 Pagination emits a continuation only when returned start/count/total agree with
 observed rows. Contradictory zero/short pages remain partial with no next cursor.
 Job details must identify the requested numeric job URN before a canonical URL is
-attached. `research_jobs` adds a separate identity check and preserves search facts
-when optional detail fails. Official OAuth remains unavailable; v1 cookie/OAuth
+attached. Official OAuth remains unavailable; v1 cookie/OAuth
 environment variables do not enable it. New-thread messaging remains experimental.

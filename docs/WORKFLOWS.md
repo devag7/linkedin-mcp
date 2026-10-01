@@ -69,13 +69,15 @@ triage. There is no bulk outreach workflow.
 ## Draft and explicitly review one post
 
 Compose locally. Call create_post with the exact text/visibility and confirm:false.
-The result is a local preview containing target, route, effect, content, operationId
-and payloadHash. It does not open Chrome. The account owner must approve that
+The result is a local preview containing target, route, effect, content, operationId,
+payloadHash and a five-minute token. It does not open Chrome. The account owner
+must approve that
 preview; an agent must not approve it on their behalf.
 
 Only if alpha writes were deliberately enabled and the exact action approved,
 repeat the inputs with confirm:true, operation_id from the preview and
-preview_hash from payloadHash. On a lost response, repeat the same ID and inputs
+preview_token from token. Optional preview_hash compares payloadHash but is not
+authorization. On a lost response, repeat the same ID and inputs
 for lookup. unknown requires manual inspection, not a new ID or automatic retry.
 The tool currently returns classified status, not a verified newly created post
 URL. Do not invent that URL or describe a bare HTTP 200 as confirmed publication.

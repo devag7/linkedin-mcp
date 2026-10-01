@@ -11,7 +11,7 @@
 [![MCP](https://img.shields.io/badge/MCP-Compatible-purple?logo=anthropic&logoColor=white)](https://modelcontextprotocol.io/)
 [![Glama score](https://glama.ai/mcp/servers/devag7/linkedin-mcp/badges/score.svg)](https://glama.ai/mcp/servers/devag7/linkedin-mcp)
 
-**Structured LinkedIn research for MCP clients — profiles, bounded job briefs, company search and inbox reads with source and freshness metadata.**
+**Structured LinkedIn reads for MCP clients — profiles, jobs, companies and inbox data, with guided offline setup and explicit safety limits.**
 
 **23 tools** · local browser reads · five explicitly confirmed writes · persisted safety limits and operation journals.
 
@@ -24,7 +24,7 @@
 
 ## Guided first run
 
-This guide describes the 3.0.0 release candidate. Publication is tracked in
+This branch is the unpublished 23-tool 3.1.0 job-brief candidate. Core 3.0.0 publication receipts are tracked in
 [release readiness](docs/RELEASE_READINESS_3.0.0.md); until its destinations are
 verified, use the reviewed source. From that checkout, run `npm ci` and
 `npm run build`, then `node dist/index.js --setup cursor` (also `claude-desktop`
@@ -50,8 +50,9 @@ return a status including `unknown` when completion cannot be established.
 
 3.0.0 introduces breaking safety and client requirements; read the
 [migration guide](SETUP_GUIDE.md#migrating-from-203-to-300).
-[Hosted source/package/browser checks](https://github.com/devag7/linkedin-mcp/actions/runs/36896222773)
-pass on Node20/22 across Linux, macOS and Windows. One explicitly consented macOS
+[Hosted source/package/browser checks](https://github.com/devag7/linkedin-mcp/actions/workflows/ci.yml)
+cover Node20/22 across Linux, macOS and Windows. Exact core-only candidate/head
+results are recorded in [release readiness](docs/RELEASE_READINESS_3.0.0.md). One explicitly consented macOS
 maintainer health/own-profile read also passed with partial metadata;
 [scope and evidence](docs/ZERO_COST_EXECUTION_EVIDENCE_2026-10-01.md#7-consented-maintainer-live-read--passed-limited-scope)
 do not establish fresh-user or broader live compatibility.
@@ -385,7 +386,7 @@ npm run build
 
 ## 📄 License
 
-MIT — see [LICENSE](LICENSE). Missing files caused by cloud synchronization were recovered from the committed revision with maintainer authorization. The 3.0.0 candidate and destination checks are tracked in release readiness. Not affiliated with LinkedIn.
+MIT — see [LICENSE](LICENSE). Missing files caused by cloud synchronization were recovered from the committed revision with maintainer authorization. The 3.0.0 core scope and destination receipts are tracked in release readiness. Not affiliated with LinkedIn.
 
 <div align="center">
 

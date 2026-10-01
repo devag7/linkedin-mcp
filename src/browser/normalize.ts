@@ -283,6 +283,8 @@ export function shapeJobDetails(resp: NormalizedResponse): ShapedJobDetails {
   return {
     title: asText(j['title']),
     description: asText(j['description']),
+    // Included companies can describe other jobs. Only the selected job's own
+    // existing association certifies employer attribution; absence stays unknown.
     company: asText((j['companyDetails'] as Record<string, unknown>)?.['name']),
     location: asText(j['formattedLocation']) ?? asText(j['location']),
     workplaceType: j['workRemoteAllowed'] === true ? 'Remote allowed' : asText(j['workplaceType']),

@@ -1,5 +1,13 @@
 # Changelog
 
+## [3.0.0] — Core safety and guided setup
+
+22 tools; default-disabled writes with issued preview proof, authenticated loopback
+HTTP, safe profile logout, offline setup/client exports, precise read contracts and
+strict 15-file packaging. See docs/RELEASE_NOTES_3.0.0.md and SETUP_GUIDE.md for
+breaking changes, migration and verified scope.
+
+
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
