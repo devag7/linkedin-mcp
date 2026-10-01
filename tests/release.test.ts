@@ -34,10 +34,13 @@ describe('public scoped destination', () => {
     visibility: 'public',
     repository: { full_name: 'devag7/linkedin-mcp' },
   };
-  it('checks public visibility without sending workflow credentials', async () => {
+  it('checks explicit public visibility at the GitHub API independently of registry integrity', async () => {
     const fetchImpl = vi.fn(async () => response(publicPackage));
     await verifyPublicGithubPackage({ fetchImpl, token: 'synthetic-secret' });
-    expect(fetchImpl.mock.calls[0][1].headers.Authorization).toBeUndefined();
+    expect(fetchImpl.mock.calls[0][0]).toBe(
+      'https://api.github.com/users/devag7/packages/npm/linkedin-mcp-tools',
+    );
+    expect(fetchImpl.mock.calls[0][1].headers.Authorization).toBe('Bearer synthetic-secret');
   });
   it.each([
     { visibility: 'private' },
