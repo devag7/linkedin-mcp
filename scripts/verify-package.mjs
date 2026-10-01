@@ -13,6 +13,7 @@ import {
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
+import { assertInventory, verifyTarball } from './package-policy.mjs';
 const root = process.cwd();
 const pkg = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
 const npmCli = process.env.npm_execpath;
@@ -29,6 +30,13 @@ try {
   const packed = JSON.parse(
     runNpm(['pack', '--json', '--ignore-scripts', '--pack-destination', dir]),
   )[0];
+  assertInventory(
+    packed.files.map((entry) => entry.path),
+    pkg,
+  );
+  const inventory = verifyTarball(join(dir, packed.filename), root, pkg);
+  if (process.env.PACK_INVENTORY_OUTPUT)
+    writeFileSync(process.env.PACK_INVENTORY_OUTPUT, JSON.stringify({ inventory }, null, 2) + '\n');
   assert.equal(packed.name, pkg.name);
   assert.equal(packed.version, pkg.version);
   assert.ok(packed.files.some((entry) => entry.path === 'dist/index.js'));
