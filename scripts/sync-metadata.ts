@@ -70,7 +70,7 @@ const table =
     .join('\n');
 output(
   'docs/CAPABILITIES.md',
-  `# Capabilities and compatibility\n\nGenerated from src/tools/capabilities.ts for ${pkg.name} v${pkg.version}.\n\n${table}\n\nThese are synthetic contract and registration checks, not current LinkedIn observations. Historical capture comments are retained in endpoints.ts and are not promoted to current live checks. No endpoint has a new live capture here. DOM selectors have no multi-locale browser integration evidence. whoami supplies this inventory and the actual runtime write policy; it never guesses provider availability.\n\nSearch/feed/notification offsets use existing endpoint builders, one page per call. nextCursor appears only for matching provider start/count/total metadata. DOM discovery, inbox, conversation and invitation reads expose bounded first pages and mark completeness partial. Profiles make at most six requests (seven for own profile), plus bounded identity verification; optional hidden sections may be unavailable.\n\nThe official provider is unavailable in the active runtime. Token/cookie settings from v1 do not activate it. All alpha writes are disabled by default; new-thread messaging has a second experimental opt-in.\n`,
+  `# Capabilities and compatibility\n\nGenerated from src/tools/capabilities.ts for ${pkg.name} v${pkg.version}.\n\n${table}\n\nThese are synthetic contract and registration checks, not current LinkedIn observations. Historical capture comments are retained in endpoints.ts and are not promoted to current live checks. No endpoint has a new live capture here. DOM selectors have no multi-locale browser integration evidence. whoami supplies this inventory and the actual runtime write policy; it never guesses provider availability.\n\nSearch/feed/notification offsets use existing endpoint builders, one page per call. nextCursor appears only for matching provider start/count/total metadata. DOM discovery, inbox, conversation and invitation reads expose bounded first pages and mark completeness partial. Profiles make at most six requests (seven for own profile), plus bounded identity verification; optional hidden sections may be unavailable.\n\nresearch_jobs composes one search_jobs first page and at most one get_job_details for the first linked job. It permits at most three explicit Voyager read attempts including identity, two tool calls and ten entities; navigation/assets are excluded. No pagination, retries, persistence or inferred fit. Source URLs and fetchedAt are attached to every fact; missing fields and partial/error states remain visible.\n\nThe official provider is unavailable in the active runtime. Token/cookie settings from v1 do not activate it. All alpha writes are disabled by default; new-thread messaging has a second experimental opt-in.\n`,
 );
 const readme = readFileSync('README.md', 'utf8').replace(
   /\*\*\d+ tools\*\*/,
@@ -83,10 +83,13 @@ const summary = `${start}\n\n${names.length} registered tools. Native contract v
   .slice(0, 3)
   .map((n) => '`' + n + '`')
   .join(', ')} |\n| Reads | ${names
-  .slice(3, 17)
+  .filter(
+    (name) =>
+      !CAPABILITIES[name].write && !['whoami', 'health_check', 'close_session'].includes(name),
+  )
   .map((n) => '`' + n + '`')
   .join(', ')} |\n| Opt-in alpha writes | ${names
-  .slice(17)
+  .filter((name) => CAPABILITIES[name].write)
   .map((n) => '`' + n + '`')
   .join(', ')} |\n\n${end}`;
 if (!readme.includes(start) || !readme.includes(end))

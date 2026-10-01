@@ -32,7 +32,8 @@
     "verify:browser": "tsx scripts/verify-browser.ts",
     "verify:setup": "node scripts/verify-setup.mjs",
     "prepack": "node scripts/check-package.mjs",
-    "verify:pack": "node scripts/check-package.mjs"
+    "verify:pack": "node scripts/check-package.mjs",
+    "demo:brief": "tsx scripts/demo-brief.ts"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.12.1",

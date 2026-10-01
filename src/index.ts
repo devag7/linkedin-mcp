@@ -3,7 +3,7 @@
 /**
  * LinkedIn MCP Server — Entry Point
  *
- * 22 tools (reads + gated writes) for Claude, Cursor, and any MCP client.
+ * 23 tools (reads + gated writes) for Claude, Cursor, and any MCP client.
  * Drives a real stealth Chrome to clear Cloudflare, then queries LinkedIn's
  * Voyager API from inside the authenticated page → structured JSON.
  *

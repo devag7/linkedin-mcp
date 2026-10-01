@@ -107,6 +107,19 @@
       "availability": "unknown_until_checked"
     },
     {
+      "name": "research_jobs",
+      "route": "bounded composition of search_jobs + one get_job_details",
+      "source": "voyager",
+      "permission": "authenticated_browser",
+      "write": false,
+      "maxResults": 10,
+      "provider": "local_browser_unofficial",
+      "verification": "offline_contract_tested",
+      "offlineCheckedAt": "2026-10-01",
+      "liveCheckedAt": null,
+      "availability": "unknown_until_checked"
+    },
+    {
       "name": "search_jobs",
       "route": "voyagerJobsDashJobCards",
       "source": "voyager",

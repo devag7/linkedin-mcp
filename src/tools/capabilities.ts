@@ -27,6 +27,7 @@ export const CAPABILITIES = {
   get_feed: read('voyagerFeedDashMainFeed', 'voyager', 25),
   get_notifications: read('voyagerIdentityDashNotificationCards', 'voyager', 50),
   search_people: read('/search/results/people/', 'dom', 25),
+  research_jobs: read('bounded composition of search_jobs + one get_job_details', 'voyager', 10),
   search_jobs: read('voyagerJobsDashJobCards', 'voyager', 25),
   get_inbox: read('/me + messengerConversations', 'voyager', 50),
   get_job_details: read('voyagerJobsDashJobPosting'),

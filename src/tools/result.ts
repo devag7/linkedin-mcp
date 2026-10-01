@@ -1,3 +1,4 @@
+import { ReadLimitError } from '../safety/read-limit.js';
 /**
  * Shared MCP tool-result helpers for v2 tools.
  *
@@ -62,6 +63,8 @@ export class ToolError extends Error {
   }
 }
 const messages: Record<string, string> = {
+  READ_LIMIT_REACHED:
+    'The bounded brief stopped at its explicit read attempt ceiling. No automatic retry or further page was requested.',
   INTERNAL_ERROR:
     'The tool failed. Check local setup and safety-state storage; unreadable or invalid state must be repaired before retrying.',
   RESPONSE_SHAPE_CHANGED:
@@ -118,6 +121,7 @@ export async function run(
     return await fn();
   } catch (err) {
     const code =
+      err instanceof ReadLimitError ||
       err instanceof PreviewError ||
       err instanceof ToolError ||
       err instanceof VoyagerError ||

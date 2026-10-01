@@ -12,6 +12,7 @@ Generated from src/tools/capabilities.ts for linkedin-mcp-tools v2.0.3.
 | get_feed | voyagerFeedDashMainFeed | voyager | authenticated_browser | 25 | offline_contract_tested (2026-10-01) | Unchecked |
 | get_notifications | voyagerIdentityDashNotificationCards | voyager | authenticated_browser | 50 | offline_contract_tested (2026-10-01) | Unchecked |
 | search_people | /search/results/people/ | dom | authenticated_browser | 25 | offline_contract_tested (2026-10-01) | Unchecked |
+| research_jobs | bounded composition of search_jobs + one get_job_details | voyager | authenticated_browser | 10 | offline_contract_tested (2026-10-01) | Unchecked |
 | search_jobs | voyagerJobsDashJobCards | voyager | authenticated_browser | 25 | offline_contract_tested (2026-10-01) | Unchecked |
 | get_inbox | /me + messengerConversations | voyager | authenticated_browser | 50 | offline_contract_tested (2026-10-01) | Unchecked |
 | get_job_details | voyagerJobsDashJobPosting | voyager | authenticated_browser | — | offline_contract_tested (2026-10-01) | Unchecked |
@@ -30,5 +31,7 @@ Generated from src/tools/capabilities.ts for linkedin-mcp-tools v2.0.3.
 These are synthetic contract and registration checks, not current LinkedIn observations. Historical capture comments are retained in endpoints.ts and are not promoted to current live checks. No endpoint has a new live capture here. DOM selectors have no multi-locale browser integration evidence. whoami supplies this inventory and the actual runtime write policy; it never guesses provider availability.
 
 Search/feed/notification offsets use existing endpoint builders, one page per call. nextCursor appears only for matching provider start/count/total metadata. DOM discovery, inbox, conversation and invitation reads expose bounded first pages and mark completeness partial. Profiles make at most six requests (seven for own profile), plus bounded identity verification; optional hidden sections may be unavailable.
+
+research_jobs composes one search_jobs first page and at most one get_job_details for the first linked job. It permits at most three explicit Voyager read attempts including identity, two tool calls and ten entities; navigation/assets are excluded. No pagination, retries, persistence or inferred fit. Source URLs and fetchedAt are attached to every fact; missing fields and partial/error states remain visible.
 
 The official provider is unavailable in the active runtime. Token/cookie settings from v1 do not activate it. All alpha writes are disabled by default; new-thread messaging has a second experimental opt-in.

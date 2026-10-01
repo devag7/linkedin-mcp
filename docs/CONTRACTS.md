@@ -66,3 +66,17 @@ The runtime write opt-in and experimental-route gate still apply.
 After a timeout/restart, repeat the original operation ID and inputs to retrieve a
 journaled outcome; no proof is needed for that lookup, and no action is resubmitted.
 Unsubmitted previews do not survive restart. The server cannot infer human consent.
+
+### research_jobs composition
+
+This new draft read tool returns an engine-assembled brief with exact query,
+bounds, source-linked entities/facts, unknown fields, per-read status/codes/guidance,
+gaps, next steps and Markdown. Each fact has sourceTool, sourceUrl, fetchedAt and
+truncation. `data.status` is ok/empty/partial. Source read errors are retained in
+a **partial report**, even with zero entities, so consumers must inspect reads
+and gaps; a successful MCP envelope does not imply successful provider work.
+Input errors/cancellation before execution retain the existing error envelope.
+A read failure prevents subsequent composition reads. No automatic pagination,
+retry, storage or writes. The request ceiling is enforced at Voyager GET entry
+and preserved across queue callbacks; identity preflight counts toward three
+attempts. Browser navigation/assets are outside this explicit API counter.

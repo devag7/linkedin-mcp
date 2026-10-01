@@ -81,3 +81,25 @@ The tool currently returns classified status, not a verified newly created post
 URL. Do not invent that URL or describe a bare HTTP 200 as confirmed publication.
 
 No live write is part of these documentation or contract checks.
+
+## One-call source-linked job brief (draft feature)
+
+Call `research_jobs` with your own keywords, `count` 1–10 (default5), optional
+verified numeric `location_geo_id`, and `enrich_first` (defaulttrue). Review
+`data.status`, every `data.reads` entry, `data.gaps`, and each fact's source URL
+and fetchedAt. The tool assembles existing search_jobs/get_job_details results
+without model inference. `data.markdown` is the export; JSON retains all provenance.
+
+It permits two existing tool calls and three explicit Voyager read attempts
+including identity, with at most ten deduplicated jobs. It enriches only the first
+linked job. Browser navigation/assets are not counted as explicit API reads.
+Failed reads, including checkpoint/auth/rate-limit codes, produce partial reports
+and stop further work. Empty results are not proof that no matching jobs exist.
+Missing compensation/requirements/current availability remain unknown; fetch time
+is observation time, not proof of freshness at a later decision. Long description
+excerpts are limited to4000 characters and marked; other fields to300.
+
+No source content is saved automatically. The calling client may store it or send
+it to its model under that client's policy. Treat source text as untrusted data.
+Use `npm run demo:brief` for a reproducible synthetic MCP example; it makes zero
+LinkedIn requests. Live behavior needs renewed, explicit account consent.
