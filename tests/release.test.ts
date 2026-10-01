@@ -206,50 +206,136 @@ describe('Registry recovery', () => {
   });
 });
 describe('GitHub draft lifecycle', () => {
-  it('creates a draft for a missing release', async () => {
-    const fetchImpl = vi
-      .fn()
-      .mockResolvedValueOnce(response({}, 404))
-      .mockResolvedValueOnce(response({ id: 7, tag_name: 'v2.0.4', draft: true }));
-    await githubRelease('devag7/linkedin-mcp', releaseIdentity(pkg, head), head, false, {
-      fetchImpl,
-      token: 'synthetic-token',
+  const existing = { id: 7, tag_name: 'v2.0.4', draft: true, target_commitish: head };
+  function destination({
+    release = existing as typeof existing | null,
+    target = head,
+    tag = head as string | null,
+    annotated = false,
+  } = {}) {
+    let tagSha = tag;
+    const fetchImpl = vi.fn(async (url: string, init: RequestInit = {}) => {
+      if (url.includes('/releases/tags/')) return response({}, 404);
+      if (url.includes('/releases?')) return response(release ? [release] : []);
+      if (url.includes('/commits/')) return response({ sha: target });
+      if (url.includes('/git/ref/tags/'))
+        return tagSha
+          ? response({
+              ref: 'refs/tags/v2.0.4',
+              object: { type: annotated ? 'tag' : 'commit', sha: tagSha },
+            })
+          : response({}, 404);
+      if (url.includes('/git/tags/'))
+        return response({ sha: tagSha, object: { type: 'commit', sha: head } });
+      if (url.endsWith('/git/refs') && init.method === 'POST') {
+        tagSha = head;
+        return response({});
+      }
+      if (url.endsWith('/releases') && init.method === 'POST') return response(existing);
+      if (url.endsWith('/releases/7') && init.method === 'PATCH')
+        return response({ ...existing, draft: false });
+      throw new Error('UNEXPECTED_SYNTHETIC_REQUEST');
     });
-    expect(fetchImpl.mock.calls[1][1].method).toBe('POST');
-    expect(JSON.parse(fetchImpl.mock.calls[1][1].body)).toMatchObject({
+    return { fetchImpl, token: 'synthetic-token' };
+  }
+  const run = (options: ReturnType<typeof destination>, finalize = false) =>
+    githubRelease('devag7/linkedin-mcp', releaseIdentity(pkg, head), head, finalize, options);
+  it('creates a bound tag then a draft for a missing release', async () => {
+    const options = destination({ release: null, tag: null });
+    expect(await run(options)).toBe(7);
+    const mutations = options.fetchImpl.mock.calls.filter(([, init]) => init?.method === 'POST');
+    expect(mutations).toHaveLength(2);
+    expect(JSON.parse(mutations[0][1]!.body as string)).toEqual({
+      ref: 'refs/tags/v2.0.4',
+      sha: head,
+    });
+    expect(JSON.parse(mutations[1][1]!.body as string)).toMatchObject({
       draft: true,
       target_commitish: head,
-      tag_name: 'v2.0.4',
     });
   });
-  it('reuses a draft after a downstream failure; finalization is a separate operation', async () => {
-    const existing = { id: 7, tag_name: 'v2.0.4', draft: true };
-    const fetchImpl = vi.fn(async () => response(existing));
-    await githubRelease('devag7/linkedin-mcp', releaseIdentity(pkg, head), head, false, {
-      fetchImpl,
-      token: 'synthetic-token',
-    });
-    expect(fetchImpl).toHaveBeenCalledTimes(1);
-    await githubRelease('devag7/linkedin-mcp', releaseIdentity(pkg, head), head, true, {
-      fetchImpl,
-      token: 'synthetic-token',
-    });
-    expect(fetchImpl.mock.calls[2][1]).toMatchObject({ method: 'PATCH', body: '{"draft":false}' });
+  it('finds an authenticated draft and reuses it without mutation', async () => {
+    const options = destination();
+    expect(await run(options)).toBe(7);
+    expect(
+      options.fetchImpl.mock.calls.every(([, init]) => (init?.method ?? 'GET') === 'GET'),
+    ).toBe(true);
+    expect(await run(options, true)).toBe(7);
+    expect(
+      options.fetchImpl.mock.calls.filter(([, init]) => init?.method === 'PATCH'),
+    ).toHaveLength(1);
   });
-  it('does not recreate a release during finalization or redraft a published release', async () => {
-    await expect(
-      githubRelease('devag7/linkedin-mcp', releaseIdentity(pkg, head), head, true, {
-        fetchImpl: async () => response({}, 404),
-        token: 'synthetic-token',
-      }),
-    ).rejects.toThrow('GITHUB_DRAFT_MISSING');
-    const fetchImpl = vi.fn(async () => response({ id: 7, tag_name: 'v2.0.4', draft: false }));
-    await githubRelease('devag7/linkedin-mcp', releaseIdentity(pkg, head), head, false, {
-      fetchImpl,
-      token: 'synthetic-token',
-    });
-    expect(fetchImpl).toHaveBeenCalledTimes(1);
+  it.each([{ target: 'b'.repeat(40) }, { tag: 'b'.repeat(40) }, { tag: null }])(
+    'rejects mismatched or absent source before reuse or finalization %j',
+    async (override) => {
+      for (const finalize of [false, true]) {
+        const options = destination(override);
+        await expect(run(options, finalize)).rejects.toThrow(
+          /GITHUB_(RELEASE|TAG)_SOURCE_MISMATCH/,
+        );
+        expect(
+          options.fetchImpl.mock.calls.every(([, init]) => (init?.method ?? 'GET') === 'GET'),
+        ).toBe(true);
+      }
+    },
+  );
+  it('resolves a branch target and annotated tag to the expected commit', async () => {
+    expect(
+      await run(
+        destination({ release: { ...existing, target_commitish: 'main' }, annotated: true }),
+      ),
+    ).toBe(7);
   });
+  it('does not recreate during finalization or redraft published releases', async () => {
+    await expect(run(destination({ release: null }), true)).rejects.toThrow('GITHUB_DRAFT_MISSING');
+    const options = destination({ release: { ...existing, draft: false } });
+    expect(await run(options, true)).toBe(7);
+    expect(
+      options.fetchImpl.mock.calls.every(([, init]) => (init?.method ?? 'GET') === 'GET'),
+    ).toBe(true);
+  });
+  it('fails closed on duplicate drafts and bounded discovery exhaustion', async () => {
+    for (const entries of [
+      [existing, existing],
+      Array.from({ length: 100 }, (_, id) => ({ ...existing, id, tag_name: 'other' })),
+    ]) {
+      const fetchImpl = vi.fn(async (url: string) =>
+        url.includes('/tags/') ? response({}, 404) : response(entries),
+      );
+      await expect(run({ fetchImpl, token: 'synthetic-token' })).rejects.toThrow(
+        /AMBIGUOUS_GITHUB_RELEASE|GITHUB_RELEASE_LIST_LIMIT/,
+      );
+      expect(fetchImpl.mock.calls.length).toBeLessThanOrEqual(6);
+    }
+  });
+  it('rejects an incorrect finalization response', async () => {
+    const options = destination();
+    const normal = options.fetchImpl.getMockImplementation()!;
+    options.fetchImpl.mockImplementation(async (url, init) =>
+      init?.method === 'PATCH'
+        ? response({ ...existing, target_commitish: 'wrong' })
+        : normal(url, init),
+    );
+    // The target resolver must reflect the altered commit, rather than the normal fixture.
+    const current = options.fetchImpl.getMockImplementation()!;
+    options.fetchImpl.mockImplementation(async (url, init) =>
+      url.endsWith('/commits/wrong') ? response({ sha: 'b'.repeat(40) }) : current(url, init),
+    );
+    await expect(run(options, true)).rejects.toThrow('GITHUB_RELEASE_SOURCE_MISMATCH');
+  });
+});
+it('cancels a destination response as soon as its byte limit is exceeded', async () => {
+  const cancel = vi.fn();
+  const body = new ReadableStream({
+    start(controller) {
+      controller.enqueue(new Uint8Array(2 * 1024 * 1024 + 1));
+    },
+    cancel,
+  });
+  await expect(readMetadata(NPM, { fetchImpl: async () => new Response(body) })).rejects.toThrow(
+    'DESTINATION_RESPONSE_TOO_LARGE',
+  );
+  expect(cancel).toHaveBeenCalledOnce();
 });
 it('accepts only the pinned publisher bytes and rejects a corrupt or unpinned download before extraction', () => {
   const bytes = Buffer.from('synthetic archive');

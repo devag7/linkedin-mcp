@@ -49,8 +49,25 @@ export async function readMetadata(url, { fetchImpl = fetch, token, method = 'GE
   });
   if (response.status === 404 && method === 'GET') return null;
   if (!response.ok) fail(`DESTINATION_HTTP_${response.status}`);
-  const text = await response.text();
-  if (text.length > 2 * 1024 * 1024) fail('DESTINATION_RESPONSE_TOO_LARGE');
+  const reader = response.body?.getReader();
+  if (!reader) fail('INVALID_DESTINATION_JSON');
+  const chunks = [];
+  let size = 0;
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      size += value.byteLength;
+      if (size > 2 * 1024 * 1024) {
+        await reader.cancel();
+        fail('DESTINATION_RESPONSE_TOO_LARGE');
+      }
+      chunks.push(value);
+    }
+  } finally {
+    reader.releaseLock();
+  }
+  const text = Buffer.concat(chunks).toString('utf8');
   try {
     return JSON.parse(text);
   } catch {
@@ -130,12 +147,62 @@ export async function verifyRegistry(server, options = {}) {
   fail('REGISTRY_NOT_VISIBLE');
 }
 
+async function resolvedTag(root, tag, options) {
+  const ref = await readMetadata(`${root}/git/ref/tags/${encodeURIComponent(tag)}`, options);
+  if (ref === null) return null;
+  if (ref.ref !== `refs/tags/${tag}`) fail('INVALID_GITHUB_TAG');
+  let object = ref.object;
+  for (let depth = 0; depth < 8; depth++) {
+    if (!/^[a-f0-9]{40}$/.test(object?.sha ?? '')) fail('INVALID_GITHUB_TAG');
+    if (object.type === 'commit') return object.sha;
+    if (object.type !== 'tag') fail('INVALID_GITHUB_TAG');
+    const annotated = await readMetadata(`${root}/git/tags/${object.sha}`, options);
+    if (annotated?.sha !== object.sha) fail('INVALID_GITHUB_TAG');
+    object = annotated.object;
+  }
+  fail('INVALID_GITHUB_TAG');
+}
+
+async function releaseForTag(base, tag, options) {
+  // The by-tag endpoint returns published releases only. Include authenticated drafts.
+  const published = await readMetadata(`${base}/tags/${encodeURIComponent(tag)}`, options);
+  if (published !== null) return published;
+  const matches = [];
+  for (let page = 1; page <= 5; page++) {
+    const releases = await readMetadata(`${base}?per_page=100&page=${page}`, options);
+    if (!Array.isArray(releases) || releases.length > 100) fail('INVALID_GITHUB_RELEASE_LIST');
+    matches.push(...releases.filter((release) => release.tag_name === tag));
+    if (matches.length > 1) fail('AMBIGUOUS_GITHUB_RELEASE');
+    if (releases.length < 100) return matches[0] ?? null;
+  }
+  fail('GITHUB_RELEASE_LIST_LIMIT');
+}
+
 export async function githubRelease(repo, identity, head, finalize, options = {}) {
-  if (repo !== 'devag7/linkedin-mcp' || !options.token) fail('INVALID_GITHUB_RELEASE_CONTEXT');
-  const base = `https://api.github.com/repos/${repo}/releases`;
-  let release = await readMetadata(`${base}/tags/${identity.tag}`, options);
+  if (
+    repo !== 'devag7/linkedin-mcp' ||
+    !options.token ||
+    !/^[a-f0-9]{40}$/.test(head) ||
+    !/^v\d+\.\d+\.\d+$/.test(identity.tag) ||
+    identity.eligible !== true
+  )
+    fail('INVALID_GITHUB_RELEASE_CONTEXT');
+  const root = `https://api.github.com/repos/${repo}`;
+  const base = `${root}/releases`;
+  let release = await releaseForTag(base, identity.tag, options);
+  let tagSha = await resolvedTag(root, identity.tag, options);
+  if (tagSha !== null && tagSha !== head) fail('GITHUB_TAG_SOURCE_MISMATCH');
   if (release === null) {
     if (finalize) fail('GITHUB_DRAFT_MISSING');
+    if (tagSha === null) {
+      await readMetadata(`${root}/git/refs`, {
+        ...options,
+        method: 'POST',
+        body: { ref: `refs/tags/${identity.tag}`, sha: head },
+      });
+      tagSha = await resolvedTag(root, identity.tag, options);
+      if (tagSha !== head) fail('GITHUB_TAG_SOURCE_MISMATCH');
+    }
     release = await readMetadata(base, {
       ...options,
       method: 'POST',
@@ -148,18 +215,35 @@ export async function githubRelease(repo, identity, head, finalize, options = {}
       },
     });
   }
-  if (
-    !Number.isSafeInteger(release?.id) ||
-    release.tag_name !== identity.tag ||
-    typeof release.draft !== 'boolean'
-  )
-    fail('INVALID_GITHUB_RELEASE');
-  if (finalize && release.draft)
-    await readMetadata(`${base}/${release.id}`, {
+  async function verify(value) {
+    if (
+      !Number.isSafeInteger(value?.id) ||
+      value.id <= 0 ||
+      value.tag_name !== identity.tag ||
+      typeof value.draft !== 'boolean' ||
+      typeof value.target_commitish !== 'string' ||
+      !value.target_commitish ||
+      value.target_commitish.length > 256
+    )
+      fail('INVALID_GITHUB_RELEASE');
+    const target = await readMetadata(
+      `${root}/commits/${encodeURIComponent(value.target_commitish)}`,
+      options,
+    );
+    if (target?.sha !== head) fail('GITHUB_RELEASE_SOURCE_MISMATCH');
+    if ((await resolvedTag(root, identity.tag, options)) !== head)
+      fail('GITHUB_TAG_SOURCE_MISMATCH');
+  }
+  await verify(release);
+  if (finalize && release.draft) {
+    const result = await readMetadata(`${base}/${release.id}`, {
       ...options,
       method: 'PATCH',
       body: { draft: false },
     });
+    await verify(result);
+    if (result.id !== release.id || result.draft !== false) fail('INVALID_GITHUB_FINALIZATION');
+  }
   return release.id;
 }
 
