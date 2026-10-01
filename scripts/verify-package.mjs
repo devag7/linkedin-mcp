@@ -1,14 +1,23 @@
 /** Install and exercise the packed artifact in isolation. Never contacts LinkedIn. */
 import assert from 'node:assert/strict';
 import { execFileSync, spawnSync } from 'node:child_process';
-import { existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import {
+  existsSync,
+  mkdtempSync,
+  mkdirSync,
+  readFileSync,
+  realpathSync,
+  rmSync,
+  symlinkSync,
+  writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 const root = process.cwd();
 const pkg = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
 const npmCli = process.env.npm_execpath;
 assert.ok(npmCli, 'Run through npm run verify:package to select the active npm CLI.');
-const dir = mkdtempSync(join(tmpdir(), 'linkedin-packed-'));
+const dir = realpathSync(mkdtempSync(join(tmpdir(), 'linkedin-packed-')));
 const runNpm = (args, cwd = root) =>
   execFileSync(process.execPath, [npmCli, ...args], {
     cwd,
@@ -139,6 +148,24 @@ try {
   });
   assert.equal(erase.status, 0, erase.stderr);
   assert.equal(existsSync(profile), false);
+  // Default-path regression uses a disposable HOME/USERPROFILE, never real account state.
+  const fixtureHome = join(dir, 'alias-home');
+  mkdirSync(join(fixtureHome, '.linkedin-mcp'), { recursive: true });
+  const outside = join(dir, 'outside-profile');
+  mkdirSync(outside);
+  writeFileSync(join(outside, 'sentinel'), 'preserved');
+  symlinkSync(
+    outside,
+    join(fixtureHome, '.linkedin-mcp', 'profile'),
+    process.platform === 'win32' ? 'junction' : 'dir',
+  );
+  const aliased = spawnSync(process.execPath, [bundle, '--logout'], {
+    env: { ...process.env, HOME: fixtureHome, USERPROFILE: fixtureHome, LINKEDIN_PROFILE_DIR: '' },
+    encoding: 'utf8',
+    timeout: 10000,
+  });
+  assert.equal(aliased.status, 1, aliased.stderr);
+  assert.equal(readFileSync(join(outside, 'sentinel'), 'utf8'), 'preserved');
   const smoke = execFileSync(
     process.execPath,
     [resolve('tests/built-artifact-smoke.mjs'), bundle],

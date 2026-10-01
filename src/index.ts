@@ -18,14 +18,15 @@
 import { startServer } from './server.js';
 import type { ServerConfig, TransportType } from './types.js';
 import { Logger } from './types.js';
-import { rmSync, existsSync } from 'node:fs';
+import { existsSync } from 'node:fs';
 import { BrowserEngine } from './browser/engine.js';
 import { interactiveBrowserLogin, runSpike } from './browser/login.js';
 import { runCapture } from './browser/capture.js';
 import { runWriteCapture } from './browser/writecapture.js';
 import { runWriteProbe } from './browser/writeprobe.js';
-import { StateLock, profilePath } from './safety/state-lock.js';
+import { profilePath } from './safety/state-lock.js';
 import { diagnose } from './doctor.js';
+import { removeSavedProfile } from './browser/logout.js';
 import { VERSION } from './version.js';
 import { loadConfig } from './config/env.js';
 
@@ -295,23 +296,15 @@ async function main(): Promise<void> {
   }
 
   if (config.action === 'logout') {
-    if (process.env.LINKEDIN_PROFILE_DIR?.trim() && !config.confirmProfileDeletion)
-      throw new Error(
-        'A custom profile may contain other browser data. To delete its entire directory, repeat --logout --confirm-profile-deletion after reviewing LINKEDIN_PROFILE_DIR. Safety history is retained.',
-      );
-    const dir = profileDir();
-    const ownership = new StateLock(`${dir}.owner`, true);
-    ownership.acquire();
-    try {
-      if (existsSync(dir)) {
-        rmSync(dir, { recursive: true, force: true });
-        console.error('Logged out — browser profile cleared. Run --login to sign in again.');
-      } else {
-        console.error('No saved session found — nothing to clear.');
-      }
-    } finally {
-      ownership.release();
-    }
+    const removed = removeSavedProfile({
+      profileDir: process.env.LINKEDIN_PROFILE_DIR,
+      confirmCustom: config.confirmProfileDeletion,
+    });
+    console.error(
+      removed
+        ? 'Logged out — browser profile cleared. Safety history retained.'
+        : 'No saved session found — nothing to clear.',
+    );
     process.exit(0);
   }
 
@@ -364,7 +357,10 @@ void main().catch((error: unknown) => {
     message.startsWith('Official provider is unavailable') ||
     message.startsWith('Invalid environment configuration:') ||
     message.startsWith('Choose only one CLI command.') ||
-    message.startsWith('A custom profile may contain other browser data.') ||
+    message.startsWith('A custom profile deletion requires') ||
+    ['PROFILE_ALIAS_REFUSED', 'PROFILE_DELETION_ROOT_REFUSED', 'PROFILE_DELETION_CHANGED'].includes(
+      message,
+    ) ||
     message.startsWith('--confirm-profile-deletion is only supported') ||
     message.startsWith('--live is only supported');
   console.error(
