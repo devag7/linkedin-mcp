@@ -37,6 +37,13 @@ try {
   const inventory = verifyTarball(join(dir, packed.filename), root, pkg);
   if (process.env.PACK_INVENTORY_OUTPUT)
     writeFileSync(process.env.PACK_INVENTORY_OUTPUT, JSON.stringify({ inventory }, null, 2) + '\n');
+  // Also exercise the normal release path: prepack must not contaminate JSON.
+  const normal = JSON.parse(runNpm(['pack', '--json', '--pack-destination', dir]))[0];
+  assertInventory(
+    normal.files.map((entry) => entry.path),
+    pkg,
+  );
+  assert.deepEqual(verifyTarball(join(dir, normal.filename), root, pkg), inventory);
   assert.equal(packed.name, pkg.name);
   assert.equal(packed.version, pkg.version);
   assert.ok(packed.files.some((entry) => entry.path === 'dist/index.js'));

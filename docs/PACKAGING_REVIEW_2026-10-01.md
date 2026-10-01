@@ -29,3 +29,9 @@ was backed up, then relocated from Git's refs namespace to `.git/sync-preserved/
 Valid branches and history were retained, and fetch succeeds. All 57 requested
 workspace duplicate files, the ignored dist duplicate and pr_diff.txt are retained
 and hashed in the private backup outside iCloud.
+
+The normal lifecycle path exposed an additional defect before release: prepack's
+report polluted npm pack --json stdout. Reports now go to stderr, and the packed
+gate tests **both** normal packing (used by the release helper) and packing with
+scripts disabled, requiring identical actual archive contents. A disposable clone
+with broadened files rules fails normal prepack. No release was attempted.

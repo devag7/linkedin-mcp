@@ -15,4 +15,7 @@ assertInventory(
   packed.files.map((entry) => entry.path),
   pkg,
 );
-console.log(JSON.stringify({ packageInventory: 'passed', files: packed.files.length }));
+// Keep npm pack --json stdout machine-readable for the release helper.
+process.stderr.write(
+  JSON.stringify({ packageInventory: 'passed', files: packed.files.length }) + '\n',
+);
