@@ -8,11 +8,12 @@ with the existing Mac, Node and Chrome; no paid API/model/backend is required.
 
 ## Gates before account access
 
-1. Resolve R1/R2 in [the three-PR review](THREE_PR_RELEASE_REVIEW_2026-10-01.md).
-   Require desired-behavior SDK tests for contradictory totals and standalone
-   detail identity. Retain the empty-status regression, source provenance,
-   partial reports and three-attempt ceiling. Do not substitute a fixture pass
-   for live evidence.
+1. Verify the chosen build includes reviewed R1/R2 fixes from
+   [the three-PR review](THREE_PR_RELEASE_REVIEW_2026-10-01.md), with passing SDK
+   regressions for contradictory totals and standalone detail identity. Preserve
+   the brief's independent identity defense, empty-status regression, source
+   provenance, partial reports and three-attempt ceiling. Do not substitute a
+   fixture pass for live evidence.
 2. Record the exact resulting PR #5 source SHA, package SHA256, Node/Chrome
    versions and current-head source/packed/offline Chrome CI result. Build and
    install that reviewed tarball at a stable private path outside iCloud; use
@@ -118,3 +119,15 @@ with `count:3`, optional first-job detail, an existing profile, at most three
 explicit Voyager attempts, ordinary Chrome navigation/background traffic, the
 stop rules and redacted timing/status evidence above. Approval is permission
 for a future gated attempt; it is not a claim that the readiness gates passed.
+
+## Exact-build preparation record
+
+After all three resulting draft heads pass their source/package/hosted gates,
+prepare the final PR #5 tarball and install it privately outside iCloud. Record
+the full source SHA, package SHA256,15-entry verified archive inventory, absolute
+Node/installed entry, safe generated configuration and offline diagnosis in a
+private validation-build record. Verify actual installed SDK discovery/whoami
+and local close only, with session not_checked and no owner lock created. Do not
+launch the real account browser, call a live health probe or read a profile while
+preparing this record. The consent request must identify that exact source/build;
+any subsequent source/artifact change requires review before using the approval.

@@ -143,3 +143,14 @@ consent before one bounded read. All57 sync copies, pr_diff.txt, the ignored dis
 copy, older backups/evidence and the original roadmap remain preserved. New-head
 hosted results are recorded on draft PR #5 and in the private backup after push;
 none is assumed in this source document.
+
+Subsequent R1/R2 remediation: both shared code findings are fixed and accepted
+through23 SDK/page-fixture cases in PR #3 at5e6f25b, carried into PR #4 at1ee61b6
+and PR #5 at888d001 without rewriting history. The earlier "still-open" paragraph
+above is the pre-fix snapshot. PR #3/#4 pass499/504 local tests, source/package
+gates and12 hosted jobs each. See [shared fix evidence](READ_CONSISTENCY_FIX_EVIDENCE_2026-10-01.md)
+and the updated [review status](THREE_PR_RELEASE_REVIEW_2026-10-01.md). PR #5 retains
+separate brief identity checks and adds SDK regression cases for contradictory
+pages and independently corrupted composed identity/source results. No account
+request has occurred; final exact-build preparation and fresh consent follow the
+resulting-head gates.

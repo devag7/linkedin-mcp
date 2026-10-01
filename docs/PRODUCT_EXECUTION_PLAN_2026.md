@@ -305,15 +305,25 @@ cohort, repeat-use, release or distribution outcome gates.
 
 The requested PR #5 empty-page status mismatch is fixed and asserted through the
 SDK in both fields; 497 local tests/27 suites and source/package gates pass.
-The separate [three-PR review](THREE_PR_RELEASE_REVIEW_2026-10-01.md) confirms two
-remaining P2 correctness blockers shared by the current PR #3/#4/#5 heads.
-Passing hosted checks do not cover those inconsistent-provider fixtures yet.
+The historical [three-PR review](THREE_PR_RELEASE_REVIEW_2026-10-01.md) identified
+two shared P2 correctness blockers. The subsequent shared-source remediation
+fixes both and adds23 SDK cases; neither finding remains open in the reviewed
+resulting source. PR #5 adds separate brief-defense/partial SDK coverage. Exact
+resulting-head gates remain required, without live claims from fixtures.
 
 | Order | Proposal and acceptance | Dependencies | Effort / maintenance | Required cash |
 | --- | --- | --- | --- | --- |
 | Before release, R1 | Validate paging total against observed rows; contradictory zero/short pages cannot certify empty or complete. Real SDK tests retain true empty/final-page behavior and no implicit follow-up. | Shared pageResult/registered reads; existing synthetic SDK fixtures; propagate to both stacked feature drafts | 0.5–1 day; included in read-schema maintenance, about 1 h/month | $0 |
 | Before release, R2 | Verify get_job_details identity equals requested ID before assigning its source URL; mismatch is a typed error, no retry. Test both supported URN forms and preserve useful partial briefs. | Existing shaper/contract and brief identity defense; stacked draft propagation | 0.5 day; included in existing read-schema maintenance, about 1 h/month | $0 |
 | After correctness gates | One freshly consented read-only job brief under the [concrete protocol](LIVE_JOB_BRIEF_VALIDATION_PROTOCOL.md); record exact build, bounds, provenance checks, partial codes and verified cleanup | R1/R2 fixes, resulting-head local/hosted gates, fresh human consent, existing authenticated profile | 0.5 day per initial observed environment; later repeat-use cohorts tracked separately | $0 with existing local prerequisites |
+
+R1/R2 implementation and shared acceptance are complete in PR #3 commit5e6f25b,
+carried into PR #4 at1ee61b6 and PR #5 at888d001 with origin trailers. PR #3/#4
+pass499/504 local tests, source/package gates and12 current-head hosted jobs
+each. PR #5's independent brief identity check remains intact;524 local tests and
+source/package/installed client gates pass. Its final hosted results are recorded
+on the draft after the track-specific test follow-up.
+This closes the two code findings, not current provider compatibility or release.
 
 No further account request has been made. Keep all three drafts; do not merge,
 bump or publish. Native client chat/live compatibility, full erasure, NTFS ACLs

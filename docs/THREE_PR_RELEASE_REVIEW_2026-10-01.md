@@ -1,9 +1,22 @@
 # Three draft PR review — October 1, 2026
 
-Recommendation: keep all three drafts. The requested empty-status mismatch is
-fixed in this PR #5 follow-up, but two independently reproduced P2 correctness
-findings below remain open before release. No additional P0/P1 defect was
-confirmed in the reviewed scope. Passing CI does not negate these findings.
+Current remediation status: **R1 and R2 are fixed** in reviewed PR #3 commit
+`5e6f25ba66800361abb8d7e47f3db258bb12a2e4` and carried by cherry-pick into PR #4
+at `1ee61b69b0a8793f3cacf055e76b309ea574d14f` and PR #5 at `888d001`.
+PR #5 also adds SDK coverage of contradictory brief pages and its independent
+identity defense. Existing histories are ancestors; no rebase, force-push or
+pull-request merge is used. Keep all drafts. The dated findings below describe
+the **pre-fix heads**, not outstanding defects in the resulting source.
+
+See [shared implementation/evidence](READ_CONSISTENCY_FIX_EVIDENCE_2026-10-01.md).
+PR #3 passes499 tests/26 suites and [12 hosted jobs](https://github.com/devag7/linkedin-mcp/actions/runs/36894307898).
+PR #4 passes504 tests/27 suites and [12 hosted jobs](https://github.com/devag7/linkedin-mcp/actions/runs/36895012222).
+Both local source/package gates pass. PR #5 passes524 local tests/28 suites and
+source/package/installed client gates after its track-specific follow-up. Its
+resulting-head hosted run and exact SHA are recorded in the draft body and private
+evidence after push. Passing fixture/platform checks do not establish live
+LinkedIn compatibility. No additional P0/P1 defect was confirmed in this targeted
+remediation review; broader evidence/roadmap gaps remain below.
 
 ## Exact source scope
 
@@ -24,7 +37,7 @@ Shared code is assessed in each head, rather than only each PR's incremental dif
 This is not an exhaustive proof against hostile local processes or live provider
 drift. Neither Chrome nor LinkedIn was used in the two new reproductions.
 
-## Findings by severity
+## Findings by severity — historical pre-fix snapshot
 
 ### R1 — P2: contradictory paging can certify a false empty result
 
@@ -126,12 +139,12 @@ source and output were saved. PR #3/#4 source heads remain unchanged; PR #5 gets
 only this reviewable follow-up. All drafts stay drafts; no version, merge or
 publication action is authorized.
 
-Next concrete milestone: fix R1/R2 in the common source track, propagate the
-reviewed fixes to the stacked drafts without rewriting history, add desired-
-behavior SDK regressions and run source/package matrices at the resulting heads.
-Then execute the [live validation protocol](LIVE_JOB_BRIEF_VALIDATION_PROTOCOL.md)
-only after its readiness gates and **fresh human consent**. Earlier account
-consent is not reused. Full erasure tooling, NTFS ACL proof and the optional
+Next concrete milestone after the shared fixes and resulting-head gates: prepare
+the exact PR #5 tarball in a stable private installation, record its SHA256/source
+head and verify configuration/discovery offline. Seek **fresh human consent**
+against that build and the [live validation protocol](LIVE_JOB_BRIEF_VALIDATION_PROTOCOL.md)
+before any account request. Earlier account consent is not reused. Full erasure
+tooling, NTFS ACL proof and the optional
 official provider are still roadmap work; this review does not claim completion.
 The development advisory follow-up remains October 8.
 

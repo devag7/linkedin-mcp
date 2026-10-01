@@ -10,6 +10,7 @@ import { Logger } from '../src/types.js';
 import { readLimit, reserveReadAttempt, ReadLimitError } from '../src/safety/read-limit.js';
 import { bindCancellation } from '../src/tools/cancellation.js';
 import { SerialQueue } from '../src/safety/queue.js';
+import * as registration from '../src/tools/register.js';
 const identity = JSON.parse(
   readFileSync(new URL('./fixtures/contracts-v1.json', import.meta.url), 'utf8'),
 ).response;
@@ -138,10 +139,16 @@ it('stops at rate limiting without starting detail work', async () => {
   expect(result.data.reads[0].code).toBe('RATE_LIMITED');
   expect(fetches).toHaveBeenCalledTimes(2);
 });
-it('omits mismatched detail identity and never cites its facts', async () => {
+it('retains search facts when standalone detail rejects mismatched identity', async () => {
   detailMismatch = true;
   const result = await brief();
-  expect(result.data.gaps.join(' ')).toContain('identity differs');
+  expect(result.data.reads[1]).toMatchObject({ status: 'error', code: 'RESPONSE_SHAPE_CHANGED' });
+  expect(result.data.gaps.join(' ')).toContain('RESPONSE_SHAPE_CHANGED');
+  expect(result).toMatchObject({
+    data: { status: 'partial' },
+    meta: { status: 'partial', partial: true },
+  });
+  expect(fetches).toHaveBeenCalledTimes(3);
   expect(result.data.entities[0].facts.every((f: any) => f.sourceTool === 'search_jobs')).toBe(
     true,
   );
@@ -277,3 +284,53 @@ it('keeps an empty page with unknown completeness partial in both SDK result fie
   expect(result.data.bounds).toMatchObject({ readAttempts: 2, toolCalls: 1 });
   expect(fetches).toHaveBeenCalledTimes(2);
 });
+
+it.each([0, 1])(
+  'keeps contradictory paging with %s rows partial in both brief fields',
+  async (rows) => {
+    searchRows = searchRows.slice(0, rows);
+    total = 2;
+    const result = await brief({ enrich_first: false });
+    expect(result).toMatchObject({
+      data: { status: 'partial' },
+      meta: { status: 'partial', partial: true },
+    });
+    expect(result.data.entities).toHaveLength(rows);
+    expect(result.data.reads[0].status).toBe('partial');
+    expect(result.data.bounds).toMatchObject({ readAttempts: 2, toolCalls: 1 });
+    expect(fetches).toHaveBeenCalledTimes(2);
+  },
+);
+
+it.each(['jobUrn', 'sourceUrl'])(
+  'retains the brief identity defense if composed %s changes after standalone validation',
+  async (field) => {
+    const invoke = registration.invokeBriefRead;
+    vi.spyOn(registration, 'invokeBriefRead').mockImplementation(async (...args) => {
+      const result = await invoke(...args);
+      if (args[1] !== 'get_job_details') return result;
+      // Deliberately corrupt the composed result AFTER its real standalone handler passed.
+      // This isolates the brief's own defense from the new read-tool identity check.
+      const structuredContent = structuredClone(result.structuredContent)!;
+      (structuredContent.data as Record<string, unknown>)[field] =
+        field === 'jobUrn' ? 'urn:li:fsd_jobPosting:99' : 'https://www.linkedin.com/jobs/view/99/';
+      return {
+        ...result,
+        structuredContent,
+        content: [{ type: 'text' as const, text: JSON.stringify(structuredContent) }],
+      };
+    });
+    const result = await brief();
+    expect(result).toMatchObject({
+      data: { status: 'partial' },
+      meta: { status: 'partial', partial: true },
+    });
+    expect(result.data.gaps.join(' ')).toContain('identity differs');
+    expect(result.data.entities).toHaveLength(2);
+    expect(result.data.entities[0].facts.every((f: any) => f.sourceTool === 'search_jobs')).toBe(
+      true,
+    );
+    expect(result.data.bounds).toMatchObject({ readAttempts: 3, toolCalls: 2 });
+    expect(fetches).toHaveBeenCalledTimes(3);
+  },
+);
