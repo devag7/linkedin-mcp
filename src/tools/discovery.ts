@@ -120,7 +120,8 @@ export function registerDiscoveryTools(
         );
         assertReadResponse(raw);
         const job = shapeJobDetails(raw);
-        if (!job.title || !job.jobUrn) throw new ToolError('RESPONSE_SHAPE_CHANGED');
+        const returnedId = /^urn:li:(?:fsd_)?jobPosting:([0-9]{1,20})$/.exec(job.jobUrn ?? '')?.[1];
+        if (!job.title || returnedId !== job_id) throw new ToolError('RESPONSE_SHAPE_CHANGED');
         return ok({ ...job, sourceUrl: `https://www.linkedin.com/jobs/view/${job_id}/` });
       }),
   );
