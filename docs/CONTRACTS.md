@@ -15,6 +15,17 @@ No call automatically follows a cursor. A full page without total evidence is
 partial; so is an empty DOM view with unknown completeness. DOM/inbox/conversation
 continuations are unsupported, not guessed.
 
+Matching paging start/count and a total are not sufficient alone: the observed
+row count must equal min(requested count, max(0, total - offset)). Contradictory
+zero/short/oversized pages retain their bounded observations with partial status,
+unknown continuation and no next cursor. A coherent short final page and a
+coherent zero-total page can establish end; no page is followed automatically.
+
+`get_job_details` verifies a numeric `urn:li:jobPosting:<id>` or
+`urn:li:fsd_jobPosting:<id>` matches the requested ID before attaching its canonical
+job source URL. An absent, unsupported or mismatched identity returns
+RESPONSE_SHAPE_CHANGED with null data and no provenance; it is never retried.
+
 Errors carry isError:true plus `{data:null,meta,error,tool,code,hint?}` in both
 representations. This works with clients that validate output schemas even for
 errors. Never use null data as a successful response. The error string is fixed
