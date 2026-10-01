@@ -1,0 +1,22 @@
+Unhandled Errors ^[[49m^[[22m^[[31m⎯⎯⎯⎯⎯⎯^[[39m
+Source checks (windows-latest, Node 20)	Test	2026-10-01T12:21:01.6440182Z ^[[31m^[[1m
+Source checks (windows-latest, Node 20)	Test	2026-10-01T12:21:01.6440550Z Vitest caught 1 unhandled error during the test run.
+Source checks (windows-latest, Node 20)	Test	2026-10-01T12:21:01.6441481Z This might cause false positive tests. Resolve unhandled errors to make sure your tests are not affected.^[[22m^[[39m
+Source checks (windows-latest, Node 20)	Test	2026-10-01T12:21:01.6453619Z 
+Source checks (windows-latest, Node 20)	Test	2026-10-01T12:21:01.6454321Z ^[[31m⎯⎯⎯⎯⎯⎯^[[39m^[[1m^[[41m Unhandled Error ^[[49m^[[22m^[[31m⎯⎯⎯⎯⎯⎯⎯^[[39m
+Source checks (windows-latest, Node 20)	Test	2026-10-01T12:21:01.6455738Z ^[[31m^[[1mError^[[22m: [vitest-worker]: Timeout calling "onTaskUpdate"^[[39m
+Source checks (windows-latest, Node 20)	Test	2026-10-01T12:21:01.6457974Z ^[[90m ^[[2m❯^[[22m Object.onTimeoutError node_modules/vitest/dist/chunks/rpc.-pEldfrD.js:^[[2m53:10^[[22m^[[39m
+Source checks (windows-latest, Node 20)	Test	2026-10-01T12:21:01.6459803Z ^[[90m ^[[2m❯^[[22m Timeout._onTimeout node_modules/vitest/dist/chunks/index.B521nVV-.js:^[[2m59:62^[[22m^[[39m
+Source checks (windows-latest, Node 20)	Test	2026-10-01T12:21:01.6460606Z ^[[90m ^[[2m❯^[[22m listOnTimeout node:internal/timers:^[[2m581:17^[[22m^[[39m
+Source checks (windows-latest, Node 20)	Test	2026-10-01T12:21:01.6461053Z ^[[90m ^[[2m❯^[[22m processTimers node:internal/timers:^[[2m519:7^[[22m^[[39m
+Source checks (windows-latest, Node 20)	Test	2026-10-01T12:21:01.6461286Z 
+Source checks (windows-latest, Node 20)	Test	2026-10-01T12:21:01.6462083Z ^[[31m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯^[[39m
+Source checks (windows-latest, Node 20)	Test	2026-10-01T12:21:01.6462277Z 
+Source checks (windows-latest, Node 20)	Test	2026-10-01T12:21:01.6464491Z 
+Source checks (windows-latest, Node 20)	Test	2026-10-01T12:21:01.6469348Z ^[[2m Test Files ^[[22m ^[[1m^[[32m25 passed^[[39m^[[22m^[[90m (25)^[[39m
+Source checks (windows-latest, Node 20)	Test	2026-10-01T12:21:01.6470996Z ^[[2m      Tests ^[[22m ^[[1m^[[32m474 passed^[[39m^[[22m^[[90m (474)^[[39m
+Source checks (windows-latest, Node 20)	Test	2026-10-01T12:21:01.6471355Z ^[[2m     Errors ^[[22m ^[[1m^[[31m1 error^[[39m^[[22m
+Source checks (windows-latest, Node 20)	Test	2026-10-01T12:21:01.6472297Z ^[[2m   Start at ^[[22m 12:19:37
+Source checks (windows-latest, Node 20)	Test	2026-10-01T12:21:01.6475656Z ^[[2m   Duration ^[[22m 84.59s^[[2m (transform 898ms, setup 0ms, collect 10.45s, tests 118.10s, environment 5ms, prepare 2.41s)^[[22m
+Source checks (windows-latest, Node 20)	Test	2026-10-01T12:21:01.6476081Z 
+Source checks (windows-latest, Node 20)	Test	2026-10-01T12:21:01.9984903Z ##[error]Process completed with exit code 1

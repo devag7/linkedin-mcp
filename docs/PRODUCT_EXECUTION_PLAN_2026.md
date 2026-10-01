@@ -90,7 +90,7 @@ then launches **those generated entries** with the real MCP SDK stdio client.
 It lists 22 tools, checks cold identity, blocked health/profile, disabled-write
 preview and clean closure using a disposable persisted-stop fixture. The packed
 artifact verifier runs this against a fresh installed tarball. This proves actual
-MCP client/process flow, not Cursor/Claude/VS Code UI acceptance or live providers.
+MCP client/process flow, not live providers or full application chat/read flows. Native VS Code 1.139.1 additionally accepted the export, launched it and discovered22 tools in a stopped disposable profile; the temporary window was closed and the original workspace restored. Claude/Cursor UI remains untested.
 No new dependency, provider route or tool is introduced.
 
 Rollback: omit the setup flags and use existing manual configuration. Retain PR #3
@@ -107,7 +107,7 @@ All proposals require source/contract/packed/hosted gates and an honest capabili
 | Priority / proposal | V/F/M; score | Acceptance criteria | Dependencies and evidence gate | Build / maintenance estimate | Required cash |
 | --- | --- | --- | --- | --- | --- |
 | P0 Safety review corrections | 5/5/2; 13 | Alias/junction deletion refused; issued proof for new writes; old outcome lookup; exact draft/tag SHA verification | PR #3 review + twelve hosted jobs; synthetic-only release tests | Implemented; 1–2 h/month review | $0 |
-| P1 Offline setup + client export | 5/5/1; 14 | Three formats, exact installed-build launch/env, useful failures, no account access, packed real SDK flow | PR #3 safety head; primary client docs; desktop UI check still needed | Implemented; 1–2 h/month format review | $0; paid clients optional/user-funded |
+| P1 Offline setup + client export | 5/5/1; 14 | Three formats, exact installed-build launch/env, useful failures, no account access, packed real SDK flow | PR #3 safety head; primary client docs; VS Code native launch/discovery observed; full UI read checks still needed | Implemented; 1–2 h/month format review | $0; paid clients optional/user-funded |
 | P2 Bounded source-linked research briefs | 5/4/2; 12 | One requested topic, maximum 3 provider requests/10 entities; source URL + fetchedAt per claim; explicit partial/unknown; no inference presented as source fact; deterministic export Markdown/JSON | Existing verified read primitives, schema/source review; consented end-to-end read required before live claim | 3–5 days; 2–4 h/month | $0 deterministic assembly; optional user-funded model summarization |
 | P3 Saved jobs | 5/2/3; 9 | Own saved jobs only, max25/request and max2 explicit pages; preserved source IDs/URLs, empty/changed-shape distinguished | Consented read capture of actual provider/UI route; no authorization currently. Competitor DOM implementation is feasibility evidence only | 3–6 days after capture; 3–6 h/month | $0 |
 | P4 Richer job filters | 4/3/3; 8 | Date/work type/employment/experience/sort supported only for verified mappings; unsupported combinations rejected; tests prove query and cursor binding | Capture/inspect each query parameter under new consent; locale fixtures and documented defaults | 2–4 days; 2–4 h/month | $0 |
@@ -221,7 +221,14 @@ on Linux/macOS/Windows Node20/22. Local safety run:470 tests/24 suites. Feature 
 typecheck, metadata and build pass. Detailed safety evidence is in
 [review corrections](PR3_REVIEW_CORRECTIONS_2026-10-01.md); original
 [execution evidence](ZERO_COST_EXECUTION_EVIDENCE_2026-10-01.md) remains historical.
-Feature hosted head/results must be recorded after its own push.
+The first feature matrix at `1bde68c` passed eleven jobs; Windows Node20 reported
+474 passing assertions plus an unhandled Vitest progress-RPC timeout. Its synchronous
+budget suite took69s. The test worker now yields between durable filesystem cases,
+allowing pending acknowledgements to run without mocking storage, dropping assertions
+or extending timeouts. This is an event-loop starvation diagnosis from logs and runner
+source, not a proven provider failure. The corrected hosted run must pass before this
+track is considered verified. Failure logs and native VS Code discovery evidence are
+in `docs/evidence/first-run-2026-10-01/`.
 
 These checks prove local policy/contract/process behavior and cross-platform packed
 execution. They do not prove current LinkedIn endpoint compatibility, native client
@@ -237,6 +244,11 @@ distribution is a measured, release-gated plan. See
 [coverage](ROADMAP_COVERAGE.md) for the earlier item-by-item inventory. Do not mark
 all phases complete because source/CI pass.
 
-Next milestone: human review of the two draft tracks, native-client config acceptance
+Next milestone: human review of the two draft tracks, remaining Claude/Cursor native-client acceptance
 without LinkedIn access, then P2 bounded source-linked brief implementation under the
 same endpoint and privacy limits. Live first-read validation requires renewed consent.
+
+Additional baseline: a repository-wide Prettier check reports nine unchanged legacy
+files (auth, client, circuit breaker and capture/endpoint utilities). Changed source
+files are formatted; lint passes. Unrelated formatting was preserved, not silently
+folded into these review tracks.

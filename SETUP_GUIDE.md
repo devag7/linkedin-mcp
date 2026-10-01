@@ -28,8 +28,7 @@ also supported by the client but is not the selected export format. The generate
 commands are arrays, so paths with spaces require no shell-escaping guesses.
 
 `npm run verify:setup` tests all three generated entries with a real SDK client and
-an offline stop fixture. The installed tarball test repeats it. Application UI
-acceptance and authorized live first reads remain separate evidence gates.
+an offline stop fixture. The installed tarball test repeats it. VS Code 1.139.1 also accepted the native export, launched it and discovered all22 tools in a disposable stopped profile. Claude/Cursor UI acceptance, full chat flows and authorized live first reads remain separate evidence gates.
 See the [execution plan](docs/PRODUCT_EXECUTION_PLAN_2026.md) for current proposals,
 maintenance/cash estimates and distribution measures.
 

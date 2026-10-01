@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { mkdtempSync, rmSync, existsSync, statSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { setImmediate as yieldWorker } from 'node:timers/promises';
 import { BudgetTracker } from '../src/safety/budgets.js';
 
 /**
@@ -32,8 +33,11 @@ beforeEach(() => {
   now = BASE;
 });
 
-afterEach(() => {
+afterEach(async () => {
   rmSync(tmp, { recursive: true, force: true });
+  // Real fsync loops can occupy a Windows worker across many consecutive cases.
+  // Let pending progress RPC acknowledgements run; keep durable I/O and assertions.
+  await yieldWorker();
 });
 
 describe('daily cap enforcement', () => {
