@@ -1,132 +1,248 @@
 name: Release
 
-# Releases are version-driven: bump `version` in package.json, commit, push to
-# main. If a tag for that version doesn't exist yet, this:
-#   1. creates a GitHub Release (tag v<version>, auto-generated notes)
-#   2. publishes to npm        (linkedin-mcp-tools)        — needs NPM_TOKEN secret
-#   3. publishes to GitHub Packages (@devag7/linkedin-mcp-tools) — shows in the
-#      repo's "Packages" sidebar; uses the built-in GITHUB_TOKEN (no secret)
-# Pushing again at the same version is a no-op (the tag already exists).
+# Each destination verifies its own version/artifact. A tag alone never means
+# npm succeeded. GitHub's release stays a draft until all destinations pass.
 on:
   push:
     branches: [main]
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      release_ref:
+        description: 'main, a vX.Y.Z resume tag, or a full source SHA for a dry run'
+        required: true
+        default: main
+        type: string
+      dry_run:
+        description: 'Run validation and destination checks without publishing'
+        required: true
+        default: true
+        type: boolean
 
 permissions:
-  contents: write
-  packages: write
+  contents: read
+
+concurrency:
+  group: release-${{ github.repository }}
+  cancel-in-progress: false
+
+env:
+  RELEASE_DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run && 'true' || 'false' }}
 
 jobs:
-  release:
-    runs-on: ubuntu-latest
-    outputs:
-      version: ${{ steps.version.outputs.version }}
-      is_new: ${{ steps.tag_check.outputs.exists == 'false' }}
+  compatibility:
+    if: github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && inputs.dry_run)
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        node-version: [20, 22]
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.release_ref || github.sha }}
+      - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: ${{ matrix.node-version }}
           cache: npm
-          registry-url: https://registry.npmjs.org
-
       - run: npm ci
+      - run: npm run metadata:check
       - run: npm run lint
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
+      - run: npm run verify:package
+      - run: npx patchright install --with-deps chrome
+        if: runner.os != 'macOS'
+      - name: Verify the runner's preinstalled Chrome on macOS
+        if: runner.os == 'macOS'
+        run: node -e 'require("node:fs").accessSync("/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", require("node:fs").constants.X_OK)'
+      - run: npm run verify:browser
 
-      - name: Verify build + version
-        run: |
-          test -f dist/index.js
-          echo "dist version: $(node dist/index.js --version)"
-
-      - name: Get version
-        id: version
-        run: echo "version=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
-
-      - name: Check if tag exists
-        id: tag_check
-        run: |
-          if git rev-parse "v${{ steps.version.outputs.version }}" >/dev/null 2>&1; then
-            echo "exists=true" >> "$GITHUB_OUTPUT"
-            echo "::notice::v${{ steps.version.outputs.version }} already released — skipping."
-          else
-            echo "exists=false" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Create GitHub Release
-        if: steps.tag_check.outputs.exists == 'false'
-        uses: softprops/action-gh-release@v2
+  release:
+    needs: compatibility
+    if: github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && inputs.dry_run)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    outputs:
+      version: ${{ steps.plan.outputs.version }}
+      eligible: ${{ steps.plan.outputs.eligible }}
+      source_sha: ${{ steps.plan.outputs.source_sha }}
+      tarball: ${{ steps.plan.outputs.tarball }}
+    steps:
+      - name: Validate manual source ref
+        env:
+          RELEASE_REF: ${{ inputs.release_ref || 'main' }}
+          MANUAL_DRY_RUN: ${{ inputs.dry_run && 'true' || 'false' }}
+        run: node -e 'if (!/^(main|v\d+\.\d+\.\d+)$/.test(process.env.RELEASE_REF) && !(process.env.MANUAL_DRY_RUN === "true" && /^[a-f0-9]{40}$/.test(process.env.RELEASE_REF))) process.exit(1)'
+      - uses: actions/checkout@v4
         with:
-          tag_name: v${{ steps.version.outputs.version }}
-          name: v${{ steps.version.outputs.version }}
-          generate_release_notes: true
-          files: dist/index.js
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.release_ref || github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          registry-url: https://registry.npmjs.org
+      - name: Pin npm with trusted publishing support
+        run: npm install --global npm@11.5.1
+      - run: npm ci
+      - run: npm audit --omit=dev
+      - run: npm run metadata:check
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      - run: npm run verify:package
+      - name: Pack the exact artifact
+        run: npm pack --json > pack-result.json
+      - name: Check source and npm destination
+        id: plan
+        run: node scripts/release.mjs plan
+      - name: Publish missing npm artifact
+        if: steps.plan.outputs.eligible == 'true' && steps.plan.outputs.npm_present == 'false' && env.RELEASE_DRY_RUN == 'false'
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Publish to npm
-        if: steps.tag_check.outputs.exists == 'false'
-        run: npm publish --access=public
+          NPM_PUBLISH_AUTH: ${{ vars.NPM_PUBLISH_AUTH || 'oidc' }}
+          NODE_AUTH_TOKEN: ${{ (vars.NPM_PUBLISH_AUTH || 'oidc') == 'token' && secrets.NPM_TOKEN || '' }}
+          TARBALL: ${{ steps.plan.outputs.tarball }}
+        run: |
+          case "$NPM_PUBLISH_AUTH" in
+            oidc) test -z "$NODE_AUTH_TOKEN" ;;
+            token) test -n "$NODE_AUTH_TOKEN" ;;
+            *) exit 1 ;;
+          esac
+          npm publish "$TARBALL" --access=public --provenance
+      - name: Verify exact npm artifact before creating a tag/release
+        if: steps.plan.outputs.eligible == 'true' && env.RELEASE_DRY_RUN == 'false'
+        run: node scripts/release.mjs verify-npm
+      - name: Create or resume the GitHub draft
+        if: steps.plan.outputs.eligible == 'true' && env.RELEASE_DRY_RUN == 'false'
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node scripts/release.mjs github-draft
+      - name: Preserve the verified artifact for finalization
+        if: steps.plan.outputs.eligible == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-artifact
+          path: |
+            ${{ steps.plan.outputs.tarball }}
+            pack-result.json
+          if-no-files-found: error
 
   github-packages:
     needs: release
-    if: needs.release.outputs.is_new == 'true'
+    if: needs.release.outputs.eligible == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
     steps:
       - uses: actions/checkout@v4
-      - name: Setup Node.js (GitHub Packages registry)
-        uses: actions/setup-node@v4
         with:
-          node-version: 20
+          ref: ${{ needs.release.outputs.source_sha }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
           cache: npm
           registry-url: https://npm.pkg.github.com
           scope: '@devag7'
       - run: npm ci
       - run: npm run build
-      - name: Scope the package to the owner (GitHub Packages requires @owner/name)
-        run: npm pkg set name="@devag7/linkedin-mcp-tools"
-      - name: Publish to GitHub Packages
-        run: npm publish --access=public
+      - run: npm pkg set name="@devag7/linkedin-mcp-tools"
+      - run: npm pack --json > pack-result.json
+      - name: Check scoped destination independently
+        id: plan
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node scripts/release.mjs package-plan
+      - name: Publish missing scoped artifact
+        if: steps.plan.outputs.present == 'false' && env.RELEASE_DRY_RUN == 'false'
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TARBALL: ${{ steps.plan.outputs.tarball }}
+        run: npm publish "$TARBALL" --access=public
+      - name: Verify scoped artifact
+        if: env.RELEASE_DRY_RUN == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node scripts/release.mjs verify-github-package
 
-  # Publish metadata to the official MCP Registry (registry.modelcontextprotocol.io).
-  # Authenticates via GitHub OIDC (proves ownership of the io.github.devag7
-  # namespace — no secret needed). Runs after the npm publish so the registry can
-  # verify the package's mcpName.
   mcp-registry:
     needs: release
-    if: needs.release.outputs.is_new == 'true'
+    if: needs.release.outputs.eligible == 'true'
     runs-on: ubuntu-latest
-    # The MCP Registry is in preview — don't fail the whole release if it hiccups
-    # (npm + GitHub Packages are the real distribution).
-    continue-on-error: true
     permissions:
-      id-token: write
       contents: read
+      id-token: write
     steps:
       - uses: actions/checkout@v4
-      - name: Sync server.json version to package.json (single source)
-        run: |
-          V=$(node -p "require('./package.json').version")
-          jq --arg v "$V" '.version = $v | .packages[0].version = $v' server.json > server.tmp && mv server.tmp server.json
-          cat server.json
-      - name: Install mcp-publisher
-        run: curl -L "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_$(uname -s | tr '[:upper:]' '[:lower:]')_$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/').tar.gz" | tar xz mcp-publisher
-      - name: Wait for npm to propagate the new version
-        run: sleep 20
-      - name: Authenticate to MCP Registry (GitHub OIDC)
+        with:
+          ref: ${{ needs.release.outputs.source_sha }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check Registry version independently
+        id: plan
+        run: node scripts/release.mjs registry-plan
+      - name: Install checksum-verified publisher
+        run: node scripts/install-mcp-publisher.mjs
+      - name: Validate without publishing
+        run: ./mcp-publisher validate server.json
+      - name: Authenticate for a missing version
+        if: steps.plan.outputs.present == 'false' && env.RELEASE_DRY_RUN == 'false'
         run: ./mcp-publisher login github-oidc
-      - name: Publish to MCP Registry
-        run: ./mcp-publisher publish
+      - name: Publish missing Registry version
+        if: steps.plan.outputs.present == 'false' && env.RELEASE_DRY_RUN == 'false'
+        run: ./mcp-publisher publish server.json
+      - name: Verify active Registry metadata
+        if: env.RELEASE_DRY_RUN == 'false'
+        run: node scripts/release.mjs verify-registry
+
+  finalize:
+    needs: [release, github-packages, mcp-registry]
+    if: always() && needs.release.outputs.eligible == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Report every destination result
+        env:
+          RELEASE_RESULT: ${{ needs.release.result }}
+          PACKAGE_RESULT: ${{ needs.github-packages.result }}
+          REGISTRY_RESULT: ${{ needs.mcp-registry.result }}
+        run: |
+          {
+            echo '### Release destination results'
+            echo "npm/source checks: $RELEASE_RESULT"
+            echo "GitHub Packages: $PACKAGE_RESULT"
+            echo "MCP Registry: $REGISTRY_RESULT"
+            echo "Dry run: $RELEASE_DRY_RUN"
+            echo 'A failure is visible and retryable; no destination is inferred from a tag.'
+          } >> "$GITHUB_STEP_SUMMARY"
+          test "$RELEASE_RESULT" = success
+          test "$PACKAGE_RESULT" = success
+          test "$REGISTRY_RESULT" = success
+      - uses: actions/checkout@v4
+        if: env.RELEASE_DRY_RUN == 'false'
+        with:
+          ref: ${{ needs.release.outputs.source_sha }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        if: env.RELEASE_DRY_RUN == 'false'
+        with:
+          node-version: 22
+      - uses: actions/download-artifact@v4
+        if: env.RELEASE_DRY_RUN == 'false'
+        with:
+          name: release-artifact
+      - name: Mark the GitHub release complete
+        if: env.RELEASE_DRY_RUN == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SCOPED_PACKAGE_RESULT: ${{ needs.github-packages.result }}
+        run: node scripts/release.mjs github-finalize

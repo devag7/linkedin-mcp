@@ -1,3 +1,4 @@
+import { assertNotCancelled } from '../tools/cancellation.js';
 /**
  * In-page Voyager client — the core of the v2 architecture.
  *
@@ -18,6 +19,7 @@
 import type { Page } from 'patchright';
 import type { BrowserEngine } from './engine.js';
 import type { Logger } from '../types.js';
+import type { BrowserSafety } from './safety.js';
 
 export type VoyagerErrorCode =
   | 'AUTH_REQUIRED'
@@ -25,6 +27,7 @@ export type VoyagerErrorCode =
   | 'RATE_LIMITED'
   | 'NOT_FOUND'
   | 'HTTP_ERROR'
+  | 'TIMEOUT'
   | 'PARSE_ERROR';
 
 export class VoyagerError extends Error {
@@ -45,6 +48,8 @@ interface RawFetchResult {
   type: string;
   url: string;
   body: string;
+  bodyReadFailed?: boolean;
+  timedOut?: boolean;
 }
 
 /** Raw result of a write POST, surfaced to the caller for status classification. */
@@ -57,6 +62,7 @@ export interface RawPostResult {
   body: string;
   /** Parsed JSON body when the response was JSON, else undefined. */
   json: unknown;
+  bodyReadFailed?: boolean;
 }
 
 const NORMALIZED_ACCEPT = 'application/vnd.linkedin.normalized+json+2.1';
@@ -73,6 +79,8 @@ export class VoyagerClient {
   constructor(
     private readonly engine: BrowserEngine,
     private readonly logger: Logger,
+    private readonly safety: BrowserSafety | undefined = engine.safety ?? undefined,
+    private readonly beforeRequest?: (write: boolean) => Promise<void>,
   ) {}
 
   /**
@@ -80,7 +88,8 @@ export class VoyagerClient {
    * voyagerGet('/identity/profiles/<id>/profileView'). Returns parsed JSON.
    */
   async voyagerGet<T = unknown>(apiPath: string): Promise<T> {
-    this.logger.debug('voyagerGet', { path: apiPath });
+    this.logger.debug('voyagerGet');
+    assertNotCancelled();
     const page = await this.engine.getFeedPage();
     const url = `/voyager/api${apiPath}`;
     const raw = await this.inPageFetch(page, url, 'GET');
@@ -91,6 +100,7 @@ export class VoyagerClient {
    * POST to a Voyager REST-li endpoint with a JSON body.
    */
   async voyagerPost<T = unknown>(apiPath: string, body: unknown): Promise<T> {
+    assertNotCancelled();
     const page = await this.engine.getFeedPage();
     const url = `/voyager/api${apiPath}`;
     const raw = await this.inPageFetch(page, url, 'POST', body);
@@ -110,10 +120,18 @@ export class VoyagerClient {
    * caller to interpret — e.g. 403 on a write is usually a *restriction*, not a
    * dead session.
    */
-  async voyagerPostRaw(apiPath: string, body: unknown): Promise<RawPostResult> {
+  async voyagerPostRaw(
+    apiPath: string,
+    body: unknown,
+    beforeDispatch?: () => void,
+  ): Promise<RawPostResult> {
+    assertNotCancelled();
     const page = await this.engine.getFeedPage();
     const url = `/voyager/api${apiPath}`;
-    const raw = await this.inPageFetch(page, url, 'POST', body);
+    const raw = await this.inPageFetch(page, url, 'POST', body, beforeDispatch);
+
+    if (raw.timedOut)
+      throw new VoyagerError('TIMEOUT', 'The local provider request deadline expired.');
 
     if (raw.type === 'opaqueredirect' || raw.status === 0) {
       throw new VoyagerError(
@@ -145,7 +163,13 @@ export class VoyagerClient {
         json = undefined;
       }
     }
-    return { status: raw.status, ok: raw.ok, body: raw.body, json };
+    return {
+      status: raw.status,
+      ok: raw.ok,
+      body: raw.body,
+      json,
+      bodyReadFailed: raw.bodyReadFailed,
+    };
   }
 
   /**
@@ -154,11 +178,16 @@ export class VoyagerClient {
    * deleting a probe post). Throws only on the auth/Cloudflare redirect loop.
    */
   async voyagerDeleteRaw(apiPath: string): Promise<RawPostResult> {
+    assertNotCancelled();
     const page = await this.engine.getFeedPage();
     const url = `/voyager/api${apiPath}`;
     const raw = await this.inPageFetch(page, url, 'DELETE');
     if (raw.type === 'opaqueredirect' || raw.status === 0 || raw.status === 401) {
-      throw new VoyagerError('AUTH_REQUIRED', `Auth required for DELETE ${apiPath}.`, raw.status || 401);
+      throw new VoyagerError(
+        'AUTH_REQUIRED',
+        `Auth required for DELETE ${apiPath}.`,
+        raw.status || 401,
+      );
     }
     let json: unknown;
     const trimmed = raw.body.trimStart();
@@ -176,10 +205,8 @@ export class VoyagerClient {
    * Query a Voyager GraphQL endpoint by queryId + variables.
    * queryIds rotate — callers should source them from endpoints.ts, never hardcode.
    */
-  async voyagerGraphql<T = unknown>(
-    queryId: string,
-    variables: string,
-  ): Promise<T> {
+  async voyagerGraphql<T = unknown>(queryId: string, variables: string): Promise<T> {
+    assertNotCancelled();
     const page = await this.engine.getFeedPage();
     const url = `/voyager/api/graphql?queryId=${encodeURIComponent(queryId)}&variables=${variables}`;
     const raw = await this.inPageFetch(page, url, 'GET');
@@ -192,8 +219,16 @@ export class VoyagerClient {
     url: string,
     method: 'GET' | 'POST' | 'DELETE',
     body?: unknown,
+    beforeDispatch?: () => void,
   ): Promise<RawFetchResult> {
-    return page.evaluate(
+    assertNotCancelled();
+    this.safety?.assertAllowed();
+    await this.beforeRequest?.(method !== 'GET');
+    assertNotCancelled();
+    this.safety?.assertAllowed();
+    // Reserve after browser/auth preflight, immediately before crossing into the page.
+    beforeDispatch?.();
+    const raw = await page.evaluate(
       async ({ url, method, body, accept, track }) => {
         // CSRF token must equal the JSESSIONID cookie value (quotes stripped).
         const m = document.cookie.match(/JSESSIONID="?([^";]+)"?/);
@@ -207,34 +242,55 @@ export class VoyagerClient {
         };
         if (body != null) headers['content-type'] = 'application/json';
 
-        const res = await fetch(url, {
-          method,
-          headers,
-          credentials: 'include',
-          redirect: 'manual',
-          body: body != null ? JSON.stringify(body) : undefined,
-        });
-        // opaqueredirect bodies are unreadable; guard the .text() call.
-        let text = '';
+        const cancellation = new AbortController();
+        const deadline = setTimeout(() => cancellation.abort(), 30000);
         try {
-          text = await res.text();
-        } catch {
-          text = '';
+          const res = await fetch(url, {
+            method,
+            headers,
+            credentials: 'include',
+            redirect: 'manual',
+            body: body != null ? JSON.stringify(body) : undefined,
+            signal: cancellation.signal,
+          });
+          // opaqueredirect bodies are unreadable; guard the .text() call.
+          let text = '';
+          let bodyReadFailed = false;
+          try {
+            text = await res.text();
+          } catch {
+            bodyReadFailed = true;
+            text = '';
+          }
+          if (cancellation.signal.aborted)
+            return { status: 0, ok: false, type: 'timeout', url: '', body: '', timedOut: true };
+          return {
+            status: res.status,
+            ok: res.ok,
+            type: res.type,
+            url: res.url,
+            body: text,
+            bodyReadFailed,
+          };
+        } catch (error) {
+          if (cancellation.signal.aborted)
+            return { status: 0, ok: false, type: 'timeout', url: '', body: '', timedOut: true };
+          throw error;
+        } finally {
+          clearTimeout(deadline);
         }
-        return {
-          status: res.status,
-          ok: res.ok,
-          type: res.type,
-          url: res.url,
-          body: text,
-        };
       },
       { url, method, body: body ?? null, accept: NORMALIZED_ACCEPT, track: X_LI_TRACK },
     );
+    // Classify before auth/status handling or raw-write returns discard signals.
+    this.safety?.inspectResponse(raw);
+    return raw;
   }
 
   /** Classify the raw result and parse JSON, or throw a typed VoyagerError. */
   private handle<T>(raw: RawFetchResult, ctx: string): T {
+    if (raw.timedOut)
+      throw new VoyagerError('TIMEOUT', 'The local provider request deadline expired.');
     // Opaque redirect / status 0 == the 302 auth/Cloudflare loop.
     if (raw.type === 'opaqueredirect' || raw.status === 0) {
       throw new VoyagerError(

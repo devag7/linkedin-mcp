@@ -221,7 +221,7 @@ export async function runWriteCapture(config: EnvConfig, logger: Logger): Promis
   } catch (err) {
     process.stderr.write(`\n❌ writecapture failed: ${err instanceof Error ? err.stack ?? err.message : String(err)}\n`);
   } finally {
-    await engine.shutdown();
+    await engine.dispose();
   }
 }
 

@@ -1,0 +1,15 @@
+{
+  "provenance": { "kind": "synthetic", "schemaVersion": 1, "createdAt": "2026-10-01", "capturedAt": null, "locale": "synthetic multilingual Unicode", "liveVerified": false },
+  "response": {
+    "data": { "elements": [], "paging": { "start": 0, "count": 10, "total": 10 } },
+    "included": [
+      { "$type": "fixture.Profile", "entityUrn": "urn:li:fsd_profile:synthetic-one", "publicIdentifier": "synthetic-one", "firstName": "例", "lastName": "Test", "headline": "مهندس — Engineer" },
+      { "$type": "fixture.JobPosting", "entityUrn": "urn:li:fsd_jobPosting:123", "title": "Synthetic job", "formattedLocation": "Test location", "description": "Synthetic description" },
+      { "$type": "fixture.Conversation", "entityUrn": "urn:li:msg_conversation:(urn:li:fsd_profile:synthetic-one,2-synthetic)", "title": "Synthetic conversation", "unreadCount": 1 },
+      { "$type": "fixture.Message", "body": { "text": "Synthetic message" }, "deliveredAt": 1 },
+      { "$type": "fixture.Card", "headline": { "text": "Synthetic notification" }, "read": false },
+      { "$type": "fixture.Update", "actor": { "name": { "text": "Synthetic actor" } }, "commentary": { "text": "Synthetic post" }, "metadata": { "backendUrn": "urn:li:activity:123" } },
+      { "$type": "fixture.Invitation", "entityUrn": "urn:li:invitation:synthetic", "fromMember": { "firstName": "Synthetic", "lastName": "Person" } }
+    ]
+  }
+}

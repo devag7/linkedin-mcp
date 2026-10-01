@@ -17,6 +17,7 @@
  */
 
 import type { Logger } from '../types.js';
+import { setTimeout as pause } from 'node:timers/promises';
 
 /** Kind of action being paced. */
 export type ActionType = 'read' | 'write';
@@ -25,7 +26,7 @@ export type ActionType = 'read' | 'write';
 export type ClockFn = () => number;
 
 /** Resolves after roughly `ms` milliseconds. */
-export type SleepFn = (ms: number) => Promise<void>;
+export type SleepFn = (ms: number, signal?: AbortSignal) => Promise<void>;
 
 /** Returns a pseudo-random float in the half-open interval [0, 1). */
 export type RngFn = () => number;
@@ -163,8 +164,8 @@ export function createPrng(seed = 0x9e3779b9): RngFn {
 }
 
 /** Default sleep: a thin wrapper over `setTimeout`. */
-function defaultSleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, Math.max(0, ms)));
+async function defaultSleep(ms: number, signal?: AbortSignal): Promise<void> {
+  await pause(Math.max(0, ms), undefined, { signal });
 }
 
 /**
@@ -227,18 +228,18 @@ export class HumanPacer {
    * Resolves with a {@link PaceResult} describing the time spent (handy for
    * deterministic assertions in tests).
    */
-  async waitBefore(actionType: ActionType): Promise<PaceResult> {
+  async waitBefore(actionType: ActionType, signal?: AbortSignal): Promise<PaceResult> {
     let workingHoursWaitMs = 0;
     if (actionType === 'write') {
-      workingHoursWaitMs = await this.gateForWorkingHours();
+      workingHoursWaitMs = await this.gateForWorkingHours(signal);
     }
 
     const baseDelayMs = this.computeBaseDelay(actionType);
-    await this.sleep(baseDelayMs);
+    await this.sleep(baseDelayMs, signal);
 
     this.actionCount += 1;
 
-    const { shortBreakMs, longBreakMs } = await this.maybeBreak();
+    const { shortBreakMs, longBreakMs } = await this.maybeBreak(signal);
 
     const totalMs = workingHoursWaitMs + baseDelayMs + shortBreakMs + longBreakMs;
     this.logger?.debug('pacer.waitBefore', {
@@ -324,8 +325,7 @@ export class HumanPacer {
 
     const local = this.toLocal(nowMs);
     // Snap to the start of the next whole local hour, then scan forward.
-    const msIntoHour =
-      local.minute * ONE_MINUTE_MS + local.second * 1_000 + local.millis;
+    const msIntoHour = local.minute * ONE_MINUTE_MS + local.second * 1_000 + local.millis;
     let cursor = nowMs - msIntoHour + ONE_HOUR_MS;
 
     // Bounded scan: at most ~10 days of hours so we never spin forever.
@@ -344,7 +344,7 @@ export class HumanPacer {
    * Block until inside a working-hours window (writes only). Returns the total
    * milliseconds waited. Loops because the injected clock may advance in tests.
    */
-  private async gateForWorkingHours(): Promise<number> {
+  private async gateForWorkingHours(signal?: AbortSignal): Promise<number> {
     if (!this.workingHours.enabled) return 0;
 
     let waited = 0;
@@ -355,7 +355,7 @@ export class HumanPacer {
       const wait = this.msUntilNextWindow(now);
       if (wait <= 0) break;
       this.logger?.info('pacer.workingHours.wait', { waitMs: wait });
-      await this.sleep(wait);
+      await this.sleep(wait, signal);
       waited += wait;
     }
     return waited;
@@ -365,7 +365,9 @@ export class HumanPacer {
    * Check the action counter against the break thresholds. If a threshold is
    * crossed, sleep the corresponding pause and re-arm the threshold.
    */
-  private async maybeBreak(): Promise<{ shortBreakMs: number; longBreakMs: number }> {
+  private async maybeBreak(
+    signal?: AbortSignal,
+  ): Promise<{ shortBreakMs: number; longBreakMs: number }> {
     let shortBreakMs = 0;
     let longBreakMs = 0;
 
@@ -375,7 +377,7 @@ export class HumanPacer {
         actionCount: this.actionCount,
         pauseMs: longBreakMs,
       });
-      await this.sleep(longBreakMs);
+      await this.sleep(longBreakMs, signal);
       this.nextLongBreakAt = this.actionCount + this.pickThreshold(this.longBreak);
       // A long idle also satisfies/refreshes the short-break cadence.
       this.nextShortBreakAt = this.actionCount + this.pickThreshold(this.shortBreak);
@@ -385,7 +387,7 @@ export class HumanPacer {
         actionCount: this.actionCount,
         pauseMs: shortBreakMs,
       });
-      await this.sleep(shortBreakMs);
+      await this.sleep(shortBreakMs, signal);
       this.nextShortBreakAt = this.actionCount + this.pickThreshold(this.shortBreak);
     }
 

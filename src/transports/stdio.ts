@@ -13,7 +13,11 @@ import type { Logger } from '../types.js';
  * Connect the MCP server to stdio transport.
  * This blocks until the process is terminated.
  */
-export async function connectStdio(server: McpServer, logger: Logger): Promise<void> {
+export async function connectStdio(
+  server: McpServer,
+  logger: Logger,
+  cleanup: () => Promise<void> = async () => {},
+): Promise<void> {
   const transport = new StdioServerTransport();
 
   logger.info('Connecting via stdio transport');
@@ -22,16 +26,29 @@ export async function connectStdio(server: McpServer, logger: Logger): Promise<v
 
   logger.info('LinkedIn MCP Server running on stdio');
 
-  // Keep the process alive
-  process.on('SIGINT', async () => {
-    logger.info('Received SIGINT, shutting down...');
-    await server.close();
-    process.exit(0);
-  });
-
-  process.on('SIGTERM', async () => {
-    logger.info('Received SIGTERM, shutting down...');
-    await server.close();
-    process.exit(0);
+  let stopping: Promise<void> | undefined;
+  const stop = (): Promise<void> =>
+    (stopping ??= (async () => {
+      await cleanup();
+      await server.close();
+    })());
+  server.server.onclose = () => {
+    void stop().catch(() => {
+      process.exitCode = 1;
+    });
+  };
+  const signal = () => {
+    void stop().then(
+      () => process.exit(0),
+      () => process.exit(1),
+    );
+  };
+  process.once('SIGINT', signal);
+  process.once('SIGTERM', signal);
+  process.once('SIGHUP', signal);
+  process.once('beforeExit', () => {
+    void stop().catch(() => {
+      process.exitCode = 1;
+    });
   });
 }

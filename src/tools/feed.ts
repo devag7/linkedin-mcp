@@ -12,7 +12,10 @@ import { ACTIONS } from '../browser/guard.js';
 import type { Logger } from '../types.js';
 import { shapeFeed, shapeNotifications, type NormalizedResponse } from '../browser/normalize.js';
 import * as ep from '../browser/endpoints.js';
-import { ok, run } from './result.js';
+import { run } from './result.js';
+import { registerTool } from './register.js';
+import { readRows } from './provider-shape.js';
+import { pageFields, pageStart, pageResult } from './pagination.js';
 
 export function registerFeedTools(
   server: McpServer,
@@ -20,33 +23,52 @@ export function registerFeedTools(
   guard: Guard,
   logger: Logger,
 ): void {
-  server.tool(
+  registerTool(
+    server,
     'get_feed',
     'Get recent posts from your LinkedIn home feed (author + post text).',
     {
+      ...pageFields,
       count: z.number().int().min(1).max(25).default(10).describe('Number of posts (default 10)'),
     },
-    async ({ count }) =>
+    async ({ count, offset, cursor }) =>
       run(logger, 'get_feed', async () => {
+        const start = pageStart('get_feed', null, count, offset, cursor);
         const raw = await guard.run(ACTIONS.readGeneric, () =>
-          voyager.voyagerGet<NormalizedResponse>(ep.mainFeed(0, count)),
+          voyager.voyagerGet<NormalizedResponse>(ep.mainFeed(start, count)),
         );
-        return ok(shapeFeed(raw));
+        return pageResult('get_feed', null, count, start, readRows(raw, shapeFeed(raw)), raw);
       }),
   );
 
-  server.tool(
+  registerTool(
+    server,
     'get_notifications',
     'Get your recent LinkedIn notifications (headline, time, read state).',
     {
-      count: z.number().int().min(1).max(50).default(20).describe('Number of notifications (default 20)'),
+      ...pageFields,
+      count: z
+        .number()
+        .int()
+        .min(1)
+        .max(50)
+        .default(20)
+        .describe('Number of notifications (default 20)'),
     },
-    async ({ count }) =>
+    async ({ count, offset, cursor }) =>
       run(logger, 'get_notifications', async () => {
+        const start = pageStart('get_notifications', null, count, offset, cursor);
         const raw = await guard.run(ACTIONS.readGeneric, () =>
-          voyager.voyagerGet<NormalizedResponse>(ep.notificationCards(0, count)),
+          voyager.voyagerGet<NormalizedResponse>(ep.notificationCards(start, count)),
         );
-        return ok(shapeNotifications(raw));
+        return pageResult(
+          'get_notifications',
+          null,
+          count,
+          start,
+          readRows(raw, shapeNotifications(raw)),
+          raw,
+        );
       }),
   );
 

@@ -23,50 +23,62 @@ import {
 } from './normalize.js';
 import type { Logger } from '../types.js';
 import type { EnvConfig } from '../config/env.js';
+import { CircuitBreaker } from '../safety/circuit-breaker.js';
+import { CircuitFileStorage, circuitStatePath } from '../safety/circuit-storage.js';
+import { pageSignal, CHECKPOINT_MESSAGE } from './safety.js';
+import { verifyLoginAndReset } from './recovery.js';
 
 const LOGIN_URL = 'https://www.linkedin.com/login';
-const FEED_URL = 'https://www.linkedin.com/feed/';
 
 /**
  * Run a headful interactive login. Forces a visible window regardless of the
  * LINKEDIN_HEADLESS setting, waits until the li_at cookie appears (max 5 min),
  * then leaves the persisted profile ready for the server to reuse.
  */
-export async function interactiveBrowserLogin(
-  config: EnvConfig,
-  logger: Logger,
-): Promise<boolean> {
-  const engine = new BrowserEngine({ ...config, LINKEDIN_HEADLESS: false }, logger);
-  const context = await engine.ensureContext();
-
-  const page = await engine.getFeedPage();
-  if (await engine.isLoggedIn()) {
-    process.stderr.write('\n✅ Already logged in — session is valid.\n');
-    await engine.shutdown();
-    return true;
-  }
-
-  await page.goto(LOGIN_URL, { waitUntil: 'domcontentloaded' });
-  process.stderr.write(
-    '\n🔐 A Chrome window opened. Log in to LinkedIn there (solve any captcha/2FA).\n' +
-      '   Waiting up to 5 minutes for login to complete…\n',
-  );
-
-  const deadline = Date.now() + 5 * 60 * 1000;
-  while (Date.now() < deadline) {
-    if (await engine.isLoggedIn()) {
-      await page.goto(FEED_URL, { waitUntil: 'domcontentloaded' }).catch(() => {});
-      process.stderr.write('\n✅ Logged in. Session saved to the persistent profile.\n');
-      await engine.shutdown();
-      return true;
+export async function interactiveBrowserLogin(config: EnvConfig, logger: Logger): Promise<boolean> {
+  const breaker = new CircuitBreaker({
+    storage: new CircuitFileStorage(circuitStatePath(config.LINKEDIN_PROFILE_DIR)),
+    logger,
+  });
+  // Manual recovery deliberately bypasses the automation gate so the human can
+  // resolve a checkpoint. Cookie presence alone must never reset the breaker.
+  const engine = new BrowserEngine({ ...config, LINKEDIN_HEADLESS: false }, logger, true, null);
+  try {
+    const page = await engine.getFeedPage();
+    if (!(await engine.isLoggedIn())) {
+      await page.goto(LOGIN_URL, { waitUntil: 'domcontentloaded' });
     }
-    await new Promise((r) => setTimeout(r, 2000));
+    process.stderr.write(
+      '\nA Chrome window opened. Complete login and any checkpoint manually, then open your LinkedIn feed.\n' +
+        'Waiting up to 5 minutes. A saved cookie alone does not clear a safety stop.\n',
+    );
+    const deadline = Date.now() + 5 * 60 * 1000;
+    while (Date.now() < deadline) {
+      const challenged =
+        breaker.classify({ finalUrl: page.url() }) === 'hard' ||
+        breaker.classify(await pageSignal(page)) === 'hard';
+      if (challenged && !breaker.isGlobalOpen())
+        breaker.trip('hard', undefined, CHECKPOINT_MESSAGE);
+      if (
+        !challenged &&
+        /^https:\/\/www\.linkedin\.com\/feed(?:\/|$|\?)/.test(page.url()) &&
+        (await engine.isLoggedIn())
+      ) {
+        const verified = await verifyLoginAndReset(engine, breaker, logger);
+        process.stderr.write(
+          verified
+            ? '\nLogin and API verified. Session saved; restart your MCP server.\n'
+            : '\nLogin verification failed. The safety stop was not cleared; resolve the session manually and run --login again.\n',
+        );
+        return verified;
+      }
+      await new Promise((r) => setTimeout(r, 2000));
+    }
+    process.stderr.write('\nLogin timed out. The safety stop was not cleared.\n');
+    return false;
+  } finally {
+    await engine.dispose();
   }
-
-  process.stderr.write('\n❌ Login timed out after 5 minutes.\n');
-  await engine.shutdown();
-  void context;
-  return false;
 }
 
 /**
@@ -143,7 +155,9 @@ export async function runSpike(config: EnvConfig, logger: Logger): Promise<void>
           if (sample) {
             process.stderr.write(`   ${dumpType} keys: [${Object.keys(sample).join(', ')}]\n`);
             const json = JSON.stringify(sample);
-            process.stderr.write(`   ${dumpType} sample: ${json.length > 600 ? json.slice(0, 600) + '…' : json}\n`);
+            process.stderr.write(
+              `   ${dumpType} sample: ${json.length > 600 ? json.slice(0, 600) + '…' : json}\n`,
+            );
           }
           // Company + components carry their real fields in data.data (GraphQL primary).
           if (label.includes('Components') || label.includes('company')) {
@@ -155,35 +169,70 @@ export async function runSpike(config: EnvConfig, logger: Logger): Promise<void>
       }
     };
 
-    if (fsdId) await probe('profileComponents(experience)', ep.profileComponents(fsdId, 'experience'), 'Position');
+    if (fsdId)
+      await probe(
+        'profileComponents(experience)',
+        ep.profileComponents(fsdId, 'experience'),
+        'Position',
+      );
     await probe('company(microsoft)', ep.companyGraphql('microsoft'), 'Company');
     await probe('feed', ep.mainFeed(0, 5), 'Update');
     await probe('notifications', ep.notificationCards(0, 10), 'Card');
-    await probe('jobsSearch', ep.jobCardsSearch('software engineer', undefined, 0, 5), 'JobPosting');
+    await probe(
+      'jobsSearch',
+      ep.jobCardsSearch('software engineer', undefined, 0, 5),
+      'JobPosting',
+    );
     if (fsdId) await probe('inbox', ep.inboxConversations(fsdId), 'Conversation');
 
     try {
-      const jobs = await voyager.voyagerGet<NormalizedResponse>(ep.jobCardsSearch('software engineer', undefined, 0, 5));
-      process.stderr.write('\n— search_jobs (shaped, first 5) —\n' + JSON.stringify(shapeJobs(jobs).slice(0, 5), null, 2) + '\n');
+      const jobs = await voyager.voyagerGet<NormalizedResponse>(
+        ep.jobCardsSearch('software engineer', undefined, 0, 5),
+      );
+      process.stderr.write(
+        '\n— search_jobs (shaped, first 5) —\n' +
+          JSON.stringify(shapeJobs(jobs).slice(0, 5), null, 2) +
+          '\n',
+      );
       const meResp = await voyager.voyagerGet<NormalizedResponse>(ep.me());
       const ownFsd = ownFsdId(meResp);
       if (ownFsd) {
         const inbox = await voyager.voyagerGet<NormalizedResponse>(ep.inboxConversations(ownFsd));
-        process.stderr.write('\n— get_inbox (shaped, first 5) —\n' + JSON.stringify(shapeInbox(inbox).slice(0, 5), null, 2) + '\n');
+        process.stderr.write(
+          '\n— get_inbox (shaped, first 5) —\n' +
+            JSON.stringify(shapeInbox(inbox).slice(0, 5), null, 2) +
+            '\n',
+        );
       }
     } catch (e) {
-      process.stderr.write(`\n(jobs/inbox preview failed: ${e instanceof Error ? e.message : String(e)})\n`);
+      process.stderr.write(
+        `\n(jobs/inbox preview failed: ${e instanceof Error ? e.message : String(e)})\n`,
+      );
     }
 
     // Confirm the experience/education component walker.
     if (fsdId) {
       try {
-        const exp = await voyager.voyagerGet<NormalizedResponse>(ep.profileComponents(fsdId, 'experience'));
-        process.stderr.write('\n— experience (shaped) —\n' + JSON.stringify(collectComponentEntries(exp), null, 2) + '\n');
-        const edu = await voyager.voyagerGet<NormalizedResponse>(ep.profileComponents(fsdId, 'education'));
-        process.stderr.write('\n— education (shaped) —\n' + JSON.stringify(collectComponentEntries(edu), null, 2) + '\n');
+        const exp = await voyager.voyagerGet<NormalizedResponse>(
+          ep.profileComponents(fsdId, 'experience'),
+        );
+        process.stderr.write(
+          '\n— experience (shaped) —\n' +
+            JSON.stringify(collectComponentEntries(exp), null, 2) +
+            '\n',
+        );
+        const edu = await voyager.voyagerGet<NormalizedResponse>(
+          ep.profileComponents(fsdId, 'education'),
+        );
+        process.stderr.write(
+          '\n— education (shaped) —\n' +
+            JSON.stringify(collectComponentEntries(edu), null, 2) +
+            '\n',
+        );
       } catch (e) {
-        process.stderr.write(`\n(exp/edu preview failed: ${e instanceof Error ? e.message : String(e)})\n`);
+        process.stderr.write(
+          `\n(exp/edu preview failed: ${e instanceof Error ? e.message : String(e)})\n`,
+        );
       }
     }
 
@@ -192,22 +241,28 @@ export async function runSpike(config: EnvConfig, logger: Logger): Promise<void>
       const feed = await voyager.voyagerGet<NormalizedResponse>(ep.mainFeed(0, 5));
       process.stderr.write(
         '\n— get_feed (shaped, first 3) —\n' +
-          JSON.stringify(shapeFeed(feed).slice(0, 3), null, 2) + '\n',
+          JSON.stringify(shapeFeed(feed).slice(0, 3), null, 2) +
+          '\n',
       );
       const notifs = await voyager.voyagerGet<NormalizedResponse>(ep.notificationCards(0, 5));
       process.stderr.write(
         '\n— get_notifications (shaped, first 3) —\n' +
-          JSON.stringify(shapeNotifications(notifs).slice(0, 3), null, 2) + '\n',
+          JSON.stringify(shapeNotifications(notifs).slice(0, 3), null, 2) +
+          '\n',
       );
     } catch (e) {
-      process.stderr.write(`\n(shaped-output preview failed: ${e instanceof Error ? e.message : String(e)})\n`);
+      process.stderr.write(
+        `\n(shaped-output preview failed: ${e instanceof Error ? e.message : String(e)})\n`,
+      );
     }
 
-    process.stderr.write('\n🎯 ARCHITECTURE CONFIRMED — in-page Voyager fetch returns structured JSON.\n');
+    process.stderr.write(
+      '\n🎯 ARCHITECTURE CONFIRMED — in-page Voyager fetch returns structured JSON.\n',
+    );
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     process.stderr.write(`\n❌ Spike failed: ${msg}\n`);
   } finally {
-    await engine.shutdown();
+    await engine.dispose();
   }
 }

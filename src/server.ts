@@ -15,73 +15,93 @@ import { connectStdio } from './transports/stdio.js';
 import { startHttpServer } from './transports/http.js';
 import { BrowserEngine } from './browser/engine.js';
 import { VoyagerClient } from './browser/voyager.js';
+import { AccountBinding } from './browser/account.js';
 import { Guard } from './browser/guard.js';
 import { SerialQueue } from './safety/queue.js';
 import { HumanPacer } from './safety/pacer.js';
-import { BudgetTracker } from './safety/budgets.js';
+import { BudgetTracker, type BudgetTrackerOptions } from './safety/budgets.js';
 import { CircuitBreaker } from './safety/circuit-breaker.js';
+import { CircuitFileStorage, circuitStatePath } from './safety/circuit-storage.js';
+import { BrowserSafety } from './browser/safety.js';
 import { registerSessionTools } from './tools/session.js';
 import { registerProfileTools } from './tools/profile.js';
 import { registerFeedTools } from './tools/feed.js';
 import { registerDiscoveryTools } from './tools/discovery.js';
 import { registerWriteTools } from './tools/write.js';
 import { VERSION } from './version.js';
+import { registeredToolNames } from './tools/register.js';
+import type { CapabilityPolicy } from './tools/capabilities.js';
 
 export interface CreatedServer {
   server: McpServer;
   engine: BrowserEngine;
 }
 
-/** Create the MCP server with the browser engine and all registered tools. */
-export function createServer(logger: Logger): CreatedServer {
+/** Process-owned state; HTTP protocol connections must never recreate it. */
+export function createRuntime(
+  logger: Logger,
+  manageSignals = true,
+  budgetOptions: Pick<BudgetTrackerOptions, 'storagePath'> = {},
+) {
+  const config = loadConfig();
+  const breaker = new CircuitBreaker({
+    logger,
+    storage: new CircuitFileStorage(circuitStatePath(config.LINKEDIN_PROFILE_DIR)),
+  });
+  const safety = new BrowserSafety(breaker);
+  const engine = new BrowserEngine(config, logger, manageSignals, safety);
+  const budget = new BudgetTracker(null, { ...budgetOptions, logger });
+  const identity = new AccountBinding(engine, new VoyagerClient(engine, logger, safety), budget);
+  const voyager = new VoyagerClient(engine, logger, safety, (write) => identity.ensure(write));
+
+  // Safety stack — every data/action call is gated through the Guard.
+  const queue = new SerialQueue({ concurrency: config.LINKEDIN_CONCURRENCY, logger });
+  const pacer = new HumanPacer({ logger });
+  const guard = new Guard(queue, pacer, budget, breaker, logger, () => identity.ensure());
+
+  return { engine, voyager, queue, pacer, budget, breaker, guard, identity };
+}
+
+export type ServerRuntime = Omit<ReturnType<typeof createRuntime>, 'identity'> & {
+  identity?: AccountBinding;
+};
+
+/** Create a protocol server, optionally using an existing process runtime. */
+export function createServer(
+  logger: Logger,
+  runtime: ServerRuntime = createRuntime(logger),
+  policy: CapabilityPolicy = {
+    writesEnabled: loadConfig().LINKEDIN_ENABLE_WRITES,
+    experimentalMessagesEnabled: loadConfig().LINKEDIN_ENABLE_EXPERIMENTAL_MESSAGES,
+  },
+): CreatedServer {
   const server = new McpServer(
     { name: 'linkedin-mcp', version: VERSION },
     { capabilities: { tools: {} } },
   );
-
-  const config = loadConfig();
-  const engine = new BrowserEngine(config, logger);
-  const voyager = new VoyagerClient(engine, logger);
-
-  // Safety stack — every data/action call is gated through the Guard.
-  const queue = new SerialQueue({ concurrency: config.LINKEDIN_CONCURRENCY, logger });
-  const pacer = config.LINKEDIN_PACING_DISABLED
-    ? new HumanPacer({
-        logger,
-        readDelay: { minMs: 0, maxMs: 0 },
-        writeDelay: { minMs: 0, maxMs: 0 },
-        writeFloorMs: 0,
-        shortBreak: { everyMin: 1e9, everyMax: 1e9, pauseMinMs: 0, pauseMaxMs: 0 },
-        longBreak: { everyMin: 1e9, everyMax: 1e9, pauseMinMs: 0, pauseMaxMs: 0 },
-        workingHours: {
-          enabled: false,
-          startHour: 0,
-          endHour: 24,
-          lunchStartHour: 0,
-          lunchEndHour: 0,
-          closedDays: [],
-          utcOffsetMinutes: 0,
-        },
-      })
-    : new HumanPacer({ logger });
-  const budget = new BudgetTracker('default', { logger });
-  const breaker = new CircuitBreaker({ logger });
-  const guard = new Guard(queue, pacer, budget, breaker, logger);
+  const { engine, voyager, budget, guard } = runtime;
 
   // Registered tool groups (grows per build milestones M1–M4).
-  let count = 0;
-  registerSessionTools(server, engine, voyager, budget, logger, () => count);
+  registerSessionTools(
+    server,
+    engine,
+    voyager,
+    budget,
+    logger,
+    () => registeredToolNames(server).length,
+    guard,
+    runtime.breaker,
+    policy,
+    runtime.identity,
+  );
   registerProfileTools(server, voyager, guard, logger);
   registerFeedTools(server, voyager, guard, logger);
   registerDiscoveryTools(server, voyager, engine, guard, logger);
-  registerWriteTools(server, voyager, guard, logger);
-  // Session(3) + profile(2) + feed(2) + discovery(10) + write(5) = 22 tools.
-  // Discovery: search_people, search_jobs, get_inbox, get_job_details,
-  // search_companies, get_company, get_company_posts, get_company_employees,
-  // get_pending_invitations, get_conversation.
-  count = 22;
-
-  logger.info('MCP server created', { version: VERSION, tools: count });
+  registerWriteTools(server, voyager, guard, logger, policy);
+  logger.info('MCP server created', {
+    version: VERSION,
+    tools: registeredToolNames(server).length,
+  });
   return { server, engine };
 }
 
@@ -94,11 +114,41 @@ export async function startServer(config: ServerConfig): Promise<void> {
     port: config.transport === 'http' ? config.port : undefined,
   });
 
-  const { server } = createServer(logger);
-
   if (config.transport === 'stdio') {
-    await connectStdio(server, logger);
+    const runtime = createRuntime(logger, false);
+    const { server } = createServer(logger, runtime);
+    try {
+      await connectStdio(server, logger, async () => {
+        runtime.queue.clear();
+        await runtime.engine.dispose();
+      });
+    } catch (error) {
+      await runtime.engine.dispose();
+      throw error;
+    }
   } else {
-    await startHttpServer(server, config.port, logger);
+    const runtime = createRuntime(logger, false);
+    const listener = await startHttpServer(
+      () => createServer(logger, runtime).server,
+      config.port,
+      logger,
+      {
+        token: process.env.LINKEDIN_HTTP_TOKEN,
+        shutdown: async () => {
+          runtime.queue.clear();
+          await runtime.engine.dispose();
+        },
+      },
+    );
+    const shutdown = () => {
+      runtime.queue.clear();
+      void listener.close().then(
+        () => process.exit(0),
+        () => process.exit(1),
+      );
+    };
+    process.once('SIGINT', shutdown);
+    process.once('SIGTERM', shutdown);
+    process.once('SIGHUP', shutdown);
   }
 }

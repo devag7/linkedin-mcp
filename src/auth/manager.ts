@@ -7,8 +7,8 @@
  */
 
 import type { Logger } from '../types.js';
-import type { EnvConfig } from '../config/env.js';
-import { getAuthMethod } from '../config/env.js';
+import type { LegacyEnvConfig } from '../legacy/config.js';
+import { getAuthMethod } from '../legacy/config.js';
 import { createCookieAuth, getCookieAuthHeaders, validateCookie } from './cookie.js';
 import type { CookieAuth } from './cookie.js';
 import { createOAuthAuth, getOAuthHeaders, validateOAuthToken } from './oauth.js';
@@ -37,7 +37,7 @@ export class AuthManager {
   private logger: Logger;
   private _lastValidation?: { valid: boolean; timestamp: number };
 
-  constructor(config: EnvConfig, logger: Logger) {
+  constructor(config: LegacyEnvConfig, logger: Logger) {
     this.logger = logger;
     this.method = getAuthMethod(config);
 

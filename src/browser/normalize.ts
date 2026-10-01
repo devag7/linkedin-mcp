@@ -118,7 +118,8 @@ export function fsdProfileId(resp: NormalizedResponse): string | undefined {
 export function ownFsdId(me: NormalizedResponse): string | undefined {
   for (const e of me.included ?? []) {
     const urn = (e as Record<string, unknown>)['entityUrn'];
-    const m = typeof urn === 'string' ? urn.match(/urn:li:fs[d]?_(?:mini)?[Pp]rofile:([^,)]+)/) : null;
+    const m =
+      typeof urn === 'string' ? urn.match(/urn:li:fs[d]?_(?:mini)?[Pp]rofile:([^,)]+)/) : null;
     if (m) return m[1];
   }
   return undefined;
@@ -210,7 +211,11 @@ export function shapeInbox(resp: NormalizedResponse): ShapedConversation[] {
       ? (c['*conversationParticipants'] as unknown[])
       : [];
     const others = partUrns
-      .filter((u): u is string => typeof u === 'string' && (!ownerId || !u.includes(ownerId)))
+      .filter(
+        (u): u is string =>
+          typeof u === 'string' &&
+          (!ownerId || u !== `urn:li:msg_messagingParticipant:urn:li:fsd_profile:${ownerId}`),
+      )
       .map((u) => shapeMessagingParticipant(participants.get(u)))
       .filter((p): p is ShapedParticipant => !!p);
     out.push({
@@ -221,7 +226,8 @@ export function shapeInbox(resp: NormalizedResponse): ShapedConversation[] {
         (others
           .map((p) => p.name)
           .filter(Boolean)
-          .join(', ') || undefined),
+          .join(', ') ||
+          undefined),
       participants: others.length ? others : undefined,
       groupChat: typeof c['groupChat'] === 'boolean' ? (c['groupChat'] as boolean) : undefined,
       lastActivityAt:
@@ -241,6 +247,7 @@ export interface ShapedJobDetails {
   location?: string;
   workplaceType?: string;
   jobUrn?: string;
+  sourceUrl?: string;
   listedAt?: number;
 }
 
@@ -253,11 +260,18 @@ export function shapeJobDetails(resp: NormalizedResponse): ShapedJobDetails {
 
   const looksJob = (o: Record<string, unknown>): boolean =>
     typeof o['title'] === 'string' &&
-    ('description' in o || 'jobState' in o || 'companyDetails' in o || 'formattedLocation' in o || 'workRemoteAllowed' in o);
+    ('description' in o ||
+      'jobState' in o ||
+      'companyDetails' in o ||
+      'formattedLocation' in o ||
+      'workRemoteAllowed' in o);
 
   const visit = (n: unknown): void => {
     if (!n || typeof n !== 'object') return;
-    if (Array.isArray(n)) { n.forEach(visit); return; }
+    if (Array.isArray(n)) {
+      n.forEach(visit);
+      return;
+    }
     const o = n as Record<string, unknown>;
     const t = typeof o['$type'] === 'string' ? (o['$type'] as string) : '';
     if (!job && looksJob(o)) job = o;
@@ -271,10 +285,11 @@ export function shapeJobDetails(resp: NormalizedResponse): ShapedJobDetails {
   return {
     title: asText(j['title']),
     description: asText(j['description']),
-    company: asText(company?.['name']) ?? asText((j['companyDetails'] as Record<string, unknown>)?.['name']),
+    company:
+      asText(company?.['name']) ??
+      asText((j['companyDetails'] as Record<string, unknown>)?.['name']),
     location: asText(j['formattedLocation']) ?? asText(j['location']),
-    workplaceType:
-      j['workRemoteAllowed'] === true ? 'Remote allowed' : asText(j['workplaceType']),
+    workplaceType: j['workRemoteAllowed'] === true ? 'Remote allowed' : asText(j['workplaceType']),
     jobUrn: typeof j['entityUrn'] === 'string' ? (j['entityUrn'] as string) : undefined,
     listedAt: typeof j['listedAt'] === 'number' ? (j['listedAt'] as number) : undefined,
   };
@@ -317,7 +332,9 @@ export function shapeConversationMessages(resp: NormalizedResponse): ShapedMessa
       ownerIdFromConversationUrn(m['*conversation']) ??
       ownerIdFromConversationUrn(m['backendConversationUrn']);
     const fromSelf =
-      ownerId && sender?.profileUrn ? sender.profileUrn.endsWith(ownerId) : undefined;
+      ownerId && sender?.profileUrn
+        ? sender.profileUrn === `urn:li:fsd_profile:${ownerId}`
+        : undefined;
     out.push({
       text: asText(m['body']) ?? asText(m['previewText']),
       deliveredAt: typeof m['deliveredAt'] === 'number' ? (m['deliveredAt'] as number) : undefined,
@@ -326,7 +343,8 @@ export function shapeConversationMessages(resp: NormalizedResponse): ShapedMessa
       ...(typeof fromSelf === 'boolean' ? { fromSelf } : {}),
     });
   }
-  out.sort((a, b) => (a.deliveredAt ?? 0) - (b.deliveredAt ?? 0));
+  // Unknown delivery times do not establish chronology; retain their order last.
+  out.sort((a, b) => (a.deliveredAt ?? Infinity) - (b.deliveredAt ?? Infinity));
   return out;
 }
 
@@ -335,6 +353,7 @@ export interface ShapedJob {
   location?: string;
   listedAt?: number;
   jobUrn?: string;
+  sourceUrl?: string;
 }
 
 /** Shape a job-search response from the JobPosting entities (not the thin Card). */
@@ -347,6 +366,11 @@ export function shapeJobs(resp: NormalizedResponse): ShapedJob[] {
       title: asText(j['title']),
       location: asText(j['formattedLocation']) ?? asText(j['location']),
       listedAt: typeof j['listedAt'] === 'number' ? (j['listedAt'] as number) : undefined,
+      sourceUrl:
+        typeof j['entityUrn'] === 'string' &&
+        /^urn:li:(?:fsd_)?jobPosting:[0-9]+$/.test(j['entityUrn'])
+          ? `https://www.linkedin.com/jobs/view/${j['entityUrn'].split(':').pop()}/`
+          : undefined,
       jobUrn: typeof j['entityUrn'] === 'string' ? (j['entityUrn'] as string) : undefined,
     });
   }
@@ -439,7 +463,7 @@ export function shapePendingInvitations(resp: NormalizedResponse): ShapedInvitat
       const name =
         asText(from?.['firstName']) && asText(from?.['lastName'])
           ? `${asText(from?.['firstName'])} ${asText(from?.['lastName'])}`
-          : asText(from?.['title']) ?? asText(o['title']);
+          : (asText(from?.['title']) ?? asText(o['title']));
       const urn =
         (typeof o['entityUrn'] === 'string' ? (o['entityUrn'] as string) : undefined) ??
         (typeof o['invitationUrn'] === 'string' ? (o['invitationUrn'] as string) : undefined);
@@ -457,7 +481,8 @@ export function shapePendingInvitations(resp: NormalizedResponse): ShapedInvitat
                 : undefined,
           message: asText(o['message']),
           invitationUrn: urn,
-          sharedSecret: typeof o['sharedSecret'] === 'string' ? (o['sharedSecret'] as string) : undefined,
+          sharedSecret:
+            typeof o['sharedSecret'] === 'string' ? (o['sharedSecret'] as string) : undefined,
         });
       }
     }
@@ -489,12 +514,14 @@ export function shapeProfileView(resp: NormalizedResponse): ShapedProfile {
   const idx = new IncludedIndex(resp);
   // The core profile entity carries firstName + a profile URN.
   const profile =
-    idx.all().find(
-      (e) =>
-        typeof e.entityUrn === 'string' &&
-        e.entityUrn.includes('fsd_profile') &&
-        'firstName' in e,
-    ) ??
+    idx
+      .all()
+      .find(
+        (e) =>
+          typeof e.entityUrn === 'string' &&
+          e.entityUrn.includes('fsd_profile') &&
+          'firstName' in e,
+      ) ??
     idx.all().find((e) => 'firstName' in e) ??
     {};
 
@@ -590,6 +617,7 @@ export interface ShapedFeedPost {
   actor?: string;
   text?: string;
   activityUrn?: string;
+  sourceUrl?: string;
 }
 
 /** Shape a home-feed response into a compact list of posts. */
@@ -603,7 +631,13 @@ export function shapeFeed(resp: NormalizedResponse): ShapedFeedPost[] {
     out.push({
       actor: asText(actorObj?.['name']),
       text: asText(u['commentary']),
-      activityUrn: typeof meta?.['backendUrn'] === 'string' ? (meta['backendUrn'] as string) : undefined,
+      sourceUrl:
+        typeof meta?.['backendUrn'] === 'string' &&
+        /^urn:li:activity:[0-9]+$/.test(meta['backendUrn'])
+          ? `https://www.linkedin.com/feed/update/${encodeURIComponent(meta['backendUrn'])}/`
+          : undefined,
+      activityUrn:
+        typeof meta?.['backendUrn'] === 'string' ? (meta['backendUrn'] as string) : undefined,
     });
   }
   return out;

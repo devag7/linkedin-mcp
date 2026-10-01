@@ -185,6 +185,6 @@ export async function runWriteProbe(config: EnvConfig, logger: Logger): Promise<
   } catch (err) {
     process.stderr.write(`\n❌ writeprobe failed: ${err instanceof Error ? err.stack ?? err.message : String(err)}\n`);
   } finally {
-    await engine.shutdown();
+    await engine.dispose();
   }
 }

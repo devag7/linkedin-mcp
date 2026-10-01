@@ -243,11 +243,12 @@ describe('persistence round-trip', () => {
     expect(t2.getPendingInvites()).toBe(7);
   });
 
-  it('writes the file with 0600 permissions', () => {
+  it('persists valid account state with private modes on POSIX', () => {
     const t = makeTracker();
     t.record('likes');
     const mode = statSync(storagePath).mode & 0o777;
-    expect(mode).toBe(0o600);
+    // Node's Windows mode bits do not distinguish owner/group/other ACLs.
+    if (process.platform !== 'win32') expect(mode).toBe(0o600);
 
     // Sanity: the JSON is well-formed and keyed by account id.
     const parsed = JSON.parse(readFileSync(storagePath, 'utf8'));

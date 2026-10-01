@@ -35,19 +35,19 @@ export async function scrapePeopleSearch(
   const url = `${ORIGIN}/search/results/people/?keywords=${encodeURIComponent(keywords)}`;
   const page = await engine.newPage();
   try {
-    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    const response = await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    await engine.assertPageSafe(page, response?.status());
     // Wait for at least one profile link to render (or give up quietly).
     await page.waitForSelector('a[href*="/in/"]', { timeout: 15000 }).catch(() => {});
     await page.waitForTimeout(1500);
 
+    await engine.assertPageSafe(page);
     const results = await page.evaluate((max: number) => {
       const clean = (s: string | null | undefined): string | undefined =>
         (s ?? '').replace(/\s+/g, ' ').trim() || undefined;
 
       // Anchor on profile links inside the results region; dedupe by slug.
-      const anchors = Array.from(
-        document.querySelectorAll<HTMLAnchorElement>('a[href*="/in/"]'),
-      );
+      const anchors = Array.from(document.querySelectorAll<HTMLAnchorElement>('a[href*="/in/"]'));
       const seen = new Set<string>();
       const out: Array<Record<string, string | undefined>> = [];
 
@@ -71,8 +71,7 @@ export async function scrapePeopleSearch(
         // Some result links wrap the whole card, so normalize: take the text
         // before the "• <degree>" separator and de-duplicate a doubled name.
         let name =
-          clean(a.querySelector('span[aria-hidden="true"]')?.textContent) ??
-          clean(a.textContent);
+          clean(a.querySelector('span[aria-hidden="true"]')?.textContent) ?? clean(a.textContent);
         if (name) {
           name = name.split(/\s*[•·]\s*/)[0]?.trim();
           if (name) {
@@ -105,7 +104,7 @@ export async function scrapePeopleSearch(
       return out;
     }, count);
 
-    logger.debug('scrapePeopleSearch', { keywords, found: results.length });
+    logger.debug('scrapePeopleSearch', { found: results.length });
     return results as ScrapedPerson[];
   } finally {
     await page.close().catch(() => {});
@@ -130,13 +129,17 @@ export async function scrapeCompanySearch(
   const url = `${ORIGIN}/search/results/companies/?keywords=${encodeURIComponent(keywords)}`;
   const page = await engine.newPage();
   try {
-    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    const response = await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    await engine.assertPageSafe(page, response?.status());
     await page.waitForSelector('a[href*="/company/"]', { timeout: 15000 }).catch(() => {});
     await page.waitForTimeout(1500);
+    await engine.assertPageSafe(page);
     const results = await page.evaluate((max: number) => {
       const clean = (s: string | null | undefined): string | undefined =>
         (s ?? '').replace(/\s+/g, ' ').trim() || undefined;
-      const anchors = Array.from(document.querySelectorAll<HTMLAnchorElement>('a[href*="/company/"]'));
+      const anchors = Array.from(
+        document.querySelectorAll<HTMLAnchorElement>('a[href*="/company/"]'),
+      );
       const seen = new Set<string>();
       const out: Array<Record<string, string | undefined>> = [];
       for (const a of anchors) {
@@ -146,7 +149,10 @@ export async function scrapeCompanySearch(
         const slug = decodeURIComponent(m[1]);
         if (seen.has(slug)) continue;
         const card =
-          a.closest('li') ?? a.closest('[data-chameleon-result-urn]') ?? a.parentElement?.parentElement ?? undefined;
+          a.closest('li') ??
+          a.closest('[data-chameleon-result-urn]') ??
+          a.parentElement?.parentElement ??
+          undefined;
         let name =
           clean(a.querySelector('span[aria-hidden="true"]')?.textContent) ?? clean(a.textContent);
         if (name) {
@@ -165,7 +171,7 @@ export async function scrapeCompanySearch(
       }
       return out;
     }, count);
-    logger.debug('scrapeCompanySearch', { keywords, found: results.length });
+    logger.debug('scrapeCompanySearch', { found: results.length });
     return results as ScrapedCompanyResult[];
   } finally {
     await page.close().catch(() => {});
@@ -197,10 +203,12 @@ export async function scrapeCompany(
   const url = `${ORIGIN}/company/${encodeURIComponent(universalName)}/about/`;
   const page = await engine.newPage();
   try {
-    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    const response = await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    await engine.assertPageSafe(page, response?.status());
     await page.waitForSelector('h1', { timeout: 15000 }).catch(() => {});
     await page.waitForTimeout(1500);
 
+    await engine.assertPageSafe(page);
     const data = await page.evaluate(() => {
       const clean = (s: string | null | undefined): string | undefined =>
         (s ?? '').replace(/\s+/g, ' ').trim() || undefined;
@@ -219,7 +227,14 @@ export async function scrapeCompany(
 
       // Labelled detail rows: find dt/dd or heading/value pairs by label text.
       const fields: Record<string, string | undefined> = {};
-      const labels = ['Website', 'Industry', 'Company size', 'Headquarters', 'Founded', 'Specialties'];
+      const labels = [
+        'Website',
+        'Industry',
+        'Company size',
+        'Headquarters',
+        'Founded',
+        'Specialties',
+      ];
       const dts = Array.from(document.querySelectorAll<HTMLElement>('dt, h3, h4'));
       for (const dt of dts) {
         const label = clean(dt.textContent);
@@ -227,7 +242,8 @@ export async function scrapeCompany(
         const match = labels.find((l) => label.toLowerCase().startsWith(l.toLowerCase()));
         if (!match) continue;
         const dd = dt.nextElementSibling;
-        const val = clean(dd?.textContent) ?? clean((dt.parentElement?.querySelector('dd'))?.textContent);
+        const val =
+          clean(dd?.textContent) ?? clean(dt.parentElement?.querySelector('dd')?.textContent);
         if (val) fields[match] = val;
       }
 
@@ -242,7 +258,7 @@ export async function scrapeCompany(
       };
     });
 
-    logger.debug('scrapeCompany', { universalName, hasName: !!data.name });
+    logger.debug('scrapeCompany', { hasName: !!data.name });
     return { ...data, universalName };
   } finally {
     await page.close().catch(() => {});
@@ -268,17 +284,23 @@ export async function scrapeCompanyPosts(
   const url = `${ORIGIN}/company/${encodeURIComponent(universalName)}/posts/`;
   const page = await engine.newPage();
   try {
-    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
-    await page.waitForSelector('div.feed-shared-update-v2, [data-urn*="activity"]', { timeout: 15000 }).catch(() => {});
+    const response = await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    await engine.assertPageSafe(page, response?.status());
+    await page
+      .waitForSelector('div.feed-shared-update-v2, [data-urn*="activity"]', { timeout: 15000 })
+      .catch(() => {});
     await page.waitForTimeout(1500);
     await page.mouse.wheel(0, 3000).catch(() => {});
     await page.waitForTimeout(1500);
 
+    await engine.assertPageSafe(page);
     const posts = await page.evaluate((max: number) => {
       const clean = (s: string | null | undefined): string | undefined =>
         (s ?? '').replace(/\s+/g, ' ').trim() || undefined;
       const cards = Array.from(
-        document.querySelectorAll<HTMLElement>('div.feed-shared-update-v2, [data-urn*="urn:li:activity"]'),
+        document.querySelectorAll<HTMLElement>(
+          'div.feed-shared-update-v2, [data-urn*="urn:li:activity"]',
+        ),
       );
       const seen = new Set<string>();
       const out: Array<Record<string, string | undefined>> = [];
@@ -290,8 +312,9 @@ export async function scrapeCompanyPosts(
         if (!text || seen.has(text)) continue;
         seen.add(text);
         const meta = clean(
-          card.querySelector<HTMLElement>('.update-components-actor__sub-description, time, [class*="sub-description"]')
-            ?.textContent,
+          card.querySelector<HTMLElement>(
+            '.update-components-actor__sub-description, time, [class*="sub-description"]',
+          )?.textContent,
         );
         out.push({ text, meta });
         if (out.length >= max) break;
@@ -299,7 +322,7 @@ export async function scrapeCompanyPosts(
       return out;
     }, count);
 
-    logger.debug('scrapeCompanyPosts', { universalName, found: posts.length });
+    logger.debug('scrapeCompanyPosts', { found: posts.length });
     return posts as ScrapedCompanyPost[];
   } finally {
     await page.close().catch(() => {});
@@ -327,12 +350,14 @@ export async function scrapeCompanyEmployees(
   const url = `${ORIGIN}/company/${encodeURIComponent(universalName)}/people/`;
   const page = await engine.newPage();
   try {
-    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    const response = await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    await engine.assertPageSafe(page, response?.status());
     await page.waitForSelector('a[href*="/in/"]', { timeout: 15000 }).catch(() => {});
     await page.waitForTimeout(1500);
     await page.mouse.wheel(0, 2500).catch(() => {});
     await page.waitForTimeout(1500);
 
+    await engine.assertPageSafe(page);
     const employees = await page.evaluate((max: number) => {
       const clean = (s: string | null | undefined): string | undefined =>
         (s ?? '').replace(/\s+/g, ' ').trim() || undefined;
@@ -349,17 +374,24 @@ export async function scrapeCompanyEmployees(
         // anchor with the same slug can't slip past the dedup if this one is dropped.
         seen.add(slug);
         const card =
-          a.closest('li') ?? a.closest('[class*="org-people-profile-card"]') ?? a.parentElement?.parentElement ?? undefined;
+          a.closest('li') ??
+          a.closest('[class*="org-people-profile-card"]') ??
+          a.parentElement?.parentElement ??
+          undefined;
         if (!card) continue;
         let name =
-          clean(card.querySelector('[class*="profile-card__title"], [class*="entity-result__title"]')?.textContent) ??
+          clean(
+            card.querySelector('[class*="profile-card__title"], [class*="entity-result__title"]')
+              ?.textContent,
+          ) ??
           clean(a.querySelector('span[aria-hidden="true"]')?.textContent) ??
           clean(a.textContent);
         if (name) name = name.split(/\s*[•·]\s*/)[0]?.trim();
         if (!name || /^(view|connect|message|follow|status is)/i.test(name)) continue;
         const headline = clean(
-          card.querySelector('[class*="profile-card__subtitle"], [class*="entity-result__primary-subtitle"], [class*="subtitle"]')
-            ?.textContent,
+          card.querySelector(
+            '[class*="profile-card__subtitle"], [class*="entity-result__primary-subtitle"], [class*="subtitle"]',
+          )?.textContent,
         );
         out.push({ name, headline, publicIdentifier: slug, profileUrl: href });
         if (out.length >= max) break;
@@ -367,7 +399,7 @@ export async function scrapeCompanyEmployees(
       return out;
     }, count);
 
-    logger.debug('scrapeCompanyEmployees', { universalName, found: employees.length });
+    logger.debug('scrapeCompanyEmployees', { found: employees.length });
     return employees as ScrapedEmployee[];
   } finally {
     await page.close().catch(() => {});

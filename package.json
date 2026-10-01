@@ -16,6 +16,7 @@
     "spike": "tsx src/index.ts --spike",
     "capture": "tsx src/index.ts --capture",
     "test": "vitest run",
+    "verify:package": "node scripts/verify-package.mjs",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "lint": "eslint src/",
@@ -24,7 +25,13 @@
     "format": "prettier --write 'src/**/*.ts'",
     "format:check": "prettier --check 'src/**/*.ts'",
     "clean": "rm -rf dist",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "metadata:sync": "tsx scripts/sync-metadata.ts",
+    "metadata:check": "tsx scripts/sync-metadata.ts --check",
+    "demo:offline": "node scripts/demo-offline.mjs",
+    "verify:browser": "tsx scripts/verify-browser.ts",
+    "prepack": "node scripts/check-package.mjs",
+    "verify:pack": "node scripts/check-package.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.12.1",
@@ -75,9 +82,20 @@
     "node": ">=20.0.0"
   },
   "files": [
-    "dist",
+    "dist/index.js",
+    "dist/index.js.map",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "DISCLAIMER.md",
+    "mcp-manifest.json",
+    "SETUP_GUIDE.md",
+    "SECURITY.md",
+    "PRODUCT_TECHNICAL_ROADMAP_2026.md",
+    "claude-desktop-config.json",
+    "docs/CAPABILITIES.md",
+    "docs/CONTRACTS.md",
+    "docs/PRIVACY.md",
+    "docs/WORKFLOWS.md"
   ],
   "mcpName": "io.github.devag7/linkedin-mcp"
 }

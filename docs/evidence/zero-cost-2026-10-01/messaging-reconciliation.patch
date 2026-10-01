@@ -1,0 +1,567 @@
+--- a/src/browser/endpoints.ts
++++ b/src/browser/endpoints.ts
+@@ -398,7 +398,11 @@
+   conversationUrn: string,
+   queryId: string = KNOWN_QUERY_IDS.messagingMessages,
+ ): string {
+-  const urn = encodeURIComponent(conversationUrn);
++  // encodeURIComponent leaves `(` and `)` unescaped, but msg_conversation URNs
++  // contain parentheses: urn:li:msg_conversation:(urn:li:fsd_profile:<id>,<threadId>).
++  // Raw parens break the REST-li `variables=(...)` parser. Encode them explicitly;
++  // the imported regression test verifies the query without a live request.
++  const urn = encodeURIComponent(conversationUrn).replace(/\(/g, '%28').replace(/\)/g, '%29');
+   return `/voyagerMessagingGraphQL/graphql?queryId=${encodeURIComponent(queryId)}&variables=(conversationUrn:${urn})`;
+ }
+ 
+--- a/src/browser/normalize.ts
++++ b/src/browser/normalize.ts
+@@ -125,27 +125,116 @@
+   return undefined;
+ }
+ 
++export interface ShapedParticipant {
++  name?: string;
++  headline?: string;
++  /** urn:li:fsd_profile:<id> */
++  profileUrn?: string;
++  profileUrl?: string;
++}
++
+ export interface ShapedConversation {
+   title?: string;
++  /** The other member(s) in the thread — the mailbox owner is excluded. */
++  participants?: ShapedParticipant[];
++  groupChat?: boolean;
+   lastActivityAt?: number;
+   unreadCount?: number;
+   read?: boolean;
+   conversationUrn?: string;
+ }
+ 
+-/** Shape an inbox conversations response into a compact list. */
++/**
++ * Index the `com.linkedin.messenger.MessagingParticipant` entities of a
++ * messaging response by entityUrn
++ * (urn:li:msg_messagingParticipant:urn:li:fsd_profile:<id>).
++ */
++function indexMessagingParticipants(resp: NormalizedResponse): Map<string, VoyagerEntity> {
++  const map = new Map<string, VoyagerEntity>();
++  for (const e of resp.included ?? []) {
++    if (
++      typeof e.$type === 'string' &&
++      e.$type.endsWith('.MessagingParticipant') &&
++      typeof e.entityUrn === 'string'
++    ) {
++      map.set(e.entityUrn, e);
++    }
++  }
++  return map;
++}
++
++/** Shape a MessagingParticipant entity into a compact identity. */
++function shapeMessagingParticipant(p?: VoyagerEntity): ShapedParticipant | undefined {
++  if (!p) return undefined;
++  const member = (p['participantType'] as Record<string, unknown> | undefined)?.['member'] as
++    | Record<string, unknown>
++    | undefined;
++  const name =
++    [asText(member?.['firstName']), asText(member?.['lastName'])].filter(Boolean).join(' ') ||
++    undefined;
++  return {
++    name,
++    headline: asText(member?.['headline']),
++    profileUrn:
++      typeof p['hostIdentityUrn'] === 'string' ? (p['hostIdentityUrn'] as string) : undefined,
++    profileUrl:
++      typeof member?.['profileUrl'] === 'string' ? (member['profileUrl'] as string) : undefined,
++  };
++}
++
++/**
++ * The mailbox owner's fsd_profile id is embedded in every msg_conversation URN:
++ * urn:li:msg_conversation:(urn:li:fsd_profile:<OWNER>,<threadId>).
++ */
++function ownerIdFromConversationUrn(urn: unknown): string | undefined {
++  return typeof urn === 'string' ? urn.match(/urn:li:fsd_profile:([^,)]+)/)?.[1] : undefined;
++}
++
++/**
++ * Shape an inbox conversations response into a compact list.
++ *
++ * Conversations reference their members via `*conversationParticipants`
++ * (MessagingParticipant URNs); resolving those against `included[]` yields the
++ * counterpart's name/headline/profile — without it, 1:1 threads (whose `title`
++ * is null) are unidentifiable without fetching each conversation.
++ */
+ export function shapeInbox(resp: NormalizedResponse): ShapedConversation[] {
+   const out: ShapedConversation[] = [];
++  const participants = indexMessagingParticipants(resp);
+   for (const e of resp.included ?? []) {
+     if (typeof e.$type !== 'string' || !e.$type.endsWith('.Conversation')) continue;
+     const c = e as Record<string, unknown>;
++    const conversationUrn =
++      typeof c['entityUrn'] === 'string' ? (c['entityUrn'] as string) : undefined;
++    const ownerId = ownerIdFromConversationUrn(conversationUrn);
++    const partUrns = Array.isArray(c['*conversationParticipants'])
++      ? (c['*conversationParticipants'] as unknown[])
++      : [];
++    const others = partUrns
++      .filter(
++        (u): u is string =>
++          typeof u === 'string' &&
++          (!ownerId || u !== `urn:li:msg_messagingParticipant:urn:li:fsd_profile:${ownerId}`),
++      )
++      .map((u) => shapeMessagingParticipant(participants.get(u)))
++      .filter((p): p is ShapedParticipant => !!p);
+     out.push({
+-      title: asText(c['title']) ?? asText(c['headlineText']) ?? asText(c['shortHeadlineText']),
++      title:
++        asText(c['title']) ??
++        asText(c['headlineText']) ??
++        asText(c['shortHeadlineText']) ??
++        (others
++          .map((p) => p.name)
++          .filter(Boolean)
++          .join(', ') ||
++          undefined),
++      participants: others.length ? others : undefined,
++      groupChat: typeof c['groupChat'] === 'boolean' ? (c['groupChat'] as boolean) : undefined,
+       lastActivityAt:
+         typeof c['lastActivityAt'] === 'number' ? (c['lastActivityAt'] as number) : undefined,
+       unreadCount: typeof c['unreadCount'] === 'number' ? (c['unreadCount'] as number) : undefined,
+       read: typeof c['read'] === 'boolean' ? (c['read'] as boolean) : undefined,
+-      conversationUrn: typeof c['entityUrn'] === 'string' ? (c['entityUrn'] as string) : undefined,
++      conversationUrn,
+     });
+   }
+   return out;
+@@ -209,19 +298,53 @@
+ export interface ShapedMessage {
+   text?: string;
+   deliveredAt?: number;
+-}
+-
+-/** Shape a conversation's messages (tolerant; field names may vary by deploy). */
++  /** Sender display name, resolved from the response's MessagingParticipant entities. */
++  sender?: string;
++  /** urn:li:fsd_profile:<id> of the sender. */
++  senderProfileUrn?: string;
++  /** True when the mailbox owner (authenticated user) sent the message. */
++  fromSelf?: boolean;
++}
++
++/**
++ * Shape a conversation's messages (tolerant; field names may vary by deploy).
++ *
++ * Messages carry `*sender` / `*actor` (a MessagingParticipant URN) resolvable
++ * against the same response, and arrive in no guaranteed order — so attribute
++ * each message and sort ascending by deliveredAt. `fromSelf` is derived from
++ * the mailbox-owner id embedded in the message's `*conversation` URN, which
++ * avoids an extra `/me` round-trip.
++ */
+ export function shapeConversationMessages(resp: NormalizedResponse): ShapedMessage[] {
+   const out: ShapedMessage[] = [];
++  const participants = indexMessagingParticipants(resp);
+   for (const e of resp.included ?? []) {
+     if (typeof e.$type !== 'string' || !e.$type.endsWith('.Message')) continue;
+     const m = e as Record<string, unknown>;
++    const senderUrn =
++      typeof m['*sender'] === 'string'
++        ? (m['*sender'] as string)
++        : typeof m['*actor'] === 'string'
++          ? (m['*actor'] as string)
++          : undefined;
++    const sender = shapeMessagingParticipant(senderUrn ? participants.get(senderUrn) : undefined);
++    const ownerId =
++      ownerIdFromConversationUrn(m['*conversation']) ??
++      ownerIdFromConversationUrn(m['backendConversationUrn']);
++    const fromSelf =
++      ownerId && sender?.profileUrn
++        ? sender.profileUrn === `urn:li:fsd_profile:${ownerId}`
++        : undefined;
+     out.push({
+       text: asText(m['body']) ?? asText(m['previewText']),
+       deliveredAt: typeof m['deliveredAt'] === 'number' ? (m['deliveredAt'] as number) : undefined,
++      sender: sender?.name,
++      senderProfileUrn: sender?.profileUrn,
++      ...(typeof fromSelf === 'boolean' ? { fromSelf } : {}),
+     });
+   }
++  // Unknown delivery times do not establish chronology; retain their order last.
++  out.sort((a, b) => (a.deliveredAt ?? Infinity) - (b.deliveredAt ?? Infinity));
+   return out;
+ }
+ 
+--- a/src/tools/discovery.ts
++++ b/src/tools/discovery.ts
+@@ -88,7 +88,7 @@
+   registerTool(
+     server,
+     'get_inbox',
+-    'List a bounded first page of recent conversations. Continuation is not verified.',
++    'List a bounded first page of recent conversations with participant names, headlines and profile links. Continuation is not verified.',
+     { count: z.number().int().min(1).max(50).default(20) },
+     async ({ count }) =>
+       run(logger, 'get_inbox', async () => {
+@@ -278,7 +278,7 @@
+   registerTool(
+     server,
+     'get_conversation',
+-    'Read messages in a LinkedIn conversation by its URN (get the URN from get_inbox).',
++    'Read a bounded page of messages by the conversation URN from get_inbox, sorted oldest-first with sender attribution when present. Continuation is not verified.',
+     {
+       count: z.number().int().min(1).max(100).default(50),
+       conversation_urn: z
+--- a/src/tools/contracts.ts
++++ b/src/tools/contracts.ts
+@@ -100,6 +100,10 @@
+     .array(
+       row({
+         title: str,
++        participants: z
++          .array(row({ name: str, headline: str, profileUrn: str, profileUrl: str }))
++          .optional(),
++        groupChat: z.boolean().optional(),
+         lastActivityAt: num,
+         unreadCount: num,
+         read: z.boolean().optional(),
+@@ -137,7 +141,17 @@
+     sent: z.array(invitation).max(100).optional(),
+     errors: z.record(z.string()).optional(),
+   }),
+-  get_conversation: z.array(row({ text: str, deliveredAt: num })).max(100),
++  get_conversation: z
++    .array(
++      row({
++        text: str,
++        deliveredAt: num,
++        sender: str,
++        senderProfileUrn: str,
++        fromSelf: z.boolean().optional(),
++      }),
++    )
++    .max(100),
+   connect_with_person: write,
+   send_message: write,
+   create_post: write,
+--- a/tests/endpoints.test.ts
++++ b/tests/endpoints.test.ts
+@@ -13,6 +13,8 @@
+   companyById,
+   messagingConversations,
+   messagingConversationEvents,
++  inboxConversations,
++  conversationMessages,
+   messagingConversationsGraphql,
+   invitationsReceived,
+   invitationsSent,
+@@ -243,3 +245,31 @@
+     );
+   });
+ });
++
++describe('endpoints — messaging GraphQL builders', () => {
++  it('inboxConversations() encodes the mailbox urn', () => {
++    expect(inboxConversations('ACoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')).toBe(
++      `/voyagerMessagingGraphQL/graphql?queryId=${encodeURIComponent(
++        KNOWN_QUERY_IDS.messagingConversations,
++      )}&variables=(mailboxUrn:urn%3Ali%3Afsd_profile%3AACoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA)`,
++    );
++  });
++
++  it('conversationMessages() percent-encodes the parentheses inside msg_conversation urns', () => {
++    // msg_conversation URNs contain ( ) and a comma; raw parens break the
++    // REST-li variables=(...) parser server-side (HTTP 400).
++    const urn =
++      'urn:li:msg_conversation:(urn:li:fsd_profile:ACoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA,2-THREADID==)';
++    const path = conversationMessages(urn);
++    const variables = path.split('&variables=')[1];
++    expect(variables.startsWith('(conversationUrn:')).toBe(true);
++    const encodedUrn = variables.slice('(conversationUrn:'.length, -1);
++    // No raw parens may survive inside the urn value…
++    expect(encodedUrn).not.toContain('(');
++    expect(encodedUrn).not.toContain(')');
++    expect(encodedUrn).toContain('%28');
++    expect(encodedUrn).toContain('%29');
++    // …and decoding restores the original urn exactly.
++    expect(decodeURIComponent(encodedUrn)).toBe(urn);
++  });
++});
+--- a/tests/normalize-messaging.test.ts
++++ b/tests/normalize-messaging.test.ts
+@@ -0,0 +1,180 @@
++import { describe, it, expect } from 'vitest';
++import {
++  shapeInbox,
++  shapeConversationMessages,
++  type NormalizedResponse,
++} from '../src/browser/normalize.js';
++
++/**
++ * Synthetic fixtures imported from upstream PR #1 (ab0a1ed). Its author described
++ * the shape as captured 2026-07-04; this checkout has no independent live capture.
++ * These tests establish offline normalization only:
++ * - Conversation.`*conversationParticipants` → MessagingParticipant URNs
++ * - MessagingParticipant.hostIdentityUrn + participantType.member.{firstName,lastName,headline}.text
++ * - Message.`*sender` / `*actor` → MessagingParticipant URN
++ * - the mailbox owner's fsd_profile id is embedded in the msg_conversation URN
++ */
++
++const OWNER_ID = 'ACoAAOWNEROWNEROWNEROWNEROWNEROWNEROWNER';
++const OTHER_ID = 'ACoAAOTHEROTHEROTHEROTHEROTHEROTHEROTHER';
++const CONV_URN = `urn:li:msg_conversation:(urn:li:fsd_profile:${OWNER_ID},2-THREADID==)`;
++
++const participant = (id: string, first: string, last: string, headline: string) => ({
++  $type: 'com.linkedin.messenger.MessagingParticipant',
++  entityUrn: `urn:li:msg_messagingParticipant:urn:li:fsd_profile:${id}`,
++  hostIdentityUrn: `urn:li:fsd_profile:${id}`,
++  participantType: {
++    member: {
++      profileUrl: `https://www.linkedin.com/in/${id}`,
++      firstName: { text: first },
++      lastName: { text: last },
++      headline: { text: headline },
++    },
++  },
++});
++
++const inboxResp: NormalizedResponse = {
++  included: [
++    participant(OWNER_ID, 'Owner', 'Member', 'Mailbox owner'),
++    participant(OTHER_ID, 'Ada', 'Lovelace', 'Engineer at Example'),
++    {
++      $type: 'com.linkedin.messenger.Conversation',
++      entityUrn: CONV_URN,
++      title: null,
++      groupChat: false,
++      lastActivityAt: 1700000300000,
++      unreadCount: 1,
++      read: false,
++      '*conversationParticipants': [
++        `urn:li:msg_messagingParticipant:urn:li:fsd_profile:${OTHER_ID}`,
++        `urn:li:msg_messagingParticipant:urn:li:fsd_profile:${OWNER_ID}`,
++      ],
++    },
++  ],
++};
++
++const message = (id: string, senderId: string, deliveredAt: number, text: string) => ({
++  $type: 'com.linkedin.messenger.Message',
++  entityUrn: `urn:li:msg_message:(urn:li:fsd_profile:${OWNER_ID},${id})`,
++  '*conversation': CONV_URN,
++  '*sender': `urn:li:msg_messagingParticipant:urn:li:fsd_profile:${senderId}`,
++  body: { text },
++  deliveredAt,
++});
++
++const conversationResp: NormalizedResponse = {
++  included: [
++    participant(OWNER_ID, 'Owner', 'Member', 'Mailbox owner'),
++    participant(OTHER_ID, 'Ada', 'Lovelace', 'Engineer at Example'),
++    // Deliberately out of order — the live API gives no ordering guarantee.
++    message('m2', OWNER_ID, 1700000200000, 'Sounds good, thanks!'),
++    message('m1', OTHER_ID, 1700000100000, 'Hi — are you free next week?'),
++  ],
++};
++
++describe('shapeInbox — participant identity', () => {
++  it('keeps a participant whose profile id contains the owner id as a substring', () => {
++    const id = `prefix${OWNER_ID}suffix`;
++    const response: NormalizedResponse = {
++      included: [
++        participant(OWNER_ID, 'Owner', 'Member', 'Owner'),
++        participant(id, 'Distinct', 'Member', 'Other'),
++        {
++          ...inboxResp.included![2],
++          '*conversationParticipants': [
++            `urn:li:msg_messagingParticipant:urn:li:fsd_profile:${OWNER_ID}`,
++            `urn:li:msg_messagingParticipant:urn:li:fsd_profile:${id}`,
++          ],
++        },
++      ],
++    };
++    expect(shapeInbox(response)[0].participants?.map((p) => p.name)).toEqual(['Distinct Member']);
++  });
++  it('resolves the counterpart (name, headline, profileUrn/Url) and excludes the mailbox owner', () => {
++    const [conv] = shapeInbox(inboxResp);
++    expect(conv.participants).toHaveLength(1);
++    expect(conv.participants?.[0]).toMatchObject({
++      name: 'Ada Lovelace',
++      headline: 'Engineer at Example',
++      profileUrn: `urn:li:fsd_profile:${OTHER_ID}`,
++    });
++  });
++
++  it('falls back to participant names when the conversation has no title (1:1 threads)', () => {
++    const [conv] = shapeInbox(inboxResp);
++    expect(conv.title).toBe('Ada Lovelace');
++  });
++
++  it('keeps the existing compact fields', () => {
++    const [conv] = shapeInbox(inboxResp);
++    expect(conv).toMatchObject({
++      groupChat: false,
++      lastActivityAt: 1700000300000,
++      unreadCount: 1,
++      read: false,
++      conversationUrn: CONV_URN,
++    });
++  });
++});
++
++describe('shapeConversationMessages — ordering and attribution', () => {
++  it('keeps unknown delivery times after dated messages without inventing timestamps', () => {
++    const { deliveredAt: _time, ...undated } = message('unknown', OTHER_ID, 0, 'Undated');
++    const result = shapeConversationMessages({
++      included: [undated, message('dated', OTHER_ID, 10, 'Dated')],
++    });
++    expect(result.map((m) => m.text)).toEqual(['Dated', 'Undated']);
++    expect(result[1].deliveredAt).toBeUndefined();
++  });
++  it('does not mistake an id suffix match for the mailbox owner', () => {
++    const id = `prefix${OWNER_ID}`;
++    const response: NormalizedResponse = {
++      included: [
++        participant(id, 'Distinct', 'Member', 'Other'),
++        message('m3', id, 1700000200000, 'Synthetic'),
++      ],
++    };
++    expect(shapeConversationMessages(response)[0].fromSelf).toBe(false);
++  });
++
++  it('resolves the actor fallback and leaves missing owner attribution unknown', () => {
++    const value = message('m4', OTHER_ID, 1700000200000, 'Synthetic');
++    const { '*sender': actor, '*conversation': _conversation, ...rest } = value;
++    const response: NormalizedResponse = {
++      included: [
++        participant(OTHER_ID, 'Ada', 'Lovelace', 'Engineer'),
++        { ...rest, '*actor': actor },
++      ],
++    };
++    const result = shapeConversationMessages(response)[0];
++    expect(result.sender).toBe('Ada Lovelace');
++    expect(result.fromSelf).toBeUndefined();
++  });
++  it('sorts messages ascending by deliveredAt', () => {
++    const msgs = shapeConversationMessages(conversationResp);
++    expect(msgs.map((m) => m.deliveredAt)).toEqual([1700000100000, 1700000200000]);
++  });
++
++  it('attributes each message with sender name and profile urn', () => {
++    const [first, second] = shapeConversationMessages(conversationResp);
++    expect(first.sender).toBe('Ada Lovelace');
++    expect(first.senderProfileUrn).toBe(`urn:li:fsd_profile:${OTHER_ID}`);
++    expect(second.sender).toBe('Owner Member');
++  });
++
++  it('flags the mailbox owner via fromSelf (derived from the conversation urn, no /me call)', () => {
++    const [fromOther, fromOwner] = shapeConversationMessages(conversationResp);
++    expect(fromOther.fromSelf).toBe(false);
++    expect(fromOwner.fromSelf).toBe(true);
++  });
++
++  it('omits attribution gracefully when participants are missing', () => {
++    const bare: NormalizedResponse = {
++      included: [message('m1', OTHER_ID, 1700000100000, 'Hello')],
++    };
++    const [msg] = shapeConversationMessages(bare);
++    expect(msg.text).toBe('Hello');
++    expect(msg.sender).toBeUndefined();
++    expect(msg.fromSelf).toBeUndefined();
++  });
++});
+--- a/tests/contracts.test.ts
++++ b/tests/contracts.test.ts
+@@ -97,6 +97,92 @@
+   expect(result.structuredContent).toEqual(parsed);
+   return parsed;
+ }
++const messagingOwner = 'synthetic-one';
++const messagingOther = 'synthetic-other';
++const messagingUrn = `urn:li:msg_conversation:(urn:li:fsd_profile:${messagingOwner},2-synthetic)`;
++const messagingParticipant = (id: string, firstName: string) => ({
++  $type: 'com.linkedin.messenger.MessagingParticipant',
++  entityUrn: `urn:li:msg_messagingParticipant:urn:li:fsd_profile:${id}`,
++  hostIdentityUrn: `urn:li:fsd_profile:${id}`,
++  participantType: {
++    member: {
++      firstName: { text: firstName },
++      headline: { text: 'Synthetic' },
++      profileUrl: `https://www.linkedin.com/in/${id}/`,
++    },
++  },
++});
++it('retains inbox participant fields in the advertised and native bounded contract', async () => {
++  vi.mocked(runtime.voyager.voyagerGet)
++    .mockResolvedValueOnce(fixture.response)
++    .mockResolvedValueOnce({
++      included: [
++        messagingParticipant(messagingOwner, 'Owner'),
++        messagingParticipant(messagingOther, 'Other'),
++        ...[1, 2].map((i) => ({
++          $type: 'com.linkedin.messenger.Conversation',
++          entityUrn: messagingUrn + i,
++          groupChat: false,
++          '*conversationParticipants': [
++            `urn:li:msg_messagingParticipant:urn:li:fsd_profile:${messagingOwner}`,
++            `urn:li:msg_messagingParticipant:urn:li:fsd_profile:${messagingOther}`,
++          ],
++        })),
++      ],
++    });
++  const result = decode(await client.callTool({ name: 'get_inbox', arguments: { count: 1 } }));
++  expect(result.data).toHaveLength(1);
++  expect(result.data[0]).toMatchObject({
++    title: 'Other',
++    groupChat: false,
++    participants: [
++      {
++        name: 'Other',
++        profileUrn: `urn:li:fsd_profile:${messagingOther}`,
++        profileUrl: `https://www.linkedin.com/in/${messagingOther}/`,
++      },
++    ],
++  });
++  expect(result.meta.partial).toBe(true);
++  const schema: any = (await client.listTools()).tools.find(
++    (t) => t.name === 'get_inbox',
++  )!.outputSchema;
++  expect(schema.properties.data.anyOf[0].items.properties.participants).toBeDefined();
++});
++it('returns sorted, attributed and bounded messages through native MCP while encoding the full URN', async () => {
++  vi.mocked(runtime.voyager.voyagerGet).mockResolvedValueOnce({
++    included: [
++      messagingParticipant(messagingOwner, 'Owner'),
++      messagingParticipant(messagingOther, 'Other'),
++      ...[3, 1, 2].map((i) => ({
++        $type: 'com.linkedin.messenger.Message',
++        deliveredAt: i,
++        body: { text: `Synthetic ${i}` },
++        '*conversation': messagingUrn,
++        '*sender': `urn:li:msg_messagingParticipant:urn:li:fsd_profile:${i === 2 ? messagingOwner : messagingOther}`,
++      })),
++    ],
++  });
++  const result = decode(
++    await client.callTool({
++      name: 'get_conversation',
++      arguments: { conversation_urn: messagingUrn, count: 2 },
++    }),
++  );
++  expect(result.data).toHaveLength(2);
++  expect(result.data.map((m: any) => [m.deliveredAt, m.sender, m.fromSelf])).toEqual([
++    [1, 'Other', false],
++    [2, 'Owner', true],
++  ]);
++  expect(result.meta.partial).toBe(true);
++  expect(runtime.voyager.voyagerGet).toHaveBeenLastCalledWith(
++    expect.stringContaining('%28urn%3Ali%3Afsd_profile%3Asynthetic-one%2C2-synthetic%29'),
++  );
++  const schema: any = (await client.listTools()).tools.find(
++    (t) => t.name === 'get_conversation',
++  )!.outputSchema;
++  expect(schema.properties.data.anyOf[0].items.properties.fromSelf).toBeDefined();
++});
+ it('lists matching capabilities, output schemas and read/write annotations without launching Chrome', async () => {
+   const tools = (await client.listTools()).tools;
+   expect(tools.map((tool) => tool.name).sort()).toEqual(Object.keys(args).sort());

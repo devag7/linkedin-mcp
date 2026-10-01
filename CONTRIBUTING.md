@@ -1,124 +1,54 @@
-# Contributing to LinkedIn MCP
+# Contributing
 
-Thank you for your interest in contributing! This document provides guidelines for contributing to the project.
+Read [AGENTS.md](AGENTS.md), the [technical roadmap](PRODUCT_TECHNICAL_ROADMAP_2026.md)
+and [current evidence](docs/ROADMAP_PROGRESS.md). Keep changes reviewable and
+preserve user work. Use TypeScript with strict types. The active runtime is
+`src/server.ts` → browser/guard/tools; v1 auth/client/middleware code is isolated
+and does not provide a shipped OAuth adapter.
 
-## 🚀 Quick Setup
+Install with `npm ci`. Normal development and tests never need a LinkedIn account
+or a browser launch. Before submitting code, run:
 
 ```bash
-# Clone the repo
-git clone https://github.com/devag7/linkedin-mcp.git
-cd linkedin-mcp
-
-# Install dependencies
-npm install
-
-# Run in development mode
-npm run dev
-
-# Run tests
-npm test
-
-# Type checking
+npm run metadata:check
+npm run lint
 npm run typecheck
+npm test
+npm run build
+npm run verify:package
 ```
 
-## 📋 Development Workflow
+Tests must replace provider work with redacted synthetic fixtures. Label fixtures
+as synthetic or consented live captures, recording schema, locale/state, capture
+date and verification scope. Do not label a hand-written fixture a capture.
+Never commit cookies, tokens, real member IDs or message/profile text.
 
-1. **Fork** the repository
-2. **Create** a feature branch: `git checkout -b feature/my-feature`
-3. **Make** your changes
-4. **Test** your changes: `npm test && npm run typecheck`
-5. **Commit** with conventional commits: `git commit -m 'feat: add new tool'`
-6. **Push** to your fork: `git push origin feature/my-feature`
-7. **Open** a Pull Request
+To change a tool, use `src/tools/register.ts` for native output schemas,
+annotations and registration tracking; update `contracts.ts`, `capabilities.ts`,
+and protocol cases in `tests/contracts.test.ts`. Generate metadata with
+`npm run metadata:sync`. Maintain text JSON for existing clients, error codes,
+explicit partial state, bounded results and one-page calls. Do not invent a
+continuation token or silently crawl. Profile fanout is explicitly bounded.
 
-## 📦 Commit Convention
+Voyager endpoints are undocumented. Preserve existing write payloads unless a
+consented `--writecapture` proves the current shape; probe only an exact action
+explicitly approved by the account owner. Manual live writes are excluded from
+normal CI. A rejection alone does not establish that a new-thread route works.
+Checkpoints stop automation; corrupt safety state fails closed. Do not add mass
+outreach, pacing bypasses, automated challenge solving or automatic retries.
 
-We use [Conventional Commits](https://www.conventionalcommits.org/):
+PR descriptions should explain the problem/result, verification, remaining
+limitations and rollback. The package version is single-sourced from package.json.
+Publishing is separate from local implementation: main-branch version bumps can
+trigger release automation. Do not claim publication or a hosted matrix result
+until it actually happened. Report any failing gate with exact scope.
 
-- `feat:` — New feature or tool
-- `fix:` — Bug fix
-- `docs:` — Documentation changes
-- `test:` — Adding or updating tests
-- `refactor:` — Code refactoring
-- `chore:` — Maintenance tasks
+Useful contributions: consented locale/browser fixture coverage, supported-client
+first-use evidence, accessible troubleshooting, and bounded research examples.
+An issue should describe a user problem and evidence rather than a growth promise.
 
-## 🧪 Testing
-
-- Write tests for all new tools and features
-- Place tests in the `tests/` directory
-- Use `vitest` for testing
-- Mock external API calls — never make real LinkedIn requests in tests
-
-```bash
-npm test              # Run all tests
-npm run test:watch    # Watch mode
-npm run test:coverage # Coverage report
-```
-
-## 🛠 Adding a New Tool
-
-1. Add the tool registration in `src/server.ts` under the appropriate category
-2. Use `safeToolCall()` wrapper for error handling
-3. Add Zod schema validation for all parameters
-4. Add tests in `tests/`
-5. Update `README.md` tool list
-6. Update the tool count in `whoami`
-
-### Tool Template
-
-```typescript
-server.tool(
-  'tool_name',
-  'Description of what the tool does.',
-  {
-    param1: z.string().describe('Parameter description'),
-    param2: z.number().int().min(1).max(50).default(10).describe('Optional with default'),
-  },
-  async ({ param1, param2 }) => {
-    return safeToolCall(logger, 'tool_name', async () => {
-      const data = await client.voyagerGet(`/api/endpoint/${param1}?count=${param2}`);
-      return formatResult(data);
-    });
-  },
-);
-```
-
-## 🏗 Architecture
-
-```
-src/
-├── index.ts          # CLI entry point
-├── server.ts         # MCP server + all tool registrations
-├── types.ts          # Shared types + Logger
-├── auth/             # Authentication (OAuth + Cookie)
-├── client/           # LinkedIn HTTP client
-├── config/           # Environment configuration
-├── middleware/        # Rate limiter, cache
-└── transports/       # stdio + HTTP transport
-```
-
-## 📏 Code Style
-
-- TypeScript strict mode
-- ESM modules
-- Prettier for formatting
-- ESLint for linting
-
-```bash
-npm run format    # Format code
-npm run lint      # Check linting
-npm run lint:fix  # Auto-fix lint issues
-```
-
-## 🐛 Reporting Bugs
-
-Use the [Bug Report template](https://github.com/devag7/linkedin-mcp/issues/new?template=bug_report.md).
-
-## 💡 Feature Requests
-
-Use the [Feature Request template](https://github.com/devag7/linkedin-mcp/issues/new?template=feature_request.md).
-
-## 📄 License
-
-By contributing, you agree that your contributions will be licensed under the MIT License.
+For release or browser changes, run `npm run verify:browser` with installed Chrome.
+It uses an empty temporary profile and local content; it does not log in or open
+LinkedIn. Review [release/dependency evidence](docs/ZERO_COST_EXECUTION_EVIDENCE_2026-10-01.md)
+before publication. Normal fixture tests disable the Vitest API; do not expose
+mock/browser/build-tool development servers.

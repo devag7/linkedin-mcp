@@ -19,19 +19,20 @@ Steps to reproduce the behavior:
 What you expected to happen.
 
 ## Actual Behavior
-What actually happened. Include the full error message if applicable.
+What actually happened. Include the safe error code and redacted doctor output.
 
 ## Environment
 - **OS**: [e.g. macOS 14, Ubuntu 22.04, Windows 11]
 - **Node.js version**: [e.g. 20.x, 22.x]
 - **MCP Client**: [e.g. Claude Desktop, Claude Code, Cursor]
 - **Transport**: [e.g. stdio, http]
-- **Server version**: [e.g. 1.0.0]
-- **Auth method**: [e.g. OAuth, Cookie]
+- **Server version**: [installed package version]
+- **Session state**: [not_checked, logged_in, logged_out, blocked]
+- **Provider**: local unofficial browser; official provider is unavailable
 
 ## Logs
 ```
-Paste relevant log output here
+Paste redacted --doctor output and tool error code here; omit tokens, cookies, paths and LinkedIn content
 ```
 
 ## Additional Context

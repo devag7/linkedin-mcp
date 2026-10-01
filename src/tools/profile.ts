@@ -19,7 +19,9 @@ import {
   type NormalizedResponse,
 } from '../browser/normalize.js';
 import * as ep from '../browser/endpoints.js';
-import { ok, run } from './result.js';
+import { ok, run, ToolError } from './result.js';
+import { assertReadResponse } from './provider-shape.js';
+import { registerTool } from './register.js';
 
 /**
  * Fetch one profile section's component entries, tolerant of a section that
@@ -33,6 +35,7 @@ async function section(
 ): Promise<ReturnType<typeof collectComponentEntries>> {
   try {
     const resp = await voyager.voyagerGet<NormalizedResponse>(ep.profileComponents(fsd, name));
+    assertReadResponse(resp);
     return collectComponentEntries(resp);
   } catch (e) {
     // A 404 means the profile simply has no such section — legitimately empty.
@@ -46,8 +49,10 @@ async function section(
 /** Fetch the DASH core profile + lazy-loaded section components and merge. */
 async function buildProfile(voyager: VoyagerClient, slug: string): Promise<unknown> {
   const profileResp = await voyager.voyagerGet<NormalizedResponse>(ep.dashProfile(slug));
+  assertReadResponse(profileResp);
   const core = shapeProfileView(profileResp);
   const fsd = fsdProfileId(profileResp);
+  if (!core.firstName || !fsd) throw new ToolError('RESPONSE_SHAPE_CHANGED');
 
   let experience: unknown[] = [];
   let education: unknown[] = [];
@@ -63,7 +68,12 @@ async function buildProfile(voyager: VoyagerClient, slug: string): Promise<unkno
       section(voyager, fsd, 'certifications'),
       section(voyager, fsd, 'languages'),
     ]);
-    experience = exp.map((e) => ({ title: e.title, company: e.subtitle, dates: e.caption, location: e.meta }));
+    experience = exp.map((e) => ({
+      title: e.title,
+      company: e.subtitle,
+      dates: e.caption,
+      location: e.meta,
+    }));
     education = edu.map((e) => ({ school: e.title, degree: e.subtitle, dates: e.caption }));
     skills = sk.map((e) => ({ name: e.title, detail: e.subtitle }));
     certifications = certs.map((e) => ({ name: e.title, issuer: e.subtitle, dates: e.caption }));
@@ -74,7 +84,15 @@ async function buildProfile(voyager: VoyagerClient, slug: string): Promise<unkno
   const { experience: _e, education: _ed, ...rest } = core;
   void _e;
   void _ed;
-  return { ...rest, experience, education, skills, certifications, languages };
+  return {
+    ...rest,
+    experience,
+    education,
+    skills,
+    certifications,
+    languages,
+    sourceUrl: `https://www.linkedin.com/in/${encodeURIComponent(slug)}/`,
+  };
 }
 
 export function registerProfileTools(
@@ -83,7 +101,8 @@ export function registerProfileTools(
   guard: Guard,
   logger: Logger,
 ): void {
-  server.tool(
+  registerTool(
+    server,
     'get_my_profile',
     "Get the authenticated user's own LinkedIn profile (experience, education, headline, summary).",
     {},
@@ -91,15 +110,17 @@ export function registerProfileTools(
       run(logger, 'get_my_profile', async () => {
         const data = await guard.run(ACTIONS.getProfile, async () => {
           const me = await voyager.voyagerGet<NormalizedResponse>(ep.me());
+          assertReadResponse(me);
           const publicId = ownPublicId(me);
           if (!publicId) throw new Error('Could not resolve own publicIdentifier from /me.');
           return buildProfile(voyager, publicId);
         });
-        return ok(data);
+        return ok(data, 'voyager', true);
       }),
   );
 
-  server.tool(
+  registerTool(
+    server,
     'get_profile',
     'Get a LinkedIn profile by public identifier (the slug in the profile URL, e.g. "satyanadella").',
     {
@@ -111,7 +132,7 @@ export function registerProfileTools(
     async ({ username }) =>
       run(logger, 'get_profile', async () => {
         const data = await guard.run(ACTIONS.getProfile, () => buildProfile(voyager, username));
-        return ok(data);
+        return ok(data, 'voyager', true);
       }),
   );
 

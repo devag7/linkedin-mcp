@@ -4,6 +4,8 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'node',
+    // Offline Node fixtures only; do not expose a browser/mock API server.
+    api: false,
     include: ['tests/**/*.test.ts'],
     coverage: {
       provider: 'v8',
