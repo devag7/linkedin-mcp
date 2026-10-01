@@ -57,7 +57,7 @@ final published tarball.
 | Exact normal/scripts-disabled 15-file archive, dirty and clean | All names, types and bytes checked against independent allowlist; duplicate copies remain on disk. New source candidates require their own inventories. |
 | Installed client and browser gates | Real SDK stdio and three exported configs; offline Chrome lifecycle across hosted Node20/22 Linux/macOS/Windows. No provider or native-chat proof. |
 | Production dependencies | Fresh `npm audit --omit=dev`; development advisories separately tracked for October8. |
-| Hosted release dry run | Pending exact candidate execution; validates workflow jobs and read-only destination states. Does not prove publish permission/OIDC or missing-version visibility. |
+| Hosted release dry run | [Run36905626320](https://github.com/devag7/linkedin-mcp/actions/runs/36905626320) passes all10 jobs for candidate `ee4a872`. Publish/authenticate/tag/finalization steps are skipped; Registry publisher validation and read-only missing-version plans pass. Does not prove OIDC/write permission or publication. |
 | npm trusted-publisher configuration | Maintainer confirmed the exact trusted-publisher fields/direct-publish permission in this session; actual OIDC publish authentication remains untested. Existing NPM_TOKEN secret exists but its contents/validity were not inspected. No secret is requested. |
 | Fresh bounded account validation | Pending separate answer; frozen installed build/protocol ready. No new LinkedIn call made. Useful linked job evidence needed; empty/partial/error states retain their limits. |
 | Final destinations | Pending publication: independently verify npm bytes/integrity/provenance, public scoped artifact, active Registry metadata and final GitHub tag/release SHA. |
@@ -116,3 +116,52 @@ not a monthly total, a successful-read cohort or repeat use. Net-star change req
 a future boundary sample; Trending was not observed. Raw daily aggregates are
 retained privately for deduplicated monthly measurement; no personal/account data
 is collected.
+
+## Verified rehearsal and package evidence
+
+Recorded2026-10-01T18:30:45Z (October2 in Asia/Kolkata). The existing Release
+workflow was dispatched from reviewed PR #5 workflow head `b6bbd80` with
+`dry_run:true` and full candidate source
+`ee4a8729063f60c21b856f9327bf12c9cb8113cd`. The isolated candidate branch bumps
+only version/lock/generated metadata to3.0.0; main remains2.0.3 and no release tag
+was created. All10 hosted jobs pass, including six OS/Node combinations, production
+audit, primary/scoped destination plans and checksum-pinned Registry validation.
+
+The actual primary dry-run artifact was downloaded and parsed against the exact
+clean candidate source. All15 names/types/lengths/SHA256s match the source and local
+candidate inventory; compressed tarballs are also byte-identical between local
+macOS and hosted Linux. This is evidence for these actual builds, not a promise
+of reproducibility on every platform/tool version. Candidate archive SHA256:
+`9256d4d32a7aeb4a06b724f003ef1afcc998a5cb13a8f4b88c20f426b526d199`.
+Integrity:
+`sha512-hdmEIMBFfgecUzRuqPYRNxUSBZaKv06+Q9+0wGrkLSl6VgeI7w03yU6O3dYwEZf0lffVTsO5Uad1bmnKwa18rw==`.
+
+At final implementation head `b6bbd80ef676d600d44acfa542743d9bc11041ba`, normal
+and scripts-disabled packing from the dirty workspace and a fresh clean checkout
+produce the same exact15-file inventory and bytes. All57 sync copies, pr_diff.txt,
+the ignored dist copy, relocated Git ref and earlier backups remain unchanged.
+Earlier pre-allowlist package evidence proves only the installation/contracts it
+actually exercised; it does not establish hygiene of a later dirty archive.
+See [packaging correction](PACKAGING_REVIEW_2026-10-01.md) for the narrower reading.
+
+Final implementation hosted checks: PR #3
+[12/12 at f7e9e2b](https://github.com/devag7/linkedin-mcp/actions/runs/36904632946),
+PR #4 [12/12 at4093554](https://github.com/devag7/linkedin-mcp/actions/runs/36904910140),
+PR #5 [12/12 at b6bbd80](https://github.com/devag7/linkedin-mcp/actions/runs/36905210946).
+Local source/package gates pass514/519/539 tests respectively. This documentation
+update changes no shipped file or runtime code; its new head/checks are recorded
+in the PR body. No older hosted result is relabeled as a new-head execution.
+
+Fresh production audit:0 findings. Full audit:3 development-only findings
+(1low,2moderate), none high/critical; October8 follow-up remains. Installed SDK
+exports and both synthetic demos pass; no new LinkedIn request occurred. Trusted
+publisher fields/direct-publish permission are confirmed by the maintainer, but
+actual OIDC publishing/provenance can only be verified during the authorized release.
+
+Independent destination read-back confirms3.0.0 is absent from npm, scoped GitHub
+Packages, official Registry, GitHub Release and tag after the dry run. Existing
+2.0.3 Registry metadata is active and the existing scoped package is public. Those
+old destinations do not establish the candidate's publication. The pending fresh
+bounded account-consent answer remains required before its validation, ordered
+merges and main bump. Glama owner login and broad first-use/privacy promotion
+gates remain separate open items; no completed-release or Trending claim is made.
