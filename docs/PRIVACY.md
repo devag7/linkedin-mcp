@@ -19,7 +19,7 @@ store target/content, cookies, raw provider bodies or response details. Browser
 requests and returned data still involve LinkedIn and the selected MCP client.
 The server does not add cloud storage, analytics uploads or background telemetry.
 
-`linkedin-mcp --logout` recursively removes the default Chrome profile. For a custom
+`linkedin-mcp --logout` removes only an unaliased profile directory. Symlinks, Windows junctions and aliased ancestors are refused; nested links are unlinked without deleting their targets. For a custom
 LINKEDIN_PROFILE_DIR, it refuses deletion unless the user also explicitly supplies
 `--confirm-profile-deletion`. Review that exact path first: the whole directory is
 removed. The command acquires profile ownership and refuses an existing owner.

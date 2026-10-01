@@ -42,6 +42,8 @@ const write = z.union([
     preview: row({
       operationId: z.string(),
       payloadHash: z.string(),
+      token: z.string(),
+      expiresAt: z.string().datetime(),
       action: z.string(),
       target: z.string(),
       route: z.string(),

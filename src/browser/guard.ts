@@ -20,6 +20,7 @@ import {
  * this integration layer is the only place that knows about VoyagerError.
  */
 
+import { WritePreviews } from '../safety/write-preview.js';
 import { createHash, randomUUID } from 'node:crypto';
 import { classifyWrite } from './write-status.js';
 import type { RawPostResult } from './voyager.js';
@@ -72,6 +73,7 @@ export class GuardBlockedError extends Error {
 }
 
 export class Guard {
+  readonly previews = new WritePreviews();
   constructor(
     private readonly queue: SerialQueue,
     private readonly pacer: HumanPacer,
@@ -118,6 +120,32 @@ export class Guard {
     );
   }
 
+  /** Lookup is not authorization for a new action. Cold identity work is allowed
+   * only for an ID actually present in retained storage. */
+  async lookupWrite(
+    action: ActionDescriptor,
+    kind: WriteKind,
+    inputs: unknown,
+    operationId: string,
+  ): Promise<OperationOutcome | undefined> {
+    assertNotCancelled();
+    if (!this.budget.hasRecordedOperation(operationId)) return undefined;
+    if (!this.budget.accountResolved) {
+      this.assertBreaker(ACTIONS.readGeneric);
+      await this.queue.enqueue(
+        bindCancellation(async () => {
+          assertNotCancelled();
+          this.budget.verifyStorage();
+          await this.prepare?.();
+        }),
+      );
+    }
+    const fingerprint = createHash('sha256')
+      .update(JSON.stringify([kind, action.budget, inputs]))
+      .digest('hex');
+    return this.budget.previousWrite(operationId, fingerprint);
+  }
+
   /** Reserve once, submit once, classify and settle before the next queued action. */
   async runWrite(
     action: ActionDescriptor,
@@ -125,6 +153,7 @@ export class Guard {
     inputs: unknown,
     operationId: string = randomUUID(),
     fn: (beforeDispatch: () => void) => Promise<RawPostResult>,
+    authorization?: { assert: () => void; consume: () => void },
   ): Promise<OperationOutcome> {
     assertNotCancelled();
     if (
@@ -152,6 +181,7 @@ export class Guard {
     const previous = () => this.budget.previousWrite(operationId, fingerprint);
     const existing = previous();
     if (existing) return existing;
+    authorization?.assert();
     this.assertAllowed(action);
     return this.queue.enqueue(
       bindCancellation(async () => {
@@ -160,6 +190,7 @@ export class Guard {
         await this.prepare?.();
         const cached = previous();
         if (cached) return cached;
+        authorization?.assert();
         this.assertAllowed(action);
         await this.pacer
           .waitBefore(action.pace, requestCancellation.getStore())
@@ -172,6 +203,7 @@ export class Guard {
         await this.prepare?.();
         const afterPacing = previous();
         if (afterPacing) return afterPacing;
+        authorization?.assert();
         this.assertAllowed(action);
         let dispatched = false;
         let replay: OperationOutcome | undefined;
@@ -184,9 +216,11 @@ export class Guard {
             replay = previous();
             if (replay) throw new Error('Operation already reserved.');
             this.assertAllowed(action);
+            authorization?.assert();
             replay = this.budget.reserveWrite(bucket, operationId, fingerprint);
             if (replay) throw new Error('Operation already reserved.');
             dispatched = true;
+            authorization?.consume();
           });
           if (!dispatched) throw new Error('Write provider did not reserve before dispatch.');
           outcome = classifyWrite(raw, kind);

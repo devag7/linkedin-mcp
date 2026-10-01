@@ -426,6 +426,14 @@ export class BudgetTracker {
     });
   }
 
+  /** Existence only: avoid opening Chrome for an unissued, unknown operation ID.
+   * An actual outcome still requires this runtime's verified account binding. */
+  hasRecordedOperation(operationId: string): boolean {
+    this.refreshState();
+    const key = this.operationKey(operationId);
+    return Object.values(this.state.accounts).some((account) => !!account.operations?.[key]);
+  }
+
   /** A repeated ID is a lookup, even if the current budget/breaker is closed. */
   previousWrite(operationId: string, fingerprint: string): OperationOutcome | undefined {
     this.refreshState();

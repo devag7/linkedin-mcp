@@ -90,7 +90,7 @@ be undone when a separate request detects a challenge.
 All five writes are disabled by default. `LINKEDIN_ENABLE_WRITES=true` is an
 explicit opt-in; every submitted action still requires confirm:true. A local
 preview exposes target, content, route, effect, operation ID and payload hash
-without opening Chrome. Supplying preview_hash on approval refuses changed
+without opening Chrome. The required server-issued preview_token on approval refuses changed
 content before browser work. New-thread messages additionally require
 LINKEDIN_ENABLE_EXPERIMENTAL_MESSAGES=true; current live success is unverified.
 The release runtime has no pacing bypass and supports only serial execution.
@@ -166,3 +166,24 @@ Chrome launch, ownership and cleanup with empty temporary profiles. This does no
 prove live LinkedIn behavior, Windows native ACL privacy or release authentication.
 LICENSE was recovered from the committed revision after cloud-sync deletion;
 packed-package checks require it. No publishing was performed.
+
+### PR #3 preview and erasure corrections (2026-10-01)
+
+New write submissions require a server-issued random `preview_token`, the preview's
+`operation_id`, identical action/target/content, and `confirm:true`. Tokens are
+process-local, expire in five minutes, and are consumed only after a durable
+reservation. Revalidation occurs after pacing and immediately before reservation.
+Client workflows must obtain explicit human approval; the server cannot infer it.
+Tokens and raw preview content are not persisted in the journal. A restart requires
+a fresh preview for unsubmitted actions. Existing journal outcomes remain readable
+with the original ID and exact inputs, including unknown outcomes, without a token
+or enabled writes; they never authorize a new dispatch.
+
+Logout refuses symlinks, junctions, aliased ancestors, filesystem roots, home and
+workspace ancestors. It locks, rechecks directory identity and renames the original
+entry before deletion, checking that the moved entry is still that directory. Nested
+links are unlinked without traversing targets. This protects ordinary accidental
+aliases and entry replacement; Node filesystem APIs do not provide an atomic
+open-relative deletion primitive against an adversarial local process replacing
+ancestor directories. Keep state directories private. Windows ACL verification is
+still an explicit open item. Safety journals and checkpoints survive logout.

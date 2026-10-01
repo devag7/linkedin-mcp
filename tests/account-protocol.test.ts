@@ -85,6 +85,11 @@ async function client(r: ServerRuntime) {
     await server.close();
   });
   return async (operation = 'operation-one') => {
+    const previewResult = await c.callTool({
+      name: 'react_to_post',
+      arguments: { post_urn: 'urn:li:activity:123', reaction: 'LIKE', operation_id: operation },
+    });
+    const preview = (previewResult.structuredContent as any).data.preview;
     const result = await c.callTool({
       name: 'react_to_post',
       arguments: {
@@ -92,6 +97,7 @@ async function client(r: ServerRuntime) {
         reaction: 'LIKE',
         confirm: true,
         operation_id: operation,
+        preview_token: preview.token,
       },
     });
     return JSON.parse((result.content as Array<{ text: string }>)[0]!.text);

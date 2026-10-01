@@ -51,3 +51,18 @@ groupChat. Conversation messages can include sender, senderProfileUrn and fromSe
 Absent attribution remains unknown. Known delivery timestamps sort ascending;
 undated messages remain undated and stable at the end. Counts and partial/unsupported
 continuation behavior are unchanged. These are optional additive contract fields.
+
+## New write submission authorization
+
+Call the write with `confirm:false` first. Its preview includes `operationId`,
+`token`, `expiresAt`, exact target/content and a payload hash. Present these inputs
+to the human. After approval repeat identical inputs with `confirm:true`,
+`operation_id: preview.operationId` and `preview_token: preview.token`. The proof
+is random, server-owned, valid for five minutes and consumed at durable reservation.
+`preview_hash` remains an optional extra comparison, never authorization. Errors
+include `PREVIEW_REQUIRED`, `PREVIEW_CHANGED`, `PREVIEW_EXPIRED`, `PREVIEW_LIMIT`.
+The runtime write opt-in and experimental-route gate still apply.
+
+After a timeout/restart, repeat the original operation ID and inputs to retrieve a
+journaled outcome; no proof is needed for that lookup, and no action is resubmitted.
+Unsubmitted previews do not survive restart. The server cannot infer human consent.

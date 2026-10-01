@@ -215,7 +215,7 @@ it does not establish live compatibility with every LinkedIn challenge variant.
 
 ## Write outcomes and operation IDs
 
-All five alpha write tools require `LINKEDIN_ENABLE_WRITES=true` and `confirm:true`. With confirmation omitted/false they return a local preview without opening Chrome. Review its target, content, audience and route; use the returned operation ID and `preview_hash` when approving. A changed hash is refused. Starting new message threads also requires `LINKEDIN_ENABLE_EXPERIMENTAL_MESSAGES=true` and has no current live success evidence. Supply a unique `operation_id`
+All five alpha write tools require `LINKEDIN_ENABLE_WRITES=true` and `confirm:true`. With confirmation omitted/false they return a local preview without opening Chrome. Review its target, content, audience and route; after explicit human approval, use the returned operation ID as `operation_id` and token as `preview_token`. Tokens expire after five minutes, are bound to the exact action, target and content, and are consumed on submission. Missing or changed proofs are refused before dispatch. The token proves that the server issued a preview; it cannot prove human consent. Starting new message threads also requires `LINKEDIN_ENABLE_EXPERIMENTAL_MESSAGES=true` and has no current live success evidence. Supply a unique `operation_id`
 (8–128 letters, digits, `_` or `-`) before the approved call. For example:
 
 ```json

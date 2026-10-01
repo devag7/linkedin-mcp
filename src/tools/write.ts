@@ -3,7 +3,9 @@ import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import type { VoyagerClient } from '../browser/voyager.js';
-import type { Guard } from '../browser/guard.js';
+import type { RawPostResult } from '../browser/voyager.js';
+import type { WriteKind } from '../safety/write-operation.js';
+import type { Guard, ActionDescriptor } from '../browser/guard.js';
 import { ACTIONS } from '../browser/guard.js';
 import type { OperationOutcome } from '../safety/write-operation.js';
 import { ownFsdId, type NormalizedResponse } from '../browser/normalize.js';
@@ -14,7 +16,7 @@ import { registerTool } from './register.js';
 import { CAPABILITIES, type ToolName, type CapabilityPolicy } from './capabilities.js';
 
 const CONFIRM_HINT =
-  'Review the exact target, content and effect. Only after user approval, repeat these inputs with the preview operationId, preview_hash and confirm:true. Alpha writes also require runtime opt-in.';
+  'Review the exact target, content and effect. Only after user approval, repeat these inputs with the preview operationId, preview_token and confirm:true. Alpha writes also require runtime opt-in.';
 
 function review(
   action: ToolName,
@@ -25,18 +27,23 @@ function review(
   approvedHash: string | undefined,
   policy: CapabilityPolicy,
   experimental = false,
+  guard?: Guard,
 ) {
   const payloadHash = createHash('sha256')
     .update(JSON.stringify([action, target, content]))
     .digest('hex');
   if (approvedHash && approvedHash !== payloadHash) throw new ToolError('PREVIEW_CHANGED');
-  if (!confirm)
+  if (!confirm) {
+    const id = operationId ?? randomUUID();
+    const issued = guard!.previews.issue(id, payloadHash);
     return ok(
       {
         refused: true,
         reason: CONFIRM_HINT,
         preview: {
-          operationId: operationId ?? randomUUID(),
+          operationId: id,
+          token: issued.token,
+          expiresAt: issued.expiresAt,
           payloadHash,
           action,
           target,
@@ -49,12 +56,18 @@ function review(
       },
       'engine',
     );
-  if (!policy.writesEnabled) throw new ToolError('WRITE_DISABLED');
-  if (experimental && !policy.experimentalMessagesEnabled) throw new ToolError('UNVERIFIED_ROUTE');
+  }
   return undefined;
 }
 
 const confirmField = {
+  preview_token: z
+    .string()
+    .regex(/^[A-Za-z0-9_-]{43}$/)
+    .optional()
+    .describe(
+      'Server-issued, five-minute preview token. Required for a new submission together with its operation_id. Not required for a journal lookup.',
+    ),
   preview_hash: z
     .string()
     .regex(/^[a-f0-9]{64}$/)
@@ -67,7 +80,7 @@ const confirmField = {
     .regex(/^[A-Za-z0-9_-]{8,128}$/)
     .optional()
     .describe(
-      'Caller-generated unique ID (8-128 letters, digits, _ or -). Reuse the same ID and inputs to retrieve the stored outcome without resubmitting, including after a timeout. If omitted, a new ID is generated.',
+      'Caller-generated unique ID (8-128 letters, digits, _ or -). Reuse the same ID and inputs to retrieve the stored outcome without resubmitting, including after a timeout. If omitted for a preview, the server generates one. New submissions require the preview operation ID.',
     ),
   confirm: z
     .boolean()
@@ -146,6 +159,37 @@ export function registerWriteTools(
   logger: Logger,
   policy: CapabilityPolicy = { writesEnabled: false, experimentalMessagesEnabled: false },
 ): void {
+  async function submit(
+    action: ActionDescriptor,
+    kind: WriteKind,
+    inputs: unknown,
+    operationId: string | undefined,
+    fn: (beforeDispatch: () => void) => Promise<RawPostResult>,
+    token: string | undefined,
+    name: ToolName,
+    target: string,
+    content: Record<string, unknown>,
+    experimental = false,
+  ) {
+    if (operationId) {
+      const stored = await guard.lookupWrite(action, kind, inputs, operationId);
+      if (stored) return stored;
+    }
+    if (!policy.writesEnabled) throw new ToolError('WRITE_DISABLED');
+    if (experimental && !policy.experimentalMessagesEnabled)
+      throw new ToolError('UNVERIFIED_ROUTE');
+    if (!operationId) throw new ToolError('PREVIEW_REQUIRED');
+    const hash = createHash('sha256')
+      .update(JSON.stringify([name, target, content]))
+      .digest('hex');
+    const assert = () => guard.previews.assert(token, operationId, hash);
+    assert(); // Reject missing/forged/expired tokens before any browser work.
+    return guard.runWrite(action, kind, inputs, operationId, fn, {
+      assert,
+      consume: () => guard.previews.consume(token!),
+    });
+  }
+
   registerTool(
     server,
     'connect_with_person',
@@ -158,7 +202,7 @@ export function registerWriteTools(
       message: z.string().max(300).optional().describe('Optional note (max 300 chars)'),
       ...confirmField,
     },
-    async ({ profile_id, message, confirm, operation_id, preview_hash }) =>
+    async ({ profile_id, message, confirm, operation_id, preview_hash, preview_token }) =>
       run(logger, 'connect_with_person', async () => {
         const preview = review(
           'connect_with_person',
@@ -168,6 +212,8 @@ export function registerWriteTools(
           operation_id,
           preview_hash,
           policy,
+          false,
+          guard,
         );
         if (preview) return preview;
         // Verified-live payload (--writecapture 2026-06-14): the relationships-dash
@@ -176,13 +222,17 @@ export function registerWriteTools(
           invitee: { inviteeUnion: { memberProfile: toProfileUrn(profile_id) } },
         };
         if (message) body['customMessage'] = message.slice(0, 300);
-        const outcome = await guard.runWrite(
+        const outcome = await submit(
           ACTIONS.connect,
           'connect',
           body,
           operation_id,
           (beforeDispatch) =>
             voyager.voyagerPostRaw(ep.memberRelationshipsInvite(), body, beforeDispatch),
+          preview_token,
+          'connect_with_person',
+          toProfileUrn(profile_id),
+          { message: message ?? '' },
         );
         return ok(outcomePayload('connect_with_person', outcome));
       }),
@@ -211,7 +261,15 @@ export function registerWriteTools(
       message: z.string().min(1).max(10000).describe('Message body (multiline supported)'),
       ...confirmField,
     },
-    async ({ recipient_urn, thread_id, message, confirm, operation_id, preview_hash }) =>
+    async ({
+      recipient_urn,
+      thread_id,
+      message,
+      confirm,
+      operation_id,
+      preview_hash,
+      preview_token,
+    }) =>
       run(logger, 'send_message', async () => {
         const preview = review(
           'send_message',
@@ -222,6 +280,7 @@ export function registerWriteTools(
           preview_hash,
           policy,
           !thread_id,
+          guard,
         );
         if (preview) return preview;
         if (!thread_id && !recipient_urn) {
@@ -248,7 +307,7 @@ export function registerWriteTools(
           );
         }
 
-        const outcome = await guard.runWrite(
+        const outcome = await submit(
           ACTIONS.message,
           'message',
           { recipient_urn, thread_id, message },
@@ -287,6 +346,11 @@ export function registerWriteTools(
             };
             return voyager.voyagerPostRaw(ep.messengerMessagesCreate(), body, beforeDispatch);
           },
+          preview_token,
+          'send_message',
+          thread_id ?? recipient_urn ?? 'missing_target',
+          { message, mode: thread_id ? 'reply' : 'new_thread' },
+          !thread_id,
         );
         return ok(outcomePayload('send_message', outcome));
       }),
@@ -301,7 +365,7 @@ export function registerWriteTools(
       visibility: z.enum(['PUBLIC', 'CONNECTIONS']).default('PUBLIC').describe('Audience'),
       ...confirmField,
     },
-    async ({ text, visibility, confirm, operation_id, preview_hash }) =>
+    async ({ text, visibility, confirm, operation_id, preview_hash, preview_token }) =>
       run(logger, 'create_post', async () => {
         const preview = review(
           'create_post',
@@ -311,6 +375,8 @@ export function registerWriteTools(
           operation_id,
           preview_hash,
           policy,
+          false,
+          guard,
         );
         if (preview) return preview;
         // Verified-live GraphQL share mutation (--writecapture 2026-06-14). The
@@ -331,13 +397,17 @@ export function registerWriteTools(
           queryId,
           includeWebMetadata: true,
         };
-        const outcome = await guard.runWrite(
+        const outcome = await submit(
           ACTIONS.comment,
           'post',
           { text, visibility },
           operation_id,
           (beforeDispatch) =>
             voyager.voyagerPostRaw(ep.createShareMutation(queryId), body, beforeDispatch),
+          preview_token,
+          'create_post',
+          'self',
+          { text, visibility },
         );
         return ok(outcomePayload('create_post', outcome));
       }),
@@ -357,7 +427,7 @@ export function registerWriteTools(
         .default('LIKE'),
       ...confirmField,
     },
-    async ({ post_urn, reaction, confirm, operation_id, preview_hash }) =>
+    async ({ post_urn, reaction, confirm, operation_id, preview_hash, preview_token }) =>
       run(logger, 'react_to_post', async () => {
         const preview = review(
           'react_to_post',
@@ -367,6 +437,8 @@ export function registerWriteTools(
           operation_id,
           preview_hash,
           policy,
+          false,
+          guard,
         );
         if (preview) return preview;
         // Verified-live social-dash reactions GraphQL mutation (--writecapture).
@@ -376,13 +448,17 @@ export function registerWriteTools(
           queryId,
           includeWebMetadata: true,
         };
-        const outcome = await guard.runWrite(
+        const outcome = await submit(
           ACTIONS.like,
           'react',
           { post_urn, reaction },
           operation_id,
           (beforeDispatch) =>
             voyager.voyagerPostRaw(ep.reactionsMutation(queryId), body, beforeDispatch),
+          preview_token,
+          'react_to_post',
+          post_urn,
+          { reaction },
         );
         return ok(outcomePayload('react_to_post', outcome));
       }),
@@ -400,7 +476,7 @@ export function registerWriteTools(
       text: z.string().min(1).max(1250).describe('Comment text'),
       ...confirmField,
     },
-    async ({ post_urn, text, confirm, operation_id, preview_hash }) =>
+    async ({ post_urn, text, confirm, operation_id, preview_hash, preview_token }) =>
       run(logger, 'comment_on_post', async () => {
         const preview = review(
           'comment_on_post',
@@ -410,6 +486,8 @@ export function registerWriteTools(
           operation_id,
           preview_hash,
           policy,
+          false,
+          guard,
         );
         if (preview) return preview;
         // Verified-live social-dash NormComments collection (--writecapture).
@@ -421,12 +499,16 @@ export function registerWriteTools(
           },
           threadUrn: post_urn,
         };
-        const outcome = await guard.runWrite(
+        const outcome = await submit(
           ACTIONS.comment,
           'comment',
           { post_urn, text },
           operation_id,
           (beforeDispatch) => voyager.voyagerPostRaw(ep.normCommentsCreate(), body, beforeDispatch),
+          preview_token,
+          'comment_on_post',
+          post_urn,
+          { text },
         );
         return ok(outcomePayload('comment_on_post', outcome));
       }),

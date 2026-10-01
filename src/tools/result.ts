@@ -11,6 +11,7 @@ import type { Logger } from '../types.js';
 import { VoyagerError } from '../browser/voyager.js';
 import { BrowserSafetyError } from '../browser/safety.js';
 import { SafetyStateError } from '../safety/state-lock.js';
+import { PreviewError } from '../safety/write-preview.js';
 import { GuardBlockedError } from '../browser/guard.js';
 
 export interface ToolMeta {
@@ -70,6 +71,10 @@ const messages: Record<string, string> = {
   UNSUPPORTED_PAGINATION:
     'This route has no verified continuation. Only a bounded first page is supported.',
   PROVIDER_ERROR: 'The provider returned an error instead of usable data.',
+  PREVIEW_REQUIRED:
+    'Request a preview, show its exact action to the human, and use its operationId and token after explicit approval. Retained operation IDs can still be looked up without a token.',
+  PREVIEW_EXPIRED: 'The five-minute preview expired. Review a new preview before submitting.',
+  PREVIEW_LIMIT: 'Too many outstanding previews. Wait for expiry before requesting more.',
   PREVIEW_CHANGED:
     'The target or content differs from the reviewed preview. Review a new preview before approval.',
   WRITE_DISABLED:
@@ -113,6 +118,7 @@ export async function run(
     return await fn();
   } catch (err) {
     const code =
+      err instanceof PreviewError ||
       err instanceof ToolError ||
       err instanceof VoyagerError ||
       err instanceof BrowserSafetyError ||

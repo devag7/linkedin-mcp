@@ -59,7 +59,7 @@ client/OS/version and real completion evidence before adding a verified entry.
 
 Writes are disabled by default. If an account owner deliberately enables alpha
 writes, put LINKEDIN_ENABLE_WRITES=true in that client's env, review a local
-preview, then approve the identical target/content/operation ID/hash. No bulk send
+preview, obtain explicit human approval, then submit identical inputs with its operation ID and `preview_token` within five minutes. No bulk send
 example is provided. New message threads require separate experimental opt-in.
 
 Docker is experimental: a Debian/Chrome recipe and stdio compose example are

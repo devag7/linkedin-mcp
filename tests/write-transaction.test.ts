@@ -248,10 +248,16 @@ describe('write tool protocol integration', () => {
         included: [{ entityUrn: 'urn:li:fs_miniProfile:fixture' }],
       });
       const call = await protocol(f);
-      expect((await call(name, args)).data.refused).toBe(true);
+      const preview = (await call(name, args)).data.preview;
+      expect(preview.token).toHaveLength(43);
       expect(f.evaluate).not.toHaveBeenCalled();
-      const operation_id = randomUUID();
-      const first = await call(name, { ...args, confirm: true, operation_id });
+      const operation_id = preview.operationId;
+      const first = await call(name, {
+        ...args,
+        confirm: true,
+        operation_id,
+        preview_token: preview.token,
+      });
       expect(first.data).toMatchObject({
         operationId: operation_id,
         status: 'ok',
@@ -274,8 +280,18 @@ describe('write tool protocol integration', () => {
     const f = setup();
     vi.spyOn(f.voyager, 'voyagerGet').mockRejectedValue(new Error('lookup failed'));
     const call = await protocol(f);
+    const preview = (await call('send_message', { thread_id: '2-fixture', message: 'x' })).data
+      .preview;
     expect(
-      (await call('send_message', { thread_id: '2-fixture', message: 'x', confirm: true })).code,
+      (
+        await call('send_message', {
+          thread_id: '2-fixture',
+          message: 'x',
+          confirm: true,
+          operation_id: preview.operationId,
+          preview_token: preview.token,
+        })
+      ).code,
     ).toBe('INTERNAL_ERROR');
     expect(f.budget.snapshot().actions.messages.used).toBe(0);
     expect(f.evaluate).not.toHaveBeenCalled();
@@ -474,7 +490,13 @@ it('shares operation lookup across clients of the production server registration
   const f = setup();
   const first = await protocol(f, true);
   const second = await protocol(f, true);
-  const args = { profile_id: 'fixture', confirm: true, operation_id: randomUUID() };
+  const preview = (await first('connect_with_person', { profile_id: 'fixture' })).data.preview;
+  const args = {
+    profile_id: 'fixture',
+    confirm: true,
+    operation_id: preview.operationId,
+    preview_token: preview.token,
+  };
   expect((await first('connect_with_person', args)).data.status).toBe('ok');
   expect((await second('connect_with_person', args)).data).toMatchObject({
     status: 'ok',
@@ -487,7 +509,13 @@ it('shares operation lookup across clients of the production server registration
 it('preserves checkpoint uncertainty and blocks production reads/writes/health across restart', async () => {
   const f = setup(response(999, '{}'));
   const call = await protocol(f, true);
-  const args = { profile_id: 'fixture', confirm: true, operation_id: randomUUID() };
+  const preview = (await call('connect_with_person', { profile_id: 'fixture' })).data.preview;
+  const args = {
+    profile_id: 'fixture',
+    confirm: true,
+    operation_id: preview.operationId,
+    preview_token: preview.token,
+  };
   expect((await call('connect_with_person', args)).data.status).toBe('unknown');
   const next = setup();
   const restarted = await protocol(next, true);
@@ -496,9 +524,17 @@ it('preserves checkpoint uncertainty and blocks production reads/writes/health a
     replayed: true,
   });
   expect((await restarted('get_my_profile', {})).code).toBe('CIRCUIT_OPEN');
-  expect((await restarted('create_post', { text: 'fixture', confirm: true })).code).toBe(
-    'CIRCUIT_OPEN',
-  );
+  const newPreview = (await restarted('create_post', { text: 'fixture' })).data.preview;
+  expect(
+    (
+      await restarted('create_post', {
+        text: 'fixture',
+        confirm: true,
+        operation_id: newPreview.operationId,
+        preview_token: newPreview.token,
+      })
+    ).code,
+  ).toBe('CIRCUIT_OPEN');
   expect((await restarted('health_check', {})).data).toMatchObject({
     status: 'blocked',
     voyager: 'blocked',
@@ -512,7 +548,13 @@ it('reports a budget persistence stop through production health without probing'
   const call = await protocol(f, true);
   rmSync(f.path);
   mkdirSync(f.path);
-  await call('connect_with_person', { profile_id: 'fixture', confirm: true });
+  const preview = (await call('connect_with_person', { profile_id: 'fixture' })).data.preview;
+  await call('connect_with_person', {
+    profile_id: 'fixture',
+    confirm: true,
+    operation_id: preview.operationId,
+    preview_token: preview.token,
+  });
   expect((await call('health_check', {})).data).toMatchObject({
     status: 'blocked',
     voyager: 'blocked',
@@ -594,3 +636,98 @@ it.each(['fetch', 'body'])(
     }
   },
 );
+
+describe('MCP preview submission boundary', () => {
+  const args = { post_urn: 'urn:li:activity:123', reaction: 'LIKE' };
+  it('rejects missing and forged proofs before browser or budget work', async () => {
+    const f = setup();
+    const call = await protocol(f);
+    for (const extra of [
+      {},
+      { operation_id: 'new-operation' },
+      { operation_id: 'new-operation', preview_token: 'x'.repeat(43) },
+    ]) {
+      expect(await call('react_to_post', { ...args, confirm: true, ...extra })).toMatchObject({
+        code: 'PREVIEW_REQUIRED',
+      });
+    }
+    expect(f.evaluate).not.toHaveBeenCalled();
+    expect(f.budget.snapshot().actions.likes.used).toBe(0);
+  });
+  it('binds action, target, content and operation and rejects expired proofs', async () => {
+    const f = setup();
+    const call = await protocol(f);
+    const { preview } = (await call('react_to_post', { ...args, confirm: false })).data;
+    const approved = {
+      ...args,
+      confirm: true,
+      operation_id: preview.operationId,
+      preview_token: preview.token,
+    };
+    for (const changed of [
+      { reaction: 'EMPATHY' },
+      { post_urn: 'urn:li:activity:456' },
+      { operation_id: 'changed-operation' },
+    ])
+      expect(await call('react_to_post', { ...approved, ...changed })).toMatchObject({
+        code: 'PREVIEW_CHANGED',
+      });
+    expect(
+      await call('comment_on_post', {
+        post_urn: args.post_urn,
+        text: 'comment',
+        confirm: true,
+        operation_id: preview.operationId,
+        preview_token: preview.token,
+      }),
+    ).toMatchObject({ code: 'PREVIEW_CHANGED' });
+    const clock = vi.spyOn(Date, 'now').mockReturnValue(Date.now() + 300_000);
+    expect(await call('react_to_post', approved)).toMatchObject({ code: 'PREVIEW_EXPIRED' });
+    clock.mockRestore();
+    expect(f.evaluate).not.toHaveBeenCalled();
+  });
+  it('keeps old journal outcomes available after restart without any preview', async () => {
+    const f = setup(response(500, ''));
+    const call = await protocol(f);
+    const { preview } = (await call('react_to_post', { ...args, confirm: false })).data;
+    const submitted = {
+      ...args,
+      confirm: true,
+      operation_id: preview.operationId,
+      preview_token: preview.token,
+    };
+    expect((await call('react_to_post', submitted)).data).toMatchObject({ status: 'unknown' });
+    const restarted = setup();
+    const lookup = await protocol(restarted);
+    expect(
+      (await lookup('react_to_post', { ...args, confirm: true, operation_id: preview.operationId }))
+        .data,
+    ).toMatchObject({ status: 'unknown', replayed: true });
+    expect(restarted.evaluate).not.toHaveBeenCalled();
+    expect(
+      await lookup('react_to_post', { ...submitted, operation_id: 'new-operation' }),
+    ).toMatchObject({ code: 'PREVIEW_REQUIRED' });
+    expect(readFileSync(f.path, 'utf8')).not.toContain(preview.token);
+  });
+  it('rechecks expiry after pacing before making a reservation', async () => {
+    const f = setup();
+    const call = await protocol(f);
+    const { preview } = (await call('react_to_post', { ...args, confirm: false })).data;
+    const clock = vi.spyOn(Date, 'now');
+    // The pacer runs inside the guard, after its entry authorization check.
+    const pacer = (f.guard as unknown as { pacer: HumanPacer }).pacer;
+    vi.spyOn(pacer, 'waitBefore').mockImplementation(async () => {
+      clock.mockReturnValue(Date.now() + 300_000);
+    });
+    expect(
+      await call('react_to_post', {
+        ...args,
+        confirm: true,
+        operation_id: preview.operationId,
+        preview_token: preview.token,
+      }),
+    ).toMatchObject({ code: 'PREVIEW_EXPIRED' });
+    expect(f.evaluate).not.toHaveBeenCalled();
+    expect(f.budget.snapshot().actions.likes.used).toBe(0);
+  });
+});
