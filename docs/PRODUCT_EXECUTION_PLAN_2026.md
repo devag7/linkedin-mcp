@@ -116,7 +116,7 @@ All proposals require source/contract/packed/hosted gates and an honest capabili
 | P7 Desktop client first-use matrix + packaging convenience | 5/3/2; 11, gated by access | Record app/OS/version/build, native config acceptance and cold setup; at least one authorized real first read per claimed pairing | Installed clients and renewed user consent; Windows/Linux volunteer machines; signed bundles only when feasible | 2–4 days + volunteers; 2 h/month | $0 with volunteer devices; code signing optional and outside required scope |
 | P8 Data inventory/erasure + Windows ACLs | 4/3/3; 8 | Inventory first; safe alias refusal; account/session cleanup after all owners stop; journal removal explicit and documented as safety-history loss; NTFS deny-other-user proof | Review privacy/state migration; fixture+Windows tests; no silent budget reset while runnable profile remains | 4–7 days; 2–4 h/month | $0 |
 | P9 Official identity/publishing provider pilot | 3/2/3; 5 | Actual OAuth scopes control discovery; unsupported browser reads never silently fall back; one approved identity/publish test per exposed action | Developer app, granted products/scopes, new action consent; no parity promise | 1–2 weeks after approval; 4–8 h/month | $0 planned API access; any paid third-party bridge optional/user-funded |
-| P10 Tutorials/demo/distribution + contributor loop | 5/4/2; 12, after release | Reproducible demo, three honest tutorials, submitted listings with receipt/status, weekly issue response, monthly measures below | Reviewed release and verified install URLs; no outreach/publication in current task | 3–5 days initial; 2–3 h/week | $0 public docs/repository/local recording |
+| P10 Tutorials/demo/distribution + contributor loop | 5/4/2; 12, after release | Reproducible demo, three honest tutorials, submitted listings with receipt/status, weekly issue response, monthly measures below | Reviewed release and verified install URLs; ordered release/listing publication authorized after gates; no private outreach | 3–5 days initial; 2–3 h/week | $0 public docs/repository/local recording |
 | P11 Local opt-in adoption and traffic ledger | 4/4/1; 11 | Counts/timings only, no identity/content; missing samples remain unknown; weekly traffic export and monthly report | Volunteers and owner-readable GitHub traffic; retention consent and aggregation rules | 1–2 days; 1 h/month | $0 local JSON/CSV + GitHub Insights |
 | P12 Development advisory follow-up | 4/3/1; 10 | Reassess October 8; compatible clean-install upgrade with all gates or documented mitigation; no forced dependency-tree break | Existing three dev-tool findings; production currently zero; npm installer issue tracked in evidence | 0.5–1 day; weekly until resolved | $0 |
 
@@ -129,8 +129,9 @@ Choose each provider feature only after value feedback and capture evidence exis
 
 1. Refresh PR #3, preserve `pr_diff.txt` and backup outside iCloud. Done: refreshed
    at `2562ff0`, corrected to `0017fe1`; no history rewrite/main push.
-2. Keep PR #3 draft. Review alias deletion, token/journal migration and release
-   identity boundaries before merge consideration. Record hosted source SHA.
+2. Keep the stack draft until the required final-head checks and separately
+   consented validation pass. Then merge #3 → #4 → #5 with guarded head checks
+   and retained ancestry; release authorization now permits this integration.
 3. Implement setup in a separate branch/stacked draft PR. Run lint/typecheck/tests,
    metadata/build, generated-entry and packed checks; hosted twelve-job matrix.
 4. Obtain native client UI evidence without requesting LinkedIn access. If a real
@@ -141,8 +142,12 @@ Choose each provider feature only after value feedback and capture evidence exis
    publish synthetic examples separately from authorized live samples.
 6. Capture P3/P4 only after renewed consent; preserve redacted route provenance and
    schema fixtures; reject unknown endpoints and mark live status unproven until observed.
-7. Complete P8 and advisory reassessment; follow release gates only under later
-   publication authorization. Current task prohibits merge/version bump/release.
+7. Follow [3.0.0 readiness](RELEASE_READINESS_3.0.0.md): publication is now
+   explicitly authorized after validation/gates. Prepare and rehearse independently
+   while account consent is pending; bump main once and use automated publishing.
+   P8 remains a broad-promotion/privacy gate, not a completed feature. Do not
+   promote Windows native privacy, erasure or a desktop first-read cohort without
+   their required proof; retain the October8 development-advisory follow-up.
 8. Run the distribution experiments below after reviewed release, preserve failures
    as well as successes, and choose the next backlog item from actual user failures.
 
@@ -178,7 +183,8 @@ lists and other directories whose current criteria can be met for free. Check te
 required fields and install URL at submission time; record URL/date/reviewer/status.
 Paid expedited listings or hosting are optional and user-funded. Prepare useful
 release notes and tutorial submissions for relevant communities under their rules;
-posting/messages to people require explicit authorization and are not executed here.
+repository/directory submissions are authorized in the current release task;
+private outreach and account-content sharing remain separately authorized actions.
 
 **Cadence:** launch week: one reproducible release demo + first tutorial, fix support
 failures daily. Weeks 2–4: publish two more substantive tutorials based on observed
@@ -330,3 +336,30 @@ bump or publish. Native client chat/live compatibility, full erasure, NTFS ACLs
 and optional official integration remain open. The zero-mandatory-cash constraint
 does not relax the acceptance criteria or convenience work. The10,000-star and
 GitHub Trending daily goals remain measured distribution outcomes, not claims.
+
+## 3.0.0 integration and readiness update
+
+The maintainer now authorizes stack merges and automated publication after the
+existing gates and separately consented bounded job-brief validation pass. Earlier
+no-merge/no-publication restrictions are superseded; earlier account consent is not
+reused. See [readiness and migration](RELEASE_READINESS_3.0.0.md).
+
+Closed preparation requirements: justified major-version decision, exact upgrade
+steps with state/replay preservation, final-diff safety/contract review, issued-proof
+write guidance, truthful platform/client/provider scope, concise release notes and
+a reproducible synthetic demo. Workflow corrections enable a SHA-pinned dry run,
+fix resume tags and require independently public scoped metadata. New resulting
+source/package/hosted proof and the dry-run result are recorded in readiness.
+
+Required remaining release actions: fresh consent/actual useful bounded read;
+npm trusted-publisher setup confirmation; ordered guarded merges; one main version
+bump/metadata sync; all four independent destination checks. No release is complete
+until the actual destinations match the intended artifact/source. Public directory
+updates have a separate [submission ledger](DISTRIBUTION_SUBMISSIONS_2026-10-01.md).
+
+P7/P8, optional official OAuth, new provider routes, development advisory reassessment
+and adoption measures remain open. Their acceptance criteria, quality expectations
+and $0 required-cash estimates are unchanged. Do not close those requirements on
+fixture evidence, launch dates or distribution activity. Broad promotion requires
+the existing first-use/privacy gates; the 10,000-star/daily-Trending ambitions remain
+measured experiments, with missing samples explicitly unknown.

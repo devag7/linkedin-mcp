@@ -7,24 +7,28 @@ Guidance for AI agents using or contributing to **LinkedIn MCP**
 
 An MCP server exposing LinkedIn to any MCP client (Claude, Cursor, …) as
 structured JSON. It drives a real stealth Chrome to pass Cloudflare, then calls
-LinkedIn's Voyager API from inside the authenticated page. 22 tools.
+LinkedIn's Voyager API from inside the authenticated page. 23 tools.
 
 ## Using it (as an agent / MCP client)
 
 1. The human runs the one-time login: `npx -y linkedin-mcp-tools@latest --login`.
 2. Configure the MCP server: command `npx`, args `["-y","linkedin-mcp-tools@latest"]`.
-3. Call tools. Reads return structured JSON. **Writes require `confirm: true`** and
+3. Call tools. Reads return structured JSON. **Writes are disabled by default.** After deliberate runtime opt-in, preview
+   with confirmation omitted/false, obtain explicit human approval, then submit
+   identical action/target/content with `confirm: true`, returned `operation_id`
+   and five-minute `preview_token`. The server cannot infer human consent. Writes
    count against daily safety caps — only call them when the user explicitly asks,
    and surface the returned `status` (`ok` / `duplicate` / `already_connected` /
-   `restricted` / `quota_exhausted` / `not_allowed` / `failed`) back to the user.
-4. Check `health_check` if a call fails — it reports login state, a live API probe,
-   and remaining daily budget.
+   `restricted` / `quota_exhausted` / `not_allowed` / `failed` / `unknown`) back to the user.
+4. Use cold `whoami` or offline `--doctor` for local diagnosis. `health_check`
+   makes a live account read; call it only within the authorized scope and request
+   budget. Stop at checkpoints rather than adding probes or retries.
 
 ### Tool map
 
 - Profiles: `get_my_profile`, `get_profile`
 - Search: `search_people`, `search_jobs`, `get_job_details`, `search_companies`,
-  `get_company`, `get_company_posts`, `get_company_employees`
+  `get_company`, `get_company_posts`, `get_company_employees`, `research_jobs`
 - Feed/messaging: `get_feed`, `get_notifications`, `get_inbox`, `get_conversation`,
   `get_pending_invitations`
 - Writes (gated): `connect_with_person`, `send_message`, `create_post`,
@@ -46,3 +50,8 @@ pacing for real use, and stop immediately if `health_check` reports a checkpoint
   verified via `--writeprobe`; do not guess payloads.
 - Version is single-sourced from `package.json` (`src/version.ts`). Releases are
   automated on push to `main` when the version bumps (see `.github/workflows`).
+
+New submissions require preview proof; reuse an existing journal ID and identical
+inputs only to look up its outcome after timeout/restart. Never auto-retry unknown
+outcomes. `--setup <client>` and cold `whoami` are offline; live reads require
+separate authorization. Platform fixture checks do not establish provider support.

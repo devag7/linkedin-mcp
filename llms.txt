@@ -2,7 +2,7 @@
 
 Local unofficial LinkedIn browser integration, package linkedin-mcp-tools.
 Read README.md, docs/CAPABILITIES.md, docs/WORKFLOWS.md and docs/PRIVACY.md.
-22 tools; the inventory is generated from src/tools/capabilities.ts.
+23 tools; the inventory is generated from src/tools/capabilities.ts.
 Native structuredContent and matching JSON text; contract version 1.
 Metadata gives source, fetchedAt, partial, status and evidenced pagination.
 Current live availability is unknown. Offline fixtures do not establish it.
@@ -14,7 +14,9 @@ Official OAuth is unavailable in the active runtime. No fallback grants access.
 
 Writes are alpha and disabled by default. Preview with confirm omitted/false.
 Only after the human approves exact target/content may you call confirm:true,
-with the preview's operation ID and payload hash. Runtime opt-in is also required.
+with the preview's operation ID and short-lived preview_token. The token proves
+server issuance, not human consent; previously journaled IDs support lookup after
+restart/expiry without a fresh token. Runtime opt-in is also required.
 Return the status including unknown. Unknown completion requires manual inspection;
 reuse the same operation ID for lookup. Never automatically resend, mass-message,
 disable pacing or solve checkpoints. Stop automation on checkpoint signals.

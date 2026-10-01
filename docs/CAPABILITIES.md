@@ -34,4 +34,6 @@ Search/feed/notification offsets use existing endpoint builders, one page per ca
 
 research_jobs composes one search_jobs first page and at most one get_job_details for the first linked job. It permits at most three explicit Voyager read attempts including identity, two tool calls and ten entities; navigation/assets are excluded. No pagination, retries, persistence or inferred fit. Source URLs and fetchedAt are attached to every fact; missing fields and partial/error states remain visible.
 
+For the 3.0.0 safety/client changes, read [migration](../SETUP_GUIDE.md#migrating-from-203-to-300). Preview tokens are mandatory for new writes; human approval remains a client workflow requirement. Offline platform/config checks do not certify current provider behavior, native chat or Windows NTFS privacy.
+
 The official provider is unavailable in the active runtime. Token/cookie settings from v1 do not activate it. All alpha writes are disabled by default; new-thread messaging has a second experimental opt-in.
