@@ -196,3 +196,19 @@ configuration and local results alone do not prove hosted success. The three
 development findings still have the October 8 follow-up deadline. First-use/live
 reads still require a volunteer's consent; shared-state erasure and the optional
 official provider remain open.
+
+The [first hosted run](https://github.com/devag7/linkedin-mcp/actions/runs/36853311468)
+failed at Windows metadata checks and macOS browser installation. Windows checkout
+converted generated LF files to CRLF; `.gitattributes` now preserves LF. macOS
+installer logs showed Patchright removing preinstalled Chrome and downloading only
+138 bytes before failing to mount the disk image. Hosted macOS now verifies and
+uses the preinstalled Chrome; the lifecycle gate still requires a real launch and
+cleanup. Linux and Windows continue installing Chrome for this check.
+
+Platform review also corrected directory-alias fixtures to use Windows junctions
+and scoped numeric permission assertions to POSIX. Behavioral locks, corrupt
+state, transactions and alias contention remain tested on Windows; tests do not
+pretend mode bits prove NTFS ACL privacy. Native ACL enforcement/verification is
+tracked explicitly in PRIVACY.md and remains open before any Windows live-use
+privacy claim. This follows Node's documented file-mode limitation, not a waived
+POSIX assertion. The original dated files remain byte-identical.

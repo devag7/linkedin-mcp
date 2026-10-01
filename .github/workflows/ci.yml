@@ -69,6 +69,10 @@ jobs:
         run: npm run verify:package
 
       - name: Install Chrome for the offline lifecycle check
+        if: runner.os != 'macOS'
         run: npx patchright install --with-deps chrome
+      - name: Verify the runner's preinstalled Chrome on macOS
+        if: runner.os == 'macOS'
+        run: node -e 'require("node:fs").accessSync("/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", require("node:fs").constants.X_OK)'
       - name: Verify actual Chrome launch, ownership and cleanup without LinkedIn
         run: npm run verify:browser

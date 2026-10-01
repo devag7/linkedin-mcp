@@ -170,7 +170,10 @@ describe('state transactions and conservative migration', () => {
     expect(second.snapshot().actions.comments.used).toBe(1);
     const disk = JSON.parse(readFileSync(join(dir, 'budget.json'), 'utf8'));
     expect(Object.keys(disk.accounts)).toEqual(['one', 'two']);
-    expect(statSync(join(dir, 'budget.json')).mode & 0o777).toBe(0o600);
+    expect(statSync(join(dir, 'budget.json')).isFile()).toBe(true);
+    // Windows mode bits cannot verify ACL privacy; keep that a separate gate.
+    if (process.platform !== 'win32')
+      expect(statSync(join(dir, 'budget.json')).mode & 0o777).toBe(0o600);
   });
   it('reserves and commits with a stale tracker without overwriting other operations', () => {
     const first = budget();
@@ -251,14 +254,15 @@ describe('state transactions and conservative migration', () => {
       'locked by another transaction',
     );
     expect(b.snapshot().actions.likes.used).toBe(1);
-    expect(statSync(lock.directory).mode & 0o777).toBe(0o700);
+    expect(statSync(lock.directory).isDirectory()).toBe(true);
+    if (process.platform !== 'win32') expect(statSync(lock.directory).mode & 0o777).toBe(0o700);
     lock.release();
     b.reserveWrite('likes', 'operation-one', fingerprint);
     expect(b.snapshot().actions.likes.used).toBe(2);
   });
   it('aliases share one lock and invalid owner metadata is never silently removed', () => {
     mkdirSync(join(dir, 'real'));
-    symlinkSync(join(dir, 'real'), join(dir, 'alias'));
+    symlinkSync(join(dir, 'real'), join(dir, 'alias'), process.platform === 'win32' ? 'junction' : 'dir');
     const first = new StateLock(join(dir, 'real', 'state'));
     const second = new StateLock(join(dir, 'alias', 'state'));
     first.acquire();
@@ -304,7 +308,7 @@ it('a second process cannot own an idle profile through a symlink alias; disposa
   const file = join(dir, 'profile');
   mkdirSync(file);
   const alias = join(dir, 'alias');
-  symlinkSync(file, alias);
+  symlinkSync(file, alias, process.platform === 'win32' ? 'junction' : 'dir');
   const first = worker('profile', file);
   await expect(message(first)).resolves.toEqual({ ready: true });
   const blocked = worker('profile', alias);

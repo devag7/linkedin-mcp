@@ -115,7 +115,9 @@ The existing `~/.linkedin-mcp/budgets.json` now contains the journal as well as
 counters. No target content, raw response detail, cookies, or authentication tokens
 are stored in journal entries. Input hashes are fingerprints, not anonymization.
 State is validated, bounded to 8 MiB, and replaced using a synced temporary file
-and atomic rename with mode `0600`. Corruption/read failures block startup; save
+and atomic rename requesting POSIX mode `0600`. Node mode bits do not establish
+Windows ACL privacy; use an account-private directory and see
+[platform permission limits](docs/PRIVACY.md). Corruption/read failures block startup; save
 failures latch a stop in the running tracker. Preserve reservations when repairing
 storage. Unknown invitations remain conservative inputs to safety gates across days.
 

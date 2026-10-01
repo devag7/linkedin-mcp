@@ -7,8 +7,14 @@
 | ~/.linkedin-mcp/budgets.json | Hashed account keys, counters, warmup start, operation/input hashes, status and HTTP codes | No automatic expiry/eviction of journal IDs; new writes stop at 10,000 entries / 8 MiB |
 | <profile>.owner.lock / <budget-file>.lock | Local owner identity, process/host/time/token | Released by the owning process; orphan repair after all owners/Chrome stop |
 
-Profile directories and safety files are private locally; platform ACL behavior
-still needs hosted Windows validation. A hash is not anonymization. Journals do not
+New profile directories and safety files request POSIX modes 0700/0600 on Linux
+and macOS. Windows does not implement owner/group/other permissions through
+[Node file modes](https://nodejs.org/docs/latest-v22.x/api/fs.html#fschmodpath-mode-callback).
+Windows tests exercise ownership, shared-state transactions and cleanup, but do
+not establish NTFS ACL privacy. Keep profiles and shared budgets in a directory
+private to your OS account; review its native permissions before live use. Native
+ACL enforcement/verification remains an explicit security follow-up. A hash is
+not anonymization. Journals do not
 store target/content, cookies, raw provider bodies or response details. Browser
 requests and returned data still involve LinkedIn and the selected MCP client.
 The server does not add cloud storage, analytics uploads or background telemetry.
