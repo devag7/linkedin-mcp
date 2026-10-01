@@ -120,10 +120,10 @@ export async function verifyPackage(pkg, pack, registry = NPM, options = {}) {
 
 export async function verifyPublicGithubPackage(options = {}) {
   // Registry authentication can succeed for a private package. Visibility is an
-  // independent destination requirement, checked without an authentication token.
+  // independent destination requirement. GitHub requires auth even for public npm metadata.
   const metadata = await readMetadata(
     'https://api.github.com/users/devag7/packages/npm/linkedin-mcp-tools',
-    { ...options, token: undefined },
+    options,
   );
   if (
     metadata?.name !== 'linkedin-mcp-tools' ||
@@ -320,7 +320,7 @@ async function main() {
     });
   if (command === 'verify-github-package') {
     await verifyPackage(pkg, packs(), GITHUB_PACKAGES, githubOptions);
-    return verifyPublicGithubPackage();
+    return verifyPublicGithubPackage(githubOptions);
   }
   if (command === 'registry-plan')
     return output({ present: (await registryState(server())) === 'verified' });
