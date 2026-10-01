@@ -97,3 +97,22 @@ its schema supports maintainers only, so inventing hosting/tool-count keys in
 10,000 stars and daily Trending remain measured outcomes. Retain monthly first-read,
 repeat-use, traffic/net-star and dated Trending observations in the execution plan.
 Release/directory work is not permission to message people or share account data.
+
+## Resulting review heads and evidence location
+
+PR #3: `f7e9e2b1632952ee02390dbb129b2c64c0aa9923`;
+PR #4: `40935545b36506509c2cb2944e91cdd453672c8b`.
+Both resulting source/package gates pass locally (514/519 tests). PR #4 has a
+merge commit carrying the exact reviewed PR #3 ancestry; conflicts were limited
+to shared release-helper/test versions and resolved to the reviewed PR #3 bytes.
+PR #5 integrates that setup head and retains all original research runtime source.
+Its final SHA, final-head hosted matrices, clean/dirty inventories and rehearsal
+result are recorded in the PR body/checks and private release-preparation backup
+after push, rather than predeclared successful in this candidate document.
+
+A fresh rolling GitHub traffic snapshot at2026-10-01T18:09:38Z observes10 stars,
+58 views/26 uniques and128 clones/72 uniques in GitHub's rolling window. This is
+not a monthly total, a successful-read cohort or repeat use. Net-star change requires
+a future boundary sample; Trending was not observed. Raw daily aggregates are
+retained privately for deduplicated monthly measurement; no personal/account data
+is collected.
