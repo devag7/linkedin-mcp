@@ -175,3 +175,24 @@ telemetry or required cash expenditure was performed in this pass.
 The final verified work is also saved privately outside iCloud at
 `~/.codex/backups/linkedin-mcp/20261001T095601Z-zero-cost-verified/`, with a checksum manifest
 and tracked binary patch. Neither snapshot is part of the npm package.
+
+## 5. Git integration follow-through (2026-10-01)
+
+The preceding sections record the earlier, uncommitted local implementation pass.
+Git integration now preserves all three upstream commits through `e368b61` and
+assembles four review commits on `codex/roadmap-zero-cost-integration`. The four
+messaging conflicts were resolved to the already reconciled snapshot; all 115
+snapshot files matched after integration except the deliberate CI expansion.
+`pr_diff.txt` remains untracked and excluded. Both private snapshots are intact.
+
+CI now runs the complete source gates on Node20/22 × Linux/macOS/Windows, as well
+as the six packed-install/real-Chrome checks. This closes the earlier gap in which
+source tests ran only on Linux. Local post-integration lint, typecheck, metadata,
+449 tests, build, packed install and actual Chrome cleanup all passed again.
+There is no version bump, main push, publication or live LinkedIn action.
+
+Hosted results and the review PR will be recorded here once actually observed;
+configuration and local results alone do not prove hosted success. The three
+development findings still have the October 8 follow-up deadline. First-use/live
+reads still require a volunteer's consent; shared-state erasure and the optional
+official provider remain open.

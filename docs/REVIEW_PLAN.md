@@ -1,10 +1,19 @@
 # Review boundaries for cumulative local work
 
-The original roadmap asks for separately reviewable PRs. This working checkout
-contains cumulative uncommitted implementation; no PR or publication was created.
-Do not push the full change directly to main, where release automation is version-
-driven. Preserve the original roadmap and pr_diff.txt, and retain tests/docs with
-the implementation they prove.
+The original roadmap asks for separately reviewable changes. The cumulative
+implementation is now assembled on `codex/roadmap-zero-cost-integration`, based on
+upstream `e368b61`, with four ordered commits: runtime safety/contracts and their
+regressions; package/metadata/dependencies; CI/release/browser proof; and roadmap
+documentation. The six boundaries below are reviewer lenses within this branch.
+Safety and protocol files depend on each other, so splitting their shared runtime
+mechanically would produce incomplete intermediate changes. Review the cumulative
+PR with these boundaries and the attached evidence, then keep it unmerged until
+its hosted checks and human review pass. No version bump or release is included.
+
+Never push this work directly to main, where release automation is version-driven.
+The original roadmap and pr_diff.txt retain their checksum-verified bytes; the
+latter remains an unrelated untracked file and is excluded from the PR. Backups
+remain outside iCloud. Retain tests/docs with the implementation they prove.
 
 | Review | Problem/result | Primary boundary | Required validation / rollback |
 | --- | --- | --- | --- |
