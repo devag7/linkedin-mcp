@@ -11,6 +11,7 @@ import { readLimit, reserveReadAttempt, ReadLimitError } from '../src/safety/rea
 import { bindCancellation } from '../src/tools/cancellation.js';
 import { SerialQueue } from '../src/safety/queue.js';
 import * as registration from '../src/tools/register.js';
+import { briefObservation } from '../scripts/job-brief-observation.js';
 const identity = JSON.parse(
   readFileSync(new URL('./fixtures/contracts-v1.json', import.meta.url), 'utf8'),
 ).response;
@@ -115,6 +116,30 @@ it('compares jobs with exact fact citations and enriches one within three cold r
   expect(result.data.entities[1].unknownFields).toContain('description');
   expect(result.data.markdown).toContain('Salary, fit and availability are not inferred');
   expect(result.data.markdown).toContain('[source](https://www.linkedin.com/jobs/view/1/)');
+});
+
+it('validates SDK JSON representation without treating omitted undefined query members as a mismatch', async () => {
+  const start = Date.now();
+  const result = await client.callTool({
+    name: 'research_jobs',
+    arguments: { keywords: 'engineering', count: 2 },
+  });
+  const observed = briefObservation(result, start, Date.now());
+  expect(observed).toMatchObject({
+    contractChecked: true,
+    entities: 2,
+    usefulEntities: 2,
+    dataStatus: 'ok',
+    metaStatus: 'ok',
+    bounds: { readAttempts: 3, toolCalls: 2 },
+  });
+  expect(JSON.stringify(observed)).not.toContain('Synthetic company');
+  const content = (result.content as { type: string; text: string }[]).map((part) => ({
+    ...part,
+    text: part.text.replace('Role 1', 'Forged title'),
+  }));
+  expect(() => briefObservation({ ...result, content }, start, Date.now())).toThrow();
+  expect(fetches).toHaveBeenCalledTimes(3);
 });
 it('uses no hidden pagination and preserves unknown completeness', async () => {
   total = undefined;

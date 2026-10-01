@@ -1,6 +1,6 @@
 # Job brief: offline diagnosis and proposed shape-only capture
 
-October 2, 2026. **Prepared; no new LinkedIn access has been authorized or run.**
+October 2, 2026. **One fresh consented diagnosis ran on frozen0200276; consent consumed.**
 The earlier consent is consumed. PR #5 stays draft and its feature release remains
 gated on evidence-backed fixes and a freshly consented useful brief. Core 3.0.0 is
 a separate 22-tool release owned by the coordinated core-release chat.
@@ -112,3 +112,55 @@ through the existing workflow and independently verify all four destinations.
 Update listings to the actual released scope. Mandatory maintainer cash remains
 $0. First-use cohort, repeat-use measures, coordinated erasure, Windows privacy,
 official OAuth and broad promotion remain separately unproven.
+
+## Consented shape-only result — October2
+
+Frozen source02002767e7b97ccd862fb48bd7261e9ba4b66d96; local archive SHA256
+71058d67ced13acbec287edbaac8814b9d88ed3e14fdc9e755232eebaa859d74.
+Node22.14.0/macOS, real production runtime through SDK in-memory transport.
+Exact-source hosted run36923282569 passed six OS/Node compatibility jobs and the
+source/package/production-audit job; its version2.0.3 was ineligible and all
+publication/tag jobs skipped. This is not core3.0.0 or an installed-client live pass.
+
+One newly authorized call ran2026-10-01T20:51:38.061Z–20:52:02.517Z
+(October2,02:21:38–02:22:02 Asia/Kolkata). No retry or write occurred. The existing
+three-attempt ceiling stayed active; search and detail response shapes were reduced.
+The source runner stopped before retaining final envelope counts, so those counts
+are unknown and are not reconstructed from shape metadata.
+
+Search:3 JobPosting,3 JobCard and4 Company typed entities;870 inspected nodes;
+491 redacted unknown keys; no truncation. Recognized title fields are present;
+three secondaryDescription.text values are nonempty. No recognized search
+formattedLocation/location/listedAt paths were observed. Generic card text has
+not been relabeled as a location or company. Unknown schema keys prevent claiming
+that the provider omitted every possible useful field.
+
+Detail:1 JobPosting and1 Company;1019 nodes;808 redacted unknown keys; no
+truncation. A title, description.text, listedAt and companyDetails.name are
+present, alongside2 data.errors objects with string messages, locations/path
+arrays and numeric extensions.status. No allowlisted machine error code was
+returned. The existing strict validator correctly returns PROVIDER_ERROR;
+usable-looking nodes are not accepted in the presence of errors. This does not
+identify the error cause or establish a stale persisted query. No query ID or
+endpoint was replaced based on that hypothesis.
+
+The diagnostic runner's Node deep equality check compared JSON text with the
+schema parser's in-memory object, which can retain undefined optional members
+that JSON omits. Its fixed failure marker provides no assertion-specific cause,
+so the exact failing check remains unproven. That comparison was corrected offline
+to compare JSON representations separately from schema validation; a real SDK
+regression covers omitted optional query members and rejects forged text.
+No rerun was made to repair diagnostic evidence.
+
+Cleanup receipt:close_session succeeded,14 associated Chrome processes observed,
+0 remaining, context inactive and ownership released. The source process later
+exited1; no child was forcibly terminated and no profile/history was erased.
+Only the reviewed field/type/count/error-class reduction and build/timing/cleanup
+metadata were retained privately; no raw response, message, identity, cookie,
+header, description or exact job URL was saved. This consent is consumed.
+
+Separately, an SDK fixture proved arbitrary included-company attribution was
+incorrect. Removing that fallback retains explicit selected-job company names and
+leaves unsupported employer fields unknown. The coordinated core release adopted
+that correction before publication; brief-specific SDK defenses remain in PR #5.
+Current provider compatibility and the useful-brief release gate remain open.

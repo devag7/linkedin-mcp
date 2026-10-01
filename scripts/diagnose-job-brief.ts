@@ -7,8 +7,7 @@ import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 import { createRuntime, createServer } from '../src/server.js';
 import { loadConfig } from '../src/config/env.js';
 import { Logger } from '../src/types.js';
-import { outputSchema } from '../src/tools/contracts.js';
-import { briefSchema } from '../src/tools/research-contract.js';
+import { briefObservation } from './job-brief-observation.js';
 import { inspectSetup } from '../src/doctor.js';
 import { profilePath } from '../src/safety/state-lock.js';
 import { jobResponseShape } from './job-response-shape.js';
@@ -105,51 +104,7 @@ try {
     undefined,
     { timeout: 180000, maxTotalTimeout: 180000, resetTimeoutOnProgress: false },
   );
-  const envelope = outputSchema('research_jobs').parse(result.structuredContent);
-  const text = (result.content as { type: string; text: string }[])[0];
-  assert.equal(text?.type, 'text');
-  assert.deepEqual(JSON.parse(text!.text), envelope);
-  if (envelope.data === null)
-    record.result = { metaStatus: envelope.meta.status, code: envelope.code };
-  assert.ok(envelope.data);
-  const brief = briefSchema.parse(envelope.data);
-  assert.equal(brief.status, envelope.meta.status);
-  assert.ok(
-    brief.entities.length <= 3 && brief.bounds.readAttempts <= 3 && brief.bounds.toolCalls <= 2,
-  );
-  const end = Date.now();
-  const start = Date.parse(record.startedAt as string);
-  for (const entity of brief.entities) {
-    assert.match(entity.sourceUrl, /^https:\/\/www\.linkedin\.com\/jobs\/view\/[0-9]{1,20}\/$/);
-    for (const fact of entity.facts) {
-      assert.equal(fact.sourceUrl, entity.sourceUrl);
-      assert.ok(
-        brief.reads.some(
-          (read) =>
-            read.tool === fact.sourceTool &&
-            read.fetchedAt === fact.fetchedAt &&
-            read.status !== 'error',
-        ),
-      );
-      assert.ok(Date.parse(fact.fetchedAt) >= start && Date.parse(fact.fetchedAt) <= end);
-      assert.ok(brief.markdown.includes(`[source](${fact.sourceUrl})`));
-    }
-  }
-  record.result = {
-    dataStatus: brief.status,
-    metaStatus: envelope.meta.status,
-    entities: brief.entities.length,
-    facts: brief.entities.reduce((n, entity) => n + entity.facts.length, 0),
-    usefulEntities: brief.entities.filter(
-      (entity) =>
-        entity.facts.some((fact) => fact.field === 'title') &&
-        entity.facts.some((fact) =>
-          ['location', 'company', 'description', 'listedAt'].includes(fact.field),
-        ),
-    ).length,
-    reads: brief.reads.map((read) => ({ tool: read.tool, status: read.status, code: read.code })),
-    bounds: brief.bounds,
-  };
+  record.result = briefObservation(result, Date.parse(record.startedAt as string), Date.now());
 } catch {
   // Do not persist exception messages, stacks, provider payloads or URLs.
   record.failure = 'DIAGNOSIS_OR_CONTRACT_FAILED';
@@ -191,4 +146,4 @@ try {
 }
 // Emit a fixed result only; the private redacted receipt is inspected separately.
 console.log(failure ? 'DIAGNOSTIC_STOPPED' : 'DIAGNOSTIC_RECORDED');
-process.exitCode = failure ? 1 : 0;
+process.exit(failure ? 1 : 0);
