@@ -36,12 +36,14 @@ export function clientConfiguration(
 }
 
 export function setupReport(client: SetupClient, config: EnvConfig) {
-  const configuration = clientConfiguration(client, config);
-  const server =
-    'servers' in configuration
-      ? configuration.servers!.linkedin
-      : configuration.mcpServers!.linkedin;
+  // Diagnose before resolving configuration: invalid aliases must produce JSON.
   const diagnosis = inspectSetup(config, { transport: 'stdio', port: 3000, logLevel: 'error' });
+  const configuration =
+    diagnosis.checks.profile === 'invalid' ? null : clientConfiguration(client, config);
+  const server =
+    configuration && 'servers' in configuration
+      ? configuration.servers!.linkedin
+      : configuration?.mcpServers!.linkedin;
   const checks = diagnosis.checks;
   const ready =
     checks.package === 'available' &&
@@ -68,10 +70,12 @@ export function setupReport(client: SetupClient, config: EnvConfig) {
     diagnosis,
     destination,
     configuration,
-    commands: {
-      doctor: { ...server, args: [...server.args, '--doctor'] },
-      login: { ...server, args: [...server.args, '--login'] },
-    },
+    commands: server
+      ? {
+          doctor: { ...server, args: [...server.args, '--doctor'] },
+          login: { ...server, args: [...server.args, '--login'] },
+        }
+      : null,
     steps: [
       'Resolve diagnosis.nextSteps for missing software, permissions, ownership or safety state.',
       'Keep this installed build at a stable path; moving it or Node requires regenerating configuration.',

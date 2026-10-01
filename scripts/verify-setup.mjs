@@ -1,7 +1,16 @@
 /** Execute generated configuration through a real SDK stdio client, offline. */
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, realpathSync, rmSync, writeFileSync, existsSync } from 'node:fs';
+import {
+  mkdirSync,
+  mkdtempSync,
+  realpathSync,
+  rmSync,
+  writeFileSync,
+  existsSync,
+  symlinkSync,
+  lstatSync,
+} from 'node:fs';
 import { join, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
@@ -80,6 +89,30 @@ try {
       }),
     );
   }
+  const brokenProfile = join(root, 'broken-profile');
+  symlinkSync(
+    join(root, 'missing-target'),
+    brokenProfile,
+    process.platform === 'win32' ? 'junction' : 'dir',
+  );
+  const broken = spawnSync(process.execPath, [bundle, '--setup', 'cursor'], {
+    env: { ...env, LINKEDIN_PROFILE_DIR: brokenProfile },
+    encoding: 'utf8',
+    timeout: 10000,
+  });
+  assert.equal(broken.status, 1, broken.stderr);
+  const brokenReport = JSON.parse(broken.stdout);
+  assert.equal(brokenReport.diagnosis.checks.profile, 'invalid');
+  assert.equal(brokenReport.configuration, null);
+  assert.equal(brokenReport.commands, null);
+  assert.ok(
+    brokenReport.diagnosis.nextSteps.some((step) => step.includes('broken symlink/junction')),
+  );
+  assert.equal(lstatSync(brokenProfile).isSymbolicLink(), true);
+  assert.equal(existsSync(join(root, 'missing-target')), false);
+  console.log(
+    JSON.stringify({ brokenProfileSetup: 'passed', scope: 'offline', linkedInRequests: 0 }),
+  );
   for (const args of [
     ['--setup'],
     ['--setup', 'secret-unsupported-client'],

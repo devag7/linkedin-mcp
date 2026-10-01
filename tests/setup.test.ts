@@ -1,8 +1,8 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { mkdtempSync, realpathSync, rmSync } from 'node:fs';
+import { mkdtempSync, realpathSync, rmSync, symlinkSync, lstatSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { clientConfiguration, CLIENTS } from '../src/setup.js';
+import { clientConfiguration, CLIENTS, setupReport } from '../src/setup.js';
 import { loadConfig } from '../src/config/env.js';
 const directories: string[] = [];
 afterEach(() =>
@@ -49,4 +49,25 @@ describe('installed-build client configuration', () => {
       'SETUP_ENTRY_MISSING',
     );
   });
+});
+
+it('returns actionable offline JSON for a broken profile alias without changing it', () => {
+  const dir = realpathSync(mkdtempSync(join(tmpdir(), 'linkedin-broken-')));
+  directories.push(dir);
+  const profile = join(dir, 'broken-profile');
+  symlinkSync(
+    join(dir, 'missing-target'),
+    profile,
+    process.platform === 'win32' ? 'junction' : 'dir',
+  );
+  const report = setupReport('cursor', { ...loadConfig(), LINKEDIN_PROFILE_DIR: profile });
+  expect(JSON.parse(JSON.stringify(report))).toMatchObject({
+    status: 'needs_attention',
+    configuration: null,
+    commands: null,
+    diagnosis: { checks: { profile: 'invalid' }, session: 'not_checked', api: 'not_checked' },
+  });
+  expect(report.diagnosis.nextSteps.join(' ')).toContain('broken symlink/junction');
+  expect(lstatSync(profile).isSymbolicLink()).toBe(true);
+  expect(existsSync(join(dir, 'missing-target'))).toBe(false);
 });

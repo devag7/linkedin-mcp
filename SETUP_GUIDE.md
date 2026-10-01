@@ -100,3 +100,9 @@ Node22.14.0 / Chrome154 with an empty temporary profile, synthetic local content
 observed process cleanup and released ownership. This is a browser lifecycle
 check, not a LinkedIn first read or client-application certification. See the
 [zero-cash execution record](docs/ZERO_COST_EXECUTION_EVIDENCE_2026-10-01.md).
+
+If `--setup` reports `profile: invalid`, it returns JSON with
+`status: needs_attention`, `configuration: null` and `commands: null`. Repair the
+selected `LINKEDIN_PROFILE_DIR`, including broken symlink/junction targets or parent
+aliases, before regenerating configuration. Stop owners first and preserve safety
+history. This diagnosis does not open Chrome, repair the path or access LinkedIn.
