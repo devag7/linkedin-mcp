@@ -1,7 +1,7 @@
 {
   "name": "linkedin-mcp-tools",
   "version": "2.0.3",
-  "description": "LinkedIn MCP server \u2014 structured LinkedIn data via a real stealth-browser session. Profiles, search, jobs, companies, messaging, network. Works with Claude, Cursor, and any MCP client.",
+  "description": "LinkedIn MCP server — structured LinkedIn data via a real stealth-browser session. Profiles, search, jobs, companies, messaging, network. Works with Claude, Cursor, and any MCP client.",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
@@ -29,7 +29,9 @@
     "metadata:sync": "tsx scripts/sync-metadata.ts",
     "metadata:check": "tsx scripts/sync-metadata.ts --check",
     "demo:offline": "node scripts/demo-offline.mjs",
-    "verify:browser": "tsx scripts/verify-browser.ts"
+    "verify:browser": "tsx scripts/verify-browser.ts",
+    "prepack": "node scripts/check-package.mjs",
+    "verify:pack": "node scripts/check-package.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.12.1",
@@ -80,16 +82,20 @@
     "node": ">=20.0.0"
   },
   "files": [
-    "dist",
+    "dist/index.js",
+    "dist/index.js.map",
     "README.md",
     "LICENSE",
-    "docs",
     "DISCLAIMER.md",
     "mcp-manifest.json",
     "SETUP_GUIDE.md",
     "SECURITY.md",
     "PRODUCT_TECHNICAL_ROADMAP_2026.md",
-    "claude-desktop-config.json"
+    "claude-desktop-config.json",
+    "docs/CAPABILITIES.md",
+    "docs/CONTRACTS.md",
+    "docs/PRIVACY.md",
+    "docs/WORKFLOWS.md"
   ],
   "mcpName": "io.github.devag7/linkedin-mcp"
 }

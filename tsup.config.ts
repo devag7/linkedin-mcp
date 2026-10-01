@@ -6,7 +6,8 @@ export default defineConfig({
   // dts disabled: the bundled CLI entry exposes no public types, and rolling up
   // .d.ts for the full graph (incl. patchright) took ~10 min. Not worth it.
   dts: false,
-  clean: true,
+  // Preserve unrelated/sync files. Packaging independently allowlists build outputs.
+  clean: false,
   sourcemap: true,
   target: 'node20',
   outDir: 'dist',
