@@ -252,11 +252,11 @@ export interface ShapedJobDetails {
 }
 
 /** Shape a single job posting. Deep-walks the response — the job node may live
- *  in data.data or included depending on the query — and picks the richest
- *  job-like object (has a title + job-ish fields). Tolerant by design. */
+ *  in data.data or included depending on the query — and picks the first
+ *  job-like object (has a title + job-ish fields). Company facts must be supplied
+ *  by that job; an arbitrary included company has no proven relationship. */
 export function shapeJobDetails(resp: NormalizedResponse): ShapedJobDetails {
   let job: Record<string, unknown> | undefined;
-  let company: Record<string, unknown> | undefined;
 
   const looksJob = (o: Record<string, unknown>): boolean =>
     typeof o['title'] === 'string' &&
@@ -273,9 +273,7 @@ export function shapeJobDetails(resp: NormalizedResponse): ShapedJobDetails {
       return;
     }
     const o = n as Record<string, unknown>;
-    const t = typeof o['$type'] === 'string' ? (o['$type'] as string) : '';
     if (!job && looksJob(o)) job = o;
-    if (!company && t.endsWith('.Company') && typeof o['name'] === 'string') company = o;
     for (const v of Object.values(o)) visit(v);
   };
   visit(resp.data);
@@ -285,9 +283,7 @@ export function shapeJobDetails(resp: NormalizedResponse): ShapedJobDetails {
   return {
     title: asText(j['title']),
     description: asText(j['description']),
-    company:
-      asText(company?.['name']) ??
-      asText((j['companyDetails'] as Record<string, unknown>)?.['name']),
+    company: asText((j['companyDetails'] as Record<string, unknown>)?.['name']),
     location: asText(j['formattedLocation']) ?? asText(j['location']),
     workplaceType: j['workRemoteAllowed'] === true ? 'Remote allowed' : asText(j['workplaceType']),
     jobUrn: typeof j['entityUrn'] === 'string' ? (j['entityUrn'] as string) : undefined,

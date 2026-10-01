@@ -199,6 +199,37 @@ it('retains supported search fields even when a detail provider error stops enri
   expect(facts.every((fact: any) => fact.sourceTool === 'search_jobs')).toBe(true);
   expect(fetches).toHaveBeenCalledTimes(3);
 });
+
+it('does not cite an unrelated included company as a fact about the selected job', async () => {
+  detailEnvelope = {
+    data: { ...detail, companyDetails: undefined },
+    included: [
+      { $type: 'fixture.Company', entityUrn: 'urn:li:fsd_company:99', name: 'Unrelated company' },
+    ],
+  };
+  const result = await brief();
+  const entity = result.data.entities[0];
+  expect(entity.facts.some((fact: any) => fact.field === 'company')).toBe(false);
+  expect(entity.unknownFields).toContain('company');
+  expect(result.data.markdown).not.toContain('Unrelated company');
+  expect(entity.facts.find((fact: any) => fact.field === 'description')).toMatchObject({
+    sourceTool: 'get_job_details',
+    sourceUrl: entity.sourceUrl,
+  });
+  expect(fetches).toHaveBeenCalledTimes(3);
+});
+
+it('keeps a company name explicitly supplied in the selected job details', async () => {
+  const result = await brief();
+  expect(result.data.entities[0].facts.find((fact: any) => fact.field === 'company')).toMatchObject(
+    {
+      value: 'Synthetic company',
+      sourceTool: 'get_job_details',
+      sourceUrl: 'https://www.linkedin.com/jobs/view/1/',
+    },
+  );
+  expect(fetches).toHaveBeenCalledTimes(3);
+});
 it('stops at rate limiting without starting detail work', async () => {
   failureStatus = 429;
   const result = await brief();
