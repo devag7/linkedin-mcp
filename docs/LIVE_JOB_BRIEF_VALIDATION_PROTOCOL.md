@@ -137,7 +137,7 @@ One fresh **MCP SDK stdio** execution, using the frozen source
 `5ef228a1ee973b51e732e01f56f4f6accdfa25da` and private local2.0.3 archive
 SHA256 `d53ef6669ea52f8c2d2ab0839331908f7c36253ceeda45adbe46e580c94aed98`.
 The installed15-entry package, lock/dependency versions and runtime source were
-verified before access. Node22.14.0, Chrome154.0.0.0, macOS. Current PR heads
+verified before access. Node22.14.0, Chrome154.0.8037.93, macOS. The actual Chrome app version was verified from local metadata after cleanup; metadata/binary modification preceded the attempt. The earlier offline lifecycle value154.0.0.0 was extracted from navigator.userAgent, not the exact app version. Current PR heads
 `f7e9e2b` / `4093554` / `dffa4ec` each had all12 hosted checks passing; runtime
 source remains identical to the frozen build. This is not the final3.0.0 artifact.
 
