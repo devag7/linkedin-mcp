@@ -13,80 +13,44 @@
 
 **Give Claude, Cursor, and any MCP client access to LinkedIn — profiles, people/job/company search, feed, messaging, and your network — as clean structured JSON.**
 
-**22 tools** · reads + **gated writes** (connect, message, post, react, comment) · a real **safety layer** (daily caps, human pacing, circuit breaker) · **166 tests**.
+**22 tools** · local browser reads · five explicitly confirmed writes · persisted safety limits and operation journals.
 
-> ⚠️ Automating LinkedIn violates its User Agreement and can get an account restricted. **No tool is ban-proof — and this one says so up front.** Use a secondary account; read [Account safety](#-account-safety) and [DISCLAIMER.md](DISCLAIMER.md) first.
+> This is an unofficial LinkedIn integration and accounts can be restricted.
+> Review [Account safety](#-account-safety) and [SECURITY.md](SECURITY.md) before use.
 
 </div>
 
 ---
 
-## Why this exists
+## What it does
 
-LinkedIn's internal **Voyager API** (the one its own web app uses) returns rich, structured JSON — but it sits behind **Cloudflare bot-management**, which rejects plain HTTP requests (a stateless `fetch` or `curl` gets stuck in an endless redirect, even with a valid cookie). The only reliable way to read LinkedIn data programmatically in 2026 is from inside a **real browser** that clears the challenge.
+The server uses Patchright to open a persistent Google Chrome profile and makes
+Voyager requests from its authenticated page. Results are shaped into JSON for
+MCP clients. Some discovery tools fall back to page data. Undocumented endpoints,
+query IDs, browser behavior and response shapes can change.
 
-**This project's approach:**
+Useful starting workflows are profile research, job/company research and inbox
+triage. Alpha writes are disabled by default. When enabled they require `confirm:true`, consume conservative attempt budgets, and
+return a status including `unknown` when completion cannot be established.
 
-1. Drive a real Chrome via [**patchright**](https://github.com/Kaliiiiiiiiii-Vinyzu/patchright) (an undetected Playwright fork) so Cloudflare's challenge is solved with a genuine browser fingerprint.
-2. Query Voyager **from inside the authenticated page** — same-origin, the exact network path LinkedIn's own SPA uses → **structured JSON, not scraped DOM text**.
+## Verification status
 
-That last point is the edge over DOM-scraping tools: in-page API calls are **locale-independent and resilient to UI redesigns**, so they don't break on a moved CSS selector or a translated label.
+This checkout contains unreleased roadmap changes on the v2.0.3 baseline.
+Installing `@latest` does not establish that those changes are published.
+See [execution progress](docs/ROADMAP_PROGRESS.md) and the linked evidence.
 
----
+| Area | Current evidence |
+| --- | --- |
+| HTTP boundary, checkpoints, write accounting | Offline regression and MCP protocol fixtures |
+| Account identity, profile ownership, shared budgets | Production tool fixtures plus independent Node-process contention/crash tests |
+| Setup diagnostics and cold saved sessions | Offline platform/path fixtures and production runtime fixtures |
+| Packed artifact | Isolated install, version/doctor checks and compiled MCP smoke; no LinkedIn request |
+| Profiles, feed, jobs, companies and inbox | Registered tools; repository notes contain historical live claims. Current live availability is unknown. |
+| Five write tools | Conservative classifiers and transaction fixtures. No live writes were sent in this implementation. New-thread messaging remains experimental. |
+| Official OAuth provider | Not connected to the active MCP runtime |
 
-## ✨ What's good here
-
-| | |
-|---|---|
-| 🧩 **Structured JSON** | In-page Voyager API calls return normalized data, shaped into compact objects — not brittle innerText scraping. |
-| ✍️ **Writes are API calls, not button-clicking** | `connect` / `message` / `post` / `react` / `comment` POST straight to Voyager — the **exact requests the web app sends, captured and verified live**. No hunting for a "Connect" button under a sticky navbar, no composer-dialog race. Every write returns a **structured status** (`ok` / `duplicate` / `already_connected` / `restricted` / `quota_exhausted` / …) — never a blind "sent: true". |
-| 🛡️ **Safety layer built in** | Serial queue, human-paced jittered delays, per-action **daily budgets**, account **warmup ramp**, and a **circuit breaker** that hard-stops on any checkpoint/captcha. (Risk reduction — *not* a safety guarantee.) |
-| 🔥 **One warm session** | A single persistent browser per process (cookies + Cloudflare clearance survive restarts). Explicit `close_session`, signal-handled teardown — no zombie Chrome. |
-| 🌍 **Locale-independent** | API + embedded-JSON parsing, not English-only DOM selectors — survives UI redesigns and translations. |
-| 🔒 **Local & private** | Session stored under `~/.linkedin-mcp/` with `0700/0600` perms; no cookies/tokens to paste, none ever logged. |
-
----
-
-## How it compares
-
-| | DOM-scraping LinkedIn MCPs | **This** |
-|---|---|---|
-| Reads | scraped page text (brittle, locale-bound) | **structured API JSON** |
-| Writes (connect/message/post) | click rendered buttons (break on sticky navbars, dialog races, localized labels) | **direct Voyager `POST`, captured + verified live** |
-| Write feedback | "clicked it" → hope | **structured status** (ok / duplicate / restricted / quota_exhausted / …) |
-| Resilience | breaks on UI tweaks / translations | **API + embedded-JSON, locale-proof** |
-| Safety (caps, pacing, circuit breaker) | none | **✅ built-in, 166 tests** |
-| Zombie browser processes | common | **✅ reaped on close** |
-| Language | Python | TypeScript + official MCP SDK |
-
-We hit LinkedIn's own API from inside the challenge-passed browser — reads *and*
-writes — so you get the structured response and a real status, not parsed HTML
-and a hopeful click.
-
-## 📦 Status
-
-**Stable — v2, all 22 tools shipping.** Full transparency on exactly where every piece stands:
-
-| Area | State |
-|---|---|
-| Stealth browser engine (patchright) | ✅ built, **live-proven** |
-| In-page Voyager fetch (the core mechanism) | ✅ **live-verified** (returns structured JSON) |
-| Safety layer (queue / pacer / budgets / circuit-breaker) | ✅ built, 166 unit tests |
-| **Profile** — `get_profile`, `get_my_profile` (name, headline, summary, experience, education, skills, certifications, languages) | ✅ live-verified |
-| **Feed / notifications** — `get_feed`, `get_notifications` | ✅ live-verified |
-| **Jobs / messaging** — `search_jobs`, `get_job_details`, `get_inbox`, `get_conversation` | ✅ live-verified |
-| **People / companies** — `search_people`, `search_companies`, `get_company`, `get_company_posts`, `get_company_employees` (DOM fallback) | ✅ live-verified |
-| **Network** — `get_pending_invitations` (received + sent) | ✅ |
-| **Session** — `whoami`, `health_check` (live Voyager probe + budget headroom), `close_session` | ✅ |
-| **Write tools** — `connect_with_person`, `send_message`, `create_post`, `react_to_post`, `comment_on_post` | ✅ all 5 endpoints captured + live-verified on a burner; gated (`confirm:true` + daily caps), structured statuses. ⚠️ These take real, often irreversible actions — keep the gate on and use a throwaway account. |
-
-**22 tools.** typecheck + 166 tests green.
-
-**Login is headful, the server is headless.** The one-time `--login` opens a real
-Chrome window (to clear Cloudflare and let you solve any captcha/2FA). After that
-the persistent profile carries the clearance, so the server runs **headless** —
-verified returning live data. Use a **residential IP**; datacenter/VPN IPs are
-often pre-flagged by Cloudflare regardless of headless vs headful.
+Local checks and CI configuration are evidence of the cases they exercise,
+not a guarantee of current provider compatibility or account safety.
 
 ---
 
@@ -123,28 +87,81 @@ recruiters at Google."*
 ```bash
 git clone https://github.com/devag7/linkedin-mcp.git
 cd linkedin-mcp
-npm install
+npm ci
 npm run setup:browser     # installs the Chrome patchright drives
 npm run login             # log in once
 npm run spike             # verify: fetches your profile as JSON
 npm run build             # produces dist/
+node dist/index.js --doctor # local setup checks; no browser or network
+npm run verify:package     # install/test the packed artifact offline against LinkedIn
 ```
 
 MCP config: `"command": "node", "args": ["/absolute/path/to/dist/index.js"]`.
 </details>
 
-### Headless / server deployment
-
-The one-time `--login` needs a window; the server then runs **headless** (verified
-returning live data). Run `--login` on a machine with a display (or via VNC),
-copy `~/.linkedin-mcp/profile/` to your server, and run there:
+### Diagnose this source checkout
 
 ```bash
-LINKEDIN_HEADLESS=true npx -y linkedin-mcp-tools@latest   # no display needed
+npm run build
+node dist/index.js --doctor
 ```
 
-Use a **residential IP** — datacenter/VPN IPs are frequently pre-flagged by
-Cloudflare regardless of headless vs headful.
+The report shows package/Chrome availability, profile accessibility and ownership,
+safety-state validity, selected transport and next steps. It omits cookies, tokens,
+profile content and private paths. It does not open Chrome or contact LinkedIn.
+
+After you have logged in and stopped other processes using the profile, explicitly
+select a live identity read with `node dist/index.js --doctor --live`. The probe
+has a 30-second deadline followed by browser cleanup; a deadline does not prove
+that an already-started read was cancelled. No write is part of diagnosis.
+
+`whoami` reports `sessionState: "not_checked"` and `loggedIn: null` on a cold
+runtime. `health_check` deliberately opens the saved session and performs a live
+API check. A saved profile or cookie alone is not reported as a healthy API.
+
+Headful login needs a local display. The normal server defaults to headless Chrome.
+Remote browser/profile deployment and profile copying are not verified here.
+
+---
+
+## Local HTTP clients
+
+Stdio remains the default. HTTP is an explicit, **loopback-only** option for a
+local MCP client that can send an `Authorization` header. Remote hosts, reverse
+proxies, browser CORS clients, and serverless deployment are unsupported.
+
+Generate a local secret and start the server from this checkout:
+
+```bash
+npm run build
+export LINKEDIN_HTTP_TOKEN="$(node -e 'console.log(require("node:crypto").randomBytes(32).toString("hex"))')"
+node dist/index.js --transport http --port 3000
+```
+
+Configure your client with URL `http://127.0.0.1:3000/mcp` and the header
+`Authorization: Bearer <the same LINKEDIN_HTTP_TOKEN value>`. Keep the secret in
+your client's protected configuration; do not put it in a URL or commit it.
+The token must contain 32–256 letters, digits, underscores, or hyphens. Generate
+it randomly; length validation cannot prove a token is unpredictable.
+
+- Every endpoint, including `GET /health`, requires the token. Missing or invalid
+  credentials return `401`. Health reports listener status, not LinkedIn login.
+- HTTP binds to `127.0.0.1`. Host must be `127.0.0.1:<port>` or
+  `localhost:<port>`; an Origin, if present, must exactly match `http://<Host>`.
+  Invalid hosts/origins return `403`. No CORS access is granted.
+- `POST /mcp` accepts uncompressed JSON up to 1 MiB. Body upload has a 10-second
+  deadline; responses have a 180-second deadline. There are at most 16 active
+  HTTP requests and 32 TCP connections. Excess requests return `503`.
+- Protocol connections share one browser, queue, pacer, budget tracker, and
+  circuit breaker in this process. Closing a client does not close the browser;
+  shutting down the listener closes the shared runtime.
+- A timeout or disconnect **does not prove an action was cancelled**. Long pacing
+  waits may outlast the response deadline. Check LinkedIn before retrying a write;
+  HTTP does not retry it automatically. Prefer stdio for long-running workflows.
+
+Browser profile ownership and account budget transactions are shared across local
+processes. A second owner is refused before Chrome opens. These controls do not
+establish account safety. See [SECURITY.md](SECURITY.md).
 
 ---
 
@@ -154,13 +171,111 @@ Cloudflare regardless of headless vs headful.
 
 Defaults err conservative:
 
-- Connections **20/day**, messages **50/day**, likes+comments **50/day** combined, follows **30/day** — combined write cap **150/24h**.
+- Connections **20/day**, messages **50/day**, likes+comments **50/day** combined, follows **30/day** — combined write cap **150/local day**.
 - Profile views **80/day**, searches **30/day**.
-- New-account **warmup ramp** over the first weeks; **pending-invite ceiling** and **acceptance-rate** pauses.
+- Conservative **warmup limits**, a **pending-invite ceiling**, and **acceptance-rate** pauses. The first verified use starts a persisted warmup clock. Week 1 blocks messages; weeks 2 and 3 gradually permit them. This measures local tool use, not LinkedIn account age.
 - Reads paced 4–12s apart, writes 45–150s, with long breaks and a working-hours gate.
-- A **circuit breaker** stops automatically on any checkpoint, captcha, or "unusual activity" page — and never tries to solve one.
+- A **persistent circuit breaker** blocks further automated calls after an observed checkpoint URL, HTTP 999, challenge HTML from a JSON endpoint, or supported challenge-page signal. It never tries to solve a checkpoint. Already in-flight requests cannot be undone.
 
-**Recommendations:** use a **secondary/throwaway account**, run from a **residential IP**, warm it up slowly. See [DISCLAIMER.md](DISCLAIMER.md) for the full legal/ToS notice.
+Review platform rules and decide whether the integration is appropriate for your
+account. Caps and pacing cannot prevent restrictions. Resolve challenges manually;
+never treat the safety layer as a compliance or evasion guarantee.
+
+---
+
+## Recovering from a checkpoint
+
+`CHECKPOINT_REQUIRED` means a challenge was observed; `CIRCUIT_OPEN` means the
+stored stop is still active. `health_check` reports `blocked` without probing
+LinkedIn while stopped. `whoami` and `close_session` remain available.
+
+1. Stop every server/probe using the profile.
+2. Run `linkedin-mcp --login`, complete the checkpoint manually in Chrome, and
+   open your LinkedIn feed.
+3. Restart the server only after login reports that both the session and API
+   were verified. A cookie alone, restarting, or `--logout` does not clear the stop.
+
+Breaker state is stored beside the profile: `<LINKEDIN_PROFILE_DIR>.circuit.json`
+(default `~/.linkedin-mcp/profile.circuit.json`). A successful interactive recovery
+clears the hard stop and preserves action cooldowns. Invalid/unreadable state
+fails closed; restore the state or repair storage rather than deleting it to
+resume automation.
+
+Normal login expiry returns `AUTH_REQUIRED` without a hard trip. Opaque redirects
+hide their destination, so they are reported as authentication required rather
+than guessed to be checkpoints. Detection uses bounded response/page signals;
+it does not establish live compatibility with every LinkedIn challenge variant.
+
+---
+
+## Write outcomes and operation IDs
+
+All five alpha write tools require `LINKEDIN_ENABLE_WRITES=true` and `confirm:true`. With confirmation omitted/false they return a local preview without opening Chrome. Review its target, content, audience and route; use the returned operation ID and `preview_hash` when approving. A changed hash is refused. Starting new message threads also requires `LINKEDIN_ENABLE_EXPERIMENTAL_MESSAGES=true` and has no current live success evidence. Supply a unique `operation_id`
+(8–128 letters, digits, `_` or `-`) before the approved call. For example:
+
+```json
+{
+  "text": "The draft you reviewed",
+  "visibility": "PUBLIC",
+  "confirm": true,
+  "operation_id": "publish-20261001-reviewed-draft-01"
+}
+```
+
+The result includes `operationId`, `replayed`, `status`, `ok`, and `httpStatus`.
+Repeating the same tool, ID, and inputs retrieves the stored outcome without
+submitting again, including after restart. Changed inputs with the same ID are
+rejected. Omitting the ID generates a new one; if the response is lost, the caller
+cannot safely recover that generated ID. Supply your own ID for that case.
+
+`unknown` means the request may have reached LinkedIn: a disconnect, timeout,
+server error, unreadable body, or unrecognized success response cannot establish
+whether it completed. Inspect the target manually. The server never automatically
+retries; the same ID remains a lookup. A bare HTTP 409 is `failed` unless its body
+provides an explicit duplicate/already-connected signal. Quota and account
+restriction outcomes activate the corresponding action cooldown.
+
+Safety limits count every reserved attempt, including known failures and unknown
+outcomes. Only confirmed connections increment sent/pending invitation analytics.
+Uncertain invitations also count conservatively toward invitation safety gates
+across days. `health_check` includes journaled `attempted`, `successful`, and
+`uncertain` totals; historical counts from older versions remain in `actions.used`
+and are not guessed to be successful.
+
+The journal is part of `~/.linkedin-mcp/budgets.json`, alongside existing counters.
+It retains IDs, input hashes, action buckets, dates, and status codes; it does not
+store message/post text or raw response details. Replays return stored status/code
+with a generic explanation. Corrupt or unreadable state blocks startup; save
+failures stop further data/action work until storage is repaired. The file is
+replaced atomically with owner-only permissions. The journal stops new writes at
+10,000 entries or an 8 MiB state file; IDs are never automatically discarded.
+Deleting the state erases both safety counts and replay protection.
+
+The runtime derives a hashed account key from authenticated `/me` identity;
+it does not use a cookie, profile path or public username as the account key.
+Different profiles for the same member share the global budget/journal file.
+Identity is reverified on browser launch and before writes. A changed member
+stops the runtime with `ACCOUNT_CHANGED`; restart only after reviewing the account.
+Missing or ambiguous identity returns `ACCOUNT_UNRESOLVED` before submission.
+
+Budget reserve/commit reload and save under a shared local filesystem lock. Failed
+read attempts count toward metered read limits. Existing `default` counts remain
+an unattributed conservative allowance reduction; they are not assigned to a new
+member or invented as successful writes. Unattributed legacy operation IDs return
+`unknown` rather than asserting they belong to the verified member. On a fresh
+runtime, a hard checkpoint prevents the identity read required for journal lookup.
+
+Profile ownership uses `<canonical-profile>.owner.lock`; shared budget transactions
+use `<canonical-budget-file>.lock`. `close_session` and idle closing retain profile
+ownership while the process can relaunch Chrome. Stop the server to release it.
+Locks are never stolen by timeout or PID guessing. After a crash, stop all users
+and associated Chrome processes, preserve safety files, then manually repair only
+the orphaned lock directory. Never delete budgets or journals to resume automation.
+Local filesystems are the supported state-sharing boundary; network filesystems
+and power-loss durability are not certified.
+
+See [write evidence](docs/PHASE0_WRITE_EVIDENCE.md) and
+[account/ownership evidence](docs/PHASE0_ACCOUNT_EVIDENCE.md).
 
 ---
 
@@ -168,14 +283,51 @@ Defaults err conservative:
 
 | Variable | Default | Description |
 |---|---|---|
+| `LINKEDIN_PROVIDER` | `browser` | Official mode is unavailable and refuses before browser creation. |
 | `LINKEDIN_HEADLESS` | `true` | Server runs headless. `--login` always opens a real window regardless. Set `false` to watch the browser. |
 | `LINKEDIN_CHROME_PATH` | — | Explicit Chrome binary path (else patchright's). |
 | `LINKEDIN_PROFILE_DIR` | `~/.linkedin-mcp/profile` | Persistent browser profile. |
 | `LINKEDIN_IDLE_TIMEOUT_MS` | `300000` | Close the browser after this idle time (0 disables). |
-| `LINKEDIN_CONCURRENCY` | `1` | Serial by default; >1 is ban-risky. |
-| `TRANSPORT` | `stdio` | `stdio` (primary) or `http`. |
+| `LINKEDIN_CONCURRENCY` | `1` | Only serial execution is supported. |
+| `LINKEDIN_ENABLE_WRITES` | `false` | Deliberate opt-in for alpha browser writes; per-call approval still required. |
+| `LINKEDIN_ENABLE_EXPERIMENTAL_MESSAGES` | `false` | Separate opt-in for unverified new-thread messaging. |
+| `TRANSPORT` | `stdio` | `stdio` (primary) or local-only `http`. |
+| `LINKEDIN_HTTP_TOKEN` | — | Required random bearer secret for HTTP; unused by stdio. |
 
 ---
+
+## Tool contracts and verification
+
+<!-- capabilities:start -->
+
+22 registered tools. Native contract version 1 returns structuredContent and identical JSON text, with fetchedAt, source, partial and status metadata. [Full route and verification inventory](docs/CAPABILITIES.md).
+
+| Group | Tools |
+| --- | --- |
+| Session | `whoami`, `health_check`, `close_session` |
+| Reads | `get_my_profile`, `get_profile`, `get_feed`, `get_notifications`, `search_people`, `search_jobs`, `get_inbox`, `get_job_details`, `search_companies`, `get_company`, `get_company_posts`, `get_company_employees`, `get_pending_invitations`, `get_conversation` |
+| Opt-in alpha writes | `connect_with_person`, `send_message`, `create_post`, `react_to_post`, `comment_on_post` |
+
+<!-- capabilities:end -->
+
+## Offline walkthrough
+
+Build this checkout, then run `npm run demo:offline`. It makes real local MCP
+calls with synthetic inputs and a persisted stop: cold status, capabilities, a
+reviewable draft preview, blocked read and clean close. It opens no browser and
+sends no LinkedIn request. [Dated sample output](docs/OFFLINE_DEMO.txt) is labeled
+synthetic; a real first-read recording remains a consented validation step.
+
+## Bounded workflows and setup
+
+[Job/company research, profile comparison and inbox triage](docs/WORKFLOWS.md)
+contain explicit call limits and source-link rules. [Client setup](SETUP_GUIDE.md)
+separates locally exercised MCP transport from untested client applications.
+[Privacy and deletion](docs/PRIVACY.md) explains retained safety history.
+[Roadmap coverage](docs/ROADMAP_COVERAGE.md) tracks every acceptance requirement.
+[Official-provider pilot](docs/OFFICIAL_PROVIDER_PILOT.md) describes the app/scopes
+and integration evidence still needed. Docker files are an experimental Linux
+recipe; no container build, display/login or runtime has been verified locally.
 
 ## 🛠 Development
 
@@ -190,7 +342,7 @@ npm run build
 
 ## 📄 License
 
-MIT — see [LICENSE](LICENSE). Not affiliated with LinkedIn. Use at your own risk; see [DISCLAIMER.md](DISCLAIMER.md).
+MIT — see [LICENSE](LICENSE). Missing files caused by cloud synchronization were recovered from the committed revision with maintainer authorization. This work is local and unreleased. Not affiliated with LinkedIn.
 
 <div align="center">
 

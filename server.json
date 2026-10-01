@@ -1,17 +1,17 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.devag7/linkedin-mcp",
-  "description": "LinkedIn for AI assistants — search, profiles, jobs, feed, messaging, and gated writes.",
+  "description": "Unofficial local LinkedIn research and opt-in alpha writes; live compatibility is unverified.",
   "repository": {
     "url": "https://github.com/devag7/linkedin-mcp",
     "source": "github"
   },
-  "version": "2.0.2",
+  "version": "2.0.3",
   "packages": [
     {
       "registryType": "npm",
       "identifier": "linkedin-mcp-tools",
-      "version": "2.0.2",
+      "version": "2.0.3",
       "transport": {
         "type": "stdio"
       }
