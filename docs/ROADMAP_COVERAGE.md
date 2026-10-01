@@ -9,6 +9,14 @@ checks and real local Chrome lifecycle proof. Full development audit still has t
 findings. Git integration and all 12 hosted source/package/browser jobs now pass;
 human review and hosted publication remain outstanding.
 
+The separate [draft feature PR #4](https://github.com/devag7/linkedin-mcp/pull/4)
+adds offline guided setup and generated configuration. Current safety corrections,
+feature priorities and exact proof limits are recorded in the
+[execution plan](PRODUCT_EXECUTION_PLAN_2026.md). Safety code head `0017fe1`
+passed twelve hosted jobs; feature code head `a3b4050` passed twelve hosted jobs.
+Native VS Code1.139.1 accepted its generated entry and discovered22 tools in a
+stopped disposable profile. Claude/Cursor UI and new authorized live reads remain open.
+
 Coverage means a requirement was assessed; it does not mean its exit gate passed.
 The initial document and pr_diff.txt were preserved. Missing tracked files were
 recovered from HEAD after the maintainer explained the iCloud synchronization loss
@@ -23,14 +31,14 @@ remote execution or sustained user data is needed. Source changes are not releas
 
 | ID | Coverage / evidence | Outstanding acceptance proof |
 | --- | --- | --- |
-| P-01 diagnosis | Implemented locally: offline doctor, explicit live option, fixed/redacted statuses, Chrome/profile/ownership/storage/token checks; doctor.test.ts and account-protocol.test.ts | One consenting maintainer macOS health/read check passed; cross-client/new-user and other live OS/provider observations remain unproven |
+| P-01 diagnosis | Implemented locally: offline doctor, explicit live option, fixed/redacted statuses, Chrome/profile/ownership/storage/token checks; doctor.test.ts and account-protocol.test.ts; separate feature adds --setup, --client-config and actual SDK launch of all three generated entries | One consenting maintainer macOS health/read check passed; cross-client/new-user and other live OS/provider observations remain unproven |
 | P-02 capability inventory | Implemented locally: capabilities.ts → whoami and generated CAPABILITIES.md/README/manifest; registration-derived count; metadata check; contracts.test.ts | Current live dates remain null; DOM locale compatibility unverified |
 | P-03 typed/native output | Implemented locally: contracts.ts, register.ts, result.ts; all 22 registrations advertise schemas and matching structuredContent/text; typed error envelope works with client-side validation | Additional consented provider snapshots and client-application evidence; not a claim of live schema stability |
 | P-04 bounded search | Implemented locally with route limits: stable count bounds, search budgets, one-page job/feed/notification offsets, query/count-bound cursors only for matching paging evidence; bounded first-page DOM/inbox/conversation/invitation views; pagination and protocol tests | DOM and messaging continuation unsupported; no guessed URL/API parameters or implicit crawl; additional paging shapes require captures |
-| P-05 reviewed writes | Implemented locally: exact target/content/route/effect preview, operation ID/hash, changed-preview refusal, disabled-by-default alpha policy, separate experimental new-thread flag, reserve/classify/persist/replay; write-transaction.test.ts + contracts.test.ts | No approved live action or current success capture; generated post URLs unavailable; omitted preview_hash stays backward-compatible, so callers must deliberately follow review flow |
+| P-05 reviewed writes | Implemented locally: exact target/content/route/effect preview, operation ID/hash plus required server-issued five-minute proof for new submissions, changed-preview refusal, disabled-by-default alpha policy, separate experimental new-thread flag, reserve/classify/persist/replay; write-transaction.test.ts + contracts.test.ts | No approved live action or current success capture; generated post URLs unavailable; preview_hash is optional extra comparison only; preview_token and the issued operation ID are required for new submissions. Clients must obtain explicit human approval; a token cannot infer consent |
 | P-06 hard stop | Implemented locally: shared browser/Voyager/DOM safety, bounded challenge signals, persisted breaker, manual verified recovery; checkpoint/protocol/restart suites | Current LinkedIn challenge/locale variants beyond tested signals remain unknown |
 | P-07 local HTTP | Implemented locally: explicit selection, 127.0.0.1, every-route bearer auth, exact host/origin, no CORS, bounded body/deadlines/connections, shared runtime; http.test.ts + tools.test.ts | Remote/proxy/browser-CORS hosting deliberately unsupported; no remote OAuth/TLS product claim |
-| P-08 installation | Partial: clean npm ci and four source gates; packed tarball installed in a fresh project; installed CLI/doctor/redaction/custom logout and two MCP processes; LICENSE required; all 12 hosted source/package/browser jobs pass on Node20/22 × Linux/macOS/Windows | Actual consenting volunteer first read and client-app compatibility remain untested; Windows ACL privacy is a separate open gate |
+| P-08 installation | Partial: clean npm ci and four source gates; packed tarball installed in a fresh project; installed CLI/doctor/redaction/custom logout and two MCP processes; LICENSE required; all 12 hosted source/package/browser jobs pass on Node20/22 × Linux/macOS/Windows | Actual consenting volunteer first read and Claude/Cursor UI remain untested; native VS Code launch/discovery is observed but full chat/read flow remains open; Windows ACL privacy is a separate open gate |
 | P-09 official mode | Partial/prepared: explicit official selection refuses before browser creation; whoami/metadata report unavailable; inactive v1 credentials isolated; OFFICIAL_PROVIDER_PILOT.md checks official docs and defines provider/scope gates | Real developer app/product approvals/granted scopes, OAuth implementation and approved integration tests are not available; no browser fallback or implied official permission |
 
 ## Nonfunctional targets (original section 4.4)

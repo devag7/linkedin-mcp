@@ -226,8 +226,11 @@ The first feature matrix at `1bde68c` passed eleven jobs; Windows Node20 reporte
 budget suite took69s. The test worker now yields between durable filesystem cases,
 allowing pending acknowledgements to run without mocking storage, dropping assertions
 or extending timeouts. This is an event-loop starvation diagnosis from logs and runner
-source, not a proven provider failure. The corrected hosted run must pass before this
-track is considered verified. Failure logs and native VS Code discovery evidence are
+source, not a proven provider failure. The corrected feature code head `a3b40506ff210400938121957200550451201ac2`
+passes all twelve hosted source/packed jobs, including Windows Node20, in
+[run36861794662](https://github.com/devag7/linkedin-mcp/actions/runs/36861794662).
+No assertions, durable filesystem checks or timeout limits were removed.
+Failure logs and native VS Code discovery evidence are
 in `docs/evidence/first-run-2026-10-01/`.
 
 These checks prove local policy/contract/process behavior and cross-platform packed
