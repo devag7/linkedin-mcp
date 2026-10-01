@@ -87,7 +87,7 @@ jobs:
           cache: npm
           registry-url: https://registry.npmjs.org
       - name: Pin npm with trusted publishing support
-        run: npm install --global npm@11.5.1
+        run: npm install --global npm@11.6.2
       - run: npm ci
       - run: npm audit --omit=dev
       - run: npm run metadata:check
