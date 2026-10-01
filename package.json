@@ -1,6 +1,6 @@
 {
   "name": "linkedin-mcp-tools",
-  "version": "2.0.3",
+  "version": "3.0.0",
   "description": "Unofficial local LinkedIn MCP: structured research, source-linked job briefs, offline client setup and explicit safety limits. Current provider compatibility is not guaranteed.",
   "type": "module",
   "main": "dist/index.js",
