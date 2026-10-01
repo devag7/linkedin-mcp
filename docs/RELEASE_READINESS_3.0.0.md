@@ -59,7 +59,7 @@ final published tarball.
 | Production dependencies | Fresh `npm audit --omit=dev`; development advisories separately tracked for October8. |
 | Hosted release dry run | [Run36905626320](https://github.com/devag7/linkedin-mcp/actions/runs/36905626320) passes all10 jobs for candidate `ee4a872`. Publish/authenticate/tag/finalization steps are skipped; Registry publisher validation and read-only missing-version plans pass. Does not prove OIDC/write permission or publication. |
 | npm trusted-publisher configuration | Maintainer confirmed the exact trusted-publisher fields/direct-publish permission in this session; actual OIDC publish authentication remains untested. Existing NPM_TOKEN secret exists but its contents/validity were not inspected. No secret is requested. |
-| Fresh bounded account validation | Pending separate answer; frozen installed build/protocol ready. No new LinkedIn call made. Useful linked job evidence needed; empty/partial/error states retain their limits. |
+| Fresh bounded account validation | Run once October2 on frozen5ef228a: partial3 entities/3 facts; first detail PROVIDER_ERROR.62 validation checks pass, cleanup verified, but0 entities meet the useful-brief criterion. Gate remains open; no retries/new reads authorized. |
 | Final destinations | Pending publication: independently verify npm bytes/integrity/provenance, public scoped artifact, active Registry metadata and final GitHub tag/release SHA. |
 | Broad promotion / Windows privacy / first-use claims | Open P7/P8 gates: desktop first-read cohort, coordinated erasure and NTFS deny-other-user proof. Do not advertise those as solved. Keep Windows live/privacy claims and Docker/cloud deployment unverified. |
 
@@ -161,7 +161,18 @@ actual OIDC publishing/provenance can only be verified during the authorized rel
 Independent destination read-back confirms3.0.0 is absent from npm, scoped GitHub
 Packages, official Registry, GitHub Release and tag after the dry run. Existing
 2.0.3 Registry metadata is active and the existing scoped package is public. Those
-old destinations do not establish the candidate's publication. The pending fresh
-bounded account-consent answer remains required before its validation, ordered
-merges and main bump. Glama owner login is complete; its public description is corrected and automatic hosted builds disabled. Cached README/schema/Hybrid claims and broad first-use/privacy promotion
+old destinations do not establish the candidate's publication. The separately consented bounded check has now run once; its useful-brief acceptance failed. Ordered merges and main bump remain gated on resolving that observed blocker and a newly authorized validation. This consent does not permit another account read. Glama owner login is complete; its public description is corrected and automatic hosted builds disabled. Cached README/schema/Hybrid claims and broad first-use/privacy promotion
 gates remain open items; no completed-release or Trending claim is made.
+
+## Actual bounded validation — October2
+
+See [the protocol execution record](LIVE_JOB_BRIEF_VALIDATION_PROTOCOL.md#consented-execution-record--october2-2026).
+One authorized SDK call returned matching partial statuses,3 linked entities and
+3 retained facts. First detail stopped with PROVIDER_ERROR at the3-attempt ceiling;
+there was no retry or write. All62 contract/provenance/bounds checks and cleanup
+passed, but the useful-brief gate did not. This is partial evidence at the actual
+frozen build5ef228a, not a live pass for the final3.0.0 archive or any native client.
+No merge, version bump or publication follows this failed acceptance. Existing
+OIDC configuration, dry-run checks and directory receipts remain valid independent
+preparation evidence. Historical “no new request” statements above describe the
+pre-validation rehearsal; this dated record supersedes that pending live state.

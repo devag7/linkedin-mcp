@@ -1,7 +1,6 @@
 # Next live job-brief validation — read-only protocol
 
-Status: **prepared, not run**. Fresh consent is required for this exact protocol;
-the earlier own-profile read consent does not authorize it. This is one observed
+Status: **run once with fresh explicit consent on October2, 2026; partial result, useful-brief gate not passed**. This authorization has been consumed; no retry or additional account read is authorized. The earlier own-profile consent was not reused. This is one observed
 job-brief execution with an existing session, not proof of general compatibility,
 a new-user success rate, repeat use, stars or GitHub Trending. Required cash $0
 with the existing Mac, Node and Chrome; no paid API/model/backend is required.
@@ -18,7 +17,7 @@ with the existing Mac, Node and Chrome; no paid API/model/backend is required.
    versions and current-head source/packed/offline Chrome CI result. Build and
    install that reviewed tarball at a stable private path outside iCloud; use
    `--setup cursor` to obtain the absolute executable/entry/env definition.
-   No `@latest` upgrade, release workflow, version bump or publication.
+   Freeze this installed artifact during the attempt; no `@latest` upgrade or account action outside this protocol. Independent release preparation has separate maintainer authorization; merging/publication remain gated on successful validation and release checks.
 3. Offline diagnosis only: valid profile, installed Chrome, accessible safety
    state, no owner/budget lock or persisted stop. Never delete a lock or safety
    record to make this pass. Select the existing profile explicitly. Its path
@@ -131,3 +130,49 @@ and local close only, with session not_checked and no owner lock created. Do not
 launch the real account browser, call a live health probe or read a profile while
 preparing this record. The consent request must identify that exact source/build;
 any subsequent source/artifact change requires review before using the approval.
+
+## Consented execution record — October2, 2026
+
+One fresh **MCP SDK stdio** execution, using the frozen source
+`5ef228a1ee973b51e732e01f56f4f6accdfa25da` and private local2.0.3 archive
+SHA256 `d53ef6669ea52f8c2d2ab0839331908f7c36253ceeda45adbe46e580c94aed98`.
+The installed15-entry package, lock/dependency versions and runtime source were
+verified before access. Node22.14.0, Chrome154.0.0.0, macOS. Current PR heads
+`f7e9e2b` / `4093554` / `dffa4ec` each had all12 hosted checks passing; runtime
+source remains identical to the frozen build. This is not the final3.0.0 artifact.
+
+| Redacted measure | Observed result |
+| --- | --- |
+| Window, Asia/Calcutta | October2,00:58:24.149–00:58:47.041 (+05:30) |
+| Total / account-call duration | 22,892 / 21,246 ms |
+| Outer research calls / follow-up retries / writes | 1 / 0 / 0 |
+| Reported explicit Voyager attempts / underlying read tools | 3 / 2, within ceiling; Chrome navigation/background traffic excluded |
+| Discovered tools | 23; discovery makes no account request |
+| `data.status` / `meta.status` | partial / partial |
+| Search / first detail | partial / error (`PROVIDER_ERROR`); stopped with no further read |
+| Linked entities / retained facts / gaps | 3 / 3 / 2 |
+| Contract, source, freshness, bound and partial checks | 62 checked;0 failures |
+| Source / fact freshness / rendered-link / unknown-field checks | 6 / 3 / 6 / 3 |
+| Useful-entity checks passed | 0; usefulness acceptance not passed |
+| Cleanup | close_session confirmed; SDK/server stopped; profile owner released;17 observed Chrome processes,0 remaining |
+
+The runner used a conservative useful-entity criterion: an observed title plus at
+least one observed location, company, description or listing time. No returned
+entity met it. This records a failed useful-brief gate despite passing contract,
+provenance and bounds checks; it does not claim that no matching jobs exist.
+The typed detail error alone does not establish whether the provider route,
+permissions or nested response shape caused it. No cause is guessed and no
+production read validator is weakened to make this pass.
+
+Only redacted timing/status/codes, build/environment identity and validation counts
+were retained. Exact job URLs, descriptions, account identity, profile path,
+cookies, headers and content/log traces were not saved. Source URLs and Markdown
+were checked in memory without opening links. Existing profile and safety history
+remain; cleanup did not log out, delete state or steal/remove a lock.
+
+**Release decision:** retain the drafts and the useful-brief/live-validation gate.
+This is limited partial-read and correct stop/cleanup evidence, not a live
+compatibility pass, native Cursor/Claude flow, first-use cohort or release result.
+Investigate existing read error handling/normalization offline using reviewed
+fixtures and verified provider documentation. Any additional live diagnosis needs
+a new, bounded protocol and fresh consent; this execution must not be retried.

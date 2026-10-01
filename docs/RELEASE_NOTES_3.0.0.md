@@ -21,7 +21,7 @@ Other corrections include alias-safe logout, actionable broken-profile diagnosis
 contradictory-page handling, job/source identity matching, exact 15-file archives,
 and independently verified publishing destinations with an interrupted-release
 resume path. See [release readiness](RELEASE_READINESS_3.0.0.md) for exact builds,
-tests, destination states and pending consented validation.
+tests, destination states and the October2 partial validation with failed useful-brief acceptance.
 
 Offline CI covers Node 20/22 on Linux/macOS/Windows, installed SDK/config flows and
 Chrome lifecycle. It does not prove live LinkedIn compatibility, native desktop

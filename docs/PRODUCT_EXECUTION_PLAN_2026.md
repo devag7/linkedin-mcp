@@ -351,8 +351,8 @@ a reproducible synthetic demo. Workflow corrections enable a SHA-pinned dry run,
 fix resume tags and require independently public scoped metadata. New resulting
 source/package/hosted proof and the dry-run result are recorded in readiness.
 
-Required remaining release actions: fresh consent/actual useful bounded read;
-npm trusted-publisher setup confirmation; ordered guarded merges; one main version
+Required remaining release actions: resolve the failed useful-brief validation and obtain a separately authorized useful bounded read;
+actual npm OIDC publication (trusted-publisher setup is confirmed); ordered guarded merges; one main version
 bump/metadata sync; all four independent destination checks. No release is complete
 until the actual destinations match the intended artifact/source. Public directory
 updates have a separate [submission ledger](DISTRIBUTION_SUBMISSIONS_2026-10-01.md).
@@ -363,3 +363,22 @@ and $0 required-cash estimates are unchanged. Do not close those requirements on
 fixture evidence, launch dates or distribution activity. Broad promotion requires
 the existing first-use/privacy gates; the 10,000-star/daily-Trending ambitions remain
 measured experiments, with missing samples explicitly unknown.
+
+## Bounded live evidence and next gate — October2, 2026
+
+Fresh explicit consent was used exactly once under the job-brief protocol. SDK
+stdio on the frozen5ef228a build returned partial3 entities/3 facts, with first
+job detail stopped as PROVIDER_ERROR. Reported3 explicit Voyager attempts/2
+underlying tools;0 retries/writes.62 validation checks and shutdown passed;0
+useful entities under the runner's title-plus-another-observation criterion.
+[Execution record](LIVE_JOB_BRIEF_VALIDATION_PROTOCOL.md#consented-execution-record--october2-2026).
+
+The useful-brief release gate remains open. Do not relabel this as healthy provider
+compatibility or proceed to ordered merge/version/publication. Review existing
+normalization and typed error handling offline first; observed counts/code do not
+identify a rotating endpoint, permissions or nested error cause. New live
+provider-shape diagnosis requires a separately bounded protocol and renewed
+consent; do not retry or weaken validators. Maintenance estimate0.5–1 day initial
+triage, about1 h/month in existing read-schema maintenance; required cash$0.
+Native client/cohort, erasure/Windows privacy and broader read coverage remain
+separate open proposals.10,000 stars and daily Trending remain measured ambitions.
