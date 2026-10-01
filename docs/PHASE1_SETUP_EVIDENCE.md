@@ -59,7 +59,8 @@ Warmup now measures elapsed time since first verified tool use, preserving count
 and never guessing LinkedIn account age. Custom profile logout requires an explicit
 confirmation flag and is checked in the installed artifact.
 
-Hosted OS/Node jobs are configured but have not run here. Source/package results
+The earlier local snapshot was followed by [hosted run 36853809883](https://github.com/devag7/linkedin-mcp/actions/runs/36853809883):
+all 12 source/package/browser jobs passed across Node20/22 and Linux/macOS/Windows. Source/package results
 and the latest test count are in [ROADMAP_PROGRESS.md](ROADMAP_PROGRESS.md).
 The newer zero-cash pass proves local macOS Chrome launch/ownership/cleanup.
 Consenting human first-use on real LinkedIn, hosted OS/browser launch/cleanup and

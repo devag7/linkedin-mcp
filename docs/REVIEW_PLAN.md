@@ -1,6 +1,8 @@
 # Review boundaries for cumulative local work
 
-The original roadmap asks for separately reviewable changes. The cumulative
+The original roadmap requires a separate reviewable PR per item. This cumulative
+draft PR is an integration checkpoint and does not mark that requirement or human
+review complete. The cumulative
 implementation is now assembled on `codex/roadmap-zero-cost-integration`, based on
 upstream `e368b61`, with four ordered commits: runtime safety/contracts and their
 regressions; package/metadata/dependencies; CI/release/browser proof; and roadmap

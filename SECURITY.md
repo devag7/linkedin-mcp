@@ -160,5 +160,9 @@ an authenticated identity read and then disposes its browser/profile ownership.
 A hard stop or occupied profile prevents that probe. It never sends writes.
 
 The packed artifact is exercised locally with isolated installation and two fresh
-stdio processes. CI has a proposed Node 20/22 matrix on Linux, macOS and Windows;
-those hosted jobs have not run in this local verification. LICENSE was recovered from the committed revision after a cloud-sync deletion; packed-package checks now require it. No publishing was performed.
+stdio processes. The [hosted Node20/22 matrix](https://github.com/devag7/linkedin-mcp/actions/runs/36853809883)
+passed all 12 source/package jobs on Linux, macOS and Windows, including actual
+Chrome launch, ownership and cleanup with empty temporary profiles. This does not
+prove live LinkedIn behavior, Windows native ACL privacy or release authentication.
+LICENSE was recovered from the committed revision after cloud-sync deletion;
+packed-package checks require it. No publishing was performed.

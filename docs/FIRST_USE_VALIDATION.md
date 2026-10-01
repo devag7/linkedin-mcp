@@ -32,3 +32,17 @@ headline total. Month-1/4 reuse is a separate voluntary follow-up; no hidden use
 Hosted OS/Node results, actual Chrome first launch and graceful browser cleanup
 must be linked to their real job/run evidence before the setup matrix says verified.
 Synthetic engine lifecycle tests do not replace a real launch/cleanup observation.
+
+## Testing the unreleased review branch
+
+Until a new version is released, npm's published 2.0.3 is a different artifact.
+Build and install the local tarball from the reviewed PR rather than testing
+`@latest` and attributing its behavior to these changes. Record the source commit
+and tarball integrity with the package version so the tested build is unambiguous.
+Do not put the tarball or account data in a public report. After human review and
+release, volunteers can use the exact new published version.
+
+An existing maintainer setup can supply a consented live-read sanity check; label
+it as such. It does not establish fresh installation, a new-user onboarding rate,
+client compatibility on another device, or the 80% target. Keep cohort size zero
+until genuinely consented first-use attempts are measured under the protocol.

@@ -3,8 +3,10 @@
 Updated 2026-10-01 (Asia/Kolkata). Checked against every requirement in
 [PRODUCT_TECHNICAL_ROADMAP_2026.md](../PRODUCT_TECHNICAL_ROADMAP_2026.md):
 [full coverage and remaining acceptance gates](ROADMAP_COVERAGE.md).
-The initial document and pr_diff.txt remain unchanged. Changes are local,
-uncommitted and unreleased on baseline 1b4a4c8 (package 2.0.3).
+The initial document and pr_diff.txt remain unchanged. Changes are committed on
+`codex/roadmap-zero-cost-integration`, based on upstream `e368b61`, in
+[draft PR #3](https://github.com/devag7/linkedin-mcp/pull/3). Package version remains
+2.0.3 and the changes are unreleased; main has not been changed.
 
 | Milestone | State | Evidence |
 | --- | --- | --- |
@@ -21,7 +23,8 @@ uncommitted and unreleased on baseline 1b4a4c8 (package 2.0.3).
 The [zero-cash execution evidence](ZERO_COST_EXECUTION_EVIDENCE_2026-10-01.md) supersedes
 the earlier 397-test snapshot: messaging source reconciliation, dependency updates,
 release recovery and actual local Chrome lifecycle checks are now implemented.
-Git history/review and external release gates remain outstanding.
+Git history integration and the hosted CI matrix now pass. Human review and
+external release gates remain outstanding; the PR stays a draft.
 
 ## Latest verified gates
 
@@ -46,7 +49,7 @@ of these checks.
 | git diff --check | Pass |
 | docker compose config --quiet | Pass; configuration only |
 | Docker build/runtime | Not run: Docker daemon unavailable |
-| Hosted Node20/22 × Linux/macOS/Windows | Configured; not executed locally |
+| Hosted Node20/22 × Linux/macOS/Windows | Pass: all 12 source/package jobs in [run 36853809883](https://github.com/devag7/linkedin-mcp/actions/runs/36853809883), including six actual Chrome launches and cleanups |
 | Real LinkedIn / volunteer first use / official app | Not exercised |
 
 The pack gate formerly reported licenseIncluded:false before recovery. The user
@@ -62,9 +65,10 @@ application UI compatibility, adoption or a star-growth outcome.
 
 ## Required next evidence
 
-1. Review the reconciled source and dependency/release changes, resolve the dated
-   development-tool follow-up, and run the configured hosted matrix. Record Chrome launch/cleanup
-   and client versions/OSes. Then perform a consenting volunteer first read using
+1. Complete human review of draft PR #3 and resolve the October 8 development-tool
+   follow-up. The hosted matrix passed; detailed job/Chrome evidence is preserved
+   in the zero-cash execution record. Obtain real client/app and consented first-read
+   evidence using
    FIRST_USE_VALIDATION.md. Fixture success is not a completed Phase 1 human gate.
 2. Obtain consented redacted per-endpoint/locale captures, preserving provenance;
    verify current paging and provider changes before adding routes or continuations.
@@ -77,7 +81,8 @@ application UI compatibility, adoption or a star-growth outcome.
    record first-use/reuse/support/referral/growth aggregates with informed opt-in.
    Stars are a measurable ambition, not a code acceptance gate or guaranteed result.
 
-Use REVIEW_PLAN.md to split cumulative changes into the roadmap's review boundaries.
-No commit, merge, version bump, publication, live action, outreach or hidden analytics
-was performed. Keep safety state on rollback; versions that ignore locks or strip
+Use REVIEW_PLAN.md for the six review boundaries within the cumulative draft PR.
+The initial roadmap asks for separate PRs per item; this integration PR is a review
+checkpoint, not proof those human-review exit gates are accepted. No merge, version
+bump, publication, live action, outreach or hidden analytics was performed. Keep safety state on rollback; versions that ignore locks or strip
 journal fields must not share it. Full coordinated erasure remains a documented gap.

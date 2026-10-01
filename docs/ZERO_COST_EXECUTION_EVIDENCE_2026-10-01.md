@@ -212,3 +212,44 @@ pretend mode bits prove NTFS ACL privacy. Native ACL enforcement/verification is
 tracked explicitly in PRIVACY.md and remains open before any Windows live-use
 privacy claim. This follows Node's documented file-mode limitation, not a waived
 POSIX assertion. The original dated files remain byte-identical.
+
+## 6. Hosted integration gate — passed
+
+[Draft review PR #3](https://github.com/devag7/linkedin-mcp/pull/3) contains the
+integration branch; main remains `e368b61`. [Hosted run 36853809883](https://github.com/devag7/linkedin-mcp/actions/runs/36853809883)
+passed **all 12 jobs** for implementation commit
+`96ff6eb31c4f6a17e7a1cb00333322bd56bd6d73`. Each of the six source jobs passed
+449 tests, lint, typecheck, metadata and build. Each of the six package jobs
+installed the tarball, verified the offline CLI/MCP and included license, then
+launched the production BrowserEngine against synthetic content and verified
+closure, ownership release and zero remaining observed processes.
+
+| Hosted target | Node | Chrome (reduced UA) | Observed → remaining processes |
+| --- | --- | --- | --- |
+| Linux | 20.20.2 | 154.0.0.0 | 11 → 0 |
+| Linux | 22.23.3 | 154.0.0.0 | 11 → 0 |
+| macOS | 20.20.2 | 152.0.0.0 | 9 → 0 |
+| macOS | 22.23.2 | 152.0.0.0 | 9 → 0 |
+| Windows | 20.20.2 | 154.0.0.0 | 10 → 0 |
+| Windows | 22.23.2 | 154.0.0.0 | 10 → 0 |
+
+The [preserved run/job evidence](evidence/hosted-ci-2026-10-01/run-36853809883.json)
+contains selected GitHub metadata and actual parsed test/browser outputs; full
+logs remain linked per job. No credentials, LinkedIn content or private paths are
+in this evidence. The first failing run remains linked above rather than hidden.
+Later documentation-only commits still require their own PR checks; use the PR's
+current check results when assessing its latest head.
+
+The review branch is pushed and the PR attached to the Codex chat. A verified Git
+bundle at `~/.codex/backups/linkedin-mcp/20261001T110601Z-git-integrated/` adds a
+recoverable history checkpoint to both preserved file snapshots. No release
+workflow ran on this branch. The package remains 2.0.3; no merge, publication or
+live LinkedIn request was made. Production audit was rerun and remains zero.
+
+The roadmap's separate-per-item PR rule and human acceptance remain open: this
+cumulative draft is an integration/review checkpoint, not approval to merge the
+entire roadmap. Consented first-use/live reads, coordinated shared-state erasure,
+Windows native ACL enforcement/verification and the optional official provider
+remain open. A read-only maintainer validation consent request has been presented;
+no reply is interpreted as permission. The development-tool follow-up remains due
+**2026-10-08**. Required cash expenditure remains zero.
