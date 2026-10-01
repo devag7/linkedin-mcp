@@ -70,7 +70,10 @@ export function pageResult<T>(
   const paging =
     parsed.success &&
     parsed.data.data.paging.start === offset &&
-    parsed.data.data.paging.count === count
+    parsed.data.data.paging.count === count &&
+    // Totals certify continuation only when they agree with the observed page.
+    // A short last page is coherent when exactly that many results remain.
+    rows.length === Math.min(count, Math.max(0, parsed.data.data.paging.total - offset))
       ? parsed.data.data.paging
       : undefined;
   const truncated = rows.length > count;
