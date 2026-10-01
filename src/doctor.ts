@@ -158,7 +158,9 @@ export function inspectSetup(
       'Install Google Chrome or set LINKEDIN_CHROME_PATH to an installed executable. Diagnosis does not install software.',
     );
   if (!report.checks.profileWritable || report.checks.profile === 'invalid')
-    report.nextSteps.push('Repair browser profile directory permissions before continuing.');
+    report.nextSteps.push(
+      'Repair LINKEDIN_PROFILE_DIR: choose an accessible directory, fix broken symlink/junction targets or parent aliases, and check permissions. Stop profile owners first; do not delete safety history. Regenerate client configuration after repair.',
+    );
   if (report.checks.budgetLocked)
     report.nextSteps.push(
       'Budget state is currently locked. Wait for the transaction to finish; repair only a confirmed orphan after stopping all owners.',

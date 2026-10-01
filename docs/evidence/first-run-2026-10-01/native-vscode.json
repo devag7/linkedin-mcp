@@ -1,0 +1,22 @@
+{
+  "observedAt": "2026-10-01T12:21:44Z",
+  "client": "VS Code",
+  "clientVersion": "1.139.1",
+  "platform": "darwin",
+  "sourceHead": "1bde68c7ce03de72cc3009ac576c6c41044425aa",
+  "scope": "Native generated-config launch and tool discovery only, offline disposable profile",
+  "configuration": "servers.linkedin from --client-config vscode",
+  "connection": "Running",
+  "discoveredTools": 22,
+  "observationSource": "Native app accessibility output, MCP: linkedin output panel",
+  "startupLog": [
+    "2026-10-01 17:51:43.601 [info] Starting server linkedin",
+    "2026-10-01 17:51:43.605 [info] Connection state: Running",
+    "2026-10-01 17:51:44.856 [info] Discovered 22 tools"
+  ],
+  "providerRead": "not_performed",
+  "chatToolInvocation": "not_performed",
+  "linkedInRequests": 0,
+  "browserLaunches": 0,
+  "cleanup": "Temporary window closed; original workspace restored; no matching server process or fixture owner lock"
+}

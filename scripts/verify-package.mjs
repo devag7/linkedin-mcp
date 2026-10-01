@@ -71,6 +71,13 @@ try {
     `linkedin-mcp v${pkg.version}`,
   );
   const shipped = readFileSync(bundle, 'utf8');
+  if (pkg.version === '3.0.0') {
+    const metadata = JSON.parse(readFileSync(join(install, 'node_modules', pkg.name, 'mcp-manifest.json'), 'utf8'));
+    assert.equal(metadata.tools.length, 22, '3.0.0 is the approved 22-tool core release.');
+    assert.ok(!metadata.tools.some((tool) => tool.name === 'research_jobs'));
+    assert.ok(!shipped.includes('research_jobs'), 'The deferred research tool must not enter the core bundle.');
+  }
+
   for (const inactive of [
     'AuthManager',
     'LINKEDIN_ACCESS_TOKEN',
@@ -181,6 +188,12 @@ try {
   });
   assert.equal(aliased.status, 1, aliased.stderr);
   assert.equal(readFileSync(join(outside, 'sentinel'), 'utf8'), 'preserved');
+  process.stdout.write(
+    execFileSync(process.execPath, [resolve('scripts/verify-setup.mjs'), bundle], {
+      encoding: 'utf8',
+      timeout: 30000,
+    }),
+  );
   const smoke = execFileSync(
     process.execPath,
     [resolve('tests/built-artifact-smoke.mjs'), bundle],

@@ -11,7 +11,7 @@
 [![MCP](https://img.shields.io/badge/MCP-Compatible-purple?logo=anthropic&logoColor=white)](https://modelcontextprotocol.io/)
 [![Glama score](https://glama.ai/mcp/servers/devag7/linkedin-mcp/badges/score.svg)](https://glama.ai/mcp/servers/devag7/linkedin-mcp)
 
-**Give Claude, Cursor, and any MCP client access to LinkedIn — profiles, people/job/company search, feed, messaging, and your network — as clean structured JSON.**
+**Structured LinkedIn reads for MCP clients — profiles, jobs, companies and inbox data, with guided offline setup and explicit safety limits.**
 
 **22 tools** · local browser reads · five explicitly confirmed writes · persisted safety limits and operation journals.
 
@@ -22,6 +22,19 @@
 
 ---
 
+## Guided first run
+
+This guide targets the 22-tool core release 3.0.0. Publication receipts are tracked in
+[release readiness](docs/RELEASE_READINESS_3.0.0.md); until its destinations are
+verified, use the reviewed source. From that checkout, run `npm ci` and
+`npm run build`, then `node dist/index.js --setup cursor` (also `claude-desktop`
+or `vscode`). It reports local setup, client configuration and exact next steps
+without contacting LinkedIn. Export only JSON with `--client-config cursor`.
+Merge the generated entry into your existing client file and keep the installed
+build at a stable path. Follow the [setup guide](SETUP_GUIDE.md) for manual login,
+client checks and truthful validation status. The [product execution plan](docs/PRODUCT_EXECUTION_PLAN_2026.md)
+sets the next features and measured daily-Trending distribution experiments.
+
 ## What it does
 
 The server uses Patchright to open a persistent Google Chrome profile and makes
@@ -30,14 +43,16 @@ MCP clients. Some discovery tools fall back to page data. Undocumented endpoints
 query IDs, browser behavior and response shapes can change.
 
 Useful starting workflows are profile research, job/company research and inbox
-triage. Alpha writes are disabled by default. When enabled they require `confirm:true`, consume conservative attempt budgets, and
+triage. Alpha writes are disabled by default. When enabled they require a reviewed server-issued preview token and `confirm:true`, consume conservative attempt budgets, and
 return a status including `unknown` when completion cannot be established.
 
 ## Verification status
 
-This checkout contains unreleased roadmap changes on the v2.0.3 baseline.
-[Hosted source/package/browser checks](https://github.com/devag7/linkedin-mcp/actions/runs/36853809883)
-pass on Node20/22 across Linux, macOS and Windows. One explicitly consented macOS
+3.0.0 introduces breaking safety and client requirements; read the
+[migration guide](SETUP_GUIDE.md#migrating-from-203-to-300).
+[Hosted source/package/browser checks](https://github.com/devag7/linkedin-mcp/actions/workflows/ci.yml)
+cover Node20/22 across Linux, macOS and Windows. Exact core-only candidate/head
+results are recorded in [release readiness](docs/RELEASE_READINESS_3.0.0.md). One explicitly consented macOS
 maintainer health/own-profile read also passed with partial metadata;
 [scope and evidence](docs/ZERO_COST_EXECUTION_EVIDENCE_2026-10-01.md#7-consented-maintainer-live-read--passed-limited-scope)
 do not establish fresh-user or broader live compatibility.
@@ -61,30 +76,48 @@ not a guarantee of current provider compatibility or account safety.
 
 ## 🚀 Quick start
 
-**1. Log in once** (opens a real Chrome window — sign in, solve any captcha/2FA):
+The package commands below target 3.0.0 after its publication has been verified.
+For a release candidate, build the reviewed checkout and use its generated
+absolute-path configuration from the [setup guide](SETUP_GUIDE.md).
+
+**1. Diagnose offline:**
 
 ```bash
-npx -y linkedin-mcp-tools@latest --login
+npx -y linkedin-mcp-tools@3.0.0 --setup cursor
+```
+
+Also accepts `claude-desktop` or `vscode`. Resolve the reported local issues, then
+merge the generated entry into your existing client file. Setup performs no login
+or account request. Use a stable local installation and regenerate its entry
+after upgrades; the report pins its installed build rather than a temporary path.
+
+**2. Log in once** (opens a real Chrome window — sign in, solve any captcha/2FA):
+
+```bash
+npx -y linkedin-mcp-tools@3.0.0 --login
 ```
 
 Needs Google Chrome installed (or run `npx patchright install chrome` once). Your
 session — Cloudflare clearance and all — persists to `~/.linkedin-mcp/profile/`.
 
-**2. Point your MCP client at it.** Claude Desktop / Cursor / Claude Code config:
+**3. Configure your client.** Prefer the generated entry above. For clients
+accepting `mcpServers`, this version-pinned example is an alternative:
 
 ```json
 {
   "mcpServers": {
     "linkedin": {
       "command": "npx",
-      "args": ["-y", "linkedin-mcp-tools@latest"]
+      "args": ["-y", "linkedin-mcp-tools@3.0.0"]
     }
   }
 }
 ```
 
-Then just ask: *"Get my LinkedIn profile and summarize my experience"* or *"Find 5
-recruiters at Google."*
+Start with `whoami` for local status. When you deliberately authorize an account
+read, try *"Find up to three TypeScript engineer jobs and give me a source-linked
+brief; do not follow another page."* Current job-provider compatibility awaits
+consented validation; an empty or partial result must retain that status.
 
 <details>
 <summary><b>From source / contributing</b></summary>
@@ -223,15 +256,21 @@ All five alpha write tools require `LINKEDIN_ENABLE_WRITES=true` and `confirm:tr
   "text": "The draft you reviewed",
   "visibility": "PUBLIC",
   "confirm": true,
-  "operation_id": "publish-20261001-reviewed-draft-01"
+  "operation_id": "<operationId returned by the reviewed preview>",
+  "preview_token": "<token returned by that same preview>"
 }
 ```
+
+The placeholders above must be replaced with the actual preview values; the
+example is not a submission to copy unchanged.
 
 The result includes `operationId`, `replayed`, `status`, `ok`, and `httpStatus`.
 Repeating the same tool, ID, and inputs retrieves the stored outcome without
 submitting again, including after restart. Changed inputs with the same ID are
-rejected. Omitting the ID generates a new one; if the response is lost, the caller
-cannot safely recover that generated ID. Supply your own ID for that case.
+rejected. A preview can generate an ID when omitted; every new submission must include
+that preview ID and its token. Previously journaled outcomes can be looked up
+with identical tool/ID/inputs after expiry or restart without a fresh token.
+Never generate a replacement ID to retry an uncertain submission.
 
 `unknown` means the request may have reached LinkedIn: a disconnect, timeout,
 server error, unreadable body, or unrecognized success response cannot establish
@@ -347,7 +386,7 @@ npm run build
 
 ## 📄 License
 
-MIT — see [LICENSE](LICENSE). Missing files caused by cloud synchronization were recovered from the committed revision with maintainer authorization. This work is under draft PR review and unreleased. Not affiliated with LinkedIn.
+MIT — see [LICENSE](LICENSE). Missing files caused by cloud synchronization were recovered from the committed revision with maintainer authorization. The 3.0.0 core scope and destination receipts are tracked in release readiness. Not affiliated with LinkedIn.
 
 <div align="center">
 
