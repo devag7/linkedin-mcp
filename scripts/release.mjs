@@ -118,6 +118,22 @@ export async function verifyPackage(pkg, pack, registry = NPM, options = {}) {
   fail('PACKAGE_NOT_VISIBLE');
 }
 
+export async function verifyPublicGithubPackage(options = {}) {
+  // Registry authentication can succeed for a private package. Visibility is an
+  // independent destination requirement, checked without an authentication token.
+  const metadata = await readMetadata(
+    'https://api.github.com/users/devag7/packages/npm/linkedin-mcp-tools',
+    { ...options, token: undefined },
+  );
+  if (
+    metadata?.name !== 'linkedin-mcp-tools' ||
+    metadata?.package_type !== 'npm' ||
+    metadata?.visibility !== 'public' ||
+    metadata?.repository?.full_name !== 'devag7/linkedin-mcp'
+  )
+    fail('GITHUB_PACKAGE_NOT_PUBLIC');
+}
+
 export async function registryState(server, options = {}) {
   const remote = await readMetadata(
     `${REGISTRY}/v0.1/servers/${encodeURIComponent(server.name)}/versions/${encodeURIComponent(server.version)}?include_deleted=true`,
@@ -302,8 +318,10 @@ async function main() {
       present: (await packageState(pkg, packs(), GITHUB_PACKAGES, githubOptions)) === 'verified',
       tarball: packs().filename,
     });
-  if (command === 'verify-github-package')
-    return verifyPackage(pkg, packs(), GITHUB_PACKAGES, githubOptions);
+  if (command === 'verify-github-package') {
+    await verifyPackage(pkg, packs(), GITHUB_PACKAGES, githubOptions);
+    return verifyPublicGithubPackage();
+  }
   if (command === 'registry-plan')
     return output({ present: (await registryState(server())) === 'verified' });
   if (command === 'verify-registry') return verifyRegistry(server());

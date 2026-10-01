@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       release_ref:
-        description: 'main for a new version, or its vX.Y.Z tag to resume an interrupted release'
+        description: 'main, a vX.Y.Z resume tag, or a full source SHA for a dry run'
         required: true
         default: main
         type: string
@@ -30,7 +30,7 @@ env:
 
 jobs:
   compatibility:
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && inputs.dry_run)
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -61,7 +61,7 @@ jobs:
 
   release:
     needs: compatibility
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && inputs.dry_run)
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -75,7 +75,8 @@ jobs:
       - name: Validate manual source ref
         env:
           RELEASE_REF: ${{ inputs.release_ref || 'main' }}
-        run: node -e 'if (!/^(main|v\d+\.\d+\.\d+)$/.test(process.env.RELEASE_REF)) process.exit(1)'
+          MANUAL_DRY_RUN: ${{ inputs.dry_run && 'true' || 'false' }}
+        run: node -e 'if (!/^(main|v\d+\.\d+\.\d+)$/.test(process.env.RELEASE_REF) && !(process.env.MANUAL_DRY_RUN === "true" && /^[a-f0-9]{40}$/.test(process.env.RELEASE_REF))) process.exit(1)'
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event_name == 'workflow_dispatch' && inputs.release_ref || github.sha }}
@@ -103,8 +104,8 @@ jobs:
       - name: Publish missing npm artifact
         if: steps.plan.outputs.eligible == 'true' && steps.plan.outputs.npm_present == 'false' && env.RELEASE_DRY_RUN == 'false'
         env:
-          NPM_PUBLISH_AUTH: ${{ vars.NPM_PUBLISH_AUTH || 'token' }}
-          NODE_AUTH_TOKEN: ${{ vars.NPM_PUBLISH_AUTH != 'oidc' && secrets.NPM_TOKEN || '' }}
+          NPM_PUBLISH_AUTH: ${{ vars.NPM_PUBLISH_AUTH || 'oidc' }}
+          NODE_AUTH_TOKEN: ${{ (vars.NPM_PUBLISH_AUTH || 'oidc') == 'token' && secrets.NPM_TOKEN || '' }}
           TARBALL: ${{ steps.plan.outputs.tarball }}
         run: |
           case "$NPM_PUBLISH_AUTH" in
