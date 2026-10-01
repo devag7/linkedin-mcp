@@ -76,6 +76,10 @@ their passing result is **not** an acceptance pass. They are excluded from the
 permanent suite and from its test count. Complete temporary fixture source is
 also retained in the private backup.
 
+The SDK probes were executed on the PR #5 workspace with the status follow-up.
+Affected scope for #3/#4 is established by identical shared source hashes and
+their same call sites; this is not a claim of three separate live executions.
+
 ## Requested fix and validation
 
 The pre-fix SDK empty-page assertion failed on `meta.status:ok` while
@@ -93,6 +97,17 @@ stdio and all three generated client configurations. They do not establish live
 provider compatibility, native client chat behavior, publication or adoption.
 New-head hosted matrix results are linked in the draft PR and retained privately
 after push; this document does not predeclare their success.
+
+The code follow-up is `10223a173d3dcee2688c1cb85f06133cdc82ecde`; its hosted
+matrix is [run36888935665](https://github.com/devag7/linkedin-mcp/actions/runs/36888935665).
+Dirty workspace and fresh clean checkout at that source produce identical normal
+and scripts-disabled archives: all15 names, lengths and SHA256s match the
+[dirty inventory](evidence/three-pr-review-2026-10-01/dirty-status-fix-inventory.json)
+and [clean inventory](evidence/three-pr-review-2026-10-01/clean-status-fix-inventory.json).
+The actual local Chrome154 offline lifecycle also passes:9 observed processes
+close to0, context closes and ownership releases, with0 LinkedIn requests.
+This subsequent documentation-only evidence commit changes no shipped path or
+source; its resulting-head hosted result must still be verified independently.
 
 Previous logout alias/junction regression, preview token expiration/target-content
 binding/replay tests, release target-SHA/tag mismatch tests and broken-alias setup
