@@ -1,3 +1,14 @@
+# Unreleased local roadmap work
+
+- Contain loopback HTTP, persist checkpoint stops and fail closed on shared state.
+- Bind verified account identity, own profile across processes, reserve writes before dispatch and preserve unknown/replayed outcomes.
+- Add redacted doctor, cold-session truth and packed-install checks with license enforcement.
+- Recover cloud-sync deletions, isolate inactive v1 config and generate route/version metadata.
+- Add native output contracts, local write previews, default alpha opt-in, bounded offset/cursor reads and cancellation before dispatch.
+- Add research/triage examples and evidence-based roadmap coverage. Current live compatibility and hosted results remain unverified.
+
+This section describes source changes. No version bump or publication is implied.
+
 # Changelog
 
 All notable changes to this project will be documented in this file.
