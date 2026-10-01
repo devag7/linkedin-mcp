@@ -62,7 +62,12 @@ confirmation flag and is checked in the installed artifact.
 The earlier local snapshot was followed by [hosted run 36853809883](https://github.com/devag7/linkedin-mcp/actions/runs/36853809883):
 all 12 source/package/browser jobs passed across Node20/22 and Linux/macOS/Windows. Source/package results
 and the latest test count are in [ROADMAP_PROGRESS.md](ROADMAP_PROGRESS.md).
-The newer zero-cash pass proves local macOS Chrome launch/ownership/cleanup.
-Consenting human first-use on real LinkedIn, hosted OS/browser launch/cleanup and
-current provider/locale captures still remain for the Phase 1 exit gate. No live
-session, official app, publishing, outreach or analytics collection was performed.
+The hosted jobs prove real Chrome launch/ownership/cleanup on all six OS/Node
+combinations. A subsequently authorized maintainer check on macOS also passed:
+fresh local tarball install, healthy identity, one own-profile read with partial
+metadata, and zero observed Chrome processes/profile lock after cleanup. See
+[the scoped record](ZERO_COST_EXECUTION_EVIDENCE_2026-10-01.md#7-consented-maintainer-live-read--passed-limited-scope).
+This existing-profile check does not prove new-user onboarding or client-app UI
+compatibility. Fresh volunteer first use, broader provider/locale captures and
+Windows native ACL privacy remain open. No live write, official app, publishing,
+outreach or hidden analytics collection was performed.

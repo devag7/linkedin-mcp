@@ -36,6 +36,11 @@ return a status including `unknown` when completion cannot be established.
 ## Verification status
 
 This checkout contains unreleased roadmap changes on the v2.0.3 baseline.
+[Hosted source/package/browser checks](https://github.com/devag7/linkedin-mcp/actions/runs/36853809883)
+pass on Node20/22 across Linux, macOS and Windows. One explicitly consented macOS
+maintainer health/own-profile read also passed with partial metadata;
+[scope and evidence](docs/ZERO_COST_EXECUTION_EVIDENCE_2026-10-01.md#7-consented-maintainer-live-read--passed-limited-scope)
+do not establish fresh-user or broader live compatibility.
 Installing `@latest` does not establish that those changes are published.
 See [execution progress](docs/ROADMAP_PROGRESS.md) and the linked evidence.
 
@@ -342,7 +347,7 @@ npm run build
 
 ## 📄 License
 
-MIT — see [LICENSE](LICENSE). Missing files caused by cloud synchronization were recovered from the committed revision with maintainer authorization. This work is local and unreleased. Not affiliated with LinkedIn.
+MIT — see [LICENSE](LICENSE). Missing files caused by cloud synchronization were recovered from the committed revision with maintainer authorization. This work is under draft PR review and unreleased. Not affiliated with LinkedIn.
 
 <div align="center">
 

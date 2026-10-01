@@ -28,8 +28,9 @@ external release gates remain outstanding; the PR stays a draft.
 
 ## Latest verified gates
 
-Executed in this workspace on macOS, Node v22.14.0. No LinkedIn request was part
-of these checks.
+Local source/offline gates ran on macOS, Node v22.14.0. Hosted and subsequently
+consented live-check results are labeled separately below; offline gates never
+require a LinkedIn account.
 
 | Check | Result |
 | --- | --- |
@@ -50,7 +51,8 @@ of these checks.
 | docker compose config --quiet | Pass; configuration only |
 | Docker build/runtime | Not run: Docker daemon unavailable |
 | Hosted Node20/22 × Linux/macOS/Windows | Pass: all 12 source/package jobs in [run 36853809883](https://github.com/devag7/linkedin-mcp/actions/runs/36853809883), including six actual Chrome launches and cleanups |
-| Real LinkedIn / volunteer first use / official app | Not exercised |
+| Consented maintainer live read | Pass: fresh local tarball install, healthy identity, one own-profile read (partial), session/process/ownership cleanup; [sanitized evidence](evidence/hosted-ci-2026-10-01/consented-maintainer-read.json) |
+| Volunteer first use / client apps / official app | Not exercised; maintainer existing-profile check does not establish these |
 
 The pack gate formerly reported licenseIncluded:false before recovery. The user
 identified iCloud synchronization as the deletion cause and authorized restoring
@@ -84,5 +86,6 @@ application UI compatibility, adoption or a star-growth outcome.
 Use REVIEW_PLAN.md for the six review boundaries within the cumulative draft PR.
 The initial roadmap asks for separate PRs per item; this integration PR is a review
 checkpoint, not proof those human-review exit gates are accepted. No merge, version
-bump, publication, live action, outreach or hidden analytics was performed. Keep safety state on rollback; versions that ignore locks or strip
+bump, publication, live write, outreach or hidden analytics was performed. One
+explicitly consented maintainer live read passed with limited scope. Keep safety state on rollback; versions that ignore locks or strip
 journal fields must not share it. Full coordinated erasure remains a documented gap.

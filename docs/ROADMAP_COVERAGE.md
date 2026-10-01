@@ -23,7 +23,7 @@ remote execution or sustained user data is needed. Source changes are not releas
 
 | ID | Coverage / evidence | Outstanding acceptance proof |
 | --- | --- | --- |
-| P-01 diagnosis | Implemented locally: offline doctor, explicit live option, fixed/redacted statuses, Chrome/profile/ownership/storage/token checks; doctor.test.ts and account-protocol.test.ts | Actual browser/login/API observations on supported OSes; fixture paths are not an OS certification |
+| P-01 diagnosis | Implemented locally: offline doctor, explicit live option, fixed/redacted statuses, Chrome/profile/ownership/storage/token checks; doctor.test.ts and account-protocol.test.ts | One consenting maintainer macOS health/read check passed; cross-client/new-user and other live OS/provider observations remain unproven |
 | P-02 capability inventory | Implemented locally: capabilities.ts → whoami and generated CAPABILITIES.md/README/manifest; registration-derived count; metadata check; contracts.test.ts | Current live dates remain null; DOM locale compatibility unverified |
 | P-03 typed/native output | Implemented locally: contracts.ts, register.ts, result.ts; all 22 registrations advertise schemas and matching structuredContent/text; typed error envelope works with client-side validation | Additional consented provider snapshots and client-application evidence; not a claim of live schema stability |
 | P-04 bounded search | Implemented locally with route limits: stable count bounds, search budgets, one-page job/feed/notification offsets, query/count-bound cursors only for matching paging evidence; bounded first-page DOM/inbox/conversation/invitation views; pagination and protocol tests | DOM and messaging continuation unsupported; no guessed URL/API parameters or implicit crawl; additional paging shapes require captures |
@@ -99,7 +99,7 @@ performed and callers must obtain explicit human approval.
 | initialize/list/call for every tool | Native/text output, schema/annotation/inventory for all 22; every read registration gets auth/quota/checkpoint/internal-timeout/shape errors; explicit empty/partial list cases; real MCP queued cancellation; all five writes journal/replay/unknown/confirmation covered |
 | Malformed JSON / provider errors / cancellation | Raw/classifier/checkpoint tests plus boundary shape rejection; provider fetch/body deadlines tested with real callback execution; request cancellation before queue/provider and during pacing; no claim that already-started Chrome/fetch can always be interrupted |
 | Independent processes / OS / packed install | Shared state contention/owner crash/symlink/process tests locally; installed artifact stdio; OS path fixtures; all six hosted OS/Node source suites and packed/Chrome cleanup jobs pass in run 36853809883; live providers and Windows native ACL privacy remain unproven |
-| Live tests only with exact consent | No live read/write sent; normal gates remain offline. Restored manual scripts must not be run merely because they exist |
+| Live tests only with exact consent | One explicitly authorized macOS maintainer health/own-profile read passed; normal CI remains offline and no live write was sent. Other routes require their own consent/evidence |
 | Generated compatibility with dates/scope | CAPABILITIES.md and native whoami use one catalog; every liveCheckedAt remains null; synthetic dates are not promoted to captured live dates |
 
 ## Phase exit gates (original section 6)
@@ -107,8 +107,8 @@ performed and callers must obtain explicit human approval.
 | Phase | Deliverables now | Exit gate status |
 | --- | --- | --- |
 | 0 contain risk | P0-1 through P0-4 implemented with transport, runtime and process evidence | Local and hosted offline gates pass; cumulative draft PR prepared, separate-per-item PR/human acceptance and release review remain outstanding |
-| 1 truth/install | Restored files/license, truthful docs/config, generated metadata, doctor, warmup progression, packed install | Partial: hosted matrix passes; consenting real first read and client-app proof outstanding |
-| 2 contract quality | Native/versioned outputs, schemas/annotations, errors, bounded pages/cursors, manifest and synthetic protocol library | Local contract gate passes; real capture/locale/client evidence outstanding |
+| 1 truth/install | Restored files/license, truthful docs/config, generated metadata, doctor, warmup progression, packed install | Partial: hosted matrix and one consenting maintainer own-profile read pass; fresh-user/client-app proof outstanding |
+| 2 contract quality | Native/versioned outputs, schemas/annotations, errors, bounded pages/cursors, manifest and synthetic protocol library | Local contract gate passes; one partial own-profile observation passed; wider capture/locale/client evidence outstanding |
 | 3 valuable workflows | WORKFLOWS.md covers bounded job research, company research, two-profile comparison, inbox triage and one reviewed post; source URLs added where derived from known IDs | Prepared/local links tested in outputs; human completion/retry improvement unmeasured; post URL unavailable |
 | 4 official pilot | Official selection unavailable; documented provider/OAuth/scope plan grounded in reviewed official docs | Not achieved: real app/grants/implementation/approved API test required |
 | 5 community/distribution | README/setup/capability/issue/contributor/changelog/guides, actual synthetic offline MCP walkthrough and distribution/measurement artifacts prepared | Not achieved: review branch/PR now published, but no release/registry publication, demo capture, volunteers or monthly adoption measurement |

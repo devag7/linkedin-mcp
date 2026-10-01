@@ -3,7 +3,9 @@
 Verified 2026-10-01 (Asia/Calcutta). This follows
 [the zero-cash audit](ZERO_COST_GAP_AUDIT_2026-10-01.md) in its priority order.
 The original roadmap and audit are dated inputs, not statements that their gaps
-remain unchanged. No required paid service or dependency was introduced.
+remain unchanged. No required paid service or dependency was introduced. Sections
+1–4 describe the earlier local checkpoint; sections 5–7 record Git/hosted follow-
+through and the subsequently consented maintainer live read.
 
 ## 1. Preserve and reconcile — local source gate passed
 
@@ -244,12 +246,47 @@ The review branch is pushed and the PR attached to the Codex chat. A verified Gi
 bundle at `~/.codex/backups/linkedin-mcp/20261001T110601Z-git-integrated/` adds a
 recoverable history checkpoint to both preserved file snapshots. No release
 workflow ran on this branch. The package remains 2.0.3; no merge, publication or
-live LinkedIn request was made. Production audit was rerun and remains zero.
+live LinkedIn request was made at this Git-only checkpoint. Production audit was
+rerun and remains zero; the later consented read is recorded below.
 
 The roadmap's separate-per-item PR rule and human acceptance remain open: this
 cumulative draft is an integration/review checkpoint, not approval to merge the
 entire roadmap. Consented first-use/live reads, coordinated shared-state erasure,
 Windows native ACL enforcement/verification and the optional official provider
-remain open. A read-only maintainer validation consent request has been presented;
-no reply is interpreted as permission. The development-tool follow-up remains due
+remain open. The read-only maintainer validation consent request was subsequently
+answered with explicit authorization; its limited result is recorded below. The development-tool follow-up remains due
 **2026-10-08**. Required cash expenditure remains zero.
+
+## 7. Consented maintainer live read — passed, limited scope
+
+The user explicitly authorized the read-only check in this chat. A fresh install
+of the local reviewed tarball from commit
+`e7df5aa9074be9376248ea088eb961bf825edf16` was used, with both write flags forced
+false. The existing macOS profile was already signed in; no manual login or
+checkpoint recovery was needed. Only whoami, health_check, get_my_profile and
+close_session were called. No write or retry was sent.
+
+- Offline doctor: package/Chrome available, unowned existing profile, valid safety
+  state; login/API truthfully `not_checked` before the intentional live check.
+- 22 tools registered; MCP stdio initialization/list/call completed.
+- health_check: **healthy**, Voyager **ok**, about **13.9 seconds**.
+- get_my_profile: **ok**, source **voyager**, **partial: true**, about **5.6 seconds**.
+  Partial means this does not establish full profile completeness or hidden sections.
+- close_session succeeded. Client/server shutdown released profile ownership and
+  left **zero observed profile-associated Chrome processes**.
+- Total install/diagnosis/read/cleanup check: **22.771 seconds**.
+
+[Sanitized observation](evidence/hosted-ci-2026-10-01/consented-maintainer-read.json)
+records commit/tarball integrity, platform, timestamps and status only. No LinkedIn
+identity, profile content, cookies, token, account key or private path was retained
+in this evidence. This is one consenting maintainer observation on an existing
+setup, **not a fresh-user cohort, 80% onboarding measurement, real client-app UI
+verification, general route/locale certification or write verification**. Current
+route-wide capability dates are not promoted from this single sample.
+
+The evidence/documentation commit preceding this live observation also passed
+[all 12 jobs in run 36854576055](https://github.com/devag7/linkedin-mcp/actions/runs/36854576055).
+The PR remains a draft for human review. No version bump, main merge, release,
+outreach or paid dependency was introduced. Fresh-user/client/locale measurements,
+shared-state erasure, Windows native ACL verification and the optional official
+provider remain open, alongside the October 8 developer-tool follow-up.

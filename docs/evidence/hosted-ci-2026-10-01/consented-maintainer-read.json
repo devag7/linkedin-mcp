@@ -1,0 +1,68 @@
+{
+  "kind": "consented_maintainer_live_read",
+  "freshUser": false,
+  "sourceCommit": "e7df5aa9074be9376248ea088eb961bf825edf16",
+  "startedAt": "2026-10-01T11:21:28.760Z",
+  "platform": "darwin",
+  "node": "v22.14.0",
+  "writesEnabled": false,
+  "toolCalls": [
+    {
+      "name": "whoami",
+      "elapsedMs": 5,
+      "isError": false
+    },
+    {
+      "name": "health_check",
+      "elapsedMs": 13919,
+      "isError": false
+    },
+    {
+      "name": "get_my_profile",
+      "elapsedMs": 5629,
+      "isError": false
+    },
+    {
+      "name": "close_session",
+      "elapsedMs": 177,
+      "isError": false
+    }
+  ],
+  "outcome": "read_completed",
+  "artifact": {
+    "name": "linkedin-mcp-tools",
+    "version": "2.0.3",
+    "integrity": "sha512-0pFPC/0pmnz/81FLtuCcWJuf2HbcRk+cyei4L4nPjTU097Ek/AOkgNgjtZOnAnGaeFq9gHP5Sai3Aj7giUNSsg=="
+  },
+  "offlineSetup": {
+    "session": "not_checked",
+    "api": "not_checked",
+    "checks": {
+      "package": "available",
+      "chrome": "available",
+      "profile": "exists",
+      "profileWritable": true,
+      "profileOwned": false,
+      "budgetLocked": false,
+      "safetyState": "valid",
+      "httpToken": "not_required"
+    }
+  },
+  "registeredTools": 22,
+  "health": {
+    "status": "healthy",
+    "voyager": "ok"
+  },
+  "read": {
+    "status": "ok",
+    "source": "voyager",
+    "partial": true
+  },
+  "closeSession": true,
+  "cleanup": {
+    "remainingObservedProcesses": 0,
+    "profileOwnershipReleased": true
+  },
+  "completedAt": "2026-10-01T11:21:51.531Z",
+  "elapsedMs": 22771
+}
