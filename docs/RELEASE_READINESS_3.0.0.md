@@ -90,7 +90,7 @@ with `dry_run:true` makes no remote publication/tag/release mutation.
 See [directory ledger](DISTRIBUTION_SUBMISSIONS_2026-10-01.md) for current rules,
 accurate local-stdio text, live URLs and pending submissions. No mandatory hosting,
 domain or paid placement. [Reproducible demo](RELEASE_DEMO_3.0.0.md) uses only synthetic
-content. The existing Glama listing needs owner login/re-sync after main changes;
+content. The existing Glama listing has an owner-verified local-only description and automatic hosted builds disabled; cached README/schema/hosting classification still need correction after main changes;
 its schema supports maintainers only, so inventing hosting/tool-count keys in
 `glama.json` would not fix its cached claims.
 
@@ -163,5 +163,5 @@ Packages, official Registry, GitHub Release and tag after the dry run. Existing
 2.0.3 Registry metadata is active and the existing scoped package is public. Those
 old destinations do not establish the candidate's publication. The pending fresh
 bounded account-consent answer remains required before its validation, ordered
-merges and main bump. Glama owner login and broad first-use/privacy promotion
-gates remain separate open items; no completed-release or Trending claim is made.
+merges and main bump. Glama owner login is complete; its public description is corrected and automatic hosted builds disabled. Cached README/schema/Hybrid claims and broad first-use/privacy promotion
+gates remain open items; no completed-release or Trending claim is made.
