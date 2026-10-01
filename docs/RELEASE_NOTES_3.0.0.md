@@ -15,7 +15,8 @@ and loopback-only. Cold status/doctor/setup remain offline.
 
 Other fixes: alias/junction-safe logout, actionable broken-profile setup diagnosis,
 contradictory pagination remains uncertain without a next cursor, exact requested
-numeric job identity before URL attribution, strict15-file packaging and verified
+numeric job identity before URL attribution, selected-job employer attribution,
+strict 15-file packaging and verified
 release destination/tag identity with a resume path.
 
 Offline checks cover Node20/22 on Linux/macOS/Windows, installed SDK/configuration

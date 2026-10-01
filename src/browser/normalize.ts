@@ -256,7 +256,6 @@ export interface ShapedJobDetails {
  *  job-like object (has a title + job-ish fields). Tolerant by design. */
 export function shapeJobDetails(resp: NormalizedResponse): ShapedJobDetails {
   let job: Record<string, unknown> | undefined;
-  let company: Record<string, unknown> | undefined;
 
   const looksJob = (o: Record<string, unknown>): boolean =>
     typeof o['title'] === 'string' &&
@@ -273,9 +272,7 @@ export function shapeJobDetails(resp: NormalizedResponse): ShapedJobDetails {
       return;
     }
     const o = n as Record<string, unknown>;
-    const t = typeof o['$type'] === 'string' ? (o['$type'] as string) : '';
     if (!job && looksJob(o)) job = o;
-    if (!company && t.endsWith('.Company') && typeof o['name'] === 'string') company = o;
     for (const v of Object.values(o)) visit(v);
   };
   visit(resp.data);
@@ -285,9 +282,9 @@ export function shapeJobDetails(resp: NormalizedResponse): ShapedJobDetails {
   return {
     title: asText(j['title']),
     description: asText(j['description']),
-    company:
-      asText(company?.['name']) ??
-      asText((j['companyDetails'] as Record<string, unknown>)?.['name']),
+    // Included companies can describe other jobs. Only the selected job's own
+    // existing association certifies employer attribution; absence stays unknown.
+    company: asText((j['companyDetails'] as Record<string, unknown>)?.['name']),
     location: asText(j['formattedLocation']) ?? asText(j['location']),
     workplaceType: j['workRemoteAllowed'] === true ? 'Remote allowed' : asText(j['workplaceType']),
     jobUrn: typeof j['entityUrn'] === 'string' ? (j['entityUrn'] as string) : undefined,
