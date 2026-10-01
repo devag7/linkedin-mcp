@@ -11,7 +11,7 @@
 [![MCP](https://img.shields.io/badge/MCP-Compatible-purple?logo=anthropic&logoColor=white)](https://modelcontextprotocol.io/)
 [![Glama score](https://glama.ai/mcp/servers/devag7/linkedin-mcp/badges/score.svg)](https://glama.ai/mcp/servers/devag7/linkedin-mcp)
 
-**Structured LinkedIn research for MCP clients — profiles, bounded job briefs, company search and inbox reads with source and freshness metadata.**
+**Structured LinkedIn reads for MCP clients — profiles, jobs, companies and inbox data, with guided offline setup and explicit safety limits.**
 
 **22 tools** · local browser reads · five explicitly confirmed writes · persisted safety limits and operation journals.
 

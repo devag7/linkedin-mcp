@@ -1,21 +1,10 @@
-# Unreleased local roadmap work
-
-- Contain loopback HTTP, persist checkpoint stops and fail closed on shared state.
-- Bind verified account identity, own profile across processes, reserve writes before dispatch and preserve unknown/replayed outcomes.
-- Add redacted doctor, cold-session truth and packed-install checks with license enforcement.
-- Recover cloud-sync deletions, isolate inactive v1 config and generate route/version metadata.
-- Add native output contracts, local write previews, default alpha opt-in, bounded offset/cursor reads and cancellation before dispatch.
-- Add research/triage examples and evidence-based roadmap coverage. Current live compatibility and hosted results remain unverified.
-
-This section describes source changes. No version bump or publication is implied.
-
 # Changelog
 
 ## [3.0.0] — Core safety and guided setup
 
 22 tools; default-disabled writes with issued preview proof, authenticated loopback
 HTTP, safe profile logout, offline setup/client exports, precise read contracts and
-strict15-file packaging. See docs/RELEASE_NOTES_3.0.0.md and SETUP_GUIDE.md for
+strict 15-file packaging. See docs/RELEASE_NOTES_3.0.0.md and SETUP_GUIDE.md for
 breaking changes, migration and verified scope.
 
 
