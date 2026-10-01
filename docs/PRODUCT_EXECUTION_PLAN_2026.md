@@ -287,3 +287,16 @@ and validates every archive byte; broken setup aliases return actionable offline
 JSON with no commands. See [follow-up evidence](REVIEW_AND_BRIEF_EVIDENCE_2026-10-01.md).
 The10,000-star and daily Trending experiments, quality gates, monthly measurement
 contract and zero-mandatory-cash rules above remain unchanged.
+
+Review/implementation milestones on October1: current PR #3 head62fcda8 and
+PR #4 head3189e6f each pass all12 hosted gates after exact inventory, normal-pack
+JSON and invalid-setup-path fixes. [Draft PR #5](https://github.com/devag7/linkedin-mcp/pull/5)
+contains the first bounded job brief,496 local tests and clean/dirty15-file archive
+proof. Independent review and new consented live validation remain required before
+release/adoption claims. Original MD and57 sync copies remain preserved.
+
+The brief implementation at66a5c89 passes all12 hosted source/packed/offline
+Chrome checks in [run36877160263](https://github.com/devag7/linkedin-mcp/actions/runs/36877160263).
+Final document-head results are linked on draft PR #5 and backed up. This closes
+the implementation/fixture/platform milestone, not current provider, first-read
+cohort, repeat-use, release or distribution outcome gates.

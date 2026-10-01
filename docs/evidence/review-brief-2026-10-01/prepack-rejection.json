@@ -1,0 +1,6 @@
+{
+  "scope": "disposable clean clone; original metadata restored",
+  "broadenedFilesRejected": true,
+  "exitCode": 1,
+  "reason": "Package files must match the reviewed exact allowlist; no directory/glob entries."
+}

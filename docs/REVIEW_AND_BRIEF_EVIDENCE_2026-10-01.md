@@ -88,8 +88,7 @@ in PRODUCT_EXECUTION_PLAN_2026.md as measured outcomes, never guarantees.
 Normal prepack testing also found stdout contamination of npm pack --json, before
 any release. PR #3 follow-up `62fcda8` sends status to stderr and tests normal and
 scripts-disabled tarballs for identical contents. PR #4 incorporates it at
-`3189e6f`. Local source/package gates rerun successfully (476/481 tests). Both
-current-head hosted matrices are running; earlier successful runs remain archived.
+`3189e6f`. Local source/package gates rerun successfully (476/481 tests). Both current-head hosted matrices pass all12 jobs: [PR3 run36876623435](https://github.com/devag7/linkedin-mcp/actions/runs/36876623435) and [PR4 run36876685397](https://github.com/devag7/linkedin-mcp/actions/runs/36876685397). Earlier successful runs remain archived.
 A disposable broadened package.files case is rejected by normal prepack; restored
 clone metadata and every preserved workspace copy remain unchanged.
 
@@ -97,3 +96,26 @@ TypeScript's old sync copies were also included in src/**/* and could fail when
 the capability union grew. The brief track excludes **/* 2.ts from typechecking
 without editing/deleting copies; the built import graph uses the original files.
 The synthetic demo and code are $0 to run with existing local prerequisites.
+
+The separate [draft PR #5](https://github.com/devag7/linkedin-mcp/pull/5)
+implements the first job-brief scope. At `66a5c89`, its dirty workspace and clean
+checkout each produce identical15-entry archive names/lengths/SHA256s for normal
+and scripts-disabled packing; both installed artifacts and the clean synthetic
+demo pass. The current clean clone used its own built output, with no sync copies.
+Exact feature archive inventories and a normal-prepack rejection fixture are in
+the evidence folder.496 local tests/27 suites pass; no account access occurred.
+
+Feature source/evidence head `66a5c89f627c82eb0bc83372aa40c49dfec9d371` passes
+all12 hosted source/packed/offline Chrome checks in
+[run36877160263](https://github.com/devag7/linkedin-mcp/actions/runs/36877160263).
+This includes496 source tests and actual packed stopped-brief/client execution.
+The final documentation-only head is separately checked in CI and linked in the
+PR body, with its result retained in the private backup to avoid an endless
+commit-evidence/head-change cycle. All three PRs remain OPEN/DRAFT.
+
+Final preservation check: all60 backed-up files match their initial SHA256s (57
+workspace sync copies + pr_diff.txt + ignored dist copy + relocated Git ref).
+Original roadmap SHA256 remains726b77032825ba66753785633c5dade585da9d7afe40582ac0f940d3fb283c2a;
+pr_diff.txt remains58cd3df819058c0ce4fff6ca2de0a58db2c68144900e9fad37696139507af36f.
+GitHub metadata still reports10 stars on October1; neither adoption nor daily
+Trending inclusion is claimed from these code/CI results.
