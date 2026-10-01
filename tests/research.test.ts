@@ -141,6 +141,24 @@ it('validates SDK JSON representation without treating omitted undefined query m
   expect(() => briefObservation({ ...result, content }, start, Date.now())).toThrow();
   expect(fetches).toHaveBeenCalledTimes(3);
 });
+it('uses only the existing REST primary for detail with no GraphQL fallback', async () => {
+  const result = await brief();
+  expect(result.data.entities[0].facts.some((fact: any) => fact.field === 'description')).toBe(true);
+  const urls = fetches.mock.calls.map((call) => call[1].url);
+  expect(urls.filter((url) => url.includes('/jobs/jobPostings/'))).toHaveLength(1);
+  expect(urls.some((url) => url.includes('/jobs/jobPostings/1'))).toBe(true);
+  expect(urls.some((url) => url.includes('jobPostingUrn') || url.includes('/graphql'))).toBe(false);
+  expect(urls).toHaveLength(3);
+});
+it('stops the REST primary provider error without trying GraphQL', async () => {
+  detailEnvelope = { data: { ...detail, errors: [{ message: 'Private cause' }] } };
+  const result = await brief();
+  expect(result.data.reads[1]).toMatchObject({ status: 'error', code: 'PROVIDER_ERROR' });
+  expect(result.data.entities[0].facts.some((fact: any) => fact.field === 'description')).toBe(false);
+  const urls = fetches.mock.calls.map((call) => call[1].url);
+  expect(urls).toHaveLength(3);
+  expect(urls.some((url) => url.includes('jobPostingUrn') || url.includes('/graphql'))).toBe(false);
+});
 it('uses no hidden pagination and preserves unknown completeness', async () => {
   total = undefined;
   const result = await brief();

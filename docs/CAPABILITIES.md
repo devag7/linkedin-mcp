@@ -15,7 +15,7 @@ Generated from src/tools/capabilities.ts for linkedin-mcp-tools v3.1.0.
 | research_jobs | bounded composition of search_jobs + one get_job_details | voyager | authenticated_browser | 10 | offline_contract_tested (2026-10-01) | Unchecked |
 | search_jobs | voyagerJobsDashJobCards | voyager | authenticated_browser | 25 | offline_contract_tested (2026-10-01) | Unchecked |
 | get_inbox | /me + messengerConversations | voyager | authenticated_browser | 50 | offline_contract_tested (2026-10-01) | Unchecked |
-| get_job_details | voyagerJobsDashJobPosting | voyager | authenticated_browser | — | offline_contract_tested (2026-10-01) | Unchecked |
+| get_job_details | /jobs/jobPostings/:id (provisional; current live validation pending) | voyager | authenticated_browser | — | offline_contract_tested (2026-10-01) | Unchecked |
 | search_companies | /search/results/companies/ | dom | authenticated_browser | 25 | offline_contract_tested (2026-10-01) | Unchecked |
 | get_company | /company/:slug/about/ | dom | authenticated_browser | — | offline_contract_tested (2026-10-01) | Unchecked |
 | get_company_posts | /company/:slug/posts/ | dom | authenticated_browser | 25 | offline_contract_tested (2026-10-01) | Unchecked |

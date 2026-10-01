@@ -30,7 +30,7 @@ export const CAPABILITIES = {
   research_jobs: read('bounded composition of search_jobs + one get_job_details', 'voyager', 10),
   search_jobs: read('voyagerJobsDashJobCards', 'voyager', 25),
   get_inbox: read('/me + messengerConversations', 'voyager', 50),
-  get_job_details: read('voyagerJobsDashJobPosting'),
+  get_job_details: read('/jobs/jobPostings/:id (provisional; current live validation pending)'),
   search_companies: read('/search/results/companies/', 'dom', 25),
   get_company: read('/company/:slug/about/', 'dom'),
   get_company_posts: read('/company/:slug/posts/', 'dom', 25),

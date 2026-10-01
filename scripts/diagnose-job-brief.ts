@@ -1,4 +1,4 @@
-/** Run only after fresh consent to docs/JOB_BRIEF_SHAPE_CAPTURE_PROTOCOL_2026-10-02.md. */
+/** Run only after fresh consent to docs/JOB_BRIEF_REST_VALIDATION_PROTOCOL_2026-10-02.md. */
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { existsSync, writeFileSync } from 'node:fs';
@@ -70,7 +70,7 @@ runtime.voyager.voyagerGet = async <T>(path: string): Promise<T> => {
   // response, requests, headers, raw values or background traffic are captured.
   const route = path.includes('voyagerJobsDashJobCards')
     ? 'search'
-    : path.includes('jobPostingUrn')
+    : path.includes('/jobs/jobPostings/')
       ? 'detail'
       : null;
   if (route) shapes.push({ route, shape: jobResponseShape(raw) });
@@ -81,7 +81,7 @@ const record: Record<string, unknown> = {
   nodeVersion: process.version,
   platform: process.platform,
   transport: 'SDK in-memory, actual production runtime',
-  scope: 'One diagnosis; not installed-client or general provider compatibility evidence.',
+  scope: 'One consented provisional REST-primary useful-brief/shape check; not installed-client or general provider compatibility evidence.',
   startedAt: new Date().toISOString(),
 };
 let startedProcesses: number[] = [];
