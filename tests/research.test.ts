@@ -24,6 +24,7 @@ let detail: Record<string, unknown>;
 let total: number | undefined;
 let failureStatus: number | undefined;
 let detailMismatch: boolean;
+let detailEnvelope: unknown;
 beforeEach(async () => {
   dir = realpathSync(mkdtempSync(join(tmpdir(), 'linkedin-brief-')));
   vi.stubEnv('LINKEDIN_PROFILE_DIR', join(dir, 'profile'));
@@ -50,6 +51,7 @@ beforeEach(async () => {
   total = 2;
   failureStatus = undefined;
   detailMismatch = false;
+  detailEnvelope = undefined;
   fetches = vi.fn(async (_fn, { url }: { url: string }) => {
     const isIdentity = url.endsWith('/me');
     const isDetail = url.includes('jobPosting');
@@ -58,12 +60,12 @@ beforeEach(async () => {
     const data = isIdentity
       ? identity
       : isDetail
-        ? {
+        ? (detailEnvelope ?? {
             data: {
               ...detail,
               ...(detailMismatch ? { entityUrn: 'urn:li:fsd_jobPosting:99' } : {}),
             },
-          }
+          })
         : {
             included: searchRows,
             ...(total !== undefined ? { data: { paging: { total, start: 0, count: 2 } } } : {}),
@@ -130,6 +132,72 @@ it('stops a failed detail read without losing search facts or retrying', async (
   expect(result.data.reads[1].status).toBe('error');
   expect(fetches).toHaveBeenCalledTimes(3);
   expect(result.data.entities[0].unknownFields).toContain('description');
+});
+it.each([
+  {
+    data: {
+      data: {
+        errors: [
+          { message: 'Synthetic private provider cause', extensions: { code: 'SYNTHETIC' } },
+        ],
+      },
+    },
+  },
+  { data: { error: { message: 'Synthetic private provider cause' } } },
+])(
+  'reproduces title-only search plus nested provider error without inventing facts or retrying',
+  async (error) => {
+    searchRows = [1, 2, 3].map((id) => ({
+      $type: 'fixture.JobPosting',
+      entityUrn: `urn:li:fsd_jobPosting:${id}`,
+      title: `Role ${id}`,
+    }));
+    total = undefined;
+    detailEnvelope = error;
+    const result = await brief({ count: 3 });
+    expect(result).toMatchObject({
+      data: { status: 'partial' },
+      meta: { status: 'partial', partial: true },
+    });
+    expect(result.data.reads).toMatchObject([
+      { tool: 'search_jobs', status: 'partial' },
+      { tool: 'get_job_details', status: 'error', code: 'PROVIDER_ERROR' },
+    ]);
+    expect(result.data.entities).toHaveLength(3);
+    for (const entity of result.data.entities) {
+      expect(entity.facts).toHaveLength(1);
+      expect(entity.facts[0]).toMatchObject({
+        field: 'title',
+        sourceTool: 'search_jobs',
+        sourceUrl: entity.sourceUrl,
+      });
+      expect(entity.unknownFields).toEqual([
+        'location',
+        'listedAt',
+        'company',
+        'workplaceType',
+        'description',
+      ]);
+    }
+    expect(result.data.bounds).toMatchObject({ readAttempts: 3, toolCalls: 2 });
+    expect(fetches).toHaveBeenCalledTimes(3);
+    expect(JSON.stringify(result)).not.toContain('Synthetic private provider cause');
+    expect(JSON.stringify(result)).not.toContain('SYNTHETIC');
+  },
+);
+
+it('retains supported search fields even when a detail provider error stops enrichment', async () => {
+  detailEnvelope = { errors: [{ message: 'Synthetic failure' }] };
+  const result = await brief();
+  expect(result.data.reads[1].code).toBe('PROVIDER_ERROR');
+  const facts = result.data.entities[0].facts;
+  expect(facts.map((fact: any) => fact.field)).toEqual(['title', 'location', 'listedAt']);
+  expect(facts.find((fact: any) => fact.field === 'location').value).toBe('Synthetic town');
+  expect(facts.find((fact: any) => fact.field === 'listedAt').value).toBe(
+    new Date(1000).toISOString(),
+  );
+  expect(facts.every((fact: any) => fact.sourceTool === 'search_jobs')).toBe(true);
+  expect(fetches).toHaveBeenCalledTimes(3);
 });
 it('stops at rate limiting without starting detail work', async () => {
   failureStatus = 429;
