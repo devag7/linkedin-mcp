@@ -8,7 +8,10 @@ import {
 const HOUR = 60 * 60 * 1000;
 
 /** Deterministic, mutable clock for tests. */
-function makeClock(start = 1_000_000_000_000): { now: () => number; advance: (ms: number) => void } {
+function makeClock(start = 1_000_000_000_000): {
+  now: () => number;
+  advance: (ms: number) => void;
+} {
   let t = start;
   return {
     now: (): number => t,
@@ -19,7 +22,9 @@ function makeClock(start = 1_000_000_000_000): { now: () => number; advance: (ms
 }
 
 /** In-memory storage that records the last saved state. */
-function makeStorage(initial: CircuitState | null = null): CircuitStorage & { saved: CircuitState | null } {
+function makeStorage(
+  initial: CircuitState | null = null,
+): CircuitStorage & { saved: CircuitState | null } {
   const store: { saved: CircuitState | null } = { saved: initial };
   return {
     saved: initial,
@@ -45,19 +50,19 @@ describe('CircuitBreaker.classify', () => {
   });
 
   it('classifies checkpoint/challenge URL as hard', () => {
-    expect(
-      cb.classify({ finalUrl: 'https://www.linkedin.com/checkpoint/challenge/AbC123' }),
-    ).toBe('hard');
-  });
-
-  it('classifies uas/login URL as hard', () => {
-    expect(cb.classify({ finalUrl: 'https://www.linkedin.com/uas/login?session_redirect=x' })).toBe(
+    expect(cb.classify({ finalUrl: 'https://www.linkedin.com/checkpoint/challenge/AbC123' })).toBe(
       'hard',
     );
   });
 
-  it('classifies authwall URL as hard', () => {
-    expect(cb.classify({ finalUrl: 'https://www.linkedin.com/authwall?trk=foo' })).toBe('hard');
+  it('does not hard-trip for ordinary login expiry', () => {
+    expect(cb.classify({ finalUrl: 'https://www.linkedin.com/uas/login?session_redirect=x' })).toBe(
+      'ok',
+    );
+  });
+
+  it('does not hard-trip for an ordinary authwall', () => {
+    expect(cb.classify({ finalUrl: 'https://www.linkedin.com/authwall?trk=foo' })).toBe('ok');
   });
 
   it('classifies checkpoint/lg URL as hard', () => {

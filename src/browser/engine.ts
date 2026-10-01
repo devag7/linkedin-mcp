@@ -19,12 +19,14 @@
  *    zombie chrome-headless leak.
  */
 
-import * as os from 'os';
-import * as path from 'path';
 import * as fs from 'fs';
 import { chromium, type BrowserContext, type Page } from 'patchright';
 import type { Logger } from '../types.js';
 import type { EnvConfig } from '../config/env.js';
+import { BrowserSafety } from './safety.js';
+import { CircuitBreaker } from '../safety/circuit-breaker.js';
+import { StateLock, profilePath, canonicalPath, SafetyStateError } from '../safety/state-lock.js';
+import { CircuitFileStorage, circuitStatePath } from '../safety/circuit-storage.js';
 
 const FEED_URL = 'https://www.linkedin.com/feed/';
 const ORIGIN = 'https://www.linkedin.com';
@@ -35,17 +37,35 @@ export class BrowserEngine {
   private launching?: Promise<BrowserContext>;
   private idleTimer?: NodeJS.Timeout;
   private signalsWired = false;
+  private disposed = false;
+  private closing?: Promise<void>;
+  private shutdownFailed = false;
+  private ownership?: StateLock;
+  private epoch = 0;
+  private readonly resolvedProfile: string;
 
   constructor(
     private readonly config: EnvConfig,
     private readonly logger: Logger,
-  ) {}
+    private readonly manageSignals = true,
+    readonly safety: BrowserSafety | null = new BrowserSafety(
+      new CircuitBreaker({
+        storage: new CircuitFileStorage(circuitStatePath(config.LINKEDIN_PROFILE_DIR)),
+        logger,
+      }),
+    ),
+  ) {
+    this.resolvedProfile = profilePath(config.LINKEDIN_PROFILE_DIR);
+  }
 
   /** Resolve the persistent profile directory (cookies + cf clearance live here). */
   private profileDir(): string {
-    const dir =
-      this.config.LINKEDIN_PROFILE_DIR ||
-      path.join(os.homedir(), '.linkedin-mcp', 'profile');
+    const dir = this.resolvedProfile;
+    if (canonicalPath(dir) !== dir)
+      throw new SafetyStateError(
+        'STATE_INVALID',
+        'Browser profile path changed. Stop automation and repair local state.',
+      );
     fs.mkdirSync(dir, { recursive: true, mode: 0o700 });
     return dir;
   }
@@ -55,7 +75,19 @@ export class BrowserEngine {
    * overlapping callers await the same in-flight launch.
    */
   async ensureContext(): Promise<BrowserContext> {
-    if (this.context) return this.context;
+    if (this.disposed) throw new Error('Browser runtime is shutting down.');
+    if (this.shutdownFailed)
+      throw new SafetyStateError(
+        'STATE_INVALID',
+        'Browser shutdown failed. Stop automation and repair ownership.',
+      );
+    if (this.closing) await this.closing;
+    if (this.disposed) throw new Error('Browser runtime is shutting down.');
+    this.safety?.assertAllowed();
+    if (this.context) {
+      this.ownership?.assertOwned();
+      return this.context;
+    }
     if (this.launching) return this.launching;
 
     this.launching = this.launch();
@@ -69,21 +101,27 @@ export class BrowserEngine {
 
   private async launch(): Promise<BrowserContext> {
     const userDataDir = this.profileDir();
-    this.logger.info('Launching browser', {
-      headless: this.config.LINKEDIN_HEADLESS,
-      userDataDir,
-    });
-
-    const context = await chromium.launchPersistentContext(userDataDir, {
-      channel: 'chrome',
-      headless: this.config.LINKEDIN_HEADLESS,
-      viewport: null,
-      executablePath: this.config.LINKEDIN_CHROME_PATH || undefined,
-      // Block heavy media to cut bandwidth/latency; never touch fingerprint args.
-      args: ['--disable-blink-features=AutomationControlled'],
-    });
-
-    this.wireSignals();
+    this.ownership ??= new StateLock(`${userDataDir}.owner`, true);
+    this.ownership.acquire();
+    let context: BrowserContext;
+    try {
+      // A previous owner may have persisted a stop after runtime construction.
+      this.safety?.breaker.refresh();
+      this.safety?.assertAllowed();
+      this.logger.info('Launching browser', { headless: this.config.LINKEDIN_HEADLESS });
+      context = await chromium.launchPersistentContext(userDataDir, {
+        channel: 'chrome',
+        headless: this.config.LINKEDIN_HEADLESS,
+        viewport: null,
+        executablePath: this.config.LINKEDIN_CHROME_PATH || undefined,
+        args: ['--disable-blink-features=AutomationControlled'],
+      });
+    } catch (error) {
+      if (this.epoch === 0) this.ownership.release();
+      throw error;
+    }
+    this.epoch++;
+    if (this.manageSignals) this.wireSignals();
     this.bumpIdleTimer();
     return context;
   }
@@ -97,12 +135,13 @@ export class BrowserEngine {
     this.bumpIdleTimer();
 
     if (!this.feedPage || this.feedPage.isClosed()) {
-      this.feedPage =
-        context.pages().find((p) => !p.isClosed()) ?? (await context.newPage());
+      this.feedPage = context.pages().find((p) => !p.isClosed()) ?? (await context.newPage());
     }
 
-    if (!this.feedPage.url().startsWith(ORIGIN)) {
-      await this.feedPage.goto(FEED_URL, { waitUntil: 'domcontentloaded' });
+    if (this.safety) await this.safety.inspectPage(this.feedPage);
+    if (!this.feedPage.url().startsWith(`${ORIGIN}/`)) {
+      const response = await this.feedPage.goto(FEED_URL, { waitUntil: 'domcontentloaded' });
+      if (this.safety) await this.safety.inspectPage(this.feedPage, response?.status());
     }
     return this.feedPage;
   }
@@ -112,6 +151,11 @@ export class BrowserEngine {
     const context = await this.ensureContext();
     this.bumpIdleTimer();
     return context.newPage();
+  }
+
+  /** Inspect a DOM fallback before extracting content or trying another request. */
+  async assertPageSafe(page: Page, status?: number): Promise<void> {
+    if (this.safety) await this.safety.inspectPage(page, status);
   }
 
   /**
@@ -137,6 +181,23 @@ export class BrowserEngine {
 
   /** Close the context and guarantee the Chrome process is gone (zombie reap). */
   async shutdown(): Promise<void> {
+    if (this.shutdownFailed)
+      throw new SafetyStateError(
+        'STATE_INVALID',
+        'Browser shutdown failed. Ownership remains locked; stop the browser and repair the lock manually.',
+      );
+    if (this.closing) return this.closing;
+    this.closing = this.closeContext();
+    try {
+      await this.closing;
+    } finally {
+      this.closing = undefined;
+    }
+  }
+
+  private async closeContext(): Promise<void> {
+    // A listener can stop while Chrome is still launching. Reap that context too.
+    if (this.launching) await this.launching.catch(() => undefined);
     if (this.idleTimer) clearTimeout(this.idleTimer);
     const context = this.context;
     this.context = undefined;
@@ -147,32 +208,64 @@ export class BrowserEngine {
     // close the Browser handle explicitly as belt-and-suspenders against the
     // competitor's zombie-Chrome leak.
     const browser = context.browser();
+    let closeTimer: NodeJS.Timeout | undefined;
+    let closed = false;
     try {
       await Promise.race([
-        context.close(),
-        new Promise((r) => setTimeout(r, 5000)),
+        context.close().then(() => {
+          closed = true;
+        }),
+        new Promise((r) => {
+          closeTimer = setTimeout(r, 5000);
+        }),
       ]);
-    } catch (err) {
-      this.logger.warn('Error during context close', {
-        error: err instanceof Error ? err.message : String(err),
-      });
+    } catch {
+      this.logger.warn('Error during context close');
+    } finally {
+      if (closeTimer) clearTimeout(closeTimer);
     }
     try {
-      await browser?.close();
+      if (browser) {
+        await browser.close();
+        closed = true;
+      }
     } catch {
-      /* already gone — good */
+      /* A successful context close is sufficient even if its browser is gone. */
     }
+    if (!closed) {
+      this.shutdownFailed = true;
+      throw new SafetyStateError(
+        'STATE_INVALID',
+        'Browser shutdown could not be verified. Ownership remains locked; stop the browser and repair the lock manually.',
+      );
+    }
+  }
+
+  get hasActiveContext(): boolean {
+    return !!this.context;
+  }
+
+  /** Changes on every browser launch; identity must be reverified for a new session. */
+  get sessionEpoch(): number {
+    return this.epoch;
+  }
+
+  /** Final process-owned shutdown; queued work must not relaunch Chrome. */
+  async dispose(): Promise<void> {
+    this.disposed = true;
+    await this.shutdown();
+    this.ownership?.release();
   }
 
   private wireSignals(): void {
     if (this.signalsWired) return;
     this.signalsWired = true;
     const close = () => {
-      void this.shutdown().finally(() => process.exit(0));
+      void this.dispose().finally(() => process.exit(0));
     };
     process.once('SIGINT', close);
     process.once('SIGTERM', close);
     process.once('SIGHUP', close);
-    process.once('beforeExit', () => void this.shutdown());
+    process.once('beforeExit', () => void this.dispose());
   }
 }

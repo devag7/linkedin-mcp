@@ -142,12 +142,20 @@ describe('HumanPacer base delays', () => {
     };
     const hr = makeHarness([0.5, 0.5, 0.0]);
     const hw = makeHarness([0.5, 0.5, 0.0]);
-    const readPacer = new HumanPacer({ ...optsBase, clock: hr.clock, sleep: hr.sleep, rng: hr.rng });
-    const writePacer = new HumanPacer({ ...optsBase, clock: hw.clock, sleep: hw.sleep, rng: hw.rng });
+    const readPacer = new HumanPacer({
+      ...optsBase,
+      clock: hr.clock,
+      sleep: hr.sleep,
+      rng: hr.rng,
+    });
+    const writePacer = new HumanPacer({
+      ...optsBase,
+      clock: hw.clock,
+      sleep: hw.sleep,
+      rng: hw.rng,
+    });
 
-    expect(readPacer.computeBaseDelay('read')).toBeLessThan(
-      writePacer.computeBaseDelay('write'),
-    );
+    expect(readPacer.computeBaseDelay('read')).toBeLessThan(writePacer.computeBaseDelay('write'));
   });
 });
 
@@ -213,7 +221,12 @@ describe('HumanPacer long-break cadence', () => {
       sleep: h.sleep,
       rng: () => 0.5, // midpoint -> duration is exactly the band midpoint
       readDelay: { minMs: 1_000, maxMs: 1_000 },
-      shortBreak: { everyMin: 1, everyMax: 1, pauseMinMs: 2 * ONE_MINUTE, pauseMaxMs: 8 * ONE_MINUTE },
+      shortBreak: {
+        everyMin: 1,
+        everyMax: 1,
+        pauseMinMs: 2 * ONE_MINUTE,
+        pauseMaxMs: 8 * ONE_MINUTE,
+      },
       longBreak: { everyMin: 999, everyMax: 999, pauseMinMs: 0, pauseMaxMs: 0 },
       workingHours: workingHours({ enabled: false }),
     });
@@ -342,4 +355,12 @@ describe('HumanPacer determinism', () => {
       expect(a.computeBaseDelay('write')).toBe(b.computeBaseDelay('write'));
     }
   });
+});
+
+it('cancels a real pacing timer without waiting or granting a dispatch', async () => {
+  const controller = new AbortController();
+  const pacer = new HumanPacer({ readDelay: { minMs: 10000, maxMs: 10000 } });
+  const waiting = pacer.waitBefore('read', controller.signal);
+  controller.abort();
+  await expect(waiting).rejects.toMatchObject({ name: 'AbortError' });
 });

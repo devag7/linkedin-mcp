@@ -6,7 +6,7 @@
  *   - CLOSED        : everything allowed (subject to per-action soft cooldowns).
  *   - SOFT_OPEN     : one or more action types are cooling down (per-action);
  *                     reads always continue, the cooled-down action is blocked.
- *   - GLOBAL_OPEN   : a hard trip happened (checkpoint / 999 / authwall /
+ *   - GLOBAL_OPEN   : a hard trip happened (checkpoint / 999 / challenge /
  *                     id-verify). EVERYTHING is blocked until a human re-logs in.
  *
  * Pure logic: no network, no browser. The clock and storage are injected so the
@@ -110,15 +110,10 @@ const DEFAULT_SOFT_COOLDOWN_MAX_MS = 72 * HOUR_MS;
 const DEFAULT_REPEATED_429_THRESHOLD = 2;
 
 /**
- * URL fragments that indicate a hard challenge / login wall. Matched
+ * URL fragments that indicate a hard challenge. Ordinary login is not a trip. Matched
  * case-insensitively against the final URL.
  */
-const HARD_URL_MARKERS: readonly string[] = [
-  '/checkpoint/challenge',
-  '/uas/login',
-  '/authwall',
-  '/checkpoint/lg',
-];
+const HARD_URL_MARKERS: readonly string[] = ['/checkpoint/'];
 
 /**
  * Body / DOM substrings that indicate a hard security challenge. Matched
@@ -141,13 +136,7 @@ const READ_ACTIONS: ReadonlySet<ActionType> = new Set<ActionType>([
 /** Heuristic: does this body sample look like an HTML document rather than JSON? */
 function looksLikeHtml(bodySample: string): boolean {
   const head = bodySample.trimStart().slice(0, 512).toLowerCase();
-  return (
-    head.startsWith('<!doctype html') ||
-    head.startsWith('<html') ||
-    head.includes('<head') ||
-    head.includes('<body') ||
-    head.includes('<!doctype')
-  );
+  return head.startsWith('<');
 }
 
 /** Build a fresh, empty persisted state. */
@@ -185,6 +174,19 @@ export class CircuitBreaker {
     this.state = loaded ? this.normalize(loaded) : emptyState();
   }
 
+  /** Reload after exclusive profile acquisition; never clear an in-memory stop. */
+  refresh(): void {
+    if (!this.storage) return;
+    try {
+      const loaded = this.storage.load();
+      if (loaded && !this.state.globalOpen) this.state = this.normalize(loaded);
+    } catch (error) {
+      this.state.globalOpen = true;
+      this.state.globalReason = 'Safety-stop storage is invalid; repair state before continuing.';
+      throw error;
+    }
+  }
+
   /**
    * Classify a single observed signal into 'ok' | 'soft' | 'hard'.
    * Pure: does not mutate state. The caller decides whether to {@link trip}.
@@ -198,14 +200,20 @@ export class CircuitBreaker {
     if (status === 999) return 'hard';
 
     if (finalUrl) {
-      const url = finalUrl.toLowerCase();
+      // Query text may contain ordinary search terms or user-supplied URLs.
+      let url = '';
+      try {
+        url = new URL(finalUrl).pathname.toLowerCase();
+      } catch {
+        /* not a URL */
+      }
       for (const marker of HARD_URL_MARKERS) {
-        if (url.includes(marker)) return 'hard';
+        if (url === marker.slice(0, -1) || url.startsWith(marker)) return 'hard';
       }
     }
 
     if (bodySample) {
-      const body = bodySample.toLowerCase();
+      const body = bodySample.slice(0, 8192).toLowerCase();
       for (const marker of HARD_BODY_MARKERS) {
         if (body.includes(marker)) return 'hard';
       }
@@ -247,7 +255,6 @@ export class CircuitBreaker {
       this.state.globalTrippedAt = now;
       this.state.globalReason = reason ?? 'hard trip';
       this.logger?.error('circuit-breaker: HARD trip — global kill', {
-        reason: this.state.globalReason,
         actionType: actionType ?? null,
         at: now,
       });
@@ -258,7 +265,6 @@ export class CircuitBreaker {
     // soft trip — requires an action type to scope the cooldown.
     if (!actionType) {
       this.logger?.warn('circuit-breaker: soft trip without actionType ignored', {
-        reason: reason ?? null,
       });
       return;
     }
@@ -272,7 +278,6 @@ export class CircuitBreaker {
       actionType,
       strikes: rec.strikes,
       cooldownUntil: rec.cooldownUntil,
-      reason: reason ?? null,
     });
     this.persist();
   }
@@ -429,6 +434,13 @@ export class CircuitBreaker {
   }
 
   private persist(): void {
-    this.storage?.save(this.getState());
+    try {
+      this.storage?.save(this.getState());
+    } catch {
+      this.state.globalOpen = true;
+      this.state.globalReason =
+        'Safety state could not be saved. Stop automation and repair storage before restarting.';
+      throw new Error(this.state.globalReason);
+    }
   }
 }

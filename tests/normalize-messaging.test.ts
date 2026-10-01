@@ -6,8 +6,9 @@ import {
 } from '../src/browser/normalize.js';
 
 /**
- * Synthetic fixtures mirroring the live messenger GraphQL shape
- * (captured 2026-07-04):
+ * Synthetic fixtures imported from upstream PR #1 (ab0a1ed). Its author described
+ * the shape as captured 2026-07-04; this checkout has no independent live capture.
+ * These tests establish offline normalization only:
  * - Conversation.`*conversationParticipants` → MessagingParticipant URNs
  * - MessagingParticipant.hostIdentityUrn + participantType.member.{firstName,lastName,headline}.text
  * - Message.`*sender` / `*actor` → MessagingParticipant URN
@@ -72,6 +73,23 @@ const conversationResp: NormalizedResponse = {
 };
 
 describe('shapeInbox — participant identity', () => {
+  it('keeps a participant whose profile id contains the owner id as a substring', () => {
+    const id = `prefix${OWNER_ID}suffix`;
+    const response: NormalizedResponse = {
+      included: [
+        participant(OWNER_ID, 'Owner', 'Member', 'Owner'),
+        participant(id, 'Distinct', 'Member', 'Other'),
+        {
+          ...inboxResp.included![2],
+          '*conversationParticipants': [
+            `urn:li:msg_messagingParticipant:urn:li:fsd_profile:${OWNER_ID}`,
+            `urn:li:msg_messagingParticipant:urn:li:fsd_profile:${id}`,
+          ],
+        },
+      ],
+    };
+    expect(shapeInbox(response)[0].participants?.map((p) => p.name)).toEqual(['Distinct Member']);
+  });
   it('resolves the counterpart (name, headline, profileUrn/Url) and excludes the mailbox owner', () => {
     const [conv] = shapeInbox(inboxResp);
     expect(conv.participants).toHaveLength(1);
@@ -100,6 +118,38 @@ describe('shapeInbox — participant identity', () => {
 });
 
 describe('shapeConversationMessages — ordering and attribution', () => {
+  it('keeps unknown delivery times after dated messages without inventing timestamps', () => {
+    const { deliveredAt: _time, ...undated } = message('unknown', OTHER_ID, 0, 'Undated');
+    const result = shapeConversationMessages({
+      included: [undated, message('dated', OTHER_ID, 10, 'Dated')],
+    });
+    expect(result.map((m) => m.text)).toEqual(['Dated', 'Undated']);
+    expect(result[1].deliveredAt).toBeUndefined();
+  });
+  it('does not mistake an id suffix match for the mailbox owner', () => {
+    const id = `prefix${OWNER_ID}`;
+    const response: NormalizedResponse = {
+      included: [
+        participant(id, 'Distinct', 'Member', 'Other'),
+        message('m3', id, 1700000200000, 'Synthetic'),
+      ],
+    };
+    expect(shapeConversationMessages(response)[0].fromSelf).toBe(false);
+  });
+
+  it('resolves the actor fallback and leaves missing owner attribution unknown', () => {
+    const value = message('m4', OTHER_ID, 1700000200000, 'Synthetic');
+    const { '*sender': actor, '*conversation': _conversation, ...rest } = value;
+    const response: NormalizedResponse = {
+      included: [
+        participant(OTHER_ID, 'Ada', 'Lovelace', 'Engineer'),
+        { ...rest, '*actor': actor },
+      ],
+    };
+    const result = shapeConversationMessages(response)[0];
+    expect(result.sender).toBe('Ada Lovelace');
+    expect(result.fromSelf).toBeUndefined();
+  });
   it('sorts messages ascending by deliveredAt', () => {
     const msgs = shapeConversationMessages(conversationResp);
     expect(msgs.map((m) => m.deliveredAt)).toEqual([1700000100000, 1700000200000]);

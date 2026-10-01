@@ -82,16 +82,15 @@ describe('Guard', () => {
     });
   });
 
-  it('does not consume budget when the task throws', async () => {
+  it('counts failed read attempts and blocks repeated failures at the cap', async () => {
     const guard = makeGuard();
     await expect(
       guard.run(ACTIONS.getProfile, async () => {
         throw new Error('boom');
       }),
     ).rejects.toThrow('boom');
-    // budget untouched → two more reads still allowed
+    // Failed dispatched reads also spend allowance.
     await guard.run(ACTIONS.getProfile, async () => 'a');
-    await guard.run(ACTIONS.getProfile, async () => 'b');
     await expect(guard.run(ACTIONS.getProfile, async () => 'c')).rejects.toBeInstanceOf(
       GuardBlockedError,
     );

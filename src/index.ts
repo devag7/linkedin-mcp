@@ -18,85 +18,126 @@
 import { startServer } from './server.js';
 import type { ServerConfig, TransportType } from './types.js';
 import { Logger } from './types.js';
-import * as os from 'node:os';
-import * as path from 'node:path';
 import { rmSync, existsSync } from 'node:fs';
 import { BrowserEngine } from './browser/engine.js';
 import { interactiveBrowserLogin, runSpike } from './browser/login.js';
 import { runCapture } from './browser/capture.js';
 import { runWriteCapture } from './browser/writecapture.js';
 import { runWriteProbe } from './browser/writeprobe.js';
+import { StateLock, profilePath } from './safety/state-lock.js';
+import { diagnose } from './doctor.js';
 import { VERSION } from './version.js';
 import { loadConfig } from './config/env.js';
 
 /** Resolve the persistent browser-profile directory (mirrors BrowserEngine). */
 function profileDir(): string {
-  return process.env.LINKEDIN_PROFILE_DIR || path.join(os.homedir(), '.linkedin-mcp', 'profile');
+  return profilePath(process.env.LINKEDIN_PROFILE_DIR);
 }
 
 /**
  * Parse command-line arguments.
  */
 function parseArgs(): ServerConfig & {
-  action?: 'login' | 'logout' | 'status' | 'spike' | 'capture' | 'writecapture' | 'writeprobe';
+  action?:
+    | 'login'
+    | 'logout'
+    | 'status'
+    | 'spike'
+    | 'capture'
+    | 'writecapture'
+    | 'writeprobe'
+    | 'doctor';
+  live?: boolean;
+  confirmProfileDeletion?: boolean;
 } {
   const args = process.argv.slice(2);
   let transport: TransportType = 'stdio';
   let port = 3000;
   let logLevel: 'debug' | 'info' | 'warn' | 'error' = 'info';
-  let action: 'login' | 'logout' | 'status' | 'spike' | 'capture' | 'writecapture' | 'writeprobe' | undefined;
+  let action:
+    | 'doctor'
+    | 'login'
+    | 'logout'
+    | 'status'
+    | 'spike'
+    | 'capture'
+    | 'writecapture'
+    | 'writeprobe'
+    | undefined;
 
+  let live = false;
+  let confirmProfileDeletion = false;
+  let transportChosen = false;
+  let portChosen = false;
+  let logLevelChosen = false;
+  const setAction = (value: NonNullable<typeof action>) => {
+    if (action && action !== value) throw new Error('Choose only one CLI command.');
+    action = value;
+  };
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
     const next = args[i + 1];
 
     switch (arg) {
+      case '--doctor':
+        setAction('doctor');
+        break;
+      case '--live':
+        live = true;
+        break;
+
       case '--login':
-        action = 'login';
+        setAction('login');
+        break;
+
+      case '--confirm-profile-deletion':
+        confirmProfileDeletion = true;
         break;
 
       case '--logout':
-        action = 'logout';
+        setAction('logout');
         break;
 
       case '--status':
-        action = 'status';
+        setAction('status');
         break;
 
       case '--spike':
-        action = 'spike';
+        setAction('spike');
         break;
 
       case '--capture':
-        action = 'capture';
+        setAction('capture');
         break;
 
       case '--writecapture':
-        action = 'writecapture';
+        setAction('writecapture');
         break;
 
       case '--writeprobe':
-        action = 'writeprobe';
+        setAction('writeprobe');
         break;
 
       case '--transport':
       case '-t':
         if (next === 'stdio' || next === 'http') {
           transport = next;
+          transportChosen = true;
           i++;
         } else {
-          console.error(`Invalid transport: ${next}. Use 'stdio' or 'http'.`);
+          console.error("Invalid transport. Use 'stdio' or 'http'.");
           process.exit(1);
         }
         break;
 
       case '--port':
       case '-p':
-        port = parseInt(next ?? '', 10);
-        if (isNaN(port) || port < 1 || port > 65535) {
-          console.error(`Invalid port: ${next}. Use a number between 1 and 65535.`);
+        port = Number(next ?? '');
+        if (!Number.isInteger(port) || port < 1 || port > 65535) {
+          console.error('Invalid port. Use a number between 1 and 65535.');
           process.exit(1);
         }
+        portChosen = true;
         i++;
         break;
 
@@ -104,7 +145,10 @@ function parseArgs(): ServerConfig & {
       case '-l':
         if (['debug', 'info', 'warn', 'error'].includes(next ?? '')) {
           logLevel = next as typeof logLevel;
+          logLevelChosen = true;
           i++;
+        } else {
+          throw new Error('Invalid log level. Use debug, info, warn or error.');
         }
         break;
 
@@ -122,30 +166,33 @@ function parseArgs(): ServerConfig & {
         break;
 
       default:
-        console.error(`Unknown argument: ${arg}. Use --help for usage info.`);
+        console.error('Unknown argument. Use --help for usage info.');
         process.exit(1);
     }
   }
 
   // Also check environment variables (env overrides are lower priority than CLI)
-  if (process.env['TRANSPORT'] && transport === 'stdio') {
+  if (process.env['TRANSPORT'] && !transportChosen) {
     const envTransport = process.env['TRANSPORT'];
     if (envTransport === 'http' || envTransport === 'stdio') {
       transport = envTransport;
     }
   }
-  if (process.env['PORT'] && port === 3000) {
-    const envPort = parseInt(process.env['PORT'], 10);
-    if (!isNaN(envPort)) port = envPort;
+  if (process.env['PORT'] && !portChosen) {
+    const envPort = Number(process.env['PORT']);
+    if (Number.isInteger(envPort) && envPort >= 1 && envPort <= 65535) port = envPort;
   }
-  if (process.env['LOG_LEVEL']) {
+  if (process.env['LOG_LEVEL'] && !logLevelChosen) {
     const envLevel = process.env['LOG_LEVEL'];
     if (['debug', 'info', 'warn', 'error'].includes(envLevel)) {
       logLevel = envLevel as typeof logLevel;
     }
   }
 
-  return { transport, port, logLevel, action };
+  if (live && action !== 'doctor') throw new Error('--live is only supported with --doctor.');
+  if (confirmProfileDeletion && action !== 'logout')
+    throw new Error('--confirm-profile-deletion is only supported with --logout.');
+  return { transport, port, logLevel, action, live, confirmProfileDeletion };
 }
 
 /**
@@ -163,8 +210,11 @@ USAGE:
 COMMANDS:
   --login                  Open a real Chrome window and sign in to LinkedIn
                            once; the session is saved to the browser profile.
+  --doctor                 Diagnose local setup without launching Chrome or network requests
+  --doctor --live          Also open the saved session and probe authenticated identity
   --status                 Show the current login/profile status
-  --logout                 Clear the saved session
+  --logout                 Clear the saved Chrome profile; keep safety history
+  --confirm-profile-deletion  Required with --logout for a custom profile path
   --spike                  Verify the live data path (fetches your profile)
 
 OPTIONS:
@@ -181,7 +231,7 @@ GETTING STARTED:
   # 2) Run for Claude Desktop / Cursor / Claude Code (stdio)
   linkedin-mcp
 
-  # Or HTTP transport for an MCP client over the network
+  # Or local-only HTTP (requires LINKEDIN_HTTP_TOKEN; see README)
   linkedin-mcp --transport http --port 3000
 
 AUTHENTICATION:
@@ -201,6 +251,22 @@ DOCUMENTATION:
 async function main(): Promise<void> {
   const config = parseArgs();
   const logger = new Logger(config.logLevel);
+
+  if (config.action === 'doctor') {
+    const report = await diagnose(loadConfig(), config, { live: config.live });
+    // eslint-disable-next-line no-console -- Standalone CLI diagnosis before transport starts
+    console.log(JSON.stringify(report, null, 2));
+    const blocked =
+      report.checks.safetyState !== 'valid' ||
+      report.checks.profileOwned ||
+      report.checks.budgetLocked ||
+      !report.checks.profileWritable ||
+      report.checks.chrome !== 'available' ||
+      report.checks.httpToken === 'missing_or_invalid' ||
+      report.checks.package === 'missing';
+    process.exitCode = blocked || (config.live && report.session !== 'healthy') ? 1 : 0;
+    return;
+  }
 
   // Handle special commands
   if (config.action === 'login') {
@@ -229,12 +295,22 @@ async function main(): Promise<void> {
   }
 
   if (config.action === 'logout') {
+    if (process.env.LINKEDIN_PROFILE_DIR?.trim() && !config.confirmProfileDeletion)
+      throw new Error(
+        'A custom profile may contain other browser data. To delete its entire directory, repeat --logout --confirm-profile-deletion after reviewing LINKEDIN_PROFILE_DIR. Safety history is retained.',
+      );
     const dir = profileDir();
-    if (existsSync(dir)) {
-      rmSync(dir, { recursive: true, force: true });
-      console.error(`✅ Logged out — browser profile cleared (${dir}). Run --login to sign in again.`);
-    } else {
-      console.error('ℹ️  No saved session found — nothing to clear.');
+    const ownership = new StateLock(`${dir}.owner`, true);
+    ownership.acquire();
+    try {
+      if (existsSync(dir)) {
+        rmSync(dir, { recursive: true, force: true });
+        console.error('Logged out — browser profile cleared. Run --login to sign in again.');
+      } else {
+        console.error('No saved session found — nothing to clear.');
+      }
+    } finally {
+      ownership.release();
     }
     process.exit(0);
   }
@@ -243,7 +319,7 @@ async function main(): Promise<void> {
     const dir = profileDir();
     console.error('\n🔗 LinkedIn MCP — Status\n');
     console.error(`  Version:      ${VERSION}`);
-    console.error(`  Profile dir:  ${dir}`);
+    console.error(`  Profile:      ${existsSync(dir) ? 'saved' : 'not created'}`);
     if (!existsSync(dir)) {
       console.error('  Session:      ❌ none — run `--login` to sign in once\n');
       process.exit(0);
@@ -252,35 +328,49 @@ async function main(): Promise<void> {
     try {
       await engine.ensureContext();
       const loggedIn = await engine.isLoggedIn().catch(() => false);
-      console.error(`  Session:      ${loggedIn ? '✅ logged in' : '⚠️  profile exists but not logged in — run `--login`'}\n`);
-    } catch (err) {
-      console.error(`  Session:      ⚠️  could not check (${err instanceof Error ? err.message : String(err)})\n`);
+      console.error(
+        `  Session:      ${loggedIn ? '✅ logged in' : '⚠️  profile exists but not logged in — run `--login`'}\n`,
+      );
+    } catch {
+      console.error('  Session: could not check; run --doctor for redacted setup guidance.');
     } finally {
-      await engine.shutdown();
+      await engine.dispose();
     }
     process.exit(0);
   }
 
   try {
     await startServer(config);
-  } catch (error) {
-    logger.error('Failed to start server', {
-      error: error instanceof Error ? error.message : String(error),
-      stack: error instanceof Error ? error.stack : undefined,
-    });
+  } catch {
+    logger.error('Failed to start server. Run --doctor for redacted setup guidance.');
     process.exit(1);
   }
 }
 
 // Handle uncaught errors gracefully
-process.on('uncaughtException', (error) => {
-  console.error('Uncaught exception:', error.message);
+process.on('uncaughtException', () => {
+  console.error('Uncaught exception. Run --doctor for redacted setup guidance.');
   process.exit(1);
 });
 
-process.on('unhandledRejection', (reason) => {
-  console.error('Unhandled rejection:', reason);
+process.on('unhandledRejection', () => {
+  console.error('Unhandled rejection. Run --doctor for redacted setup guidance.');
   process.exit(1);
 });
 
-main();
+void main().catch((error: unknown) => {
+  const message = error instanceof Error ? error.message : '';
+  const safe =
+    message.startsWith('Official provider is unavailable') ||
+    message.startsWith('Invalid environment configuration:') ||
+    message.startsWith('Choose only one CLI command.') ||
+    message.startsWith('A custom profile may contain other browser data.') ||
+    message.startsWith('--confirm-profile-deletion is only supported') ||
+    message.startsWith('--live is only supported');
+  console.error(
+    safe
+      ? message
+      : 'CLI command failed. Check the command options and run --doctor for redacted setup guidance.',
+  );
+  process.exitCode = 1;
+});

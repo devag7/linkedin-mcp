@@ -33,7 +33,7 @@ export async function runCapture(config: EnvConfig, logger: Logger): Promise<voi
 
   if (!(await engine.isLoggedIn())) {
     process.stderr.write('\n❌ Not logged in. Run `npm run login` first.\n');
-    await engine.shutdown();
+    await engine.dispose();
     return;
   }
 
@@ -106,5 +106,5 @@ export async function runCapture(config: EnvConfig, logger: Logger): Promise<voi
   }
 
   process.stderr.write('\n\n✅ Capture complete. Paste the sections above to lock endpoints.\n');
-  await engine.shutdown();
+  await engine.dispose();
 }

@@ -1,0 +1,7 @@
+{
+  "kind": "official_public_schema_snapshot",
+  "source": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "retrievedAt": "2026-10-01",
+  "schemaVersion": "2025-12-11",
+  "purpose": "Offline metadata format validation only; not proof of registry acceptance or publication"
+}

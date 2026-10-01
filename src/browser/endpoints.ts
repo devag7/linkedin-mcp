@@ -400,8 +400,8 @@ export function conversationMessages(
 ): string {
   // encodeURIComponent leaves `(` and `)` unescaped, but msg_conversation URNs
   // contain parentheses: urn:li:msg_conversation:(urn:li:fsd_profile:<id>,<threadId>).
-  // Raw parens break the REST-li `variables=(...)` parser, so this endpoint
-  // returned HTTP 400 for every real conversation URN. Encode them explicitly.
+  // Raw parens break the REST-li `variables=(...)` parser. Encode them explicitly;
+  // the imported regression test verifies the query without a live request.
   const urn = encodeURIComponent(conversationUrn).replace(/\(/g, '%28').replace(/\)/g, '%29');
   return `/voyagerMessagingGraphQL/graphql?queryId=${encodeURIComponent(queryId)}&variables=(conversationUrn:${urn})`;
 }
@@ -439,7 +439,7 @@ export function invitationsSent(start = 0, count = 50): string {
 
 /* ───────────────────────────────── Writes ───────────────────────────────── */
 /* BEST-KNOWN write endpoints (linkedin-api lineage). UNVERIFIED against current
- * Voyager — payloads may need a live tune on a throwaway account. All write
+ * Voyager — payload changes require a consented current capture. All write
  * tools are gated behind an explicit confirm flag + the daily-cap safety layer. */
 
 /**

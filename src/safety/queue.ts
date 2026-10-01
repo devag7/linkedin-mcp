@@ -169,7 +169,7 @@ export class SerialQueue {
       } catch (error: unknown) {
         // Isolation: a task failure must never break the queue.
         this.logger?.debug('SerialQueue: task rejected (isolated)', {
-          error: error instanceof Error ? error.message : String(error),
+          error: 'TASK_FAILED',
         });
         entry.reject(error);
       } finally {

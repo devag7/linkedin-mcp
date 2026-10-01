@@ -5,20 +5,11 @@ import { z } from 'zod';
  * All configuration is via environment variables (12-factor app).
  */
 const envSchema = z.object({
-  // Authentication
-  LINKEDIN_ACCESS_TOKEN: z.string().optional(),
-  LINKEDIN_COOKIE: z.string().optional(),
-  LINKEDIN_CSRF_TOKEN: z.string().optional(),
-
+  LINKEDIN_PROVIDER: z.enum(['browser', 'official']).default('browser'),
   // Server
   PORT: z.coerce.number().int().min(1).max(65535).default(3000),
   TRANSPORT: z.enum(['stdio', 'http']).default('stdio'),
   LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).default('info'),
-
-  // Performance
-  CACHE_TTL: z.coerce.number().int().min(0).default(300),
-  RATE_LIMIT_RPM: z.coerce.number().int().min(1).default(30),
-  REQUEST_TIMEOUT: z.coerce.number().int().min(1000).default(30000),
 
   // Browser engine (v2 stealth engine — patchright)
   // Headless by DEFAULT: normal operation is invisible (no window) — the user
@@ -37,11 +28,14 @@ const envSchema = z.object({
   LINKEDIN_IDLE_TIMEOUT_MS: z.coerce.number().int().min(0).default(300000),
   // Max time (ms) to wait for a Cloudflare challenge to clear before giving up.
   LINKEDIN_CF_TIMEOUT_MS: z.coerce.number().int().min(1000).default(20000),
-  // Serial by default. >1 is documented as ban-risky.
-  LINKEDIN_CONCURRENCY: z.coerce.number().int().min(1).default(1),
-  // Disable human-pacing delays (testing / power users who accept higher ban
-  // risk). Daily caps + circuit breaker still apply. Default off.
-  LINKEDIN_PACING_DISABLED: z
+  // All browser work remains serialized.
+  LINKEDIN_CONCURRENCY: z.coerce.number().int().min(1).max(1).default(1),
+  // Browser writes are alpha and require deliberate runtime opt-in plus per-call confirmation.
+  LINKEDIN_ENABLE_WRITES: z
+    .enum(['true', 'false'])
+    .default('false')
+    .transform((v) => v === 'true'),
+  LINKEDIN_ENABLE_EXPERIMENTAL_MESSAGES: z
     .enum(['true', 'false'])
     .default('false')
     .transform((v) => v === 'true'),
@@ -49,36 +43,17 @@ const envSchema = z.object({
 
 export type EnvConfig = z.infer<typeof envSchema>;
 
-/**
- * Parse and validate environment variables.
- * Returns a typed, validated config object.
- */
 export function loadConfig(): EnvConfig {
   const result = envSchema.safeParse(process.env);
-
   if (!result.success) {
-    const errors = result.error.flatten().fieldErrors;
-    const errorMessages = Object.entries(errors)
-      .map(([field, msgs]) => `  ${field}: ${(msgs ?? []).join(', ')}`)
-      .join('\n');
-    throw new Error(`Invalid environment configuration:\n${errorMessages}`);
+    const fields = Object.keys(result.error.flatten().fieldErrors);
+    throw new Error(
+      `Invalid environment configuration: ${fields.join(', ')} (check documented configuration)`,
+    );
   }
-
+  if (result.data.LINKEDIN_PROVIDER === 'official')
+    throw new Error(
+      'Official provider is unavailable in this build. No browser fallback was attempted.',
+    );
   return result.data;
-}
-
-/**
- * Check if any authentication method is configured.
- */
-export function hasAuth(config: EnvConfig): boolean {
-  return !!(config.LINKEDIN_ACCESS_TOKEN || config.LINKEDIN_COOKIE);
-}
-
-/**
- * Get the active authentication method.
- */
-export function getAuthMethod(config: EnvConfig): 'oauth' | 'cookie' | 'none' {
-  if (config.LINKEDIN_ACCESS_TOKEN) return 'oauth';
-  if (config.LINKEDIN_COOKIE) return 'cookie';
-  return 'none';
 }

@@ -1,53 +1,74 @@
-/**
- * Write/action tools (connect, message, post, react, comment).
- *
- * ⚠️ ALPHA — these perform REAL, often irreversible actions on your account and
- * are the most ban-sensitive surface. They are:
- *   - hard-gated behind an explicit `confirm: true` (never fire by accident),
- *   - run through the safety Guard (daily caps + human pacing + circuit breaker),
- *   - built on Voyager in-page POSTs (NOT DOM clicking — this immunizes us
- *     against the whole competitor connect-button/composer DOM-bug cluster),
- *   - and — the key hardening — they parse the Voyager response and return a
- *     STRUCTURED status (ok / duplicate / already_connected / restricted /
- *     quota_exhausted / not_allowed / failed) instead of a blind `sent:true`.
- *
- * Payload verification status (via `--writecapture` / `--writeprobe` on a warmed
- * burner, 2026-06-14/15) — all 5 endpoints CAPTURE/LIVE-VERIFIED:
- *   - connect_with_person — request shape VERIFIED (matches the live SPA exactly:
- *     voyagerRelationshipsDashMemberRelationships?action=verifyQuotaAndCreateV2).
- *   - create_post — VERIFIED LIVE (HTTP 200 `ok`, post created) via the GraphQL
- *     share mutation. NB: brand-new/unverified accounts are posting-restricted;
- *     LinkedIn returns an HTTP-200 GraphQL error the classifier reports as
- *     `failed` (the SPA itself hits the same restriction on a fresh account).
- *   - react_to_post — VERIFIED LIVE (HTTP 200 `ok`) via the social-dash reactions
- *     GraphQL mutation. Target is the post's ACTIVITY urn.
- *   - comment_on_post — VERIFIED LIVE (HTTP 201 `ok`) via the social-dash
- *     NormComments collection. Target is the post's ACTIVITY urn.
- *   - send_message — REPLY path VERIFIED LIVE (HTTP 200 `ok`) via the
- *     messenger-messages createMessage action. The NEW-thread path
- *     (hostRecipientUrns) is STRUCTURALLY VERIFIED: a live fire to a
- *     non-connection returned HTTP 422 RECIPIENT_NOT_FIRST_DEGREE_CONNECTION —
- *     i.e. the server parsed hostRecipientUrns + the body and rejected only on
- *     the business rule (recipient must be a 1st-degree connection), confirming
- *     the request shape. A clean 200 just needs an accepted connection.
- */
-
-import { randomBytes, randomUUID } from 'node:crypto';
+/** Alpha browser actions. Existing wire payloads are preserved; local tests do not prove current live compatibility. */
+import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import type { VoyagerClient } from '../browser/voyager.js';
 import type { Guard } from '../browser/guard.js';
 import { ACTIONS } from '../browser/guard.js';
-import { classifyWrite, type WriteOutcome } from '../browser/write-status.js';
+import type { OperationOutcome } from '../safety/write-operation.js';
 import { ownFsdId, type NormalizedResponse } from '../browser/normalize.js';
 import type { Logger } from '../types.js';
 import * as ep from '../browser/endpoints.js';
-import { ok, run } from './result.js';
+import { ok, run, ToolError } from './result.js';
+import { registerTool } from './register.js';
+import { CAPABILITIES, type ToolName, type CapabilityPolicy } from './capabilities.js';
 
 const CONFIRM_HINT =
-  'This performs a real action on your LinkedIn account. Re-call with confirm:true to proceed. Use a secondary account — these write tools are alpha and unverified.';
+  'Review the exact target, content and effect. Only after user approval, repeat these inputs with the preview operationId, preview_hash and confirm:true. Alpha writes also require runtime opt-in.';
+
+function review(
+  action: ToolName,
+  target: string,
+  content: Record<string, unknown>,
+  confirm: boolean,
+  operationId: string | undefined,
+  approvedHash: string | undefined,
+  policy: CapabilityPolicy,
+  experimental = false,
+) {
+  const payloadHash = createHash('sha256')
+    .update(JSON.stringify([action, target, content]))
+    .digest('hex');
+  if (approvedHash && approvedHash !== payloadHash) throw new ToolError('PREVIEW_CHANGED');
+  if (!confirm)
+    return ok(
+      {
+        refused: true,
+        reason: CONFIRM_HINT,
+        preview: {
+          operationId: operationId ?? randomUUID(),
+          payloadHash,
+          action,
+          target,
+          content,
+          route: CAPABILITIES[action].route,
+          effect: `Submit one ${action} action to LinkedIn. It may be irreversible.`,
+          writesEnabled: policy.writesEnabled,
+          experimentalRoute: experimental,
+        },
+      },
+      'engine',
+    );
+  if (!policy.writesEnabled) throw new ToolError('WRITE_DISABLED');
+  if (experimental && !policy.experimentalMessagesEnabled) throw new ToolError('UNVERIFIED_ROUTE');
+  return undefined;
+}
 
 const confirmField = {
+  preview_hash: z
+    .string()
+    .regex(/^[a-f0-9]{64}$/)
+    .optional()
+    .describe(
+      'Hash returned by the reviewed preview. Rejects changed target/content before any browser action.',
+    ),
+  operation_id: z
+    .string()
+    .regex(/^[A-Za-z0-9_-]{8,128}$/)
+    .optional()
+    .describe(
+      'Caller-generated unique ID (8-128 letters, digits, _ or -). Reuse the same ID and inputs to retrieve the stored outcome without resubmitting, including after a timeout. If omitted, a new ID is generated.',
+    ),
   confirm: z
     .boolean()
     .default(false)
@@ -87,7 +108,11 @@ function messagingTrackingId(): string {
  * `mailboxUrn` is the sender's own fsd_profile urn; `conversationUrn` is the
  * full msg_conversation urn of the thread being replied into.
  */
-function createMessageBody(text: string, mailboxUrn: string, conversationUrn: string): Record<string, unknown> {
+function createMessageBody(
+  text: string,
+  mailboxUrn: string,
+  conversationUrn: string,
+): Record<string, unknown> {
   return {
     message: {
       body: { attributes: [], text },
@@ -102,9 +127,11 @@ function createMessageBody(text: string, mailboxUrn: string, conversationUrn: st
 }
 
 /** Shape a classified outcome into the tool result payload. */
-function outcomePayload(action: string, o: WriteOutcome): Record<string, unknown> {
+function outcomePayload(action: string, o: OperationOutcome): Record<string, unknown> {
   return {
     action,
+    operationId: o.operationId,
+    replayed: o.replayed,
     status: o.status,
     ok: o.ok,
     httpStatus: o.httpStatus,
@@ -117,52 +144,94 @@ export function registerWriteTools(
   voyager: VoyagerClient,
   guard: Guard,
   logger: Logger,
+  policy: CapabilityPolicy = { writesEnabled: false, experimentalMessagesEnabled: false },
 ): void {
-  server.tool(
+  registerTool(
+    server,
     'connect_with_person',
-    '[ALPHA, write] Send a connection request. Gated: requires confirm:true. Returns a structured status (ok | duplicate | already_connected | restricted | quota_exhausted | failed). Counts against the daily connect cap.',
+    '[ALPHA, write] Send a connection request. Gated: requires confirm:true. Returns a structured status (ok | duplicate | already_connected | restricted | quota_exhausted | failed | unknown). Counts against the daily connect cap.',
     {
-      profile_id: z.string().min(1).describe('The fsd_profile id (the ACoAA… part of the profile URN)'),
+      profile_id: z
+        .string()
+        .regex(/^(?:urn:li:fsd_profile:)?[A-Za-z0-9_-]{1,256}$/)
+        .describe('The fsd_profile id (the ACoAA… part of the profile URN)'),
       message: z.string().max(300).optional().describe('Optional note (max 300 chars)'),
       ...confirmField,
     },
-    async ({ profile_id, message, confirm }) =>
+    async ({ profile_id, message, confirm, operation_id, preview_hash }) =>
       run(logger, 'connect_with_person', async () => {
-        if (!confirm) return ok({ refused: true, reason: CONFIRM_HINT }, 'engine');
+        const preview = review(
+          'connect_with_person',
+          toProfileUrn(profile_id),
+          { message: message ?? '' },
+          confirm,
+          operation_id,
+          preview_hash,
+          policy,
+        );
+        if (preview) return preview;
         // Verified-live payload (--writecapture 2026-06-14): the relationships-dash
         // invite action, invitee addressed by fsd_profile urn under inviteeUnion.
         const body: Record<string, unknown> = {
           invitee: { inviteeUnion: { memberProfile: toProfileUrn(profile_id) } },
         };
         if (message) body['customMessage'] = message.slice(0, 300);
-        const raw = await guard.run(ACTIONS.connect, () =>
-          voyager.voyagerPostRaw(ep.memberRelationshipsInvite(), body),
+        const outcome = await guard.runWrite(
+          ACTIONS.connect,
+          'connect',
+          body,
+          operation_id,
+          (beforeDispatch) =>
+            voyager.voyagerPostRaw(ep.memberRelationshipsInvite(), body, beforeDispatch),
         );
-        return ok(outcomePayload('connect_with_person', classifyWrite(raw, 'connect')));
+        return ok(outcomePayload('connect_with_person', outcome));
       }),
   );
 
-  server.tool(
+  registerTool(
+    server,
     'send_message',
-    '[ALPHA, write] Send a message. Pass thread_id / conversation_urn to REPLY into an existing conversation (verified); otherwise a new thread is started to recipient_urn (best-known). Gated: requires confirm:true. Returns a structured status. Counts against the daily message cap.',
+    '[ALPHA, write] Send a message. Pass thread_id / conversation_urn to REPLY into an existing conversation; new threads require a separate experimental opt-in and lack current live success evidence. Gated: requires confirm:true. Returns a structured status. Counts against the daily message cap.',
     {
       recipient_urn: z
         .string()
+        .regex(/^urn:li:fsd_profile:[A-Za-z0-9_-]{1,256}$/)
         .optional()
-        .describe('Recipient member URN (urn:li:fsd_profile:ACoAA…). Required when starting a NEW thread.'),
+        .describe(
+          'Recipient member URN (urn:li:fsd_profile:ACoAA…). Required when starting a NEW thread.',
+        ),
       thread_id: z
         .string()
+        .min(1)
+        .max(1024)
         .optional()
-        .describe('Existing thread id (2-…) or full msg_conversation urn to reply into (preferred over recipient_urn).'),
-      message: z.string().min(1).describe('Message body (multiline supported)'),
+        .describe(
+          'Existing thread id (2-…) or full msg_conversation urn to reply into (preferred over recipient_urn).',
+        ),
+      message: z.string().min(1).max(10000).describe('Message body (multiline supported)'),
       ...confirmField,
     },
-    async ({ recipient_urn, thread_id, message, confirm }) =>
+    async ({ recipient_urn, thread_id, message, confirm, operation_id, preview_hash }) =>
       run(logger, 'send_message', async () => {
-        if (!confirm) return ok({ refused: true, reason: CONFIRM_HINT }, 'engine');
+        const preview = review(
+          'send_message',
+          thread_id ?? recipient_urn ?? 'missing_target',
+          { message, mode: thread_id ? 'reply' : 'new_thread' },
+          confirm,
+          operation_id,
+          preview_hash,
+          policy,
+          !thread_id,
+        );
+        if (preview) return preview;
         if (!thread_id && !recipient_urn) {
           return ok(
-            { action: 'send_message', status: 'failed', ok: false, detail: 'Provide thread_id (reply) or recipient_urn (new thread).' },
+            {
+              action: 'send_message',
+              status: 'failed',
+              ok: false,
+              detail: 'Provide thread_id (reply) or recipient_urn (new thread).',
+            },
             'engine',
           );
         }
@@ -172,50 +241,59 @@ export function registerWriteTools(
               action: 'send_message',
               status: 'failed',
               ok: false,
-              detail: 'recipient_urn must be a profile URN (urn:li:fsd_profile:ACoAA…). Get it from search_people / get_profile.',
+              detail:
+                'recipient_urn must be a profile URN (urn:li:fsd_profile:ACoAA…). Get it from search_people / get_profile.',
             },
             'engine',
           );
         }
 
-        const raw = await guard.run(ACTIONS.message, async () => {
-          // The createMessage action needs the sender's own mailbox urn.
-          const me = await voyager.voyagerGet<NormalizedResponse>(ep.me());
-          const ownId = ownFsdId(me);
-          if (!ownId) throw new Error('Could not resolve own mailbox id from /me.');
-          const mailboxUrn = `urn:li:fsd_profile:${ownId}`;
+        const outcome = await guard.runWrite(
+          ACTIONS.message,
+          'message',
+          { recipient_urn, thread_id, message },
+          operation_id,
+          async (beforeDispatch) => {
+            // The createMessage action needs the sender's own mailbox urn.
+            const me = await voyager.voyagerGet<NormalizedResponse>(ep.me());
+            const ownId = ownFsdId(me);
+            if (!ownId) throw new Error('Could not resolve own mailbox id from /me.');
+            const mailboxUrn = `urn:li:fsd_profile:${ownId}`;
 
-          // Reply into an existing conversation (VERIFIED-live shape).
-          if (thread_id) {
-            const conversationUrn = thread_id.includes('msg_conversation')
-              ? thread_id
-              : `urn:li:msg_conversation:(${mailboxUrn},${threadIdFrom(thread_id)})`;
-            return voyager.voyagerPostRaw(
-              ep.messengerMessagesCreate(),
-              createMessageBody(message, mailboxUrn, conversationUrn),
-            );
-          }
+            // Reply into an existing conversation (VERIFIED-live shape).
+            if (thread_id) {
+              const conversationUrn = thread_id.includes('msg_conversation')
+                ? thread_id
+                : `urn:li:msg_conversation:(${mailboxUrn},${threadIdFrom(thread_id)})`;
+              return voyager.voyagerPostRaw(
+                ep.messengerMessagesCreate(),
+                createMessageBody(message, mailboxUrn, conversationUrn),
+                beforeDispatch,
+              );
+            }
 
-          // Start a NEW thread (BEST-KNOWN: hostRecipientUrns instead of a
-          // conversationUrn — not capture-verified yet).
-          const body = {
-            message: {
-              body: { attributes: [], text: message },
-              renderContentUnions: [],
-              originToken: randomUUID(),
-            },
-            hostRecipientUrns: [recipient_urn],
-            mailboxUrn,
-            trackingId: messagingTrackingId(),
-            dedupeByClientGeneratedToken: false,
-          };
-          return voyager.voyagerPostRaw(ep.messengerMessagesCreate(), body);
-        });
-        return ok(outcomePayload('send_message', classifyWrite(raw, 'message')));
+            // Start a NEW thread (BEST-KNOWN: hostRecipientUrns instead of a
+            // conversationUrn — not capture-verified yet).
+            const body = {
+              message: {
+                body: { attributes: [], text: message },
+                renderContentUnions: [],
+                originToken: randomUUID(),
+              },
+              hostRecipientUrns: [recipient_urn],
+              mailboxUrn,
+              trackingId: messagingTrackingId(),
+              dedupeByClientGeneratedToken: false,
+            };
+            return voyager.voyagerPostRaw(ep.messengerMessagesCreate(), body, beforeDispatch);
+          },
+        );
+        return ok(outcomePayload('send_message', outcome));
       }),
   );
 
-  server.tool(
+  registerTool(
+    server,
     'create_post',
     '[ALPHA, write] Publish a text post to your feed. Gated: requires confirm:true. Returns a structured status.',
     {
@@ -223,9 +301,18 @@ export function registerWriteTools(
       visibility: z.enum(['PUBLIC', 'CONNECTIONS']).default('PUBLIC').describe('Audience'),
       ...confirmField,
     },
-    async ({ text, visibility, confirm }) =>
+    async ({ text, visibility, confirm, operation_id, preview_hash }) =>
       run(logger, 'create_post', async () => {
-        if (!confirm) return ok({ refused: true, reason: CONFIRM_HINT }, 'engine');
+        const preview = review(
+          'create_post',
+          'self',
+          { text, visibility },
+          confirm,
+          operation_id,
+          preview_hash,
+          policy,
+        );
+        if (preview) return preview;
         // Verified-live GraphQL share mutation (--writecapture 2026-06-14). The
         // queryId must appear BOTH in the path and the body.
         const queryId = ep.KNOWN_QUERY_IDS.createShare;
@@ -235,33 +322,53 @@ export function registerWriteTools(
               allowedCommentersScope: 'ALL',
               intendedShareLifeCycleState: 'PUBLISHED',
               origin: 'FEED',
-              visibilityDataUnion: { visibilityType: visibility === 'CONNECTIONS' ? 'CONNECTIONS_ONLY' : 'ANYONE' },
+              visibilityDataUnion: {
+                visibilityType: visibility === 'CONNECTIONS' ? 'CONNECTIONS_ONLY' : 'ANYONE',
+              },
               commentary: { text, attributesV2: [] },
             },
           },
           queryId,
           includeWebMetadata: true,
         };
-        const raw = await guard.run(ACTIONS.comment, () =>
-          voyager.voyagerPostRaw(ep.createShareMutation(queryId), body),
+        const outcome = await guard.runWrite(
+          ACTIONS.comment,
+          'post',
+          { text, visibility },
+          operation_id,
+          (beforeDispatch) =>
+            voyager.voyagerPostRaw(ep.createShareMutation(queryId), body, beforeDispatch),
         );
-        return ok(outcomePayload('create_post', classifyWrite(raw, 'post')));
+        return ok(outcomePayload('create_post', outcome));
       }),
   );
 
-  server.tool(
+  registerTool(
+    server,
     'react_to_post',
     '[ALPHA, write] React to a post. Gated: requires confirm:true. Returns a structured status.',
     {
-      post_urn: z.string().min(1).describe('The post ACTIVITY urn, e.g. urn:li:activity:7472… (not the share urn)'),
+      post_urn: z
+        .string()
+        .regex(/^urn:li:activity:[A-Za-z0-9_-]{1,128}$/)
+        .describe('The post ACTIVITY urn, e.g. urn:li:activity:7472… (not the share urn)'),
       reaction: z
         .enum(['LIKE', 'PRAISE', 'EMPATHY', 'INTEREST', 'APPRECIATION', 'ENTERTAINMENT'])
         .default('LIKE'),
       ...confirmField,
     },
-    async ({ post_urn, reaction, confirm }) =>
+    async ({ post_urn, reaction, confirm, operation_id, preview_hash }) =>
       run(logger, 'react_to_post', async () => {
-        if (!confirm) return ok({ refused: true, reason: CONFIRM_HINT }, 'engine');
+        const preview = review(
+          'react_to_post',
+          post_urn,
+          { reaction },
+          confirm,
+          operation_id,
+          preview_hash,
+          policy,
+        );
+        if (preview) return preview;
         // Verified-live social-dash reactions GraphQL mutation (--writecapture).
         const queryId = ep.KNOWN_QUERY_IDS.reactions;
         const body = {
@@ -269,24 +376,42 @@ export function registerWriteTools(
           queryId,
           includeWebMetadata: true,
         };
-        const raw = await guard.run(ACTIONS.like, () =>
-          voyager.voyagerPostRaw(ep.reactionsMutation(queryId), body),
+        const outcome = await guard.runWrite(
+          ACTIONS.like,
+          'react',
+          { post_urn, reaction },
+          operation_id,
+          (beforeDispatch) =>
+            voyager.voyagerPostRaw(ep.reactionsMutation(queryId), body, beforeDispatch),
         );
-        return ok(outcomePayload('react_to_post', classifyWrite(raw, 'react')));
+        return ok(outcomePayload('react_to_post', outcome));
       }),
   );
 
-  server.tool(
+  registerTool(
+    server,
     'comment_on_post',
     '[ALPHA, write] Comment on a post. Gated: requires confirm:true. Returns a structured status.',
     {
-      post_urn: z.string().min(1).describe('The post ACTIVITY urn, e.g. urn:li:activity:7472… (not the share urn)'),
+      post_urn: z
+        .string()
+        .regex(/^urn:li:activity:[A-Za-z0-9_-]{1,128}$/)
+        .describe('The post ACTIVITY urn, e.g. urn:li:activity:7472… (not the share urn)'),
       text: z.string().min(1).max(1250).describe('Comment text'),
       ...confirmField,
     },
-    async ({ post_urn, text, confirm }) =>
+    async ({ post_urn, text, confirm, operation_id, preview_hash }) =>
       run(logger, 'comment_on_post', async () => {
-        if (!confirm) return ok({ refused: true, reason: CONFIRM_HINT }, 'engine');
+        const preview = review(
+          'comment_on_post',
+          post_urn,
+          { text },
+          confirm,
+          operation_id,
+          preview_hash,
+          policy,
+        );
+        if (preview) return preview;
         // Verified-live social-dash NormComments collection (--writecapture).
         const body = {
           commentary: {
@@ -296,10 +421,14 @@ export function registerWriteTools(
           },
           threadUrn: post_urn,
         };
-        const raw = await guard.run(ACTIONS.comment, () =>
-          voyager.voyagerPostRaw(ep.normCommentsCreate(), body),
+        const outcome = await guard.runWrite(
+          ACTIONS.comment,
+          'comment',
+          { post_urn, text },
+          operation_id,
+          (beforeDispatch) => voyager.voyagerPostRaw(ep.normCommentsCreate(), body, beforeDispatch),
         );
-        return ok(outcomePayload('comment_on_post', classifyWrite(raw, 'comment')));
+        return ok(outcomePayload('comment_on_post', outcome));
       }),
   );
 

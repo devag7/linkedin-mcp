@@ -1,8 +1,12 @@
+import { readFileSync } from 'node:fs';
+import { VERSION } from '../src/version.js';
 import { describe, it, expect } from 'vitest';
 
 describe('LinkedIn MCP Server', () => {
   it('should have correct version', () => {
-    expect('1.0.0').toBe('1.0.0');
+    expect(VERSION).toBe(
+      JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')).version,
+    );
   });
 });
 
@@ -13,12 +17,16 @@ describe('Config', () => {
     expect(config.PORT).toBe(3000);
     expect(config.TRANSPORT).toBe('stdio');
     expect(config.LOG_LEVEL).toBe('info');
-    expect(config.CACHE_TTL).toBe(300);
-    expect(config.RATE_LIMIT_RPM).toBe(30);
+    expect(config.LINKEDIN_ENABLE_WRITES).toBe(false);
+    expect(config.LINKEDIN_ENABLE_EXPERIMENTAL_MESSAGES).toBe(false);
   });
 
   it('should detect no auth when no credentials set', async () => {
-    const { loadConfig, hasAuth, getAuthMethod } = await import('../src/config/env.js');
+    const {
+      loadLegacyConfig: loadConfig,
+      hasAuth,
+      getAuthMethod,
+    } = await import('../src/legacy/config.js');
     const config = loadConfig();
     expect(hasAuth(config)).toBe(false);
     expect(getAuthMethod(config)).toBe('none');
@@ -77,7 +85,7 @@ describe('Auth Manager', () => {
   it('should detect no auth when unconfigured', async () => {
     const { AuthManager } = await import('../src/auth/manager.js');
     const { Logger } = await import('../src/types.js');
-    const { loadConfig } = await import('../src/config/env.js');
+    const { loadLegacyConfig: loadConfig } = await import('../src/legacy/config.js');
     const config = loadConfig();
     const logger = new Logger('error');
     const mgr = new AuthManager(config, logger);
@@ -88,7 +96,7 @@ describe('Auth Manager', () => {
   it('should throw on requireAuth when unconfigured', async () => {
     const { AuthManager, AuthError } = await import('../src/auth/manager.js');
     const { Logger } = await import('../src/types.js');
-    const { loadConfig } = await import('../src/config/env.js');
+    const { loadLegacyConfig: loadConfig } = await import('../src/legacy/config.js');
     const config = loadConfig();
     const logger = new Logger('error');
     const mgr = new AuthManager(config, logger);

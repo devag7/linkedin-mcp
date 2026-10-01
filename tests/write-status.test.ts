@@ -35,7 +35,10 @@ describe('classifyWrite — success', () => {
 
   it('catches a PLAIN-TEXT error in a 200 body with no JSON (the critical gap)', () => {
     // status 200, unparseable JSON, plain-text error → must NOT be ok.
-    const o = classifyWrite(raw(200, 'You cannot invite this person (account restricted)'), 'connect');
+    const o = classifyWrite(
+      raw(200, 'You cannot invite this person (account restricted)'),
+      'connect',
+    );
     expect(o.ok).toBe(false);
     expect(o.status).toBe('restricted');
   });
@@ -55,7 +58,10 @@ describe('classifyWrite — success', () => {
   });
 
   it('does not flag a 200 with an empty errors[] array', () => {
-    const o = classifyWrite(raw(200, '{"data":{"data":{"result":"urn:li:share:1"},"errors":[]}}'), 'post');
+    const o = classifyWrite(
+      raw(200, '{"data":{"data":{"result":"urn:li:share:1"},"errors":[]}}'),
+      'post',
+    );
     expect(o.status).toBe('ok');
   });
 });
@@ -71,9 +77,9 @@ describe('classifyWrite — HTTP-status driven', () => {
     expect(o.ok).toBe(false);
   });
 
-  it('maps 409 on a connect to already_connected, on a comment to duplicate', () => {
-    expect(classifyWrite(raw(409, ''), 'connect').status).toBe('already_connected');
-    expect(classifyWrite(raw(409, ''), 'comment').status).toBe('duplicate');
+  it('does not guess relationship state from a bare 409', () => {
+    expect(classifyWrite(raw(409, ''), 'connect').status).toBe('failed');
+    expect(classifyWrite(raw(409, ''), 'comment').status).toBe('failed');
   });
 });
 
@@ -99,7 +105,8 @@ describe('classifyWrite — body-signal driven', () => {
   });
 
   it('detects new-thread to a non-connection (422 RECIPIENT_NOT_FIRST_DEGREE_CONNECTION)', () => {
-    const body = '{"data":{"code":"RECIPIENT_NOT_FIRST_DEGREE_CONNECTION","message":"This member cannot be messaged because they are not a connection.","status":422}}';
+    const body =
+      '{"data":{"code":"RECIPIENT_NOT_FIRST_DEGREE_CONNECTION","message":"This member cannot be messaged because they are not a connection.","status":422}}';
     expect(classifyWrite(raw(422, body), 'message').status).toBe('not_allowed');
   });
 
@@ -109,4 +116,66 @@ describe('classifyWrite — body-signal driven', () => {
     expect(o.status).toBe('failed');
     expect(o.detail).toContain('novel server error');
   });
+});
+
+describe('conservative write outcomes', () => {
+  it.each(['{', 'unexpected text', '{}', '[]', '{"data":null}', '{"data":{"errors":[]}}'])(
+    'does not report success for an unrecognized 2xx body: %s',
+    (body) => {
+      expect(classifyWrite(raw(200, body), 'post').status).toBe('unknown');
+    },
+  );
+  it.each([0, 408, 500, 502, 503, 504])('treats HTTP %s as uncertain', (status) => {
+    expect(classifyWrite(raw(status, '{"message":"server error"}'), 'post').status).toBe('unknown');
+  });
+  it.each(['{"errors":[{}]}', '{"data":{"errors":[null]}}', '{"errors":["opaque"]}'])(
+    'never accepts nonempty error arrays: %s',
+    (body) => {
+      expect(classifyWrite(raw(200, body), 'post').status).toBe('failed');
+    },
+  );
+  it('does not confuse an unreadable body with the empty reaction success fixture', () => {
+    expect(classifyWrite({ ...raw(200), bodyReadFailed: true }, 'react').status).toBe('unknown');
+  });
+  it('requires a positive body signal for a non-reaction empty response', () => {
+    expect(classifyWrite(raw(201), 'connect').status).toBe('unknown');
+  });
+  it('uses explicit conflict details when present', () => {
+    expect(classifyWrite(raw(409, '{"message":"Already connected"}'), 'connect').status).toBe(
+      'already_connected',
+    );
+    expect(classifyWrite(raw(409, '{"message":"Duplicate invitation"}'), 'connect').status).toBe(
+      'duplicate',
+    );
+  });
+  it('recognizes a numeric quota error without an English message', () => {
+    expect(classifyWrite(raw(200, '{"status":429}'), 'connect').status).toBe('quota_exhausted');
+  });
+});
+
+it('treats partial GraphQL mutations with an entity and errors as uncertain', () => {
+  expect(
+    classifyWrite(
+      raw(200, '{"data":{"result":"urn:li:share:1","errors":[{"message":"partial failure"}]}}'),
+      'post',
+    ).status,
+  ).toBe('unknown');
+});
+it('treats an embedded server timeout as uncertain', () => {
+  expect(classifyWrite(raw(200, '{"status":504}'), 'post').status).toBe('unknown');
+});
+it('recognizes a GraphQL rate-limit code without an English message', () => {
+  expect(
+    classifyWrite(raw(200, '{"data":{"errors":[{"extensions":{"code":"RATE_LIMITED"}}]}}'), 'post')
+      .status,
+  ).toBe('quota_exhausted');
+});
+
+it.each([
+  ['{"code":"CANT_RESEND_YET"}', 'duplicate'],
+  ['{"message":"Account restricted"}', 'restricted'],
+  ['{"code":"CANT_RESEND_YET","value":"urn:li:fsd_invitation:1"}', 'unknown'],
+  ['{"error":"opaque","value":"urn:li:share:1"}', 'unknown'],
+])('does not accept contradictory/error-only 200 envelopes: %s', (body, status) => {
+  expect(classifyWrite(raw(200, body), 'connect').status).toBe(status);
 });
