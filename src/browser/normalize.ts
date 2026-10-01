@@ -252,8 +252,9 @@ export interface ShapedJobDetails {
 }
 
 /** Shape a single job posting. Deep-walks the response — the job node may live
- *  in data.data or included depending on the query — and picks the richest
- *  job-like object (has a title + job-ish fields). Tolerant by design. */
+ *  in data.data or included depending on the query — and picks the first
+ *  job-like object (has a title + job-ish fields). Company facts must be supplied
+ *  by that job; an arbitrary included company has no proven relationship. */
 export function shapeJobDetails(resp: NormalizedResponse): ShapedJobDetails {
   let job: Record<string, unknown> | undefined;
 

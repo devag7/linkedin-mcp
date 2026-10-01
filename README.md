@@ -13,7 +13,7 @@
 
 **Structured LinkedIn reads for MCP clients — profiles, jobs, companies and inbox data, with guided offline setup and explicit safety limits.**
 
-**22 tools** · local browser reads · five explicitly confirmed writes · persisted safety limits and operation journals.
+**23 tools** · local browser reads · five explicitly confirmed writes · persisted safety limits and operation journals.
 
 > This is an unofficial LinkedIn integration and accounts can be restricted.
 > Review [Account safety](#-account-safety) and [SECURITY.md](SECURITY.md) before use.
@@ -24,7 +24,7 @@
 
 ## Guided first run
 
-This guide targets the 22-tool core release 3.0.0. Publication receipts are tracked in
+This branch is the unpublished 23-tool 3.1.0 job-brief candidate. Core 3.0.0 publication receipts are tracked in
 [release readiness](docs/RELEASE_READINESS_3.0.0.md); until its destinations are
 verified, use the reviewed source. From that checkout, run `npm ci` and
 `npm run build`, then `node dist/index.js --setup cursor` (also `claude-desktop`
@@ -344,12 +344,12 @@ See [write evidence](docs/PHASE0_WRITE_EVIDENCE.md) and
 
 <!-- capabilities:start -->
 
-22 registered tools. Native contract version 1 returns structuredContent and identical JSON text, with fetchedAt, source, partial and status metadata. [Full route and verification inventory](docs/CAPABILITIES.md).
+23 registered tools. Native contract version 1 returns structuredContent and identical JSON text, with fetchedAt, source, partial and status metadata. [Full route and verification inventory](docs/CAPABILITIES.md).
 
 | Group | Tools |
 | --- | --- |
 | Session | `whoami`, `health_check`, `close_session` |
-| Reads | `get_my_profile`, `get_profile`, `get_feed`, `get_notifications`, `search_people`, `search_jobs`, `get_inbox`, `get_job_details`, `search_companies`, `get_company`, `get_company_posts`, `get_company_employees`, `get_pending_invitations`, `get_conversation` |
+| Reads | `get_my_profile`, `get_profile`, `get_feed`, `get_notifications`, `search_people`, `research_jobs`, `search_jobs`, `get_inbox`, `get_job_details`, `search_companies`, `get_company`, `get_company_posts`, `get_company_employees`, `get_pending_invitations`, `get_conversation` |
 | Opt-in alpha writes | `connect_with_person`, `send_message`, `create_post`, `react_to_post`, `comment_on_post` |
 
 <!-- capabilities:end -->
@@ -395,3 +395,20 @@ MIT — see [LICENSE](LICENSE). Missing files caused by cloud synchronization we
 Made by [Dev Agarwalla](https://github.com/devag7)
 
 </div>
+
+## Source-linked job briefs in 3.0.0
+
+`research_jobs({keywords:"platform engineer",count:5,enrich_first:true})`
+returns a comparison of at most ten jobs and enriches the first source-linked
+result. Each observed field carries its exact job URL, source tool and fetch time;
+missing fields remain unknown. JSON includes a ready-to-copy Markdown brief, query,
+request counters, per-read status, gaps and next steps. It never infers salary,
+fit or current availability. One first-page search plus at most one detail read;
+at most three explicit Voyager read attempts including cold identity. Browser
+navigation/assets are outside that counter. No cursor following, retry or saving.
+
+Run `npm run demo:brief` from the reviewed source for a synthetic offline MCP demo.
+It launches no browser and accesses no LinkedIn account. Fixture URLs are
+illustrative, not observed listings. Current provider compatibility remains
+unverified until the consented protocol passes. Version 2.0.3 does not include
+this tool. See the release-readiness record for publication and live evidence.

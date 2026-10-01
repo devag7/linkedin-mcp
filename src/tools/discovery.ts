@@ -116,7 +116,7 @@ export function registerDiscoveryTools(
     async ({ job_id }) =>
       run(logger, 'get_job_details', async () => {
         const raw = await guard.run(ACTIONS.readGeneric, () =>
-          voyager.voyagerGet<NormalizedResponse>(ep.jobPostingGraphql(job_id)),
+          voyager.voyagerGet<NormalizedResponse>(ep.jobPosting(job_id)),
         );
         assertReadResponse(raw);
         const job = shapeJobDetails(raw);

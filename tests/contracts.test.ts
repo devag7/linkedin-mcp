@@ -37,6 +37,7 @@ const args: Record<ToolName, Record<string, unknown>> = {
   get_notifications: {},
   search_people: { keywords: 'synthetic' },
   search_jobs: { keywords: 'synthetic' },
+  research_jobs: { keywords: 'synthetic' },
   get_inbox: {},
   get_job_details: { job_id: '123' },
   search_companies: { keywords: 'synthetic' },
@@ -228,10 +229,23 @@ describe('protocol errors on every read registration', () => {
       ]) {
         vi.mocked(runtime.guard.run).mockRejectedValueOnce(error);
         const result = await client.callTool({ name, arguments: args[name] });
-        expect(result.isError).toBe(true);
         const parsed = decode(result);
-        expect(parsed.data).toBeNull();
-        expect(parsed.meta.status).toBe('error');
+        if (name === 'research_jobs') {
+          expect(result.isError).not.toBe(true); // Useful partial report retains structured stop evidence.
+          expect(parsed.data.status).toBe('partial');
+          expect(parsed.meta.partial).toBe(true);
+          expect(parsed.data.entities).toEqual([]);
+          expect(parsed.data.reads).toHaveLength(1);
+          expect(parsed.data.reads[0]).toMatchObject({
+            status: 'error',
+            code: 'code' in error ? error.code : 'INTERNAL_ERROR',
+          });
+          expect(parsed.data.bounds.toolCalls).toBe(1);
+        } else {
+          expect(result.isError).toBe(true);
+          expect(parsed.data).toBeNull();
+          expect(parsed.meta.status).toBe('error');
+        }
         expect(JSON.stringify(parsed)).not.toContain('synthetic-secret');
       }
     },

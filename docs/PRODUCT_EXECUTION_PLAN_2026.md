@@ -273,3 +273,22 @@ maintenance/cash estimates and ambition remain; no mandatory service/expense is
 introduced. Any further provider diagnosis requires reviewed bounded instrumentation
 and fresh consent. Current counts/error code cannot identify a rotating endpoint
 or permission/normalization cause, so no speculative production fix is made.
+
+## PR #5 follow-up candidate — October2, 2026
+
+PR #5 remains draft. The isolated3.1.0 candidate integrates the core safety/setup
+merge tree, keeps23 tools and preserves its additive bounded research_jobs contract.
+Its first page permits at most3 explicit Voyager attempts including identity,
+2 underlying tools and10 entities; no retries, pagination or inferred fit.
+The original live run returned3 titles only and failed usefulness. A separately
+consented shape-only diagnosis on0200276 observed detail data alongside provider
+errors; strict rejection remains intact. Search card generic text is not mapped
+to employer/location without semantic evidence. The diagnostic consent is consumed.
+
+Offline SDK regressions remove arbitrary unrelated-company attribution and fix
+the source diagnostic's serialized JSON comparison. They do not establish current
+provider compatibility. See [redacted result and protocol](JOB_BRIEF_SHAPE_CAPTURE_PROTOCOL_2026-10-02.md).
+The useful-brief gate, exact resulting-head local/package/hosted/dry-run gates and
+all four publication destinations must pass before feature release. Core must
+finish first. Native first-use/repeat cohorts, erasure/Windows privacy and broad
+promotion remain open; mandatory maintainer cash stays$0.

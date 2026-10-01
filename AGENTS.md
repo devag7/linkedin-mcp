@@ -7,7 +7,7 @@ Guidance for AI agents using or contributing to **LinkedIn MCP**
 
 An MCP server exposing LinkedIn to any MCP client (Claude, Cursor, …) as
 structured JSON. It drives a real stealth Chrome to pass Cloudflare, then calls
-LinkedIn's Voyager API from inside the authenticated page. 22 tools.
+LinkedIn's Voyager API from inside the authenticated page. 23 tools.
 
 ## Using it (as an agent / MCP client)
 
@@ -28,7 +28,7 @@ LinkedIn's Voyager API from inside the authenticated page. 22 tools.
 
 - Profiles: `get_my_profile`, `get_profile`
 - Search: `search_people`, `search_jobs`, `get_job_details`, `search_companies`,
-  `get_company`, `get_company_posts`, `get_company_employees`
+  `get_company`, `get_company_posts`, `get_company_employees`, `research_jobs`
 - Feed/messaging: `get_feed`, `get_notifications`, `get_inbox`, `get_conversation`,
   `get_pending_invitations`
 - Writes (gated): `connect_with_person`, `send_message`, `create_post`,

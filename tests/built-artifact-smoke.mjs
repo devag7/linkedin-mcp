@@ -37,7 +37,7 @@ try {
     try {
       await client.connect(transport);
       const tools = (await client.listTools()).tools;
-      assert.equal(tools.length, 22);
+      assert.equal(tools.length, 23);
       assert.equal(
         payload(await client.callTool({ name: 'whoami', arguments: {} })).data.sessionState,
         'not_checked',
@@ -64,6 +64,16 @@ try {
         payload(await client.callTool({ name: 'get_my_profile', arguments: {} })).code,
         'CIRCUIT_OPEN',
       );
+      const brief = payload(
+        await client.callTool({
+          name: 'research_jobs',
+          arguments: { keywords: 'synthetic offline check' },
+        }),
+      );
+      assert.equal(brief.data.status, 'partial');
+      assert.equal(brief.data.reads[0].code, 'CIRCUIT_OPEN');
+      assert.equal(brief.data.bounds.readAttempts, 0);
+      assert.deepEqual(brief.data.entities, []);
       assert.equal(
         payload(await client.callTool({ name: 'health_check', arguments: {} })).data.status,
         'blocked',
@@ -77,7 +87,7 @@ try {
     }
   }
   console.log(
-    'PASS: two fresh built stdio processes, 22 tools, write IDs, confirmation refusal, persisted stop, blocked health, clean close.',
+    'PASS: two fresh built stdio processes, 23 tools, write IDs, confirmation refusal, persisted stop, blocked health, clean close.',
   );
 } finally {
   rmSync(dir, { recursive: true, force: true });

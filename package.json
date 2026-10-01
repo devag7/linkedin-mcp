@@ -1,7 +1,7 @@
 {
   "name": "linkedin-mcp-tools",
-  "version": "3.0.0",
-  "description": "Unofficial local LinkedIn MCP: structured profile, job, company and inbox reads, guided offline client setup and explicit safety limits. Current provider compatibility is not guaranteed.",
+  "version": "3.1.0",
+  "description": "Unofficial local LinkedIn MCP: structured reads, bounded source-linked job briefs, guided offline client setup and explicit safety limits. Current provider compatibility is not guaranteed.",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
@@ -32,7 +32,8 @@
     "verify:browser": "tsx scripts/verify-browser.ts",
     "verify:setup": "node scripts/verify-setup.mjs",
     "prepack": "node scripts/check-package.mjs",
-    "verify:pack": "node scripts/check-package.mjs"
+    "verify:pack": "node scripts/check-package.mjs",
+    "demo:brief": "tsx scripts/demo-brief.ts"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.12.1",

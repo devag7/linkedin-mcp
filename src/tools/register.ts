@@ -1,9 +1,26 @@
 import type { McpServer, ToolCallback } from '@modelcontextprotocol/sdk/server/mcp.js';
-import type { z } from 'zod';
+import { z } from 'zod';
 import { CAPABILITIES, type ToolName } from './capabilities.js';
 import { outputSchema } from './contracts.js';
 import { requestCancellation } from './cancellation.js';
 import { failure } from './result.js';
+type Extra = Parameters<ToolCallback<z.ZodRawShape>>[1];
+type ReadCallback = (
+  args: Record<string, unknown>,
+  extra: Extra,
+) => ReturnType<ToolCallback<z.ZodRawShape>>;
+const briefReads = new WeakMap<McpServer, Map<string, ReadCallback>>();
+/** Only these two registered read bodies can be composed; never recurse or invoke writes. */
+export function invokeBriefRead(
+  server: McpServer,
+  name: 'search_jobs' | 'get_job_details',
+  args: Record<string, unknown>,
+  extra: Extra,
+) {
+  const callback = briefReads.get(server)?.get(name);
+  if (!callback) throw new Error('Brief read unavailable');
+  return callback(args, extra);
+}
 const registrations = new WeakMap<McpServer, ToolName[]>();
 export const registeredToolNames = (server: McpServer): readonly ToolName[] =>
   registrations.get(server) ?? [];
@@ -43,6 +60,18 @@ export function registerTool<Args extends z.ZodRawShape>(
       return result;
     },
   );
+  if (name === 'search_jobs' || name === 'get_job_details') {
+    const reads = briefReads.get(server) ?? new Map<string, ReadCallback>();
+    reads.set(name, async (args, extra) => {
+      if (extra.signal.aborted) return failure(name, 'CANCELLED');
+      const parsed = z.object(inputSchema).strict().parse(args);
+      const result = await (callback as ToolCallback<z.ZodRawShape>)(parsed, extra);
+      return !result.isError && !schema.safeParse(result.structuredContent).success
+        ? failure(name, 'RESPONSE_SHAPE_CHANGED')
+        : result;
+    });
+    briefReads.set(server, reads);
+  }
   const names = registrations.get(server) ?? [];
   names.push(name);
   registrations.set(server, names);
