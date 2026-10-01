@@ -22,6 +22,17 @@
 
 ---
 
+## Review-build first run
+
+These improvements are unreleased. From the reviewed checkout, run `npm ci` and
+`npm run build`, then `node dist/index.js --setup cursor` (also `claude-desktop`
+or `vscode`). It reports local setup, client configuration and exact next steps
+without contacting LinkedIn. Export only JSON with `--client-config cursor`.
+Merge the generated entry into your existing client file and keep the installed
+build at a stable path. Follow the [setup guide](SETUP_GUIDE.md) for manual login,
+client checks and truthful validation status. The [product execution plan](docs/PRODUCT_EXECUTION_PLAN_2026.md)
+sets the next features and measured daily-Trending distribution experiments.
+
 ## What it does
 
 The server uses Patchright to open a persistent Google Chrome profile and makes
@@ -30,7 +41,7 @@ MCP clients. Some discovery tools fall back to page data. Undocumented endpoints
 query IDs, browser behavior and response shapes can change.
 
 Useful starting workflows are profile research, job/company research and inbox
-triage. Alpha writes are disabled by default. When enabled they require `confirm:true`, consume conservative attempt budgets, and
+triage. Alpha writes are disabled by default. When enabled they require a reviewed server-issued preview token and `confirm:true`, consume conservative attempt budgets, and
 return a status including `unknown` when completion cannot be established.
 
 ## Verification status

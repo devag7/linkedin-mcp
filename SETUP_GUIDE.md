@@ -6,6 +6,33 @@ Node 20+ and installed Google Chrome are required. Login requires a local displa
 No OAuth/cookie value copied into environment variables activates an official API
 provider. There is no dotenv loader; use your shell or your client's env settings.
 
+## Guided offline first run (review build)
+
+Build this checkout, then run `node dist/index.js --setup cursor` (or
+`claude-desktop` / `vscode`). The JSON report combines offline diagnosis, your
+selected client configuration, and exact login/doctor command arrays. It never
+opens Chrome, downloads software, changes a client file or accesses LinkedIn.
+Exit 1 means a local issue needs attention; login status stays `not_checked`.
+For just the JSON snippet, use `node dist/index.js --client-config cursor`.
+
+The generated entry uses the absolute Node executable and this installed build,
+sets the same profile for login and MCP, forces stdio and disables writes. Merge
+only its `linkedin` entry into your existing configuration; preserve other servers.
+Keep the installation at a stable path outside temporary caches/iCloud. Regenerate
+when Node/package paths change or after an upgrade. Do not share local path details
+in public issue reports. No cookie or token is exported.
+
+Claude Desktop/Cursor exports use `mcpServers`; VS Code exports target native
+`.vscode/mcp.json` with `servers`. VS Code's newer portable `.mcp.json` format is
+also supported by the client but is not the selected export format. The generated
+commands are arrays, so paths with spaces require no shell-escaping guesses.
+
+`npm run verify:setup` tests all three generated entries with a real SDK client and
+an offline stop fixture. The installed tarball test repeats it. Application UI
+acceptance and authorized live first reads remain separate evidence gates.
+See the [execution plan](docs/PRODUCT_EXECUTION_PLAN_2026.md) for current proposals,
+maintenance/cash estimates and distribution measures.
+
 ```bash
 npm ci
 npm run build

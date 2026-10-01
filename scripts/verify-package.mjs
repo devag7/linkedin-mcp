@@ -166,6 +166,12 @@ try {
   });
   assert.equal(aliased.status, 1, aliased.stderr);
   assert.equal(readFileSync(join(outside, 'sentinel'), 'utf8'), 'preserved');
+  process.stdout.write(
+    execFileSync(process.execPath, [resolve('scripts/verify-setup.mjs'), bundle], {
+      encoding: 'utf8',
+      timeout: 30000,
+    }),
+  );
   const smoke = execFileSync(
     process.execPath,
     [resolve('tests/built-artifact-smoke.mjs'), bundle],

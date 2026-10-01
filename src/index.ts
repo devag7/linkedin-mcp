@@ -27,6 +27,7 @@ import { runWriteProbe } from './browser/writeprobe.js';
 import { profilePath } from './safety/state-lock.js';
 import { diagnose } from './doctor.js';
 import { removeSavedProfile } from './browser/logout.js';
+import { CLIENTS, clientConfiguration, setupReport, type SetupClient } from './setup.js';
 import { VERSION } from './version.js';
 import { loadConfig } from './config/env.js';
 
@@ -47,7 +48,10 @@ function parseArgs(): ServerConfig & {
     | 'capture'
     | 'writecapture'
     | 'writeprobe'
-    | 'doctor';
+    | 'doctor'
+    | 'setup'
+    | 'client-config';
+  client?: SetupClient;
   live?: boolean;
   confirmProfileDeletion?: boolean;
 } {
@@ -57,6 +61,8 @@ function parseArgs(): ServerConfig & {
   let logLevel: 'debug' | 'info' | 'warn' | 'error' = 'info';
   let action:
     | 'doctor'
+    | 'setup'
+    | 'client-config'
     | 'login'
     | 'logout'
     | 'status'
@@ -66,6 +72,7 @@ function parseArgs(): ServerConfig & {
     | 'writeprobe'
     | undefined;
 
+  let client: SetupClient | undefined;
   let live = false;
   let confirmProfileDeletion = false;
   let transportChosen = false;
@@ -80,6 +87,14 @@ function parseArgs(): ServerConfig & {
     const next = args[i + 1];
 
     switch (arg) {
+      case '--setup':
+      case '--client-config':
+        setAction(arg === '--setup' ? 'setup' : 'client-config');
+        if (!CLIENTS.includes(next as SetupClient))
+          throw new Error('Choose a supported setup client: claude-desktop, cursor or vscode.');
+        client = next as SetupClient;
+        i++;
+        break;
       case '--doctor':
         setAction('doctor');
         break;
@@ -193,7 +208,7 @@ function parseArgs(): ServerConfig & {
   if (live && action !== 'doctor') throw new Error('--live is only supported with --doctor.');
   if (confirmProfileDeletion && action !== 'logout')
     throw new Error('--confirm-profile-deletion is only supported with --logout.');
-  return { transport, port, logLevel, action, live, confirmProfileDeletion };
+  return { transport, port, logLevel, action, client, live, confirmProfileDeletion };
 }
 
 /**
@@ -211,6 +226,8 @@ USAGE:
 COMMANDS:
   --login                  Open a real Chrome window and sign in to LinkedIn
                            once; the session is saved to the browser profile.
+  --setup <client>         Offline diagnosis, client config and exact next steps
+  --client-config <client> Print JSON config for claude-desktop, cursor or vscode
   --doctor                 Diagnose local setup without launching Chrome or network requests
   --doctor --live          Also open the saved session and probe authenticated identity
   --status                 Show the current login/profile status
@@ -253,6 +270,17 @@ async function main(): Promise<void> {
   const config = parseArgs();
   const logger = new Logger(config.logLevel);
 
+  if (config.action === 'setup' || config.action === 'client-config') {
+    const env = loadConfig();
+    const output =
+      config.action === 'setup'
+        ? setupReport(config.client!, env)
+        : clientConfiguration(config.client!, env);
+    // eslint-disable-next-line no-console -- Offline CLI output before transport starts
+    console.log(JSON.stringify(output, null, 2));
+    if ('status' in output && output.status === 'needs_attention') process.exitCode = 1;
+    return;
+  }
   if (config.action === 'doctor') {
     const report = await diagnose(loadConfig(), config, { live: config.live });
     // eslint-disable-next-line no-console -- Standalone CLI diagnosis before transport starts
@@ -357,6 +385,7 @@ void main().catch((error: unknown) => {
     message.startsWith('Official provider is unavailable') ||
     message.startsWith('Invalid environment configuration:') ||
     message.startsWith('Choose only one CLI command.') ||
+    message.startsWith('Choose a supported setup client:') ||
     message.startsWith('A custom profile deletion requires') ||
     ['PROFILE_ALIAS_REFUSED', 'PROFILE_DELETION_ROOT_REFUSED', 'PROFILE_DELETION_CHANGED'].includes(
       message,

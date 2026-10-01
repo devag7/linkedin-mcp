@@ -29,7 +29,8 @@
     "metadata:sync": "tsx scripts/sync-metadata.ts",
     "metadata:check": "tsx scripts/sync-metadata.ts --check",
     "demo:offline": "node scripts/demo-offline.mjs",
-    "verify:browser": "tsx scripts/verify-browser.ts"
+    "verify:browser": "tsx scripts/verify-browser.ts",
+    "verify:setup": "node scripts/verify-setup.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.12.1",
