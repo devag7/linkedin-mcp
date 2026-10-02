@@ -76,14 +76,14 @@ not a guarantee of current provider compatibility or account safety.
 
 ## 🚀 Quick start
 
-The package commands below target 3.0.0 after its publication has been verified.
+The package commands below target 3.1.0 only after its publication has been verified.
 For a release candidate, build the reviewed checkout and use its generated
 absolute-path configuration from the [setup guide](SETUP_GUIDE.md).
 
 **1. Diagnose offline:**
 
 ```bash
-npx -y linkedin-mcp-tools@3.0.0 --setup cursor
+npx -y linkedin-mcp-tools@3.1.0 --setup cursor
 ```
 
 Also accepts `claude-desktop` or `vscode`. Resolve the reported local issues, then
@@ -94,7 +94,7 @@ after upgrades; the report pins its installed build rather than a temporary path
 **2. Log in once** (opens a real Chrome window — sign in, solve any captcha/2FA):
 
 ```bash
-npx -y linkedin-mcp-tools@3.0.0 --login
+npx -y linkedin-mcp-tools@3.1.0 --login
 ```
 
 Needs Google Chrome installed (or run `npx patchright install chrome` once). Your
@@ -108,7 +108,7 @@ accepting `mcpServers`, this version-pinned example is an alternative:
   "mcpServers": {
     "linkedin": {
       "command": "npx",
-      "args": ["-y", "linkedin-mcp-tools@3.0.0"]
+      "args": ["-y", "linkedin-mcp-tools@3.1.0"]
     }
   }
 }
@@ -396,7 +396,7 @@ Made by [Dev Agarwalla](https://github.com/devag7)
 
 </div>
 
-## Source-linked job briefs in 3.0.0
+## Source-linked job briefs in the 3.1.0 candidate
 
 `research_jobs({keywords:"platform engineer",count:5,enrich_first:true})`
 returns a comparison of at most ten jobs and enriches the first source-linked

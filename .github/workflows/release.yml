@@ -86,8 +86,8 @@ jobs:
           node-version: 22
           cache: npm
           registry-url: https://registry.npmjs.org
-      - name: Pin npm with trusted publishing support
-        run: npm install --global npm@11.5.1
+      - name: Install audited isolated trusted publisher
+        run: node scripts/install-release-publisher.mjs "$RUNNER_TEMP/release-publisher"
       - run: npm ci
       - run: npm audit --omit=dev
       - run: npm run metadata:check
@@ -113,7 +113,7 @@ jobs:
             token) test -n "$NODE_AUTH_TOKEN" ;;
             *) exit 1 ;;
           esac
-          npm publish "$TARBALL" --access=public --provenance
+          node "$RUNNER_TEMP/release-publisher/node_modules/npm/bin/npm-cli.js" publish "$TARBALL" --access=public --provenance --loglevel=verbose
       - name: Verify exact npm artifact before creating a tag/release
         if: steps.plan.outputs.eligible == 'true' && env.RELEASE_DRY_RUN == 'false'
         run: node scripts/release.mjs verify-npm
