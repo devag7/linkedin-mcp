@@ -1,6 +1,6 @@
 # LinkedIn MCP: current gaps and zero-cash execution roadmap
 
-Updated October 1, 2026. This is the actionable PRD/TRD and product backlog for
+Updated October 2, 2026. This is the actionable PRD/TRD and product backlog for
 `devag7/linkedin-mcp`. Preserve the original
 [2026 roadmap](../PRODUCT_TECHNICAL_ROADMAP_2026.md) and its historical findings;
 this document adds current evidence rather than rewriting that baseline.
@@ -212,7 +212,10 @@ completed artifacts and referral sources, top three user failures, maintainer ho
 required cash actually spent ($0 planned), then one next experiment and stop rule.
 If quality or first-read reliability drops, fix it before broad distribution.
 
-## Evidence and remaining gaps
+## Historical source and first-feature evidence — October1
+
+This checkpoint describes the earlier draft state. The current core execution
+receipt below supersedes its merge, version and publication status.
 
 Safety correction head `0017fe1dd9de6cfb334b4eb6a77ddddcf19fbcfc` passes all12
 [hosted checks](https://github.com/devag7/linkedin-mcp/actions/runs/36859609288)
@@ -247,7 +250,7 @@ distribution is a measured, release-gated plan. See
 [coverage](ROADMAP_COVERAGE.md) for the earlier item-by-item inventory. Do not mark
 all phases complete because source/CI pass.
 
-Next milestone: human review of the two draft tracks, remaining Claude/Cursor native-client acceptance
+At that checkpoint the next milestone was human review of the two draft tracks, remaining Claude/Cursor native-client acceptance
 without LinkedIn access, then P2 bounded source-linked brief implementation under the
 same endpoint and privacy limits. Live first-read validation requires renewed consent.
 
@@ -273,3 +276,43 @@ maintenance/cash estimates and ambition remain; no mandatory service/expense is
 introduced. Any further provider diagnosis requires reviewed bounded instrumentation
 and fresh consent. Current counts/error code cannot identify a rotating endpoint
 or permission/normalization cause, so no speculative production fix is made.
+
+
+## Core execution and next milestone — October2
+
+PR #3 then #4 are merged. Frozen main release source is
+`a9f785b7131eb4ada24791e5ea3fa01e6f104906`;3.0.0 remains absent from the four
+target destinations. The22-tool/15-file candidate passes524 local tests, all12
+hosted main checks and all10 exact release dry-run jobs. Dirty/clean workspaces
+produce identical archives. All57 sync copies, `pr_diff.txt` and backups remain
+unchanged. [Current receipts and npm blocker](RELEASE_READINESS_3.0.0.md) distinguish
+passed offline core gates from failed authenticated publication.
+
+Publisher maintenance: isolated npm12.2.0 with three locked upstream bundle
+patches; actual installed audit0, application production audit0. Only publication
+uses that CLI, preserving the package-report contract. Dependencies: supported
+hosted Node, public npm/GitHub infrastructure and working owner-managed trust
+binding. Estimated maintenance is about1h/month to review pins, plus an audit
+each release; remove patches once upstream incorporates them. Required cash$0.
+No quality gate, application feature or safety/privacy requirement was reduced.
+
+Next concrete milestone is owner verification/reset of the npm binding, followed
+by automated recovery of the exact candidate and independent four-destination
+verification. Merge/publication authority is already granted. Evidence snapshots
+stay separate from frozen main until recovery completes. Glama source is refreshed
+to that commit; description honestly says publication pending. The corrected
+punkpeye submission remains draft, with22-tool local stdio and no brief capability.
+
+PR #5 remains draft. Its earlier partial result proves bounded provenance/cleanup,
+not useful job-brief compatibility. Counts/error code alone cannot identify a
+route, permission or normalization cause. The separate offline investigation and
+any independently consented diagnosis are not core3.0.0 evidence. No further
+account access occurred in this core-release work.
+
+Measurement refresh: GitHub reports10 stars on October2. Traffic exports retrieved
+on October2 contain September17–30 UTC rows:58 views/26 reported uniques and128
+clones/72 reported uniques. This lagged14-day window is not a monthly total,
+distinct humans, successful reads or an attribution result. Weekly dated exports
+and overlap deduplication remain required. First-use/repeat-use cohorts remain
+unknown; no Trending result is claimed. P7/P8 promotion limits and the10,000-star
+and daily-Trending measured ambitions remain.
