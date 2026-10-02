@@ -9,8 +9,10 @@ and `audit fix` do not replace bundled modules. The installer copies separately
 integrity-locked upstream patches into a new disposable CLI installation, after
 checking exact old/new versions, names, unchanged dependency requirements and
 absence of directory aliases. It updates that installation's lock to describe
-the actual tree and requires a clean production audit before exposing the CLI.
+the actual tree and requires a clean production audit before using the CLI.
 It changes no npm authentication implementation or application dependencies.
+Only publication invokes this CLI explicitly. Source, packaging and installed
+SDK checks use the runner's existing npm: npm 12 changes the pack-report format.
 
 Review pins and remove the patches when upstream fixes its bundle. Monthly
 maintenance and an audit on every release are required; cash cost is $0. Updating

@@ -113,7 +113,7 @@ jobs:
             token) test -n "$NODE_AUTH_TOKEN" ;;
             *) exit 1 ;;
           esac
-          npm publish "$TARBALL" --access=public --provenance --loglevel=verbose
+          node "$RUNNER_TEMP/release-publisher/node_modules/npm/bin/npm-cli.js" publish "$TARBALL" --access=public --provenance --loglevel=verbose
       - name: Verify exact npm artifact before creating a tag/release
         if: steps.plan.outputs.eligible == 'true' && env.RELEASE_DRY_RUN == 'false'
         run: node scripts/release.mjs verify-npm

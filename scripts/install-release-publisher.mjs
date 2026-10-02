@@ -63,7 +63,6 @@ export function installPublisher(destination) {
   const cli = path.join(destination, 'node_modules/npm/bin/npm-cli.js');
   execFileSync(process.execPath, [cli, 'audit', '--prefix', destination, '--omit=dev'], { stdio: 'inherit' });
   execFileSync(process.execPath, [cli, '--version'], { stdio: 'inherit' });
-  if (process.env.GITHUB_PATH) fs.appendFileSync(process.env.GITHUB_PATH, path.join(destination, 'node_modules/.bin') + '\n');
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
