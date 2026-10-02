@@ -85,6 +85,14 @@ all15 shipped files remain unchanged from that correction.
 | Production dependencies | Application audit0; actual installed publisher audit0 after locked upstream repairs. Three application development findings remain tracked for October8 |
 | Preservation | All60 original-workspace and backup hashes match:57 sync-style copies, `pr_diff.txt`, ignored dist copy and preserved Git sync copy |
 
+The original cloud-synchronized dirty checkout was also inspected with a read-only
+pack dry run and scripts bypassed: its15 reported paths match the independent
+allowlist. It remains an older2.0.3 deferred-feature checkout; that check proves
+inventory exclusion only, not that its runtime/bytes are the core release.
+Exact core tarball contents are proved by the fresh clean and duplicate-bearing
+candidate fixtures and the downloaded hosted artifact above. Historical package
+smoke evidence does not retroactively prove this exact allowlist or artifact.
+
 The old23-tool dry run is superseded. Recovery run36953095204 at `20aeff5`
 passed six compatibility jobs but failed package-report parsing because npm12
 changes that JSON shape; it is not a passing release gate. Final workflow invokes
