@@ -86,8 +86,8 @@ jobs:
           node-version: 22
           cache: npm
           registry-url: https://registry.npmjs.org
-      - name: Pin npm with trusted publishing support
-        run: npm install --global npm@11.6.2
+      - name: Install audited isolated trusted publisher
+        run: node scripts/install-release-publisher.mjs "$RUNNER_TEMP/release-publisher"
       - run: npm ci
       - run: npm audit --omit=dev
       - run: npm run metadata:check
