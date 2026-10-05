@@ -6,8 +6,9 @@ The owner replaced the encrypted Actions secret at11:48:29UTC. Automated
 passed all six Linux/macOS/Windows Node20/22 compatibility jobs but stopped before
 authentication at the isolated publisher's audit: high-severity
 [GHSA-ch52-4w7c-c8xp](https://github.com/advisories/GHSA-ch52-4w7c-c8xp),
-http-cache-semantics4.2.0. The replacement token's publication ability has not
-yet been exercised; this failure is distinct from the old token's `EOTP`.
+http-cache-semantics4.2.0. That run did not exercise the replacement token; its
+subsequent actual publication attempt and separate authentication failure are
+recorded below.
 
 ## Scope and acceptance
 
@@ -56,3 +57,23 @@ No mandatory hosting or paid integration is introduced. P7 first-use and P8
 erasure/Windows privacy remain open; no broad promotion or Trending result follows
 from this repair. Failure logs, before/after regression counts and protected hash
 receipts remain in the existing private release backup.
+
+
+## Final hosted verification and integration
+
+Final review also covered direct stale-while-revalidate and stale-if-error paths.
+PR #6 final head `cbb65369a7bc5ee8e7caa1f159352595cb6c425b` passed
+[all12 PR checks](https://github.com/devag7/linkedin-mcp/actions/runs/37307796316)
+and the [ten-job release dry run](https://github.com/devag7/linkedin-mcp/actions/runs/37307834907).
+The downloaded15-file archive matches every approved shipped byte and SHA256
+`bba2d6b40d1ea18944588347dcd11490641fc3190e7a084988f81fa17ea74239`.
+Merge `5640dfaa6a05533143f3130b0663806378ac0afa` has the identical reviewed tree;
+[main CI](https://github.com/devag7/linkedin-mcp/actions/runs/37308641622) passes12/12.
+
+The [actual integrated release](https://github.com/devag7/linkedin-mcp/actions/runs/37308641551)
+passed this publisher's audit and real cache assertions, all six compatibility
+jobs and source/package gates, then failed npm publication with `EOTP` using the
+replacement token. This authentication failure is independent of the repaired
+cache blocker. All four3.0.0 destinations remain absent in post-failure read-back.
+No audit was disabled, artifact enlarged, LinkedIn account accessed or security
+policy weakened. See [final release evidence](RELEASE_READINESS_3.0.0.md#replacement-token-result-and-final-source--october5-2026).

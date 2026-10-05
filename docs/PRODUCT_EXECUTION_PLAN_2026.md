@@ -345,3 +345,30 @@ workflow resumes at exact frozen source, and every destination's actual bytes,
 integrity, provenance, public visibility, Registry status and tag/SHA is verified.
 Do not mark release/distribution complete until then. See the
 [exact authentication and destination evidence](RELEASE_READINESS_3.0.0.md#token-mode-recovery-and-read-back--october5-2026).
+
+
+## Final core source and authentication dependency — October5
+
+The owner replaced the encrypted publication secret. A newly disclosed private
+publisher cache vulnerability blocked the first retry before authentication.
+Reviewed PR #6 resolves that blocker with locked upstream bytes plus a tested,
+explicitly maintained cache guard; the upstream4.3.0 version alone is not called
+fixed. Required cash$0; maintenance about2h/month plus per-release real behavioral
+assertions/audit. No application dependency or shipped file changed.
+
+Final source `5640dfaa6a05533143f3130b0663806378ac0afa` has531 passing local tests,
+12/12 main checks and the reviewed-tree10/10 release dry run. The22-tool,15-file
+archive remains byte-identical. Actual automated run37308641551 then used the
+replacement token and failed with `EOTP`; all four3.0.0 destinations remain absent.
+Secret replacement does not prove Bypass2FA/permissions or selected package policy.
+Owner-only configuration evidence is the remaining authentication dependency;
+do not disable2FA, retry unchanged credentials, switch auth paths without owner
+instruction, or publish manually alongside automation.
+
+Next concrete milestone: check owner publishing policy/token configuration,
+resolve the evidenced cause, then resume at frozen `5640dfa` and verify all four
+artifacts/provenance independently. Evidence is on a separate branch; PR #5
+remains draft. No new LinkedIn request, first-use/erasure/Windows-privacy completion,
+paid service or Trending result follows. All60 protected original/backup hashes
+match. [Final gate receipt](RELEASE_READINESS_3.0.0.md#replacement-token-result-and-final-source--october5-2026)
+records exact runs and what they establish.

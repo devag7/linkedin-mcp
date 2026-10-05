@@ -2,8 +2,9 @@
 
 **Latest status: the explicitly authorized token-mode automated attempt also
 failed; npm requires interactive 2FA (`EOTP`). No 3.0.0 destination is published.**
-The October2 source/package gates and frozen candidate remain unchanged. The
-latest recovery receipt below supersedes the earlier authentication milestone.
+The reviewed publisher-only security repair is merged; the22-tool,15-file
+package bytes remain unchanged. The final October5 receipt below supersedes
+earlier source/authentication milestones; historical results remain retained.
 
 The maintainer explicitly authorizes PR #3 then PR #4 integration and automated
 3.0.0 publication after core-only gates. PR #5 remains draft for a later version.
@@ -199,3 +200,53 @@ Windows privacy evidence remain open; PR #5 remains draft and no LinkedIn access
 occurred. The full original/backup preservation manifest is checked again before
 any subsequent source movement. The candidate remains frozen while owner setup
 is pending; the exposed credential should be revoked by its owner after replacement.
+
+
+## Replacement-token result and final source — October5, 2026
+
+GitHub records encrypted `NPM_TOKEN` replacement at11:48:29UTC, following owner
+confirmation. Secret metadata proves replacement, not permission flags or package
+policy. No credential was retrieved, printed or added to these receipts.
+[Run37305417071](https://github.com/devag7/linkedin-mcp/actions/runs/37305417071)
+passed six compatibility jobs but stopped before authentication on a newly
+reported high-severity publisher dependency finding. The reviewed
+[publisher cache repair](RELEASE_PUBLISHER_CACHE_REPAIR_2026-10-05.md) resolves
+that release blocker without changing the application or bypassing an audit.
+
+[PR #6](https://github.com/devag7/linkedin-mcp/pull/6) final reviewed head is
+`cbb65369a7bc5ee8e7caa1f159352595cb6c425b`; merge/main and intended release source
+are `5640dfaa6a05533143f3130b0663806378ac0afa`. Their entire Git trees match.
+Both repair commits and earlier upstream/stack history are retained. PR #5 stays
+draft and excluded. No LinkedIn account request occurred.
+
+| Exact gate | Actual result and scope |
+| --- | --- |
+| Local source | 531 tests/28 suites; metadata, lint, typecheck, build and installed package/setup pass. Focused release/publisher suite69 tests. Fixture/SDK behavior, not live LinkedIn compatibility. |
+| Actual publisher | npm12.2.0 on supported Node24.19.0; reviewed protected-cache assertions pass against the installed library; production audit0. Application production audit0; three development findings remain due October8. |
+| Final PR CI | [37307796316](https://github.com/devag7/linkedin-mcp/actions/runs/37307796316),12/12 pass at `cbb6536`. |
+| Exact release dry run | [37307834907](https://github.com/devag7/linkedin-mcp/actions/runs/37307834907),10/10 pass at `cbb6536`; independently downloaded archive has15 regular files, each matching approved bytes, SHA256 `bba2d6b40d1ea18944588347dcd11490641fc3190e7a084988f81fa17ea74239`. Proves validation/planning, not authenticated publication. |
+| Integrated main CI | [37308641622](https://github.com/devag7/linkedin-mcp/actions/runs/37308641622),12/12 pass at `5640dfa`; unchanged shipped artifact and22 tools. |
+| Actual automated publication | [37308641551](https://github.com/devag7/linkedin-mcp/actions/runs/37308641551), six compatibility jobs and release source/package/publisher audit gates pass, then npm token publish fails401/`EOTP`. No npm3.0.0 artifact, tag or release created; downstream publication skipped. |
+
+The replacement token **was exercised** in the actual publish request. npm's
+automatic OIDC attempt still returned404 beforehand; provenance signing completed,
+but neither establishes publication. The token-mode environment and nonempty-secret
+guard passed. `EOTP` does not identify whether the token lacks Bypass2FA or package
+policy disallows tokens. The owner-only npm settings are not visible in the current
+signed-out browser. Check selected **Publishing access** and the replacement
+token's package-write/Bypass2FA configuration privately; do not share a token or
+OTP and do not weaken existing policy. No unchanged-secret retry is justified.
+
+Independent post-failure read-back at2026-10-05T12:32:57UTC still finds npm
+latest2.0.3 and target3.0.0 HTTP404; public repository-linked GitHub Packages
+versions2.0.0–2.0.3 with3.0.0 absent; official Registry3.0.0 HTTP404; GitHub
+release3.0.0 HTTP404 and no remote v3.0.0 tag. All60 original and backup hashes
+match again, including57 sync copies and `pr_diff.txt`. Private logs, exact
+artifacts and receipts are preserved.
+
+Keep main frozen at `5640dfa` and evidence changes separate. Next milestone:
+owner supplies actual authentication-configuration evidence, resolve that cause,
+resume the existing automated workflow once at this source, then independently
+verify all four destinations and published installation/provenance. Existing
+merge/publication consent is sufficient; no new LinkedIn access is authorized.
+P7/P8 and directory-generated hosting claims remain open. Release is not complete.
