@@ -32,7 +32,10 @@ The advisory currently lists no patched version. See also the
 A small publisher-only subclass requires synchronous revalidation for
 non-storable/no-cache entries, shared proxy-revalidate and shared cookies without
 explicit public opt-in, including immutable cookies. Ordinary reuse delegates to
-upstream. The installer refuses unexpected upstream source bytes and aliases,
+upstream. Review also reproduced protected-entry reuse through direct
+stale-while-revalidate and revalidation's stale-if-error fallback; both paths are
+guarded and exercised against the real library, while ordinary stale-error reuse
+remains allowed. The installer refuses unexpected upstream source bytes and aliases,
 retains the exact locked original beside its wrapper, then exercises the real
 guarded library through direct and serialized policies. Security-prohibited cases
 refuse reuse; ordinary fresh/expired public entries preserve allowed max-stale.

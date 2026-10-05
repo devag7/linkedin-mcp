@@ -78,6 +78,8 @@ class PolicyFixture {
   _assertRequestHasHeaders(request: { headers?: object }) { if (!request.headers) throw new Error('missing headers'); }
   _evaluateRequestMissResult() { return { response: undefined, revalidation: { synchronous: true } }; }
   evaluateRequest() { return { response: { headers: {} }, revalidation: undefined }; }
+  useStaleWhileRevalidate() { return true; }
+  _useStaleIfError() { return true; }
 }
 
 describe('publisher-only cache prohibition guard', () => {
@@ -89,6 +91,8 @@ describe('publisher-only cache prohibition guard', () => {
     if (condition === 'no-cache') policy._rescc['no-cache'] = true;
     if (condition === 'no-store') policy.canStore = false;
     expect(policy.evaluateRequest({ headers: { 'cache-control': 'max-stale=100000' } })).toEqual({ response: undefined, revalidation: { synchronous: true } });
+    expect(policy.useStaleWhileRevalidate()).toBe(false);
+    expect(policy._useStaleIfError()).toBe(false);
   });
   it('keeps ordinary cache decisions and explicit public/private-cache cookie cases with upstream', () => {
     for (const context of ['ordinary', 'public cookie', 'private-cache cookie']) {
@@ -97,6 +101,8 @@ describe('publisher-only cache prohibition guard', () => {
       if (context === 'public cookie') policy._rescc.public = true;
       if (context === 'private-cache cookie') policy._isShared = false;
       expect(policy.evaluateRequest({ headers: {} })).toEqual({ response: { headers: {} }, revalidation: undefined });
+      expect(policy.useStaleWhileRevalidate()).toBe(true);
+      expect(policy._useStaleIfError()).toBe(true);
     }
   });
 });

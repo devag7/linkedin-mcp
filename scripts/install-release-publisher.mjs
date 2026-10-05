@@ -45,12 +45,16 @@ export function verifyPublisherCache(target) {
     { 'cache-control': 'private' },
   ];
   for (const extra of prohibited) {
-    const policy = new CachePolicy(request, { status: 200, headers: { 'cache-control': 'max-age=60', ...extra } }, { shared: true });
+    const headers = { ...extra, 'cache-control': `${extra['cache-control'] ?? 'max-age=60'}, stale-while-revalidate=1000, stale-if-error=1000` };
+    const policy = new CachePolicy(request, { status: 200, headers }, { shared: true });
     for (const candidate of [policy, CachePolicy.fromObject(policy.toObject())]) {
       candidate.now = () => candidate._responseTime + 5000;
       const next = { ...request, headers: { ...request.headers, 'cache-control': 'max-stale=100000' } };
       assert.equal(candidate.satisfiesWithoutRevalidation(next), false, 'Publisher cache prohibition was bypassed');
       assert.equal(candidate.evaluateRequest(next).response, undefined);
+      assert.equal(candidate.useStaleWhileRevalidate(), false);
+      assert.equal(candidate.revalidatedPolicy(next, { status: 500, headers: {} }).modified, true,
+        'An upstream error must not reuse a protected cached response');
     }
   }
   for (const control of ['max-age=60', 'max-age=0', 'max-age=0, public']) {
@@ -58,6 +62,10 @@ export function verifyPublisherCache(target) {
     policy.now = () => policy._responseTime + 5000;
     assert.equal(policy.satisfiesWithoutRevalidation({ ...request, headers: { ...request.headers, 'cache-control': 'max-stale=100000' } }), true);
   }
+  const ordinary = new CachePolicy(request, { status: 200, headers: { 'cache-control': 'max-age=0, stale-if-error=1000, stale-while-revalidate=1000' } }, { shared: true });
+  ordinary.now = () => ordinary._responseTime + 5000;
+  assert.equal(ordinary.useStaleWhileRevalidate(), true);
+  assert.equal(ordinary.revalidatedPolicy(request, { status: 500, headers: {} }).modified, false);
 }
 
 export function patchPublisherBundles(root) {

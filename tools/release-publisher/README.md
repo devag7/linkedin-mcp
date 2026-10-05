@@ -19,7 +19,9 @@ fix the reported unsafe reuse**: synthetic shared-cookie/proxy-revalidate cases
 reproduce on both4.2.0 and4.3.0. A publisher-only subclass explicitly requires
 synchronous revalidation for non-storable/no-cache responses, shared
 proxy-revalidate and shared cookies without explicit public opt-in, including
-immutable cookies. Ordinary cache expiry/max-stale behavior still delegates to
+immutable cookies. The same prohibition covers direct stale-while-revalidate
+decisions and stale-if-error fallback during revalidation. Ordinary cache
+expiry/max-stale and permitted stale-error behavior still delegates to
 upstream. This is a local mitigation, not a claimed upstream security fix.
 
 Before installing that guard, exact upstream source SHA256 is checked; unexpected
