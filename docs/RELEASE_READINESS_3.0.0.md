@@ -1,4 +1,9 @@
-# 3.0.0 core release evidence — October2, 2026
+# 3.0.0 core release evidence — October5, 2026
+
+**Latest status: the explicitly authorized token-mode automated attempt also
+failed; npm requires interactive 2FA (`EOTP`). No 3.0.0 destination is published.**
+The October2 source/package gates and frozen candidate remain unchanged. The
+latest recovery receipt below supersedes the earlier authentication milestone.
 
 The maintainer explicitly authorizes PR #3 then PR #4 integration and automated
 3.0.0 publication after core-only gates. PR #5 remains draft for a later version.
@@ -141,3 +146,56 @@ Independent read-back at2026-10-02T02:16:13Z:
 erasure/Windows NTFS privacy proof remain open. No Trending achievement or useful
 live job-brief pass is claimed. Protected artifacts and failure evidence remain
 in the private core-release backup; no credentials or account content were added.
+
+## Token-mode recovery and read-back — October5, 2026
+
+The maintainer explicitly directed use of the supplied npm access token, overriding
+the earlier tooling guidance against token fallback. Owner identity was checked
+without printing credentials; the credential was supplied to GitHub's encrypted
+`NPM_TOKEN` Actions secret through hidden input, not written into source, package,
+evidence files or command-line arguments. The existing supported repository
+variable `NPM_PUBLISH_AUTH=token` selected the automated path. No manual parallel
+publication, source change, version change or authentication-policy relaxation
+was made. Do not copy credentials from chat into this document.
+
+[Run36999000357](https://github.com/devag7/linkedin-mcp/actions/runs/36999000357)
+used the exact frozen `a9f785b7131eb4ada24791e5ea3fa01e6f104906` source. All six
+Linux/macOS/Windows Node20/22 compatibility jobs passed. The release job also
+passed dependency, metadata, lint, type, 524-test, build and package gates.
+npm12 first attempted its built-in OIDC exchange, which still returned404, then
+used token authentication for the actual publish request. Provenance signing
+completed, but the npm package PUT returned401 and `EOTP` requiring interactive
+2FA. A transparency-log statement alone does not establish package publication
+or a verified package-to-provenance association. No tag or draft was created;
+GitHub Packages and Registry publication were skipped and finalization failed.
+
+The owner's screenshot supplies new configuration evidence: workflow filename
+`release.yml,ci.yml` differs from the required single exact filename `release.yml`.
+User/repository and blank environment match the intended fields, and direct
+publish is checked. This visible mismatch is sufficient to require correction
+before claiming trusted-publisher readiness; it does not prove the complete
+cause of the prior404. Token publication cannot establish that the binding works.
+The saved binding was not changed.
+
+Independent October5 checks find npm3.0.0 HTTP404, official Registry3.0.0 HTTP404,
+GitHub release3.0.0 HTTP404 and no remote v3.0.0 tag. GitHub Packages remains public
+and linked to this repository, with versions2.0.0 through2.0.3;3.0.0 is absent.
+No successful destination is inferred from passed tests or signed provenance.
+
+For the requested token-only recovery, the owner must replace the Actions secret
+privately with a short-lived, single-package granular token permitting direct
+publication with Bypass2FA enabled, if current package policy permits tokens.
+Do not disable account/package2FA or request an OTP/password in chat. npm's
+[package2FA documentation](https://docs.npmjs.com/requiring-2fa-for-package-publishing-and-settings-modification/)
+distinguishes publish-capable tokens from a policy disallowing tokens altogether.
+The actual failed request does not establish which token/package setting caused
+the challenge. If tokens are disallowed, stop for an authentication-path decision;
+do not weaken policy. No retry is justified merely by elapsed time.
+
+Once the owner confirms the replacement, resume the existing workflow at the
+frozen source and independently verify all four artifacts/statuses. Existing
+merge/publication authorization remains sufficient. First-use, erasure and
+Windows privacy evidence remain open; PR #5 remains draft and no LinkedIn access
+occurred. The full original/backup preservation manifest is checked again before
+any subsequent source movement. The candidate remains frozen while owner setup
+is pending; the exposed credential should be revoked by its owner after replacement.

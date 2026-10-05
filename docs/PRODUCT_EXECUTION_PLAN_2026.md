@@ -280,6 +280,9 @@ or permission/normalization cause, so no speculative production fix is made.
 
 ## Core execution and next milestone — October2
 
+This section is the October2 snapshot. The October5 authentication receipt below
+supersedes its next milestone; source/package scope and open P7/P8 gates persist.
+
 PR #3 then #4 are merged. Frozen main release source is
 `a9f785b7131eb4ada24791e5ea3fa01e6f104906`;3.0.0 remains absent from the four
 target destinations. The22-tool/15-file candidate passes524 local tests, all12
@@ -316,3 +319,29 @@ distinct humans, successful reads or an attribution result. Weekly dated exports
 and overlap deduplication remain required. First-use/repeat-use cohorts remain
 unknown; no Trending result is claimed. P7/P8 promotion limits and the10,000-star
 and daily-Trending measured ambitions remain.
+
+## Authentication recovery milestone — October5
+
+An explicitly authorized token-mode run36999000357 at frozen main `a9f785b`
+passed all six platform/Node compatibility jobs and the release source/package
+gates, then failed the npm publish request with401/`EOTP`. The signed provenance
+statement is not package publication. All four3.0.0 targets remain absent in
+independent read-back. Source, version,22-tool scope and15-file candidate stay
+frozen. PR #5 remains draft, with no new LinkedIn request.
+
+The supplied screenshot shows saved workflow filename `release.yml,ci.yml`,
+which does not equal `release.yml`; trusted publishing is not verified. The owner
+now requests token-only authentication. Dependency: privately replace the Actions
+secret with a short-lived, package-scoped publish token usable without interactive
+2FA under the existing npm package policy. Do not relax2FA, put credentials in
+documentation or retry the failed token unchanged. If policy disallows tokens,
+an owner authentication-path decision is required. Required cash$0; owner setup
+plus one existing automated run, with no feature or gate reduction. Maintenance:
+revoke exposed credentials, rotate/expire limited tokens and eventually repair
+the workflow binding for token-free publishing when authorized.
+
+Next concrete milestone: owner confirms private secret replacement, existing
+workflow resumes at exact frozen source, and every destination's actual bytes,
+integrity, provenance, public visibility, Registry status and tag/SHA is verified.
+Do not mark release/distribution complete until then. See the
+[exact authentication and destination evidence](RELEASE_READINESS_3.0.0.md#token-mode-recovery-and-read-back--october5-2026).

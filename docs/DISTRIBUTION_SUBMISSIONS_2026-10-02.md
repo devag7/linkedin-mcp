@@ -39,3 +39,26 @@ four-destination receipts to these listings. Keep the curated-list PR draft and
 broad tutorials/promotion gated on P7/P8 first-use/privacy evidence. No placement,
 domain or mandatory hosting was purchased. GitHub currently reports10 stars;
 traffic window details are in the execution plan, not an adoption claim.
+
+## Authentication and listing recheck — October5
+
+Token-mode automated run36999000357 failed with npm `EOTP` despite passing core
+gates. All four3.0.0 destinations remain absent; do not change listings to say
+published. PR15490 remains draft at `13f904d5a3dbbb07902b79e07abf207bbb1a4fba`,
+with22 local tools and no job-brief claim. PR #5 remains separate and draft.
+
+Owner access to Glama was restored using the existing authorized GitHub session.
+The editable description still explicitly says22 tools, local stdio/manual login,
+3.0.0 publication pending, and provider/first-use/erasure/Windows limits. The
+Auto-Release switch is off and the old hosted release remains2.0.3. No listing
+change or hosted build was needed or triggered. Glama's public overview still
+contains generated deployment instructions and a Hybrid classification, while
+its source README carries the current local-only scope. These stale generated
+surfaces are not verified hosting evidence and remain a directory limitation;
+the owner editor exposes only the short description, not that generated Q&A.
+
+Next action: finish owner authentication setup and verify the four destinations,
+then refresh the editable listing and directory PR with actual publication
+receipts. Request regeneration of stale Glama deployment/schema surfaces through
+its supported owner controls if available; do not enable hosted builds to force
+classification changes. No broad promotion, paid placement or Trending claim.
