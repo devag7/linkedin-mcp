@@ -1,12 +1,15 @@
 # 3.0.0 core release evidence — October5, 2026
 
-**Latest status — October6: OIDC mode is prepared; corrected npm connection
-save confirmation is pending. Fresh audits now block release of frozen
-`5640dfa`: one production critical finding, and six full-audit findings including
-three critical/one high. No publishing attempt was dispatched on October6.**
-The22-tool,15-file artifact still matches the approved bytes. Historical source,
-audit and authentication results below remain dated evidence and are superseded
-by the latest preflight receipt where findings changed.
+**Latest status — October6: dependency repair PR #7 is reviewed and merged at
+`efd3b53ffd8416c68ef703069d883ee1371cb533`. All12 PR checks and10 exact release
+dry-run jobs pass. Application and publisher production audits are zero; one
+low development esbuild finding remains documented. Main CI12/12 passes.
+Publication is paused until the corrected `release.yml`-only npm connection is
+confirmed saved. The release workflow is temporarily disabled.**
+The new22-tool/15-file artifact is recorded below. Original frozen `5640dfa`,
+its archive, all historical results and protected workspace/backup files remain
+intact. Historical failed-audit and token-only recovery milestones are superseded
+by the reviewed dependency repair and current OIDC-only authorization.
 
 The maintainer explicitly authorizes PR #3 then PR #4 integration and automated
 3.0.0 publication after core-only gates. PR #5 remains draft for a later version.
@@ -35,8 +38,9 @@ The final main artifact after ordered merges/version bump must match that approv
 candidate's15 shipped names/types/lengths/hashes. Source SHA can differ by reviewed
 integration/version commits; prove source tree and bytes rather than assume them.
 
-Production audit must be clean. Three development-tool findings have an October8
-follow-up; no high/critical finding is accepted. npm trusted-publisher settings are
+Production and actual publisher audits must be clean. The current reviewed repair
+leaves one low esbuild development finding with an October8 follow-up and explicit
+build exposure; no moderate/high/critical finding remains. npm trusted-publisher settings are
 human-confirmed; OIDC/provenance still require actual automated-publish verification.
 No parallel manual publish. Verify npm integrity/bytes/provenance, public scoped
 artifact, active official Registry entry and finalized exact GitHub Release/tag.
@@ -304,3 +308,63 @@ release dry run. Moving the frozen release source requires resolving the owner's
 explicit frozen-head instruction. Required cash$0; no mandatory hosting. After
 that and saved-binding confirmation, execute the existing OIDC-only release once,
 stop on a precise OIDC error, and verify each destination independently.
+
+
+## Reviewed dependency repair and new candidate — October6, 2026
+
+The owner authorizes a separate repair of the new audit blockers from frozen
+`5640dfa`, with reviewed integration after actual gates and publication paused.
+[PR #7](https://github.com/devag7/linkedin-mcp/pull/7) reviewed head
+`49e9199880e53cafa3585bd922933270f8d3f241` merges as new main/intended release source
+`efd3b53ffd8416c68ef703069d883ee1371cb533`. Their entire Git trees match. The
+[complete finding trace and exposure review](DEPENDENCY_REPAIR_3.0.0_2026-10-06.md)
+records all six application findings and the additional publisher selector-parser
+failure, including supported migration choices and the residual low finding.
+
+| Gate / identity | Actual evidence and scope |
+| --- | --- |
+| Local source | 531 tests/28 suites pass under supported Vitest4.1.11; metadata, lint, typecheck, build and synthetic demo pass. Existing test bodies/assertions unchanged. |
+| Production / publisher | Application production audit0; actual installed npm12.2.0 publisher audit0 with locked selector-parser7.1.6 and retained real cache assertions. Full audit exits1 for one low esbuild development finding; zero moderate/high/critical findings. This remaining failed full-audit result is explicit. |
+| Fresh consumer | No inherited repo lock/overrides; SDK1.32.1 and proxy-addr2.0.8. Both actual installed module package.json and generated lock match2.0.8; consumer production audit0. SDK22-tool discovery and three generated-client stdio setup flows pass with disposable offline fixtures. Native chat/live behavior is not proved. |
+| PR CI | [37461648261](https://github.com/devag7/linkedin-mcp/actions/runs/37461648261),12/12 pass at `49e9199`: source and installed package/actual offline Chrome lifecycle across Linux/macOS/Windows Node20/22. No Windows NTFS privacy or live LinkedIn claim. |
+| Exact release dry run | [37461665790](https://github.com/devag7/linkedin-mcp/actions/runs/37461665790),10/10 pass at `49e9199`; actual publisher/production audit gates pass, downstream destinations validate/check without publishing. Does not establish a saved npm binding or OIDC publication. |
+| Exact artifact | New SHA256 `585ab2be9e3b20c4b872d424a622fac2ea81b752d6c4955d66e0ee086365c551`; SHA512 integrity `sha512-WbwV568/qAm7V1fQkB6An3hZGNrStSwS6R8lbSi5Io3VQoxuhpl4/VrfOem9AERYuwYUUa0hMh5BJzA/w7Ey/A==`;15 independently verified regular-file entries /22 tools. Downloaded hosted tar matches every file and archive hash. |
+| Migration / old artifact comparison | Only shipped package.json changes for dev Vitest/Vite manifests. All other14 shipped bytes, including runtime/source map, remain identical to preserved `bba2d6b4…` archive. Only production lock change is proxy-addr2.0.7→2.0.8; consumers with existing locks require their own supported update/audit. No downstream-ignored override or forced audit fix. |
+| Dirty/clean package | Disposable clean checkout and checkout with59 protected non-Git copies match the new archive under normal/scripts-bypassed packing. Original and backup60 hashes match;57 sync files, pr_diff and special copies are preserved. |
+| Failed fixture/tool attempts | Initial global-npm resolver failed before edits (`edgesOut` null); reviewed npm12 generated the lock. Original publisher audit failed moderate selector-parser before the reviewed patch. Initial duplicate-fixture tar mismatch was only a lost dist/index.js executable bit (0644 vs0755) from copyfile; all15 contents matched; copy2 rerun preserves the actual build mode and exact archive. All failed receipts/tars remain retained. |
+
+Main CI [37462546965](https://github.com/devag7/linkedin-mcp/actions/runs/37462546965)
+passes12/12 at `efd3b53`; its source/installed package checks confirm the integrated
+reviewed tree. Zero cash is required; no feature,
+convenience, test or privacy standard was reduced. The remaining esbuild exposure
+follow-up remains October8. P7 first-use and P8 erasure/Windows privacy stay open.
+
+Before merge, the existing release workflow was deliberately disabled and its
+state read back as `disabled_manually`, preventing main push publication before
+owner setup confirmation. No Release run was created for the merge. Repository
+`NPM_PUBLISH_AUTH=oidc` is set; no npm token/OTP/fallback or security-policy change.
+PR #5 remains draft at `00830eae`, with no LinkedIn account request. No3.0.0 target
+was published by this dry run or merge.
+
+Next milestone: confirm the npm Trusted Publisher connection is saved with exact
+workflow `release.yml` only, check main/source/artifact again,
+restore the existing workflow and dispatch once with dry_run:false. Verify each
+actual destination's version/bytes/integrity/provenance/public visibility/active
+Registry metadata and exact finalized tag/source. Stop with precise OIDC error if
+exchange fails; do not use token fallback, weaken Publishing access, change this
+candidate or infer token/policy settings from the screenshot.
+
+
+Independent post-merge read-back at2026-10-06T12:24:21Z:
+
+| Destination | Actual version / result | Next verification |
+| --- | --- | --- |
+| [npm](https://www.npmjs.com/package/linkedin-mcp-tools) | Latest2.0.3; target3.0.0 returns404 | OIDC publish, exact archive/SRI and verified provenance/source. |
+| [GitHub Packages](https://github.com/devag7/linkedin-mcp/pkgs/npm/linkedin-mcp-tools) | Public/repository-linked2.0.3 latest;3.0.0 absent | Scoped3.0.0 bytes and public visibility. |
+| [Official MCP Registry](https://registry.modelcontextprotocol.io/v0.1/servers/io.github.devag7%2Flinkedin-mcp/versions/3.0.0) | Target3.0.0 returns404 | Active3.0.0 npm/stdio entry, no remote endpoint. |
+| [GitHub Release](https://github.com/devag7/linkedin-mcp/releases/tag/v3.0.0) | Release3.0.0 returns404; tag absent | Final release and tag resolve to `efd3b53ffd8416c68ef703069d883ee1371cb533`. |
+
+These are independent observed destination states, not failed publication attempts
+for the repaired candidate. Publication remains paused for saved-connection
+confirmation. Evidence-only updates are on a separate branch, leaving the new
+main release SHA unchanged. No directory is marked as an accepted3.0.0 release.

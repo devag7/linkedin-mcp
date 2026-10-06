@@ -79,3 +79,20 @@ After resolving owner authentication and verifying every destination, refresh
 exact release links, request supported generated-content correction, and retain
 P7/P8 promotion gates. Required cash$0;10,000 stars and daily Trending remain
 measured ambitions. [Actual results](RELEASE_READINESS_3.0.0.md#replacement-token-result-and-final-source--october5-2026).
+
+
+## New reviewed candidate — October6
+
+Dependency repair PR #7 merges as `efd3b53`;22 tools/15 files, hosted CI and exact
+release dry run pass on the reviewed tree, zero application/publisher production
+findings. New archive SHA256 `585ab2be9e3b20c4b872d424a622fac2ea81b752d6c4955d66e0ee086365c551`.
+One low development esbuild finding and first-use/erasure/Windows privacy limits
+remain explicit. Publication is paused; connection-save confirmation is pending
+and the release workflow is disabled to prevent a main-push attempt. No listing
+or directory submission is marked published3.0.0 from this merge/dry run.
+
+After confirmed saved `release.yml` binding and verified OIDC publication to all
+four destinations, update the editable Glama description and pending draft15490
+with actual release links. Keep generated hosting/schema limitations and P7/P8
+promotion boundaries explicit. No brief capability from draft PR #5, mandatory
+paid service, account access or claimed Trending outcome is introduced.

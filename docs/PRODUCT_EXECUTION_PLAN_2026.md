@@ -390,3 +390,31 @@ reviewed dependency repair and approved replacement candidate would require
 compatibility checks, package/hosted checks and exact release dry run; cash$0,
 maintenance effort to be estimated from the actual dependency/test-runner diff.
 [Exact dependency and preflight evidence](RELEASE_READINESS_3.0.0.md#oidc-preparation-and-fresh-audit-blocker--october6-2026).
+
+
+## Reviewed core dependency repair — October6
+
+PR #7 is merged at new intended release SHA `efd3b53ffd8416c68ef703069d883ee1371cb533`
+after reviewed-head12/12 CI and10/10 dry run. New22-tool/15-file tarball SHA256
+`585ab2be9e3b20c4b872d424a622fac2ea81b752d6c4955d66e0ee086365c551`; only shipped
+package.json changes, with all other14 shipped bytes identical to original frozen
+candidate. Original candidate/evidence and60 preservation hashes remain intact.
+
+All six application findings are traced; supported Vitest4 removes Tinypool,
+patched mocker and leaf source-map-js/proxy-addr updates resolve five package-level
+entries. Fresh consumer actual installed proxy-addr and lock both read2.0.8;
+consumer production audit0, SDK22-tool/configuration flow pass. Application and
+actual publisher production audits0. A current publisher selector-parser moderate
+finding was patched through the existing locked bundle mechanism. One low tsup/
+esbuild Windows development-server finding remains with explicit build exposure,
+upstream supported-range constraint and October8 follow-up. No override, forced
+fix or audit suppression;531 unchanged tests pass. Required cash$0; maintenance
+runtime/build1h/month plus existing publisher2h/month and per-release audits.
+
+Publication stays paused: release workflow disabled before merge; corrected npm
+`release.yml`-only saved-connection confirmation pending; main CI37462546965 passes12/12 at the new SHA.
+OIDC-only authorization supersedes token recovery. Restore/dispatch only after
+confirmation and remaining actual gates; independently verify all four targets.
+PR #5 remains draft, P7/P8 and monthly cohort/growth measures remain open, and no
+LinkedIn requests, live compatibility or Trending result is claimed.
+[Exact new candidate and gate evidence](RELEASE_READINESS_3.0.0.md#reviewed-dependency-repair-and-new-candidate--october6-2026).
