@@ -372,3 +372,21 @@ remains draft. No new LinkedIn request, first-use/erasure/Windows-privacy comple
 paid service or Trending result follows. All60 protected original/backup hashes
 match. [Final gate receipt](RELEASE_READINESS_3.0.0.md#replacement-token-result-and-final-source--october5-2026)
 records exact runs and what they establish.
+
+
+## October6 gate refresh
+
+OIDC recovery supersedes the token path; corrected owner connection-save
+confirmation remains pending. `NPM_PUBLISH_AUTH=oidc` is verified. Frozen source
+`5640dfa`,22 tools and15-file bytes remain unchanged;531 tests, source/build,
+installed package/setup and offline demo pass again. No LinkedIn request.
+
+Fresh production audit now reports critical proxy-addr2.0.7; full audit also
+reports critical tinypool/Vitest and high source-map-js, six findings in total.
+Earlier zero-production/no-high reports are dated historical results. Required
+release gates therefore fail independently of authentication. Preserve frozen
+main, logs and original/backup copies. Do not publish or lower gates. A separate
+reviewed dependency repair and approved replacement candidate would require
+compatibility checks, package/hosted checks and exact release dry run; cash$0,
+maintenance effort to be estimated from the actual dependency/test-runner diff.
+[Exact dependency and preflight evidence](RELEASE_READINESS_3.0.0.md#oidc-preparation-and-fresh-audit-blocker--october6-2026).

@@ -1,10 +1,12 @@
 # 3.0.0 core release evidence — October5, 2026
 
-**Latest status: the explicitly authorized token-mode automated attempt also
-failed; npm requires interactive 2FA (`EOTP`). No 3.0.0 destination is published.**
-The reviewed publisher-only security repair is merged; the22-tool,15-file
-package bytes remain unchanged. The final October5 receipt below supersedes
-earlier source/authentication milestones; historical results remain retained.
+**Latest status — October6: OIDC mode is prepared; corrected npm connection
+save confirmation is pending. Fresh audits now block release of frozen
+`5640dfa`: one production critical finding, and six full-audit findings including
+three critical/one high. No publishing attempt was dispatched on October6.**
+The22-tool,15-file artifact still matches the approved bytes. Historical source,
+audit and authentication results below remain dated evidence and are superseded
+by the latest preflight receipt where findings changed.
 
 The maintainer explicitly authorizes PR #3 then PR #4 integration and automated
 3.0.0 publication after core-only gates. PR #5 remains draft for a later version.
@@ -250,3 +252,55 @@ resume the existing automated workflow once at this source, then independently
 verify all four destinations and published installation/provenance. Existing
 merge/publication consent is sufficient; no new LinkedIn access is authorized.
 P7/P8 and directory-generated hosting claims remain open. Release is not complete.
+
+
+## OIDC preparation and fresh audit blocker — October6, 2026
+
+The owner identified the exact saved workflow-field mismatch and is correcting
+it to `release.yml`, devag7/linkedin-mcp, blank environment, direct publish allowed.
+Saving has not yet been confirmed. The screenshot establishes neither package
+Publishing access policy nor replacement-token permissions. The owner supersedes
+token-only recovery: use OIDC, no npm token/OTP/fallback. Repository variable
+`NPM_PUBLISH_AUTH=oidc` is set and independently read back. In this mode the frozen
+workflow assigns an empty `NODE_AUTH_TOKEN` and checks it is empty before publish;
+the stored npm secret is not passed. No credential was inspected or exposed.
+
+Remote main and inspected detached source remain exactly
+`5640dfaa6a05533143f3130b0663806378ac0afa`. PR #5 remains draft at `00830eae`.
+Fresh local source checks pass:531 tests/28 suites, metadata, lint, typecheck and
+build. Installed package/setup and synthetic offline demo pass. Normal fresh pack
+is22 tools/15 regular files, independently checked against the strict inventory
+and every expected file. SHA256 remains
+`bba2d6b40d1ea18944588347dcd11490641fc3190e7a084988f81fa17ea74239` and integrity
+`sha512-Ezu1LNeDE+w/0QpZc0eVF9yX1I6wNETmGoWqs+I7xVyhWdBIvHm8nPWw22Vaw/y2mdSAPVx2VQgySMhPm5k2vg==`.
+All60 original and backup hashes match. No account request occurred.
+
+However, the current advisory database changes the audit result for the unchanged
+lock: production audit has one critical finding; full audit has six package-level
+findings (three critical, one high, one moderate, one low). This is distinct from
+OIDC. The fresh raw reports and gate logs are retained in private backup directory
+`oidc-preflight-2026-10-06`; earlier audit0 receipts are historical, not current.
+
+| Affected locked dependency | Current finding / upstream patch | Dependency scope |
+| --- | --- | --- |
+| proxy-addr2.0.7, package-lock.json:3558 | [Critical GHSA-jqcg-44mw-7w3h](https://github.com/advisories/GHSA-jqcg-44mw-7w3h); patched2.0.8 | Production via MCP SDK→Express. |
+| tinypool1.1.1, package-lock.json:4044 | [Critical worker-option gadget](https://github.com/advisories/GHSA-5gmw-xhrv-c9v3) and [critical run-option gadget](https://github.com/advisories/GHSA-85c8-ppgw-ccpr); both require at least2.1.2 | Development via Vitest; audit also propagates critical status to direct Vitest. A blind major override is not a reviewed compatibility fix. |
+| source-map-js1.2.1, package-lock.json:3895 | [High GHSA-68fv-2mgg-jv7q](https://github.com/advisories/GHSA-68fv-2mgg-jv7q); patched1.2.2 | Development via tsup→PostCSS. |
+
+The advisory mechanisms are conditional; no exploit of this application or CI is
+claimed. Inspection of src/transports/http.ts:76–80 shows direct socket loopback
+checks and explicit distrust of forwarded headers; this narrows application
+exposure but does not clear the required production audit gate. No exploit
+payload, unknown provider endpoint, account access or audit exception was used.
+Moderate mocker/Vitest and low esbuild findings also remain tracked.
+
+Do not dispatch a publishing run while its known production-audit prerequisite
+fails, relax severity thresholds, alter security policy or change frozen main.
+Corrected-connection confirmation remains necessary, but cannot itself clear this
+separate blocker. Next technical milestone is a separately reviewed dependency
+repair with supported Node/SDK/test-runner compatibility, clean production audit,
+no high/critical full-audit findings, source/package/hosted gates and a fresh exact
+release dry run. Moving the frozen release source requires resolving the owner's
+explicit frozen-head instruction. Required cash$0; no mandatory hosting. After
+that and saved-binding confirmation, execute the existing OIDC-only release once,
+stop on a precise OIDC error, and verify each destination independently.
