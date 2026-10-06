@@ -62,6 +62,32 @@ try {
     ['install', '--ignore-scripts', '--no-audit', '--no-fund', join(dir, packed.filename)],
     install,
   );
+  // A consumer does not inherit this repository's lockfile or npm overrides.
+  // Verify the actual fresh resolution, including any nested Express copies.
+  const consumerLock = JSON.parse(readFileSync(join(install, 'package-lock.json'), 'utf8'));
+  const proxies = Object.entries(consumerLock.packages).filter(
+    ([name]) => name === 'node_modules/proxy-addr' || name.endsWith('/node_modules/proxy-addr'),
+  );
+  assert.ok(proxies.length > 0, 'Expected the SDK/Express proxy-addr dependency.');
+  for (const [name, entry] of proxies) {
+    const version = /^(\d+)\.(\d+)\.(\d+)$/.exec(entry.version);
+    assert.ok(version, `Unexpected proxy-addr version at ${name}`);
+    const [, major, minor, patch] = version.map(Number);
+    assert.ok(
+      major > 2 || (major === 2 && (minor > 0 || patch >= 8)),
+      `Consumer resolved vulnerable proxy-addr ${entry.version} at ${name}`,
+    );
+  }
+  const consumerAudit = JSON.parse(runNpm(['audit', '--omit=dev', '--json'], install));
+  assert.equal(consumerAudit.metadata.vulnerabilities.total, 0, 'Consumer production audit must be clean.');
+  const dependencyEvidence = {
+    sdk: consumerLock.packages['node_modules/@modelcontextprotocol/sdk'].version,
+    proxies: proxies.map(([path, entry]) => ({ path, version: entry.version })),
+    productionFindings: consumerAudit.metadata.vulnerabilities.total,
+  };
+  if (process.env.PACK_DEPENDENCY_OUTPUT)
+    writeFileSync(process.env.PACK_DEPENDENCY_OUTPUT, JSON.stringify(dependencyEvidence, null, 2) + '\n');
+  console.log(`Fresh consumer dependency verification: ${JSON.stringify(dependencyEvidence)}`);
   const bundle = join(install, 'node_modules', pkg.name, 'dist', 'index.js');
   assert.equal(
     execFileSync(process.execPath, [bundle, '--version'], {

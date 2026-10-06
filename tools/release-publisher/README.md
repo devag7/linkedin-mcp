@@ -4,7 +4,7 @@ The release job uses npm 12.2.0 on hosted Node 22 (at least 22.22.2). Its OIDC
 exchange writes credentials only to process configuration and reports failures
 without logging credentials. This installation never enters the 15-file package.
 
-Three bundled upstream dependencies required reviewed updates. Ordinary npm overrides
+The original three bundled upstream dependencies required reviewed updates. Ordinary npm overrides
 and `audit fix` do not replace bundled modules. The installer copies separately
 integrity-locked upstream patches into a new disposable CLI installation, after
 checking exact old/new versions, names, unchanged dependency requirements and
@@ -38,11 +38,21 @@ SDK checks use the runner's existing npm: npm 12 changes the pack-report format.
 Review pins and remove the patches when upstream fixes its bundle. Monthly
 maintenance and an audit on every release are required; cash cost is $0. Updating
 the CLI requires a fresh hosted release dry run. Do not install this tooling into
-the application. OIDC remains preferred. The maintainer explicitly authorized
-the existing token-mode workflow on October2; this overrides the prior tooling
-guidance against token fallback, without disabling2FA or requesting secrets in
-chat. No parallel manual publication is permitted.
+the application. The October6 owner instruction supersedes the earlier token-mode recovery:
+`NPM_PUBLISH_AUTH=oidc` only, no npm token/OTP/fallback. Publication waits for
+confirmation that the saved Trusted Publisher workflow is `release.yml` only.
+No parallel manual publication is permitted.
 
 Advisories: [brace-expansion](https://github.com/advisories/GHSA-q2hr-2g5m-vwhr),
 [ip-address](https://github.com/advisories/GHSA-rpw4-54j3-4h4q),
 [undici](https://github.com/advisories/GHSA-3wwx-pv8p-q78v).
+
+
+October6: the fresh publisher audit also reports moderate
+[postcss-selector-parser CPU exhaustion](https://github.com/advisories/GHSA-rj75-hqrm-r3gf)
+in bundled7.1.4. A fifth locked upstream replacement uses patched7.1.6, with
+identical cssesc/util-deprecate dependency requirements and the same pre-mutation
+version, identity, integrity and directory-alias validation. The disposable audit
+lock records the actual7.1.6 bytes. No npm auth code or audit threshold changes.
+The failed original audit and subsequent actual installer result are retained in
+[dependency repair evidence](../../docs/DEPENDENCY_REPAIR_3.0.0_2026-10-06.md).
