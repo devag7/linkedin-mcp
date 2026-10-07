@@ -534,7 +534,8 @@ was a21-byte404 JSON body, not an obtained tarball. Publication stays stopped.
 Core 3.0.0 is released with 22 tools; the publication-pending snapshots above
 are historical. [Launch evidence](LAUNCH_EVIDENCE_2026-10-07.md) records the four
 verified destinations. First-use cohort remains zero attempts; the merged protocol
-requires optional private-row consent and one first attempt per eligible person.
+requires separate anonymous-tally consent before study start, offers optional
+private-row recording, and counts one first attempt per eligible person.
 80% within 15 minutes, repeat-use adoption, 10,000 stars and daily Trending remain
 unmeasured goals, never guaranteed results.
 
