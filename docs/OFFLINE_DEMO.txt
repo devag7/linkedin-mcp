@@ -1,31 +1,49 @@
 {
   "scope": "Actual local MCP calls with synthetic inputs and a persistent stop; no live LinkedIn compatibility claim.",
-  "packageVersion": "2.0.3",
+  "packageVersion": "3.0.0",
+  "setup": [
+    {
+      "client": "claude-desktop",
+      "status": "needs_attention",
+      "session": "not_checked",
+      "chrome": "missing",
+      "safetyState": "blocked",
+      "transport": "stdio",
+      "writesEnabled": false,
+      "manualLogin": "not run"
+    },
+    {
+      "client": "cursor",
+      "status": "needs_attention",
+      "session": "not_checked",
+      "chrome": "missing",
+      "safetyState": "blocked",
+      "transport": "stdio",
+      "writesEnabled": false,
+      "manualLogin": "not run"
+    },
+    {
+      "client": "vscode",
+      "status": "needs_attention",
+      "session": "not_checked",
+      "chrome": "missing",
+      "safetyState": "blocked",
+      "transport": "stdio",
+      "writesEnabled": false,
+      "manualLogin": "not run"
+    }
+  ],
+  "linkedInRequests": 0,
+  "browserLaunches": 0,
   "toolCount": 22,
   "sessionState": "not_checked",
   "loggedIn": null,
   "currentLiveChecks": 0,
   "writesEnabled": false,
   "preview": {
-    "operationId": "synthetic-demo-draft-01",
-    "payloadHash": "51de9fdba99492a656d62161adc67515154765f254aa5b5e6018991e07e769bc",
-    "action": "create_post",
-    "target": "self",
-    "content": {
-      "text": "Synthetic draft for a local preview only.",
-      "visibility": "CONNECTIONS"
-    },
-    "route": "voyagerFeedDashCreateShare",
-    "effect": "Submit one create_post action to LinkedIn. It may be irreversible.",
     "writesEnabled": false,
-    "experimentalRoute": false
-  },
-  "metadata": {
-    "contractVersion": 1,
-    "fetchedAt": "2026-09-30T23:36:12.312Z",
-    "source": "engine",
-    "partial": false,
-    "status": "ok"
+    "issuedProof": true,
+    "submitted": false
   },
   "readStatus": "CIRCUIT_OPEN",
   "closed": true

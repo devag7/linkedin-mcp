@@ -33,16 +33,41 @@ Hosted OS/Node results, actual Chrome first launch and graceful browser cleanup
 must be linked to their real job/run evidence before the setup matrix says verified.
 Synthetic engine lifecycle tests do not replace a real launch/cleanup observation.
 
-## Testing the unreleased review branch
+## Published 3.0.0 cohort — ready to measure, no participants yet
 
-Until a new version is released, npm's published 2.0.3 is a different artifact.
-Build and install the local tarball from the reviewed PR rather than testing
-`@latest` and attributing its behavior to these changes. Record the source commit
-and tarball integrity with the package version so the tested build is unambiguous.
-Do not put the tarball or account data in a public report. After human review and
-release, volunteers can use the exact new published version.
+Test `linkedin-mcp-tools@3.0.0`, source/tag
+`299225871a3ff925984ca658974f334e90103c57`, archive SHA256
+`c79f78e5e77814febb3f68ab9a391ef860515bcfd2d6f97001eadd6e00f58fe5`.
+The [publication/install receipts](LAUNCH_EVIDENCE_2026-10-07.md) prove package
+and SDK/config fixtures; they do not prove native client UI acceptance or live reads.
 
-An existing maintainer setup can supply a consented live-read sanity check; label
-it as such. It does not establish fresh installation, a new-user onboarding rate,
-client compatibility on another device, or the 80% target. Keep cohort size zero
-until genuinely consented first-use attempts are measured under the protocol.
+| Native client | Consenting started attempts | First read within 15 minutes | Repeat-use observations |
+| --- | --- | --- | --- |
+| Claude Desktop | 0 | Not measured | 0 |
+| Cursor | 0 | Not measured | 0 |
+| VS Code | 0 | Not measured | 0 |
+
+Before each attempt, record separate consent for (a) manual login and the selected
+bounded read, (b) redacted timing/status recording, and (c) an optional follow-up.
+The participant operates their own account and client. Fix the chosen tool and
+request ceiling before starting; no automatic retry, exploratory probes or writes.
+A checkpoint ends the attempt. Close the session even after failure; record whether
+cleanup was actually observed. If recording is declined, do not collect their data.
+
+Start the clock before installation; include prerequisites, configuration merge,
+client restart, manual login and the selected read. Capture failures in the same
+denominator. Record only this minimal schema, stored privately with the participant's
+chosen retention/deletion date:
+
+```csv
+participant_code,client,client_version,os,node_version,package_version,elapsed_seconds,last_step,result_code,within_15_minutes,cleanup_observed,recording_delete_on,followup_opt_in
+```
+
+No actual participant rows are published. Report weekly aggregate sample sizes,
+client splits, failures and elapsed-time distribution. Repeat use means a voluntary
+report of use on two distinct weeks within 28 days; report opt-in and response
+counts separately. Monthly summarize first successful reads, repeat use, GitHub
+traffic and net stars without conflating repository interest with account success.
+
+An existing maintainer sanity check is not a fresh-user attempt and cannot enter
+this cohort. The 80% target remains unmeasured until consenting attempts exist.
