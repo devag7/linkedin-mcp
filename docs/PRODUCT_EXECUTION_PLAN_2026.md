@@ -21,11 +21,14 @@ PR #5 remains draft; its brief is not a core capability.
 2. **First use:** consenting volunteer cohorts in Claude Desktop, Cursor and VS Code
    using published 3.0.0 and [the protocol](FIRST_USE_VALIDATION.md). All three cohorts
    currently have zero measured attempts. Acceptance: publish denominators, timing,
-   failure categories, cleanup and optional repeat-use response counts; measure the
+   failure categories, cleanup and optional repeat-use response counts; count each
+   person's first started attempt once across clients and report later trials separately; measure the
    80% within 15 minutes target without substituting fixtures. Dependencies: participant
    consent and installed clients/accounts. Effort: medium observation/support. Cash: $0
    mandatory; any existing client/model subscription is optional and user-funded.
-   The [published-package readiness check](FIRST_USE_READINESS_2026-10-07.md),
+   Consent covers tool invocations and implicit reads, with no unenforced numeric
+   HTTP cap promised. Useful partial profiles qualify only under the results guide's
+   explicit fields/provenance/freshness/status conditions. The [published-package readiness check](FIRST_USE_READINESS_2026-10-07.md),
    [volunteer consent kit](FIRST_USE_VOLUNTEER_KIT.md) and
    [private results/scoring template](FIRST_USE_RESULTS.md) are prepared. All three
    exports pass published SDK flows; native1.140.0 VS Code startup has a session-runtime
@@ -258,7 +261,7 @@ choice. No LinkedIn content, cookies, account IDs or stargazer identity collecti
 
 | Measure | Definition / collection | Baseline and monthly decision |
 | --- | --- | --- |
-| First successful read | Consent-based timer from install start to first schema-valid read; report total attempts/successes/failure stage, median/p90, OS/build and partial count | One earlier maintainer existing-session read is documented, **not** a fresh-install cohort. No current cohort rate. Target ≥80% within15min only after ≥10 volunteers; fix highest failure stage before promotion |
+| First successful read | Consent-based timer from prerequisite/install start to first useful verified read; one first attempt per person across clients, failures retained; later-client trials separate; report denominators/failure stage, median/p90, OS/build and useful-partial count | One earlier maintainer existing-session read is documented, **not** a fresh-install cohort. No current cohort rate. Target ≥80% within15min only after ≥10 volunteers; fix highest failure stage before promotion |
 | Repeat use | Voluntary count of testers with useful reads in at least2 distinct weeks within28days / eligible first-read testers | Unknown until longitudinal sample; report missing follow-ups separately. Prioritize P2/P3 if setup succeeds but return use is low |
 | GitHub traffic | Weekly UTC views/clones totals and uniques plus referral/path exports; preserve daily records and deduplicate overlapping windows before monthly totals | Not collected here; unknown, not zero. Compare tutorial-linked referral changes with successful-read feedback |
 | Net stars | Public repository star total at consistent UTC monthly boundaries; delta = end minus start | Observed10 on2026-10-01; new monthly samples required. Milestones100/1k/10k are experiment checkpoints, not deadlines or promises |

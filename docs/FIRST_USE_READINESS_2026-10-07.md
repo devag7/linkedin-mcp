@@ -83,12 +83,24 @@ No reproducible product CLI/config defect was found in these offline checks.
 [privacy and fixed scoring rules](FIRST_USE_RESULTS.md),
 [blank CSV](FIRST_USE_RESULTS.csv). No private rows in GitHub. The kit fixes the
 published version, starts the clock before prerequisites/install, limits tool scope,
-counts every started failure/cancellation, labels useful partial reads, separates
+counts each person's first started attempt once across clients, retains every first
+failure/cancellation, reports later-client trials and prior product users separately,
+labels useful partial reads, separates
 cleanup and optional repeat-use evidence, and excludes maintainer/synthetic attempts.
-Default own-profile flow permits nine explicit GET attempts including login and
-identity. This envelope was derived from source, not live instrumentation or a
-runtime-enforced limiter; unknown request counts stay unknown. No independent health
-probe. Concurrent profile sections already dispatched cannot be undone after a stop.
+Consent covers one manual login and one get_my_profile invocation with implicit
+identity/profile/section requests, plus cold whoami/close_session. **No numeric
+HTTP-request maximum is enforced or promised.** Unknown observed request counts
+stay unknown; tool-sequence compliance is assessed separately. A participant needing
+a hard cap must wait for an enforcing runner. No health probe/retry/extra provider
+tool. Already dispatched profile sections cannot be undone after a stop.
+
+The actual read envelope has no top-level ok:true. A useful partial is eligible with
+nonempty correct own firstName/headline, recognized canonical source link, valid
+within-attempt fetchedAt and voyager source, no error envelope, and consistent
+status=partial/partial=true. Missing required fields, unverifiable freshness/provenance,
+empty/error or inconsistent status fail. Partial successes are separately reported,
+not promoted to completeness. The results guide and CSV collect verification
+booleans/status only, never field values, links or timestamps.
 
 All three cohorts remain0; **80% within15 minutes is not measured**. Owner may arrange
 a small consented pilot only after reviewing kit and client access. No invitation has
@@ -128,7 +140,7 @@ bytes/tag remain fixed. All60 preserved backup files compare byte-identical to t
 original workspace, including all57 sync copies and `pr_diff.txt`. PR #5 unchanged.
 
 Next highest-impact milestone: remove the native client access/startup uncertainties
-with isolated offline owner/volunteer checks, then run the consented15-attempt pilot
+with isolated offline owner/volunteer checks, then run a consented pilot with15 distinct new people (five initial clients per stratum)
 and fix its largest observed failure before broader distribution. Track weekly
 first-use/repeat-use/GitHub traffic, monthly net stars;10,000 stars and daily Trending
 are goals to measure. No Trending outcome is claimed or used as a release gate.

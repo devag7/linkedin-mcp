@@ -7,7 +7,11 @@ account. You can stop at any point. Do not buy a subscription for this study.
 
 ## Before starting — choose and consent
 
-Choose **one** client: Claude Desktop, Cursor or VS Code. Use an already available
+Choose **one** client for your first attempt: Claude Desktop, Cursor or VS Code.
+Tell the coordinator if you used LinkedIn MCP before this study or have already
+started this study on any client. Prior users are a separate returning-user cohort. Your
+first started attempt counts once in the overall new-user rate; any later client
+attempt is reported separately and cannot replace a failed first attempt. Use an already available
 free client/model allowance or your own existing entitlement. If access is unavailable,
 record that failure after a started attempt; do not purchase credits or hide it.
 No maintainer service, API key, hosting, survey subscription or screen recording is required.
@@ -18,10 +22,13 @@ The participant answers these separately, locally, before the timer starts:
 
 - I consent to installing/configuring published `linkedin-mcp-tools@3.0.0` on my
   device and manually signing into my own LinkedIn account. Yes / No.
-- I consent to **one** `get_my_profile` call after login, with at most **nine
-  explicit Voyager GET attempts in the whole attempt**, including login verification
-  and runtime identity checks. No health probe, retries, extra reads or writes.
-  Ordinary Chrome navigation and background traffic may also occur. Yes / No.
+- I consent to one manual `--login` invocation and **one** `get_my_profile` tool
+  invocation, including their implicit identity, profile and section reads. The
+  published build does **not** enforce a numeric HTTP-request limit; one tool call
+  may make several requests, and navigation/background traffic may also occur.
+  No health probe, second login, retries, extra provider tools or writes. If I need
+  a guaranteed numeric request maximum, I will not run this study until an enforced
+  limiter is available. Yes / No.
 - I consent to an anonymous started/success/failure tally, including if I stop or
   decline the read after starting. Published aggregates cannot identify my attempt
   and cannot be linked back for removal once irreversibly aggregated. Yes / No.
@@ -62,7 +69,7 @@ maintainer or an agent to operate any account now.
    [the offline client evidence](FIRST_USE_READINESS_2026-10-07.md). Do not mistake
    that error for expired LinkedIn credentials or repeatedly launch/login.
 3. Stop the MCP server before running the report's exact `commands.login` yourself.
-   This opens Chrome and verifies login with one `/me` GET. A checkpoint ends this
+   This opens Chrome and performs implicit login verification. A checkpoint ends this
    study attempt: cancel/close rather than completing the challenge and continuing
    automation. Do not invoke `--spike`, `--doctor --live`, capture utilities or a
    second login. No session, profile or safety file is uploaded to the coordinator.
@@ -73,23 +80,29 @@ maintainer or an agent to operate any account now.
    > retry or any other provider tool. Then call close_session. Stop on any checkpoint,
    > authentication, budget, timeout or changed-shape error.
 
-   Confirm locally whether the name and headline are yours and useful. Record only
-   yes/no plus status/partial, never those values. A source-linked useful partial
-   profile can pass first use; it does not prove all sections are complete.
+   Check locally that `data` is a nonempty profile, `firstName` and `headline` are
+   nonblank, and you recognize both as your own and useful. Check the canonical
+   `data.sourceUrl` points to your own profile and `meta.fetchedAt` is a valid fetch
+   timestamp within this attempt. `meta.source` must be `voyager`, with no error
+   envelope. A useful `meta.status:"partial"` plus `meta.partial:true` **can pass**;
+   `ok` plus `partial:false` is also eligible. Empty/error results, missing required
+   fields, inconsistent status/partial or unknown verification fail. There is no
+   top-level `ok:true` requirement. Report only verification booleans and status,
+   never your name, headline, source URL or fetched timestamp. A partial pass does
+   not prove all profile sections complete or when LinkedIn last updated them.
 5. At 15 minutes stop active work and close the session/server. Record the result
    even on failure, cancellation, missing prerequisites or client access limits.
    A read already in flight may finish later; record eventual completion separately
    without making another call or resetting the timer. Stop all owned Chrome/server
    processes after `close_session`; idle close alone retains profile ownership.
 
-The nine-attempt envelope comes from the reviewed source: login `/me`1, runtime
-binding `/me`1, then tool `/me`1 + profile core1 + five section GETs. Sections can
-already be in flight together when an error arrives; cancellation cannot undo them.
-This is a source-derived bound for an uninterrupted session, **not a runtime
-request limiter**. If the client cannot restrict calls or the browser restarts,
-stop; do not assert that the ceiling was enforced. Mark request count `unknown`
-unless observed without retaining request bodies/URLs. A future client runner with
-an enforced limiter is separate work; do not weaken the server's safety controls.
+The scope is limited by **tool invocations**, not by a promised request ceiling.
+Observe the client tool history without sharing raw payloads. If another provider
+tool is called, a session restarts unexpectedly or scope cannot be controlled, stop
+and record a scope failure/unknown. Already dispatched requests may finish after
+cancellation. Record HTTP request count only if actually observed, otherwise
+`unknown`; that alone does not invalidate an observed, approved tool sequence.
+Do not add probes or disable safety controls to establish a count.
 
 ## Afterward
 

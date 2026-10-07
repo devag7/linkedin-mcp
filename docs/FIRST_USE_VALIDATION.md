@@ -5,8 +5,9 @@ Recruit consenting volunteers only after source and packed gates pass. Do not se
 recruitment messages or enable tracking automatically. No volunteer was recruited
 or tested in this local task.
 
-Record only a voluntary pseudonymous participant code, client/app version, OS,
-Node/package version, start/end time and the last completed setup step. Do not
+Record only voluntary random study/attempt codes, attempt order/group, client/app
+version, OS, Node/package version, elapsed seconds, fixed status/verification
+booleans and the last completed setup step. The CSV defines the exact allowlist. Do not
 collect LinkedIn identities/content, profile paths, cookies or token values.
 Participants can stop or decline recording; no background analytics is installed.
 
@@ -18,9 +19,13 @@ first-use onboarding. Record missing Chrome/display, permissions, unsupported
 client, expired session, challenge, shape error, budget/pacing and cancellation
 separately. Save fixed diagnostic codes, not raw page/MCP payloads.
 
-First-use success numerator = volunteers completing that chosen read within 15
-minutes; denominator = all consenting started attempts. Include failures and
-report sample size/client/OS split. Record first read eventual completion separately
+Overall new-user numerator = people whose **first started attempt** completes a
+qualifying useful read within15 minutes; denominator = all consenting people with
+a started first attempt, counted once across all clients. Prior product users are
+a separate returning-user cohort, not new-user successes. Keep every started first
+failure; report later-client trials/repeats with separate started denominators and
+distinct-person counts. First-client strata use only each person's initial client.
+Record first read eventual completion separately
 from the 15-minute target. A passing local mock does not enter either count.
 
 For reliability, collect voluntary aggregate tool call counts, success/partial/
@@ -41,36 +46,39 @@ Test `linkedin-mcp-tools@3.0.0`, source/tag
 The [publication/install receipts](LAUNCH_EVIDENCE_2026-10-07.md) prove package
 and SDK/config fixtures; they do not prove native client UI acceptance or live reads.
 
-| Native client | Consenting started attempts | First read within 15 minutes | Repeat-use observations |
+| Initial client | First-person started attempts | Useful first read within 15 minutes | Later-client trials / repeat-use observations |
 | --- | --- | --- | --- |
-| Claude Desktop | 0 | Not measured | 0 |
-| Cursor | 0 | Not measured | 0 |
-| VS Code | 0 | Not measured | 0 |
+| Claude Desktop | 0 | Not measured | 0 / 0 |
+| Cursor | 0 | Not measured | 0 / 0 |
+| VS Code | 0 | Not measured | 0 / 0 |
 
-Before each attempt, record separate consent for (a) manual login and the selected
-bounded read, (b) redacted timing/status recording, and (c) an optional follow-up.
+Before each attempt, obtain separate consent for (a) the tool-scoped login/read
+and its implicit provider requests, (b) the anonymous started/outcome tally, (c)
+optional private timing/status recording and (d) optional follow-up.
 The participant operates their own account and client. Fix the chosen tool and
-request ceiling before starting; no automatic retry, exploratory probes or writes.
+invocation scope before starting; no automatic retry, exploratory probes or writes.
+Published3.0.0 does not enforce a numeric HTTP-request maximum; do not promise one.
+A participant needing a hard cap must wait for a reviewed enforcing runner.
 A checkpoint ends the attempt. Close the session even after failure; record whether
 cleanup was actually observed. If recording is declined, do not collect their data.
 
 Start the clock before installation; include prerequisites, configuration merge,
 client restart, manual login and the selected read. Capture failures in the same
-denominator. Record only this minimal schema, stored privately with the participant's
-chosen retention/deletion date:
+first-person denominator; later starts stay in their separate denominators.
+Use the [header-only CSV](FIRST_USE_RESULTS.csv) privately under its participant-chosen
+retention/deletion date, following [fixed scoring/privacy rules](FIRST_USE_RESULTS.md).
+The [volunteer kit](FIRST_USE_VOLUNTEER_KIT.md) defines one login and one get_my_profile
+invocation plus cold whoami/close_session, including implicit identity/profile sections.
+Unknown request counts stay unknown and do not alone invalidate that observed scope.
 
-```csv
-participant_code,client,client_version,os,node_version,package_version,elapsed_seconds,last_step,result_code,within_15_minutes,cleanup_observed,recording_delete_on,followup_opt_in
-```
-
-The runnable kit now lives in [volunteer instructions and separate consents](FIRST_USE_VOLUNTEER_KIT.md),
-with [fixed scoring/privacy rules](FIRST_USE_RESULTS.md) and a [header-only template](FIRST_USE_RESULTS.csv).
-Use that updated schema for new attempts; the minimal schema above is historical.
-Its default own-profile scope permits nine explicit GET attempts including login
-verification and identity, with no separate health probe. This is a source-derived
-envelope, not a runtime-enforced request limiter; report unknown enforcement honestly.
-[Published offline readiness](FIRST_USE_READINESS_2026-10-07.md) distinguishes all
-three SDK export flows from native UI blockers. No package/runtime change or new release.
+A useful partial can qualify: nonempty own firstName/headline recognized as useful,
+canonical own-profile source link, valid fetchedAt within the attempt, source voyager,
+no error envelope, and consistent status=partial/partial=true (or ok/false). The read
+contract has no top-level ok:true. Empty, missing, contradictory, unverified or
+out-of-scope results fail. Useful partial successes are reported separately, never
+as proof of complete profile sections or last profile-update freshness.
+[Published offline readiness](FIRST_USE_READINESS_2026-10-07.md) separates SDK
+export checks from native UI evidence. No runtime/version/release change.
 
 No actual participant rows are published. Report weekly aggregate sample sizes,
 client splits, failures and elapsed-time distribution. Repeat use means a voluntary
