@@ -508,3 +508,21 @@ Subsequent check: npm3.0.0 metadata is visible with expected integrity, but the
 archive URL still returns404. Exact public artifact/provenance/consumer install
 remain unverified; no directory is marked as fully released. The digest failure
 was a21-byte404 JSON body, not an obtained tarball. Publication stays stopped.
+
+
+## Current core adoption and audit status — October 8
+
+Core 3.0.0 is released with 22 tools; the publication-pending snapshots above
+are historical. [Launch evidence](LAUNCH_EVIDENCE_2026-10-07.md) records the four
+verified destinations. PR #11 is merged after independent review. The published
+artifact and v3.0.0 tag are unchanged. [October 8 follow-up](OFFLINE_FOLLOWUP_2026-10-08.md)
+records the exact gates, client access limits, completed scheduled audit and owner
+pilot checklist. First-use cohort remains zero; 80% within 15 minutes is unmeasured.
+The full source audit retains one low development-only esbuild finding, with no
+compatible parent upgrade currently available; production audit remains zero.
+
+PR #5 remains a separate draft. Dependency refresh and offline partial-result
+regressions do not satisfy its freshly consented useful-brief requirement.
+Coordinated erasure, native Windows privacy proof and current native client
+first-read/repeat-use evidence remain open. Required maintainer cash $0;
+10,000 stars and daily Trending remain measured ambitions, not promised outcomes.
