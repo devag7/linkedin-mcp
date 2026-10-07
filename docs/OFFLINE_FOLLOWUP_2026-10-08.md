@@ -22,7 +22,7 @@ is **not** a passing release gate. The exact local release plan returns
 `eligible:false`, reason `version_tag_belongs_to_another_commit`. It initiated
 no publication; the public tag still resolves to
 `299225871a3ff925984ca658974f334e90103c57`.
-No release dispatch, version bump, token fallback or publication was performed.
+No non-dry-run release dispatch, version bump, token fallback or publication was performed.
 
 ## Scheduled development audit
 
