@@ -166,5 +166,5 @@ include research_jobs, but its short write description omits the mandatory
 server preview proof. Main README and contracts already explain published 3.0.0,
 local stdio and the reviewed preview requirement. Do not treat the listing as
 verified deployment instructions. A directory-side source/cache refresh and
-correction of its generic deployment/category/write copy remain open; no such
+correction of its generic deployment/write copy remain open; no such
 correction or hosted support is claimed by this offline milestone.
