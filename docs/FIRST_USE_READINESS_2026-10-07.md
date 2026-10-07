@@ -1,9 +1,11 @@
 # Published 3.0.0 first-use study readiness
 
-Inspected current main `caa27376ea30bfb34e15f2a1a63a5423c3b40bee`, merged
+Study baseline: inspected main `caa27376ea30bfb34e15f2a1a63a5423c3b40bee`, merged
 [PR #9](https://github.com/devag7/linkedin-mcp/pull/9), its
 [release evidence](LAUNCH_EVIDENCE_2026-10-07.md), original technical roadmap and
-[first-use protocol](FIRST_USE_VALIDATION.md). Study preparation is separate from
+[first-use protocol](FIRST_USE_VALIDATION.md). [PR #10](https://github.com/devag7/linkedin-mcp/pull/10) was independently reviewed
+at `fdaeb675ec6d726a5affe0b6dfb8c836a36199a5` and merged at
+`f07ad09ee3cee1c76a998042ad68ae752bfec62a`. Study preparation is separate from
 the immutable released source/tag `299225871a3ff925984ca658974f334e90103c57`.
 No runtime/dependency/version/release change. No recruitment, messages to volunteers,
 LinkedIn requests, browser account launch or measured volunteer attempt.
@@ -53,24 +55,34 @@ contain local paths. Its reviewed source lives outside the package allowlist.
 
 | Client | Published installation/export/SDK flow | Native UI actually tested | What remains |
 | --- | --- | --- | --- |
-| Claude Desktop | Pass;22 tools/cold whoami/close | App2.26454.0 available; no config import or tool discovery completed. Existing app session was not replaced; UI control interrupted by user activity. | Isolated native config acceptance/discovery and participant-authorized first read; no client subscription requirement inferred. |
+| Claude Desktop | Pass;22 tools/cold whoami/close | App2.26454.0 available; no config import or tool discovery completed. Existing app session was not replaced; UI control interrupted by user activity. In the follow-up, native Settings was inspected/selected but local MCP controls were not obtained; no user configuration changed. | Isolated native config acceptance/discovery and participant-authorized first read; no client subscription requirement inferred. |
 | Cursor | Pass;22 tools/cold whoami/close | Not installed on this Mac; no UI flow tested. | Volunteer/owner device with current client; native acceptance, client/model entitlement and authorized read. |
-| VS Code | Pass;22 tools/cold whoami/close |1.140.0 recognizes generated `.vscode/mcp.json` and Start control; Start fails before chat runtime exists. **No native tools-discovery success for this build.** | Participant starts their own permitted client runtime with cold `whoami` scope first, then approved read; no model message sent here. |
+| VS Code | Pass;22 tools/cold whoami/close |1.140.0 recognizes generated `.vscode/mcp.json` and Start control. A follow-up native temporary profile (Temp1), disposable workspace and stopped profile validates the schema and lists the server; one Start again fails before chat runtime exists. **No native tools-discovery success for this build.** | Participant starts their own permitted client runtime with cold `whoami` scope first, then approved read; no model message sent here. |
 
 [Native failure receipt](evidence/first-use-2026-10-07/native-vscode.json):
 `Cannot start an MCP server before the session runtime has been created. Send a message first.`
 Read from the test window's specific `agentHostMcpServer` log after the visible Error
 state. No repeated launch/login. A disposable persisted stop blocked provider access;
 the test window was closed and no matching server process or fixture owner lock remained.
+The [temporary-profile reproduction](evidence/first-use-2026-10-07/native-vscode-temporary-profile.json)
+returned the same error before server startup. Its test window was closed; no matching
+server process or fixture owner lock remains, and its stop fixture remains latched.
+Temporary profiles isolate settings/extensions, not all shared app storage or recent
+workspace history; no full OS/client-storage isolation is claimed. The official
+installed client source contains this error in its Agent Host startMcpServer path.
 This reproduces a current native client launch prerequisite, **not a diagnosed server
-defect**. The earlier source-build VS Code1.139.1 discovery receipt is historical;
+defect**. The [Claude settings inspection](evidence/first-use-2026-10-07/native-claude-settings.json)
+establishes only that local setup controls were not obtained: no config import,
+restart or discovery completed. No private conversation/screenshot was copied into
+repository evidence. A supported disposable native Claude environment remains needed. The earlier source-build VS Code1.139.1 discovery receipt is historical;
 do not substitute it for published3.0.0/current1.140.0 evidence. Native chat invocation
 and provider compatibility remain unverified for all three clients.
 
 Primary client instructions reviewed October7:
 [Claude developer connection settings](https://support.claude.com/en/articles/10949351-getting-started-with-local-mcp-servers-on-claude-desktop),
 [Cursor stdio configuration](https://cursor.com/docs/mcp),
-[VS Code server configuration/management](https://code.visualstudio.com/docs/agent-customization/mcp-servers).
+[VS Code server configuration/management](https://code.visualstudio.com/docs/agent-customization/mcp-servers),
+[temporary profiles](https://code.visualstudio.com/docs/configure/profiles).
 VS Code still accepts the native `servers` format while recommending newer portable
 destinations. Cursor's examples omit `type`, although its field table calls it required;
 that documentation inconsistency alone is not a reproduced offline defect. Preserve
@@ -134,8 +146,13 @@ Prepared owner/platform correction text (not sent):
 Local531 tests/28 suites, lint, typecheck, metadata, build, exact15-file package and
 installed package checks pass. These establish offline safety/contracts/configuration
 for the tested source/artifacts, not live LinkedIn, client chats or Windows privacy.
-Hosted evidence will be recorded at the study PR's exact head; no pending run is called
-passed. Source-only study files are excluded from the release tarball. Public3.0.0
+[Hosted CI37655693930](https://github.com/devag7/linkedin-mcp/actions/runs/37655693930)
+passed all12 jobs at the reviewed study head: six source jobs and six packed/published
+package jobs on Linux/macOS/Windows, Node20/22. All six published-verifier steps passed;
+all six actual offline Chrome ownership/cleanup steps passed. Independent read-only
+review covered all10 changed files, actual read contracts, archive helper, CI wiring,
+material links and25-column CSV; no actionable blockers remained. Merge-commit checks
+are separate evidence and are not called passed while pending. Source-only study files are excluded from the release tarball. Public3.0.0
 bytes/tag remain fixed. All60 preserved backup files compare byte-identical to the
 original workspace, including all57 sync copies and `pr_diff.txt`. PR #5 unchanged.
 
