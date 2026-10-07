@@ -114,7 +114,7 @@ The [CSV header](FIRST_USE_RESULTS.csv) contains no real rows. Allowed values:
   `attempt_order`: positive integer across clients. `attempt_group`: first_person/
   later_client/repeat/returning_user/eligibility_unknown. Unknown eligibility may have blank person
   code/order; do not invent or silently reclassify it. `client`: claude-desktop/cursor/vscode.
-- Client/OS/Node versions: coarse versions, no device/path identifiers.
+- `client_version`, `os`, `node_version`: coarse versions, no device/path identifiers.
   `package_version`:3.0.0. `elapsed_seconds`: nonnegative integer or blank if unknown.
   `last_step`: prerequisites/install/doctor/config/discovery/login/read/cleanup.
 - `result_code`: useful_ok/useful_partial/not_useful/client_unavailable/client_runtime/
