@@ -1,11 +1,12 @@
 # 3.0.0 core release evidence — October5, 2026
 
-**Latest status — October6: dependency repair PR #7 is reviewed and merged at
-`efd3b53ffd8416c68ef703069d883ee1371cb533`. All12 PR checks and10 exact release
-dry-run jobs pass. Application and publisher production audits are zero; one
-low development esbuild finding remains documented. Main CI12/12 passes.
-Publication is paused until the corrected `release.yml`-only npm connection is
-confirmed saved. The release workflow is temporarily disabled.**
+**Latest status — October7: SDK repair PR #8 is merged at
+`299225871a3ff925984ca658974f334e90103c57`. Reviewed and merged CI12/12 plus exact
+dry run10/10 pass; production/publisher/fresh-consumer audits0. Saved release.yml
+binding is confirmed. One OIDC production attempt authenticates successfully and
+npm accepts the upload with202, then strict npm verification fails
+`PACKAGE_NOT_VISIBLE`. Public3.0.0 and its provenance are not yet verified; other
+destinations were skipped. Workflow disabled again; no retry or fallback.**
 The new22-tool/15-file artifact is recorded below. Original frozen `5640dfa`,
 its archive, all historical results and protected workspace/backup files remain
 intact. Historical failed-audit and token-only recovery milestones are superseded
@@ -368,3 +369,79 @@ These are independent observed destination states, not failed publication attemp
 for the repaired candidate. Publication remains paused for saved-connection
 confirmation. Evidence-only updates are on a separate branch, leaving the new
 main release SHA unchanged. No directory is marked as an accepted3.0.0 release.
+
+
+## SDK repair, new release source and stopped publication — October7
+
+[PR #8](https://github.com/devag7/linkedin-mcp/pull/8) starts from frozenefd3b53,
+raises shipped SDK floor to^1.31.0 and locks exactly1.31.0. Only the SDK lock entry
+changes. [API/behavior review and residual development finding](SDK_REPAIR_3.0.0_2026-10-07.md)
+include OAuth issuer binding,10MiB stdio limit, stricter HTTP media types/body and
+batch bounds, SSE lifecycle and Zod issue formatting. Existing531 tests remain
+unchanged and pass; no application source changes. New main/source
+`299225871a3ff925984ca658974f334e90103c57` has the identical Git tree to reviewed
+`85bed6ae77e14ac86dd85a35910cdf10ba7b65d5`.
+
+New exact15-file/22-tool archive SHA256:
+`c79f78e5e77814febb3f68ab9a391ef860515bcfd2d6f97001eadd6e00f58fe5`.
+Integrity:
+`sha512-bB5q7EhQm88hvvJuEZpvaf5Ws/jtdHPjXtQz6K7C90KSH46itlJwT0gpGPKGOzrRpnHI50HJQvVYVYAPhhQmYw==`.
+Only package.json changes from the preserved585ab2be archive; all other14 bytes
+remain identical because SDK is external. Clean/59-copy duplicate fixtures,
+normal/scripts-bypassed packing and downloaded hosted archive all match exactly.
+All60 original/backup hashes match;57 sync files/pr_diff/backups remain intact.
+
+| Gate | Actual evidence |
+| --- | --- |
+| Local | Clean locked install;531 tests/28 suites, lint, typecheck, metadata, build, exact package/SDK/configuration flow and offline demo pass. |
+| Fresh consumer | Actual installed SDK1.32.1/proxy-addr2.0.8 equal generated lock; production audit0; recurring minimum-version checks cover root/nested copies. No repo override/lock inheritance. |
+| Production / publisher | Both zero, including freshly installed actual npm12.2.0 publisher and fresh pre-publication audits. Full audit exits1 for one low development esbuild finding; exposure/follow-up explicit, no suppression. |
+| PR CI | [37574557763](https://github.com/devag7/linkedin-mcp/actions/runs/37574557763),12/12 pass at85bed6a. |
+| Release dry run | [37574567882](https://github.com/devag7/linkedin-mcp/actions/runs/37574567882),10/10 pass; release_ref85bed6a, dispatch workflow headefd3b53. Downloaded exact archive matches hash/every file. |
+| Main CI | [37575064241](https://github.com/devag7/linkedin-mcp/actions/runs/37575064241),12/12 pass at2992258. |
+
+[Production run37575316004](https://github.com/devag7/linkedin-mcp/actions/runs/37575316004)
+is the single authorized dispatch on new frozenmain, release_ref=main,
+dry_run=false, NPM_PUBLISH_AUTH=oidc. All six compatibility jobs and release
+source/production/publisher/package gates pass. Actual OIDC exchange returns201;
+package PUT returns202 Accepted with a processing notice; npm exits0 and a signed
+provenance statement is logged. No stored npm token/OTP/fallback was passed.
+The next step fails `PACKAGE_NOT_VISIBLE` at05:18:37Z, exit1: verifyPackage checks
+six times with five2-second waits. GitHub Packages/Registry are skipped and
+finalization fails its destination-result guard. No tag/release was created.
+This is a visibility-verification failure, distinct from the earlier OIDC errors.
+
+Independent post-failure read-back records npm3.0.0 HTTP404/latest2.0.3; public
+GitHub Packages latest2.0.3 with3.0.0 absent; official Registry3.0.0 HTTP404;
+GitHub Release3.0.0 HTTP404 and no tag. A202 response/signing log does not prove
+public artifact bytes, integrity or cryptographically verified provenance.
+The source/archive remain frozen. Existing workflow disabled again immediately;
+no repeat dispatch, manual publish, new version or candidate change occurred.
+
+Next milestone: read back npm availability, verify exact approved bytes/SRI and
+cryptographic provenance bound to2992258, then resume the existing workflow at
+main (no resume tag exists) to finish missing destinations. An exact present npm
+artifact must be reused, not manually republished. Stop on any mismatch/new
+failure; keep source unchanged. Do not infer an npm processing cause or promise
+completion time. Required cash$0. Remaining low esbuild follow-up October8;
+P7/P8/Windows privacy remain open. PR #5 remains draft; LinkedIn requests0.
+
+
+### Subsequent independent npm visibility check
+
+At05:21:48Z npm3.0.0 metadata becomes visible and its advertised integrity matches
+the approved archive. However, independent download verification rejects the
+response: tarball URL returns HTTP404, application/json,21 bytes,
+`{"error":"Not found"}` at05:22:28Z. The reported digest mismatch is that
+404 body, not a downloaded archive or proof of corrupt package bytes. No artifact
+or cryptographic provenance pass is claimed. No public consumer install was run
+against an unavailable archive. Original verification failure remains recorded.
+
+Final other-destination read-back at2026-10-07T05:23:03.735505+00:00: npm latest3.0.0;
+GitHub Packages public latest2.0.3/target3.0.0 absent; Registry3.0.0 HTTP404;
+GitHub Release3.0.0 HTTP404/no tag. Workflow remains disabled. One production
+dispatch only; no republish, resume, token fallback or LinkedIn request.
+
+Next: verify archive availability and exact bytes/SRI/provenance before resuming
+the existing frozen-main workflow to finish missing destinations. Metadata alone
+is insufficient. Do not republish3.0.0 manually or alter the frozen candidate.

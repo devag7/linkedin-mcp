@@ -418,3 +418,32 @@ confirmation and remaining actual gates; independently verify all four targets.
 PR #5 remains draft, P7/P8 and monthly cohort/growth measures remain open, and no
 LinkedIn requests, live compatibility or Trending result is claimed.
 [Exact new candidate and gate evidence](RELEASE_READINESS_3.0.0.md#reviewed-dependency-repair-and-new-candidate--october6-2026).
+
+
+## SDK repair and interrupted release — October7
+
+SDK repair PR #8 merged; new frozenmain299225871a3ff925984ca658974f334e90103c57,
+archivec79f78e5e77814febb3f68ab9a391ef860515bcfd2d6f97001eadd6e00f58fe5.
+SDK floor^1.31.0, locked1.31.0;531 unchanged tests, PR/main CI12/12 and dry run10/10
+pass. Production/publisher/fresh-consumer audits0; installed consumerSDK1.32.1
+and proxy-addr2.0.8. One low dev-only esbuild finding remains explicit with
+October8 follow-up. Existing candidates,57 copies/pr_diff/backups preserved.
+
+Saved release.yml-only binding confirmed. Single productionrun37575316004
+succeeds at OIDC exchange201 and upload202 Accepted, then fails strict npm
+verification PACKAGE_NOT_VISIBLE. Workflow disabled again; no retry/fallback.
+Independent read-back still shows npm latest2.0.3/target404, public GitHub
+Packages2.0.3, Registry/Release target404, no tag. Do not advertise public3.0.0
+or verified provenance from a signing log. Glama/directory entries retain22
+local-stdio tools and no job briefs; final release links await verified targets.
+
+Next: verify public npm's exact artifact/provenance when visible, then resume
+existing workflow at frozenmain for missing destinations. Cash$0; no LinkedIn
+requests; PR #5 draft; first-use/erasure/Windows privacy still open;10,000 stars
+and Trending remain measured outcomes.
+[Exact gates and failed step](RELEASE_READINESS_3.0.0.md#sdk-repair-new-release-source-and-stopped-publication--october7).
+
+Subsequent check: npm3.0.0 metadata is visible with expected integrity, but the
+archive URL still returns404. Exact public artifact/provenance/consumer install
+remain unverified; no directory is marked as fully released. The digest failure
+was a21-byte404 JSON body, not an obtained tarball. Publication stays stopped.
