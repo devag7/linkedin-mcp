@@ -13,7 +13,7 @@
 
 **Structured LinkedIn reads for MCP clients — profiles, jobs, companies and inbox data, with guided offline setup and explicit safety limits.**
 
-**23 tools** · local browser reads · five explicitly confirmed writes · persisted safety limits and operation journals.
+**Published core: 22 tools. Draft 3.1.0: 23.** · local browser reads · five explicitly confirmed writes · persisted safety limits and operation journals.
 
 > This is an unofficial LinkedIn integration and accounts can be restricted.
 > Review [Account safety](#-account-safety) and [SECURITY.md](SECURITY.md) before use.
@@ -409,7 +409,7 @@ Made by [Dev Agarwalla](https://github.com/devag7)
 
 </div>
 
-## Source-linked job briefs in 3.0.0
+## Source-linked job briefs in unpublished 3.1.0
 
 `research_jobs({keywords:"platform engineer",count:5,enrich_first:true})`
 returns a comparison of at most ten jobs and enriches the first source-linked
@@ -423,5 +423,7 @@ navigation/assets are outside that counter. No cursor following, retry or saving
 Run `npm run demo:brief` from the reviewed source for a synthetic offline MCP demo.
 It launches no browser and accesses no LinkedIn account. Fixture URLs are
 illustrative, not observed listings. Current provider compatibility remains
-unverified until the consented protocol passes. Version 2.0.3 does not include
-this tool. See the release-readiness record for publication and live evidence.
+unverified until the freshly consented useful-brief protocol passes. Published
+3.0.0 does not include this tool. PR #5 stays draft; no merge or publication is
+permitted before its remaining gates pass. See the
+[candidate readiness](docs/RELEASE_READINESS_3.1.0.md) for offline and live evidence.
