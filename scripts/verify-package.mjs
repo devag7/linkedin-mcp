@@ -62,6 +62,45 @@ try {
     ['install', '--ignore-scripts', '--no-audit', '--no-fund', join(dir, packed.filename)],
     install,
   );
+  // A consumer does not inherit this repository's lockfile or npm overrides.
+  // Verify the actual fresh resolution, including any nested Express copies.
+  const consumerLock = JSON.parse(readFileSync(join(install, 'package-lock.json'), 'utf8'));
+  assert.equal(pkg.dependencies['@modelcontextprotocol/sdk'], '^1.31.0',
+    'The shipped SDK dependency must exclude the affected versions.');
+  const assertInstalledFloor = (name, entry, minimum) => {
+    const actual = JSON.parse(readFileSync(join(install, name, 'package.json'), 'utf8'));
+    assert.equal(actual.version, entry.version, `Installed version differs from lock at ${name}`);
+    const match = /^(\d+)\.(\d+)\.(\d+)$/.exec(actual.version);
+    assert.ok(match, `Unexpected installed version at ${name}`);
+    const version = match.slice(1).map(Number);
+    const firstDifference = version.findIndex((part, index) => part !== minimum[index]);
+    assert.ok(firstDifference === -1 || version[firstDifference] > minimum[firstDifference],
+      `Consumer resolved affected version ${actual.version} at ${name}`);
+  };
+  const sdks = Object.entries(consumerLock.packages).filter(
+    ([name]) => name === 'node_modules/@modelcontextprotocol/sdk' ||
+      name.endsWith('/node_modules/@modelcontextprotocol/sdk'),
+  );
+  assert.ok(sdks.length > 0, 'Expected the consumer SDK dependency.');
+  for (const [name, entry] of sdks) assertInstalledFloor(name, entry, [1, 31, 0]);
+  const proxies = Object.entries(consumerLock.packages).filter(
+    ([name]) => name === 'node_modules/proxy-addr' || name.endsWith('/node_modules/proxy-addr'),
+  );
+  assert.ok(proxies.length > 0, 'Expected the SDK/Express proxy-addr dependency.');
+  for (const [name, entry] of proxies) {
+    assertInstalledFloor(name, entry, [2, 0, 8]);
+  }
+  const consumerAudit = JSON.parse(runNpm(['audit', '--omit=dev', '--json'], install));
+  assert.equal(consumerAudit.metadata.vulnerabilities.total, 0, 'Consumer production audit must be clean.');
+  const dependencyEvidence = {
+    sdk: consumerLock.packages['node_modules/@modelcontextprotocol/sdk'].version,
+    sdks: sdks.map(([path, entry]) => ({ path, version: entry.version })),
+    proxies: proxies.map(([path, entry]) => ({ path, version: entry.version })),
+    productionFindings: consumerAudit.metadata.vulnerabilities.total,
+  };
+  if (process.env.PACK_DEPENDENCY_OUTPUT)
+    writeFileSync(process.env.PACK_DEPENDENCY_OUTPUT, JSON.stringify(dependencyEvidence, null, 2) + '\n');
+  console.log(`Fresh consumer dependency verification: ${JSON.stringify(dependencyEvidence)}`);
   const bundle = join(install, 'node_modules', pkg.name, 'dist', 'index.js');
   assert.equal(
     execFileSync(process.execPath, [bundle, '--version'], {

@@ -1,0 +1,16 @@
+{
+  "packageVersion": "3.0.0",
+  "nativeClient": "VS Code",
+  "clientVersion": "1.140.0",
+  "platform": "darwin",
+  "configuration": "generated servers.linkedin, with disposable persistent-stop profile",
+  "configAccepted": true,
+  "startup": "failed",
+  "exactError": "Cannot start an MCP server before the session runtime has been created. Send a message first.",
+  "nativeToolsDiscovered": null,
+  "chatMessageSent": false,
+  "linkedInRequests": 0,
+  "browserLaunches": 0,
+  "volunteerAttempts": 0,
+  "cleanup": "Test window closed; no matching server process or fixture owner lock"
+}

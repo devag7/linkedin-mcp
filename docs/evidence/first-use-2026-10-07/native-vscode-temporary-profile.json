@@ -1,0 +1,25 @@
+{
+  "client": "VS Code",
+  "version": "1.140.0",
+  "package": "linkedin-mcp-tools@3.0.0",
+  "artifactSha256": "c79f78e5e77814febb3f68ab9a391ef860515bcfd2d6f97001eadd6e00f58fe5",
+  "isolation": "Native New Window with Temporary Profile (Temp 1), disposable workspace and stopped profile; shared application storage/recent-workspace history not isolated. Dedicated user-data-dir launch was not performed.",
+  "configuration": "Published generated config with only stopped fixture profile and missing Chrome path added; writes disabled.",
+  "configRecognized": true,
+  "schemaValidated": true,
+  "startAttempts": 1,
+  "initialization": "failed_before_server_start",
+  "exactError": "Cannot start an MCP server before the session runtime has been created. Send a message first.",
+  "nativeToolDiscovery": false,
+  "modelMessagesSent": 0,
+  "linkedInRequests": 0,
+  "browserLaunches": 0,
+  "volunteerAttempts": 0,
+  "cleanup": {
+    "testWindowClosed": true,
+    "matchingServerProcesses": 0,
+    "fixtureOwnerLock": false,
+    "stopFixturePreserved": true
+  },
+  "scope": "Offline maintainer native setup probe, not volunteer first use or live compatibility."
+}

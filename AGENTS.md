@@ -28,7 +28,7 @@ LinkedIn's Voyager API from inside the authenticated page. 23 tools.
 
 - Profiles: `get_my_profile`, `get_profile`
 - Search: `search_people`, `search_jobs`, `get_job_details`, `search_companies`,
-  `get_company`, `get_company_posts`, `get_company_employees`, `research_jobs`
+  `get_company`, `get_company_posts`, `get_company_employees`, `research_jobs` (draft only), `research_jobs`
 - Feed/messaging: `get_feed`, `get_notifications`, `get_inbox`, `get_conversation`,
   `get_pending_invitations`
 - Writes (gated): `connect_with_person`, `send_message`, `create_post`,

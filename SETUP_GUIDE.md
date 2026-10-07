@@ -1,20 +1,40 @@
 # Setup and client verification
 
-This guide targets 3.0.0. Until [destination verification](docs/RELEASE_READINESS_3.0.0.md)
-is complete, use the reviewed source or candidate tarball. A version label in this
-guide does not establish npm publication; check the recorded destination first.
+This guide targets the released 22-tool core **3.0.0**. Publication is independently
+verified in [launch evidence](docs/LAUNCH_EVIDENCE_2026-10-07.md). Native-client
+first-use cohorts and broader live-provider compatibility remain unverified.
 Node 20+ and installed Google Chrome are required. Login requires a local display.
 No OAuth/cookie value copied into environment variables activates an official API
 provider. There is no dotenv loader; use your shell or your client's env settings.
 
 ## Guided offline first run
 
-Build this checkout, then run `node dist/index.js --setup cursor` (or
-`claude-desktop` / `vscode`). The JSON report combines offline diagnosis, your
-selected client configuration, and exact login/doctor command arrays. It never
-opens Chrome, downloads software, changes a client file or accesses LinkedIn.
-Exit 1 means a local issue needs attention; login status stays `not_checked`.
-For just the JSON snippet, use `node dist/index.js --client-config cursor`.
+Install the published package at a stable path, then request the client report.
+On macOS/Linux:
+
+```sh
+npm install --prefix "$HOME/.local/share/linkedin-mcp" linkedin-mcp-tools@3.0.0
+node "$HOME/.local/share/linkedin-mcp/node_modules/linkedin-mcp-tools/dist/index.js" --setup cursor
+```
+
+On Windows PowerShell:
+
+```powershell
+npm install --prefix "$env:LOCALAPPDATA\linkedin-mcp" linkedin-mcp-tools@3.0.0
+node "$env:LOCALAPPDATA\linkedin-mcp\node_modules\linkedin-mcp-tools\dist\index.js" --setup cursor
+```
+
+Use `claude-desktop` or `vscode` instead of `cursor` for that client. The JSON
+report combines offline diagnosis, configuration and exact login/doctor command
+arrays. It never opens Chrome, downloads software, changes a client file or
+accesses LinkedIn. Exit1 means a local issue needs attention; login remains
+`not_checked`. For only the snippet, replace `--setup cursor` with
+`--client-config cursor`. Resolve diagnosis before merging the generated entry.
+Run its exact login command yourself when ready; use the same installed bundle
+and profile for login and MCP. Native Windows privacy remains unverified.
+
+Source contributors can instead run `npm ci`, `npm run build`, then
+`node dist/index.js --setup cursor` from a stable reviewed checkout.
 
 The generated entry uses the absolute Node executable and this installed build,
 sets the same profile for login and MCP, forces stdio and disables writes. Merge
@@ -79,8 +99,8 @@ For a client accepting `mcpServers`, use an absolute path to the built file:
 ```
 
 [claude-desktop-config.json](claude-desktop-config.json) pins the current declared
-npm version as a reference for published-package usage. Its contents follow package.json; candidate metadata alone does not establish
-publication. Use the release-readiness record to select a verified destination. This guide does not guess settings formats for
+npm version as a reference. Its contents follow package.json; publication receipts
+are independently recorded in launch evidence. This guide does not guess settings formats for
 untested applications. [First-use protocol](docs/FIRST_USE_VALIDATION.md) records
 client/OS/version and real completion evidence before adding a verified entry.
 

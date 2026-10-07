@@ -24,16 +24,24 @@
 
 ## Guided first run
 
-This branch is the unpublished 23-tool 3.1.0 job-brief candidate. Core 3.0.0 publication receipts are tracked in
-[release readiness](docs/RELEASE_READINESS_3.0.0.md); until its destinations are
-verified, use the reviewed source. From that checkout, run `npm ci` and
-`npm run build`, then `node dist/index.js --setup cursor` (also `claude-desktop`
-or `vscode`). It reports local setup, client configuration and exact next steps
-without contacting LinkedIn. Export only JSON with `--client-config cursor`.
-Merge the generated entry into your existing client file and keep the installed
-build at a stable path. Follow the [setup guide](SETUP_GUIDE.md) for manual login,
-client checks and truthful validation status. The [product execution plan](docs/PRODUCT_EXECUTION_PLAN_2026.md)
-sets the next features and measured daily-Trending distribution experiments.
+**3.0.0 is released: 22 tools, guided local setup and manual Chrome login.**
+This is a local stdio tool; generic hosted deployment controls are not installation
+instructions. [Verified publication receipts](docs/LAUNCH_EVIDENCE_2026-10-07.md)
+cover its four release destinations. Start with the pinned published
+[quick start](#-quick-start), [setup guide](SETUP_GUIDE.md) and
+[synthetic setup demonstration](docs/RELEASE_DEMO_3.0.0.md).
+
+**This branch is the unpublished 23-tool 3.1.0 candidate in draft PR #5.**
+`research_jobs` is absent from published 3.0.0. The tool table below describes
+this candidate's source; its prior live brief failed the usefulness criterion.
+For offline candidate review, run `npm ci`, `npm run build`, then
+`node dist/index.js --setup cursor` (also `claude-desktop` or `vscode`). Candidate
+exports target its unpublished version; use a stable absolute source-build path
+for isolated offline inspection, never infer that `npx` can install 3.1.0.
+No new LinkedIn request is authorized by this candidate's setup instructions.
+See [candidate gates](docs/RELEASE_READINESS_3.1.0.md) and the
+[execution plan](docs/PRODUCT_EXECUTION_PLAN_2026.md).
+
 
 ## What it does
 
@@ -56,7 +64,8 @@ results are recorded in [release readiness](docs/RELEASE_READINESS_3.0.0.md). On
 maintainer health/own-profile read also passed with partial metadata;
 [scope and evidence](docs/ZERO_COST_EXECUTION_EVIDENCE_2026-10-01.md#7-consented-maintainer-live-read--passed-limited-scope)
 do not establish fresh-user or broader live compatibility.
-Installing `@latest` does not establish that those changes are published.
+The exact published 3.0.0 artifact is independently verified; native-client first-use cohorts
+and broad live-provider compatibility remain unverified.
 See [execution progress](docs/ROADMAP_PROGRESS.md) and the linked evidence.
 
 | Area | Current evidence |
@@ -76,14 +85,16 @@ not a guarantee of current provider compatibility or account safety.
 
 ## 🚀 Quick start
 
-The package commands below target 3.0.0 after its publication has been verified.
-For a release candidate, build the reviewed checkout and use its generated
-absolute-path configuration from the [setup guide](SETUP_GUIDE.md).
+Use Node.js 20 or later and Google Chrome. The commands below pin the published
+3.0.0 package. Setup is offline; login and subsequent reads are deliberate account
+actions. For a stable installation path and Windows commands, see the
+[setup guide](SETUP_GUIDE.md).
 
 **1. Diagnose offline:**
 
 ```bash
-npx -y linkedin-mcp-tools@3.0.0 --setup cursor
+npm install --prefix "$HOME/.local/share/linkedin-mcp" linkedin-mcp-tools@3.0.0
+node "$HOME/.local/share/linkedin-mcp/node_modules/linkedin-mcp-tools/dist/index.js" --setup cursor
 ```
 
 Also accepts `claude-desktop` or `vscode`. Resolve the reported local issues, then
@@ -94,7 +105,7 @@ after upgrades; the report pins its installed build rather than a temporary path
 **2. Log in once** (opens a real Chrome window — sign in, solve any captcha/2FA):
 
 ```bash
-npx -y linkedin-mcp-tools@3.0.0 --login
+node "$HOME/.local/share/linkedin-mcp/node_modules/linkedin-mcp-tools/dist/index.js" --login
 ```
 
 Needs Google Chrome installed (or run `npx patchright install chrome` once). Your
@@ -115,9 +126,11 @@ accepting `mcpServers`, this version-pinned example is an alternative:
 ```
 
 Start with `whoami` for local status. When you deliberately authorize an account
-read, try *"Find up to three TypeScript engineer jobs and give me a source-linked
-brief; do not follow another page."* Current job-provider compatibility awaits
-consented validation; an empty or partial result must retain that status.
+read, try *"Read my own profile once and report its returned status and any partial
+metadata, then close the session. Do not retry or write."* Stop at a checkpoint.
+Current provider availability is uncertain; preserve empty, partial and error
+statuses. First-use results across Claude Desktop, Cursor and VS Code have not yet
+been measured.
 
 <details>
 <summary><b>From source / contributing</b></summary>
@@ -127,8 +140,8 @@ git clone https://github.com/devag7/linkedin-mcp.git
 cd linkedin-mcp
 npm ci
 npm run setup:browser     # installs the Chrome patchright drives
-npm run login             # log in once
-npm run spike             # verify: fetches your profile as JSON
+npm run login             # manual account login; only with your deliberate consent
+npm run spike             # live own-profile request; requires separate authorization
 npm run build             # produces dist/
 node dist/index.js --doctor # local setup checks; no browser or network
 npm run verify:package     # install/test the packed artifact offline against LinkedIn
