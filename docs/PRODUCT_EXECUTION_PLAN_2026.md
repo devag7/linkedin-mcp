@@ -1,9 +1,57 @@
 # LinkedIn MCP: current gaps and zero-cash execution roadmap
 
-Updated October 1, 2026. This is the actionable PRD/TRD and product backlog for
+Updated October 7, 2026. This is the actionable PRD/TRD and product backlog for
 `devag7/linkedin-mcp`. Preserve the original
 [2026 roadmap](../PRODUCT_TECHNICAL_ROADMAP_2026.md) and its historical findings;
 this document adds current evidence rather than rewriting that baseline.
+
+## Current execution order — October 7
+
+Core **3.0.0 is released**, 22 tools; [all four destination receipts](LAUNCH_EVIDENCE_2026-10-07.md)
+verify source/tag `2992258` and the immutable approved artifact. The GitHub README
+and setup demonstration can now describe the published version. Old dated
+publication-pending entries below are historical, superseded by those receipts.
+PR #5 remains draft; its brief is not a core capability.
+
+1. **Launch correction:** published, pinned quick start; real published-package
+   synthetic setup demo; Glama description/source refresh and accurate existing
+   curated-list submission. Acceptance: no pending-release or job-brief claims in
+   current launch copy; exact URLs and platform-generated limitations recorded.
+   Dependencies: verified release. Effort: small ongoing documentation upkeep. Cash: $0.
+2. **First use:** consenting volunteer cohorts in Claude Desktop, Cursor and VS Code
+   using published 3.0.0 and [the protocol](FIRST_USE_VALIDATION.md). All three cohorts
+   currently have zero measured attempts. Acceptance: publish denominators, timing,
+   failure categories, cleanup and optional repeat-use response counts; measure the
+   80% within 15 minutes target without substituting fixtures. Dependencies: participant
+   consent and installed clients/accounts. Effort: medium observation/support. Cash: $0
+   mandatory; any existing client/model subscription is optional and user-funded.
+3. **Trust/privacy:** coordinated erasure must account for profile, circuit, owner
+   locks and shared budget/journal state without resetting another active identity's
+   limits. Native Windows NTFS ACL proof must verify another user cannot read state;
+   mode-bit fixtures are insufficient. Acceptance: destructive scope preview, active
+   ownership refusal, safe alias handling, interruption/restart tests and native ACL
+   receipts before completion claims. Dependencies: separate reviewed implementation,
+   disposable data and consenting Windows environment. Effort: medium/high initial,
+   recurring platform regression. Cash: $0 mandatory. One low development-only esbuild
+   finding remains; recheck supported build-tool updates on **October 8** and document
+   build exposure, not merely the audit exit code.
+4. **Earn 3.1:** diagnose PR #5's partial result offline against redacted shape/status
+   evidence first. Keep three explicit reads maximum, identity checks, source links,
+   freshness and partial-result semantics. Acceptance: a separately consented bounded
+   check produces a useful brief before merge/release; no new account access is
+   authorized by this plan. Saved jobs and richer filters require separate verified
+   provider evidence. Dependencies: PR review, useful live result and fresh consent.
+   Effort: medium implementation, high endpoint maintenance uncertainty. Cash: $0
+   mandatory; any official paid provider is optional and user-funded.
+
+Weekly capture GitHub stars/traffic windows and voluntary first-use/reuse aggregates;
+monthly compare net stars, first-successful-read and repeat-use measures. GitHub API
+still reports **10 stars** on October 7. Record Trending only if actually observed.
+Contributor loop: acknowledge reproducible issues within two working days, collect
+redacted diagnostics, link fixes and close with verification. Tutorials and broader
+promotion follow actual first-use/privacy evidence. No paid placement, hosting or
+new domain is required. These ordered milestones retain the PRD/TRD and full backlog
+below; they do not declare the original roadmap complete.
 
 ## Objective and decision rules
 
@@ -116,16 +164,19 @@ All proposals require source/contract/packed/hosted gates and an honest capabili
 | P7 Desktop client first-use matrix + packaging convenience | 5/3/2; 11, gated by access | Record app/OS/version/build, native config acceptance and cold setup; at least one authorized real first read per claimed pairing | Installed clients and renewed user consent; Windows/Linux volunteer machines; signed bundles only when feasible | 2–4 days + volunteers; 2 h/month | $0 with volunteer devices; code signing optional and outside required scope |
 | P8 Data inventory/erasure + Windows ACLs | 4/3/3; 8 | Inventory first; safe alias refusal; account/session cleanup after all owners stop; journal removal explicit and documented as safety-history loss; NTFS deny-other-user proof | Review privacy/state migration; fixture+Windows tests; no silent budget reset while runnable profile remains | 4–7 days; 2–4 h/month | $0 |
 | P9 Official identity/publishing provider pilot | 3/2/3; 5 | Actual OAuth scopes control discovery; unsupported browser reads never silently fall back; one approved identity/publish test per exposed action | Developer app, granted products/scopes, new action consent; no parity promise | 1–2 weeks after approval; 4–8 h/month | $0 planned API access; any paid third-party bridge optional/user-funded |
-| P10 Tutorials/demo/distribution + contributor loop | 5/4/2; 12, after release | Reproducible demo, three honest tutorials, submitted listings with receipt/status, weekly issue response, monthly measures below | Reviewed release and verified install URLs; no outreach/publication in current task | 3–5 days initial; 2–3 h/week | $0 public docs/repository/local recording |
+| P10 Tutorials/demo/distribution + contributor loop | 5/4/2; 12, after release | Reproducible demo, three honest tutorials, submitted listings with receipt/status, weekly issue response, monthly measures below | Published3.0.0 verified; existing accurate listings advance to review; broader promotion awaits P7/P8 | 3–5 days initial; 2–3 h/week | $0 public docs/repository/local recording |
 | P11 Local opt-in adoption and traffic ledger | 4/4/1; 11 | Counts/timings only, no identity/content; missing samples remain unknown; weekly traffic export and monthly report | Volunteers and owner-readable GitHub traffic; retention consent and aggregation rules | 1–2 days; 1 h/month | $0 local JSON/CSV + GitHub Insights |
-| P12 Development advisory follow-up | 4/3/1; 10 | Reassess October 8; compatible clean-install upgrade with all gates or documented mitigation; no forced dependency-tree break | Existing three dev-tool findings; production currently zero; npm installer issue tracked in evidence | 0.5–1 day; weekly until resolved | $0 |
+| P12 Development advisory follow-up | 4/3/1; 10 | Reassess October 8; compatible clean-install upgrade with all gates or documented mitigation; no forced dependency-tree break | One low development-only esbuild finding; production/publisher/consumer zero; latest tsup8.5.1 still requires ^0.27.0 | 0.5–1 day; weekly until resolved | $0 |
 
 P2 precedes new provider routes because it builds repeat value from existing reads.
 P7/P8 are parallel readiness gates before broad release promotion, irrespective of
 numerical score. Scores do not override safety or required capture/access.
 Choose each provider feature only after value feedback and capture evidence exist.
 
-## Concrete execution sequence for Codex
+## Historical initial execution sequence (superseded)
+
+Retained for traceability; use the October 7 execution order above. PRs #3/#4
+are merged, core 3.0.0 is released and PR #5 remains draft.
 
 1. Refresh PR #3, preserve `pr_diff.txt` and backup outside iCloud. Done: refreshed
    at `2562ff0`, corrected to `0017fe1`; no history rewrite/main push.
@@ -212,7 +263,10 @@ completed artifacts and referral sources, top three user failures, maintainer ho
 required cash actually spent ($0 planned), then one next experiment and stop rule.
 If quality or first-read reliability drops, fix it before broad distribution.
 
-## Evidence and remaining gaps
+## Historical source and first-feature evidence — October1
+
+This checkpoint describes the earlier draft state. The current core execution
+receipt below supersedes its merge, version and publication status.
 
 Safety correction head `0017fe1dd9de6cfb334b4eb6a77ddddcf19fbcfc` passes all12
 [hosted checks](https://github.com/devag7/linkedin-mcp/actions/runs/36859609288)
@@ -247,7 +301,7 @@ distribution is a measured, release-gated plan. See
 [coverage](ROADMAP_COVERAGE.md) for the earlier item-by-item inventory. Do not mark
 all phases complete because source/CI pass.
 
-Next milestone: human review of the two draft tracks, remaining Claude/Cursor native-client acceptance
+At that checkpoint the next milestone was human review of the two draft tracks, remaining Claude/Cursor native-client acceptance
 without LinkedIn access, then P2 bounded source-linked brief implementation under the
 same endpoint and privacy limits. Live first-read validation requires renewed consent.
 
@@ -273,3 +327,174 @@ maintenance/cash estimates and ambition remain; no mandatory service/expense is
 introduced. Any further provider diagnosis requires reviewed bounded instrumentation
 and fresh consent. Current counts/error code cannot identify a rotating endpoint
 or permission/normalization cause, so no speculative production fix is made.
+
+
+## Core execution and next milestone — October2
+
+This section is the October2 snapshot. The October5 authentication receipt below
+supersedes its next milestone; source/package scope and open P7/P8 gates persist.
+
+PR #3 then #4 are merged. Frozen main release source is
+`a9f785b7131eb4ada24791e5ea3fa01e6f104906`;3.0.0 remains absent from the four
+target destinations. The22-tool/15-file candidate passes524 local tests, all12
+hosted main checks and all10 exact release dry-run jobs. Dirty/clean workspaces
+produce identical archives. All57 sync copies, `pr_diff.txt` and backups remain
+unchanged. [Current receipts and npm blocker](RELEASE_READINESS_3.0.0.md) distinguish
+passed offline core gates from failed authenticated publication.
+
+Publisher maintenance: isolated npm12.2.0 with three locked upstream bundle
+patches; actual installed audit0, application production audit0. Only publication
+uses that CLI, preserving the package-report contract. Dependencies: supported
+hosted Node, public npm/GitHub infrastructure and working owner-managed trust
+binding. Estimated maintenance is about1h/month to review pins, plus an audit
+each release; remove patches once upstream incorporates them. Required cash$0.
+No quality gate, application feature or safety/privacy requirement was reduced.
+
+Next concrete milestone is owner verification/reset of the npm binding, followed
+by automated recovery of the exact candidate and independent four-destination
+verification. Merge/publication authority is already granted. Evidence snapshots
+stay separate from frozen main until recovery completes. Glama source is refreshed
+to that commit; description honestly says publication pending. The corrected
+punkpeye submission remains draft, with22-tool local stdio and no brief capability.
+
+PR #5 remains draft. Its earlier partial result proves bounded provenance/cleanup,
+not useful job-brief compatibility. Counts/error code alone cannot identify a
+route, permission or normalization cause. The separate offline investigation and
+any independently consented diagnosis are not core3.0.0 evidence. No further
+account access occurred in this core-release work.
+
+Measurement refresh: GitHub reports10 stars on October2. Traffic exports retrieved
+on October2 contain September17–30 UTC rows:58 views/26 reported uniques and128
+clones/72 reported uniques. This lagged14-day window is not a monthly total,
+distinct humans, successful reads or an attribution result. Weekly dated exports
+and overlap deduplication remain required. First-use/repeat-use cohorts remain
+unknown; no Trending result is claimed. P7/P8 promotion limits and the10,000-star
+and daily-Trending measured ambitions remain.
+
+## Authentication recovery milestone — October5
+
+An explicitly authorized token-mode run36999000357 at frozen main `a9f785b`
+passed all six platform/Node compatibility jobs and the release source/package
+gates, then failed the npm publish request with401/`EOTP`. The signed provenance
+statement is not package publication. All four3.0.0 targets remain absent in
+independent read-back. Source, version,22-tool scope and15-file candidate stay
+frozen. PR #5 remains draft, with no new LinkedIn request.
+
+The supplied screenshot shows saved workflow filename `release.yml,ci.yml`,
+which does not equal `release.yml`; trusted publishing is not verified. The owner
+now requests token-only authentication. Dependency: privately replace the Actions
+secret with a short-lived, package-scoped publish token usable without interactive
+2FA under the existing npm package policy. Do not relax2FA, put credentials in
+documentation or retry the failed token unchanged. If policy disallows tokens,
+an owner authentication-path decision is required. Required cash$0; owner setup
+plus one existing automated run, with no feature or gate reduction. Maintenance:
+revoke exposed credentials, rotate/expire limited tokens and eventually repair
+the workflow binding for token-free publishing when authorized.
+
+Next concrete milestone: owner confirms private secret replacement, existing
+workflow resumes at exact frozen source, and every destination's actual bytes,
+integrity, provenance, public visibility, Registry status and tag/SHA is verified.
+Do not mark release/distribution complete until then. See the
+[exact authentication and destination evidence](RELEASE_READINESS_3.0.0.md#token-mode-recovery-and-read-back--october5-2026).
+
+
+## Final core source and authentication dependency — October5
+
+The owner replaced the encrypted publication secret. A newly disclosed private
+publisher cache vulnerability blocked the first retry before authentication.
+Reviewed PR #6 resolves that blocker with locked upstream bytes plus a tested,
+explicitly maintained cache guard; the upstream4.3.0 version alone is not called
+fixed. Required cash$0; maintenance about2h/month plus per-release real behavioral
+assertions/audit. No application dependency or shipped file changed.
+
+Final source `5640dfaa6a05533143f3130b0663806378ac0afa` has531 passing local tests,
+12/12 main checks and the reviewed-tree10/10 release dry run. The22-tool,15-file
+archive remains byte-identical. Actual automated run37308641551 then used the
+replacement token and failed with `EOTP`; all four3.0.0 destinations remain absent.
+Secret replacement does not prove Bypass2FA/permissions or selected package policy.
+Owner-only configuration evidence is the remaining authentication dependency;
+do not disable2FA, retry unchanged credentials, switch auth paths without owner
+instruction, or publish manually alongside automation.
+
+Next concrete milestone: check owner publishing policy/token configuration,
+resolve the evidenced cause, then resume at frozen `5640dfa` and verify all four
+artifacts/provenance independently. Evidence is on a separate branch; PR #5
+remains draft. No new LinkedIn request, first-use/erasure/Windows-privacy completion,
+paid service or Trending result follows. All60 protected original/backup hashes
+match. [Final gate receipt](RELEASE_READINESS_3.0.0.md#replacement-token-result-and-final-source--october5-2026)
+records exact runs and what they establish.
+
+
+## October6 gate refresh
+
+OIDC recovery supersedes the token path; corrected owner connection-save
+confirmation remains pending. `NPM_PUBLISH_AUTH=oidc` is verified. Frozen source
+`5640dfa`,22 tools and15-file bytes remain unchanged;531 tests, source/build,
+installed package/setup and offline demo pass again. No LinkedIn request.
+
+Fresh production audit now reports critical proxy-addr2.0.7; full audit also
+reports critical tinypool/Vitest and high source-map-js, six findings in total.
+Earlier zero-production/no-high reports are dated historical results. Required
+release gates therefore fail independently of authentication. Preserve frozen
+main, logs and original/backup copies. Do not publish or lower gates. A separate
+reviewed dependency repair and approved replacement candidate would require
+compatibility checks, package/hosted checks and exact release dry run; cash$0,
+maintenance effort to be estimated from the actual dependency/test-runner diff.
+[Exact dependency and preflight evidence](RELEASE_READINESS_3.0.0.md#oidc-preparation-and-fresh-audit-blocker--october6-2026).
+
+
+## Reviewed core dependency repair — October6
+
+PR #7 is merged at new intended release SHA `efd3b53ffd8416c68ef703069d883ee1371cb533`
+after reviewed-head12/12 CI and10/10 dry run. New22-tool/15-file tarball SHA256
+`585ab2be9e3b20c4b872d424a622fac2ea81b752d6c4955d66e0ee086365c551`; only shipped
+package.json changes, with all other14 shipped bytes identical to original frozen
+candidate. Original candidate/evidence and60 preservation hashes remain intact.
+
+All six application findings are traced; supported Vitest4 removes Tinypool,
+patched mocker and leaf source-map-js/proxy-addr updates resolve five package-level
+entries. Fresh consumer actual installed proxy-addr and lock both read2.0.8;
+consumer production audit0, SDK22-tool/configuration flow pass. Application and
+actual publisher production audits0. A current publisher selector-parser moderate
+finding was patched through the existing locked bundle mechanism. One low tsup/
+esbuild Windows development-server finding remains with explicit build exposure,
+upstream supported-range constraint and October8 follow-up. No override, forced
+fix or audit suppression;531 unchanged tests pass. Required cash$0; maintenance
+runtime/build1h/month plus existing publisher2h/month and per-release audits.
+
+Publication stays paused: release workflow disabled before merge; corrected npm
+`release.yml`-only saved-connection confirmation pending; main CI37462546965 passes12/12 at the new SHA.
+OIDC-only authorization supersedes token recovery. Restore/dispatch only after
+confirmation and remaining actual gates; independently verify all four targets.
+PR #5 remains draft, P7/P8 and monthly cohort/growth measures remain open, and no
+LinkedIn requests, live compatibility or Trending result is claimed.
+[Exact new candidate and gate evidence](RELEASE_READINESS_3.0.0.md#reviewed-dependency-repair-and-new-candidate--october6-2026).
+
+
+## SDK repair and interrupted release — October7
+
+SDK repair PR #8 merged; new frozenmain299225871a3ff925984ca658974f334e90103c57,
+archivec79f78e5e77814febb3f68ab9a391ef860515bcfd2d6f97001eadd6e00f58fe5.
+SDK floor^1.31.0, locked1.31.0;531 unchanged tests, PR/main CI12/12 and dry run10/10
+pass. Production/publisher/fresh-consumer audits0; installed consumerSDK1.32.1
+and proxy-addr2.0.8. One low dev-only esbuild finding remains explicit with
+October8 follow-up. Existing candidates,57 copies/pr_diff/backups preserved.
+
+Saved release.yml-only binding confirmed. Single productionrun37575316004
+succeeds at OIDC exchange201 and upload202 Accepted, then fails strict npm
+verification PACKAGE_NOT_VISIBLE. Workflow disabled again; no retry/fallback.
+Independent read-back still shows npm latest2.0.3/target404, public GitHub
+Packages2.0.3, Registry/Release target404, no tag. Do not advertise public3.0.0
+or verified provenance from a signing log. Glama/directory entries retain22
+local-stdio tools and no job briefs; final release links await verified targets.
+
+Next: verify public npm's exact artifact/provenance when visible, then resume
+existing workflow at frozenmain for missing destinations. Cash$0; no LinkedIn
+requests; PR #5 draft; first-use/erasure/Windows privacy still open;10,000 stars
+and Trending remain measured outcomes.
+[Exact gates and failed step](RELEASE_READINESS_3.0.0.md#sdk-repair-new-release-source-and-stopped-publication--october7).
+
+Subsequent check: npm3.0.0 metadata is visible with expected integrity, but the
+archive URL still returns404. Exact public artifact/provenance/consumer install
+remain unverified; no directory is marked as fully released. The digest failure
+was a21-byte404 JSON body, not an obtained tarball. Publication stays stopped.
