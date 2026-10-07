@@ -65,23 +65,36 @@ try {
   // A consumer does not inherit this repository's lockfile or npm overrides.
   // Verify the actual fresh resolution, including any nested Express copies.
   const consumerLock = JSON.parse(readFileSync(join(install, 'package-lock.json'), 'utf8'));
+  assert.equal(pkg.dependencies['@modelcontextprotocol/sdk'], '^1.31.0',
+    'The shipped SDK dependency must exclude the affected versions.');
+  const assertInstalledFloor = (name, entry, minimum) => {
+    const actual = JSON.parse(readFileSync(join(install, name, 'package.json'), 'utf8'));
+    assert.equal(actual.version, entry.version, `Installed version differs from lock at ${name}`);
+    const match = /^(\d+)\.(\d+)\.(\d+)$/.exec(actual.version);
+    assert.ok(match, `Unexpected installed version at ${name}`);
+    const version = match.slice(1).map(Number);
+    const firstDifference = version.findIndex((part, index) => part !== minimum[index]);
+    assert.ok(firstDifference === -1 || version[firstDifference] > minimum[firstDifference],
+      `Consumer resolved affected version ${actual.version} at ${name}`);
+  };
+  const sdks = Object.entries(consumerLock.packages).filter(
+    ([name]) => name === 'node_modules/@modelcontextprotocol/sdk' ||
+      name.endsWith('/node_modules/@modelcontextprotocol/sdk'),
+  );
+  assert.ok(sdks.length > 0, 'Expected the consumer SDK dependency.');
+  for (const [name, entry] of sdks) assertInstalledFloor(name, entry, [1, 31, 0]);
   const proxies = Object.entries(consumerLock.packages).filter(
     ([name]) => name === 'node_modules/proxy-addr' || name.endsWith('/node_modules/proxy-addr'),
   );
   assert.ok(proxies.length > 0, 'Expected the SDK/Express proxy-addr dependency.');
   for (const [name, entry] of proxies) {
-    const version = /^(\d+)\.(\d+)\.(\d+)$/.exec(entry.version);
-    assert.ok(version, `Unexpected proxy-addr version at ${name}`);
-    const [, major, minor, patch] = version.map(Number);
-    assert.ok(
-      major > 2 || (major === 2 && (minor > 0 || patch >= 8)),
-      `Consumer resolved vulnerable proxy-addr ${entry.version} at ${name}`,
-    );
+    assertInstalledFloor(name, entry, [2, 0, 8]);
   }
   const consumerAudit = JSON.parse(runNpm(['audit', '--omit=dev', '--json'], install));
   assert.equal(consumerAudit.metadata.vulnerabilities.total, 0, 'Consumer production audit must be clean.');
   const dependencyEvidence = {
     sdk: consumerLock.packages['node_modules/@modelcontextprotocol/sdk'].version,
+    sdks: sdks.map(([path, entry]) => ({ path, version: entry.version })),
     proxies: proxies.map(([path, entry]) => ({ path, version: entry.version })),
     productionFindings: consumerAudit.metadata.vulnerabilities.total,
   };
