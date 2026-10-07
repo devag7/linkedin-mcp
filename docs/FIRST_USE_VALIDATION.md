@@ -11,7 +11,7 @@ collect LinkedIn identities/content, profile paths, cookies or token values.
 Participants can stop or decline recording; no background analytics is installed.
 
 Sequence: install pinned package → offline doctor → intentional manual login →
-live health/identity → one read selected by the participant → inspect data/partial
+one approved read with its implicit identity checks → inspect data/partial
 metadata → close client/server and confirm no owned browser remains. Stop at a
 checkpoint; do not try another account to work around it. Do not test writes for
 first-use onboarding. Record missing Chrome/display, permissions, unsupported
@@ -62,6 +62,15 @@ chosen retention/deletion date:
 ```csv
 participant_code,client,client_version,os,node_version,package_version,elapsed_seconds,last_step,result_code,within_15_minutes,cleanup_observed,recording_delete_on,followup_opt_in
 ```
+
+The runnable kit now lives in [volunteer instructions and separate consents](FIRST_USE_VOLUNTEER_KIT.md),
+with [fixed scoring/privacy rules](FIRST_USE_RESULTS.md) and a [header-only template](FIRST_USE_RESULTS.csv).
+Use that updated schema for new attempts; the minimal schema above is historical.
+Its default own-profile scope permits nine explicit GET attempts including login
+verification and identity, with no separate health probe. This is a source-derived
+envelope, not a runtime-enforced request limiter; report unknown enforcement honestly.
+[Published offline readiness](FIRST_USE_READINESS_2026-10-07.md) distinguishes all
+three SDK export flows from native UI blockers. No package/runtime change or new release.
 
 No actual participant rows are published. Report weekly aggregate sample sizes,
 client splits, failures and elapsed-time distribution. Repeat use means a voluntary

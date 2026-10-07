@@ -25,6 +25,13 @@ PR #5 remains draft; its brief is not a core capability.
    80% within 15 minutes target without substituting fixtures. Dependencies: participant
    consent and installed clients/accounts. Effort: medium observation/support. Cash: $0
    mandatory; any existing client/model subscription is optional and user-funded.
+   The [published-package readiness check](FIRST_USE_READINESS_2026-10-07.md),
+   [volunteer consent kit](FIRST_USE_VOLUNTEER_KIT.md) and
+   [private results/scoring template](FIRST_USE_RESULTS.md) are prepared. All three
+   exports pass published SDK flows; native1.140.0 VS Code startup has a session-runtime
+   prerequisite, Claude import remains untested and Cursor is absent on this Mac.
+   These engineering checks do not enter the cohort denominator. No runtime defect
+   reproduced; any later code repair must use a version after3.0.0.
 3. **Trust/privacy:** coordinated erasure must account for profile, circuit, owner
    locks and shared budget/journal state without resetting another active identity's
    limits. Native Windows NTFS ACL proof must verify another user cannot read state;
