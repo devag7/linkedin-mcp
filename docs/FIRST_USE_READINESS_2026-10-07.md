@@ -51,7 +51,7 @@ locally and prints a redacted receipt. It does not edit native client configurat
 login or call a provider tool. Review outputs before sharing; raw setup exports
 contain local paths. Its reviewed source lives outside the package allowlist.
 
-## Actual client flow matrix
+## Actual client flow matrix — October 7
 
 | Client | Published installation/export/SDK flow | Native UI actually tested | What remains |
 | --- | --- | --- | --- |
@@ -125,7 +125,7 @@ attempt starts; do not pay to hide them or reduce feature/privacy criteria.
 
 | Item | Current evidence / gap | Concrete acceptance and next action | Effort / required cash |
 | --- | --- | --- | --- |
-| October8 development dependency follow-up | October7 full audit exits1: **one low** esbuild0.27.7, [GHSA-g7r4-m6w7-qqqr](https://github.com/advisories/GHSA-g7r4-m6w7-qqqr). Current latest tsup8.5.1 requires^0.27.0; patched esbuild≥0.28.1 (latest0.28.2) is outside that range. No supported parent update today. Published production consumer audit0. | Recheck October8; supported tsup update or separately reviewed build migration with source/package/publisher/consumer/hosted gates. No forced tree repair, overrides or audit suppression. Trusted one-shot tsup has no esbuild serve/servedir/watch; application consumers do not ship esbuild. Advisory concerns a Windows development server; contributor use of serve remains exposure. Full audit is **not zero**. |0.5–1day + weekly review;$0 |
+| October8 development dependency follow-up | October7 full audit exits1: **one low** esbuild0.27.7, [GHSA-g7r4-m6w7-qqqr](https://github.com/advisories/GHSA-g7r4-m6w7-qqqr). Current latest tsup8.5.1 requires^0.27.0; patched esbuild≥0.28.1 (latest0.28.2) is outside that range. No supported parent update today. Published production consumer audit0. | October8 follow-up completed: unchanged one-low full audit and no compatible tsup update; see [current evidence](OFFLINE_FOLLOWUP_2026-10-08.md). Next manual review October15; supported tsup update or separately reviewed build migration with source/package/publisher/consumer/hosted gates. No forced tree repair, overrides or audit suppression. Trusted one-shot tsup has no esbuild serve/servedir/watch; application consumers do not ship esbuild. Advisory concerns a Windows development server; contributor use of serve remains exposure. Full audit is **not zero**. |0.5–1day + weekly review;$0 |
 | Coordinated erasure | `--logout` deletes a safely unaliased profile only; circuit/shared budgets/journal remain. POSIX private modes and alias refusal do not provide complete erasure. | Design offline inventory and destructive preview covering all profiles sharing budgets; refuse live owners/aliases; stop all runtimes/Chrome; explain uncertain outcomes and replay/cap history loss; review interruption/restart fixtures before execution. Never erase actual user data in this study. |4–7days shared with privacy work;$0 |
 | Native Windows ACL proof | No native Windows second-user/NTFS proof in this task. Hosted Windows fixtures/browser cleanup are not confidentiality proof. | Disposable NTFS state fixture, record owner ACL and failed read/modify from a distinct unprivileged local user; verify descendants/new files/shared journal/locks and cleanup. Owner-provided consenting Windows environment; preserve native modes until separately reviewed ACL implementation. |1–2days + Windows access;$0 volunteer/free public runner; no VM purchase required |
 | Glama generated instructions | Re-read public [listing](https://glama.ai/mcp/servers/devag7/linkedin-mcp): corrected README says released3.0.0/local stdio/22 tools; generated FAQ still instructs Deploy Server/Started/@LinkedIn MCP. Hosting label still Hybrid, old2.0.3 schema history. | Platform-generated FAQ/hosting metadata needs owner/platform correction. Draft below; **not submitted**. Do not enable builds/hosting, buy a plan or claim hosted compatibility. Existing accurate awesome-MCP submission remains awaiting upstream review. |Small platform follow-up;$0 |
@@ -161,3 +161,5 @@ with isolated offline owner/volunteer checks, then run a consented pilot with15 
 and fix its largest observed failure before broader distribution. Track weekly
 first-use/repeat-use/GitHub traffic, monthly net stars;10,000 stars and daily Trending
 are goals to measure. No Trending outcome is claimed or used as a release gate.
+
+October8 [follow-up](OFFLINE_FOLLOWUP_2026-10-08.md) supersedes the scheduled audit status and records newer client versions without extending the October7 native success claims.
