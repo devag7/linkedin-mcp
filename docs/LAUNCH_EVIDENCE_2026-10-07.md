@@ -51,7 +51,12 @@ pass; the exact15-file package/isolated consumer smoke passes, including all thr
 setup formats. Source demo asserts22 tools and absence of research_jobs. Production
 audit remains zero. The documentation update changes README/setup bytes in a local
 archive; it must never be passed off as the immutable published archive above.
-Hosted launch-head evidence is recorded with its reviewed PR below once complete.
+[Hosted launch CI37581168882](https://github.com/devag7/linkedin-mcp/actions/runs/37581168882)
+passes all12 source/package/Chrome jobs at258c62963757fdb79f45aafc598b4546037c3d36
+on Node20/22 across Linux, macOS and Windows. This proves the tested source,
+installed artifacts and offline browser lifecycle, not LinkedIn access or native
+Windows ACL privacy. [Launch PR #9](https://github.com/devag7/linkedin-mcp/pull/9)
+records the final documentation-head checks and post-merge listing refresh.
 A main documentation push at unchanged version is ineligible to republish because
 v3.0.0 already resolves to a different source; no version bump or tag movement.
 
@@ -61,7 +66,10 @@ v3.0.0 already resolves to a different source; no version bump or tag movement.
   with released3.0.0,22 tools/local stdio/manual login, no hosted deployment or
   research brief, and provider/first-use/privacy limitations. Source refresh and
   generated hosting UI state are recorded after the launch README reaches main.
-  Do not enable automatic hosted builds to manufacture compatibility evidence.
+  Auto-Release is confirmed off. The hosting label remains Hybrid and Glama
+  retains an old2.0.3 hosted release; the owner editor offers no hosting-label or
+  generated-instructions field. Do not enable automatic hosted builds to
+  manufacture compatibility evidence. See PR #9 for post-sync public read-back.
 - [awesome-MCP PR15490](https://github.com/punkpeye/awesome-mcp-servers/pull/15490):
   existing-entry correction, head13f904d5a3dbbb07902b79e07abf207bbb1a4fba, now
   open and ready for upstream review. Body updated to released3.0.0; entry contains
@@ -75,9 +83,18 @@ v3.0.0 already resolves to a different source; no version bump or tag movement.
 - PR #5 partial live result still fails usefulness. Diagnose redacted provider
   shape/error evidence offline before proposing another bounded check; fixture
   success cannot establish live compatibility. Further account access requires
-  fresh, specific consent and has not been requested or performed here.
+  fresh, specific consent and has not been requested or performed here. Offline
+  review of the current draft shows an existing REST-primary candidate, not a
+  verified provider fix. The redacted earlier detail response retained nested
+  provider errors without an identified cause; strict rejection must remain.
+  Its direct SDK floor is still ^1.12.1 and dev Vitest^3.2.1; carry the reviewed
+  core dependency repairs into that draft with new history before fresh gates.
 - GitHub API reports10 stars on October7. Weekly traffic/first-use/reuse samples
-  and monthly net-star summaries are planned;10,000 stars and daily Trending are
+  and monthly net-star summaries are planned. API traffic sampled at
+  06:25UTC covers September22–October5:55 views/21 unique visitors,1161
+  clones/262 unique cloners. These overlapping-window aggregates include
+  automation and do not establish users or repeat use. No cohort data exists.
+  10,000 stars and daily Trending are
   observed ambitions, not claimed results or release gates.
 
 Private receipts are preserved under the existing core-release backup's

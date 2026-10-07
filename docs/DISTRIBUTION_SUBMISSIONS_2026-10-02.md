@@ -6,8 +6,9 @@ Core 3.0.0 is published and independently verified at all four destinations:
 [exact receipts](LAUNCH_EVIDENCE_2026-10-07.md). It contains 22 tools, no
 `research_jobs`. Glama's owner description now says released 3.0.0/local stdio,
 manual Chrome login and explicit provider/first-use/privacy limitations. Source
-sync and the curated-list review state are recorded in launch evidence after
-verification. Generic platform deployment UI is not a supported product flow.
+sync read-back is recorded in [launch PR #9](https://github.com/devag7/linkedin-mcp/pull/9)
+after merge. Curated PR15490 is now ready for upstream review; acceptance is
+pending. Generic platform deployment UI is not a supported product flow.
 
 The dated entries below preserve historical pending/authentication states. They
 are not current release instructions. Accurate existing-entry maintenance may
