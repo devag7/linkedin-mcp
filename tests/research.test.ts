@@ -197,7 +197,24 @@ it.each([
     }));
     total = undefined;
     detailEnvelope = error;
-    const result = await brief({ count: 3 });
+    const start = Date.now();
+    const sdkResult = await client.callTool({
+      name: 'research_jobs',
+      arguments: { keywords: 'engineering', count: 3 },
+    });
+    const result = JSON.parse((sdkResult.content as { text: string }[])[0]!.text);
+    expect(sdkResult.structuredContent).toEqual(result);
+    const observed = briefObservation(sdkResult, start, Date.now());
+    expect(observed).toMatchObject({
+      contractChecked: true,
+      entities: 3,
+      usefulEntities: 0,
+      dataStatus: 'partial',
+      metaStatus: 'partial',
+      bounds: { readAttempts: 3, toolCalls: 2 },
+    });
+    expect(JSON.stringify(observed)).not.toContain('https://www.linkedin.com');
+    expect(JSON.stringify(observed)).not.toContain('Role ');
     expect(result).toMatchObject({
       data: { status: 'partial' },
       meta: { status: 'partial', partial: true },

@@ -67,6 +67,9 @@ jobs:
       - name: Install packed package and verify offline CLI and MCP
         run: npm run verify:package
 
+      - name: Verify published 3.0.0 installation and client exports offline
+        run: node scripts/verify-published-first-use.mjs .published-first-use
+
       - name: Install Chrome for the offline lifecycle check
         if: runner.os != 'macOS'
         run: npx patchright install --with-deps chrome
