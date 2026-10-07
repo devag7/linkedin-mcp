@@ -1,4 +1,11 @@
 import { z } from 'zod';
+/** Minimum observed comparison evidence; does not establish fit or availability. */
+export function hasComparisonEvidence(facts: readonly { field: string }[]): boolean {
+  return (
+    facts.some((fact) => fact.field === 'title') &&
+    facts.some((fact) => ['location', 'company', 'description', 'listedAt'].includes(fact.field))
+  );
+}
 export const briefFactSchema = z.object({
   field: z.enum(['title', 'location', 'listedAt', 'company', 'workplaceType', 'description']),
   value: z.string().min(1).max(4000),
@@ -17,6 +24,10 @@ export const briefSchema = z.object({
   }),
   generatedAt: z.string().datetime(),
   status: z.enum(['ok', 'empty', 'partial']),
+  comparisonEvidence: z.object({
+    sufficientEntities: z.number().int().min(0).max(10),
+    insufficientEntities: z.number().int().min(0).max(10),
+  }),
   scope: z.literal(
     'One first-page job search and at most one job-detail read. Source observations, not recommendations.',
   ),

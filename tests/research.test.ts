@@ -118,6 +118,90 @@ it('compares jobs with exact fact citations and enriches one within three cold r
   expect(result.data.markdown).toContain('[source](https://www.linkedin.com/jobs/view/1/)');
 });
 
+it.each([false, true])(
+  'marks a coherent title-only page insufficient with enrichment %s',
+  async (enrich) => {
+    searchRows = [1, 2].map((id) => ({
+      $type: 'fixture.JobPosting',
+      entityUrn: `urn:li:fsd_jobPosting:${id}`,
+      title: `Role ${id}`,
+    }));
+    detail = { title: 'Role 1', entityUrn: 'urn:li:fsd_jobPosting:1', jobState: 'SYNTHETIC' };
+    const result = await brief({ enrich_first: enrich });
+    expect(result.data.reads[0].status).toBe('ok');
+    expect(result.data.reads.every((read: any) => read.status === 'ok')).toBe(true);
+    expect(result).toMatchObject({
+      data: { status: 'partial' },
+      meta: { status: 'partial', partial: true },
+    });
+    expect(result.data.comparisonEvidence).toEqual({
+      sufficientEntities: 0,
+      insufficientEntities: 2,
+    });
+    expect(result.data.markdown).toContain('Insufficient evidence to compare these jobs');
+    expect(result.data.nextSteps[0]).toContain('lacks enough observed facts');
+    expect(
+      result.data.entities.every((entity: any) =>
+        entity.facts.every((fact: any) => fact.field === 'title'),
+      ),
+    ).toBe(true);
+    expect(fetches).toHaveBeenCalledTimes(enrich ? 3 : 2);
+  },
+);
+
+it('retains a useful enriched job alongside explicitly insufficient title-only jobs', async () => {
+  searchRows = [1, 2].map((id) => ({
+    $type: 'fixture.JobPosting',
+    entityUrn: `urn:li:fsd_jobPosting:${id}`,
+    title: `Role ${id}`,
+  }));
+  const start = Date.now();
+  const sdkResult = await client.callTool({
+    name: 'research_jobs',
+    arguments: { keywords: 'engineering', count: 2 },
+  });
+  const result = JSON.parse((sdkResult.content as { text: string }[])[0]!.text);
+  expect(result).toMatchObject({
+    data: {
+      status: 'partial',
+      comparisonEvidence: { sufficientEntities: 1, insufficientEntities: 1 },
+    },
+    meta: { status: 'partial', partial: true },
+  });
+  expect(briefObservation(sdkResult, start, Date.now())).toMatchObject({
+    usefulEntities: 1,
+    factChecks: 7,
+    dataStatus: 'partial',
+    metaStatus: 'partial',
+  });
+  expect(
+    result.data.entities[0].facts.some(
+      (fact: any) => fact.field === 'description' && fact.sourceTool === 'get_job_details',
+    ),
+  ).toBe(true);
+  expect(result.data.entities[1].facts).toHaveLength(1);
+  expect(fetches).toHaveBeenCalledTimes(3);
+});
+
+it.each([{ title: 'Role 1', workRemoteAllowed: true }, { formattedLocation: 'Synthetic town' }])(
+  'does not qualify workplace-only or untitled observations as comparison evidence',
+  async (fields) => {
+    searchRows = [{ $type: 'fixture.JobPosting', entityUrn: 'urn:li:fsd_jobPosting:1', ...fields }];
+    total = 1;
+    detail = { entityUrn: 'urn:li:fsd_jobPosting:1', ...fields };
+    const result = await brief();
+    expect(result).toMatchObject({
+      data: {
+        status: 'partial',
+        comparisonEvidence: { sufficientEntities: 0, insufficientEntities: 1 },
+      },
+      meta: { status: 'partial', partial: true },
+    });
+    expect(result.data.markdown).toContain('Insufficient evidence to compare these jobs');
+    expect(fetches).toHaveBeenCalledTimes(3);
+  },
+);
+
 it('validates SDK JSON representation without treating omitted undefined query members as a mismatch', async () => {
   const start = Date.now();
   const result = await client.callTool({
@@ -143,7 +227,9 @@ it('validates SDK JSON representation without treating omitted undefined query m
 });
 it('uses only the existing REST primary for detail with no GraphQL fallback', async () => {
   const result = await brief();
-  expect(result.data.entities[0].facts.some((fact: any) => fact.field === 'description')).toBe(true);
+  expect(result.data.entities[0].facts.some((fact: any) => fact.field === 'description')).toBe(
+    true,
+  );
   const urls = fetches.mock.calls.map((call) => call[1].url);
   expect(urls.filter((url) => url.includes('/jobs/jobPostings/'))).toHaveLength(1);
   expect(urls.some((url) => url.includes('/jobs/jobPostings/1'))).toBe(true);
@@ -154,7 +240,9 @@ it('stops the REST primary provider error without trying GraphQL', async () => {
   detailEnvelope = { data: { ...detail, errors: [{ message: 'Private cause' }] } };
   const result = await brief();
   expect(result.data.reads[1]).toMatchObject({ status: 'error', code: 'PROVIDER_ERROR' });
-  expect(result.data.entities[0].facts.some((fact: any) => fact.field === 'description')).toBe(false);
+  expect(result.data.entities[0].facts.some((fact: any) => fact.field === 'description')).toBe(
+    false,
+  );
   const urls = fetches.mock.calls.map((call) => call[1].url);
   expect(urls).toHaveLength(3);
   expect(urls.some((url) => url.includes('jobPostingUrn') || url.includes('/graphql'))).toBe(false);
@@ -329,7 +417,11 @@ it('returns honest empty results without detail reads', async () => {
   total = 0;
   const result = await brief();
   expect(result).toMatchObject({
-    data: { status: 'empty', entities: [] },
+    data: {
+      status: 'empty',
+      entities: [],
+      comparisonEvidence: { sufficientEntities: 0, insufficientEntities: 0 },
+    },
     meta: { status: 'empty', partial: false },
   });
   expect(result.data.bounds.toolCalls).toBe(1);

@@ -83,3 +83,11 @@ gate passes may PR #5 be completed/reviewed/merged, remaining exact-head release
 gates pass and3.1.0 publish through the existing guarded workflow. Mandatory cash
 stays$0. Native first-use/repeat cohorts, full erasure, Windows privacy and broad
 promotion remain open.
+
+
+October 8 offline preparation: the draft now reports comparisonEvidence counts
+using the same title-plus-comparison-field minimum above. Insufficient entities
+force partial status even for coherent provider pages; a mixed useful partial
+still qualifies only with all source/freshness/bounds/cleanup checks. No consent
+has been renewed. Exact source/archive identity is supplied with the next consent
+request after the current-head local, hosted and dry-run gates pass.

@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict';
 import { CallToolResultSchema } from '@modelcontextprotocol/sdk/types.js';
 import { outputSchema } from '../src/tools/contracts.js';
-import { briefSchema } from '../src/tools/research-contract.js';
+import { briefSchema, hasComparisonEvidence } from '../src/tools/research-contract.js';
 export function briefObservation(incoming: unknown, start: number, end: number) {
   const result = CallToolResultSchema.parse(incoming);
   const envelope = outputSchema('research_jobs').parse(result.structuredContent);
@@ -21,6 +21,18 @@ export function briefObservation(incoming: unknown, start: number, end: number) 
     };
   const brief = briefSchema.parse(envelope.data);
   assert.equal(brief.status, envelope.meta.status);
+  const usefulEntities = brief.entities.filter((entity) =>
+    hasComparisonEvidence(entity.facts),
+  ).length;
+  assert.equal(brief.comparisonEvidence.sufficientEntities, usefulEntities);
+  assert.equal(
+    brief.comparisonEvidence.insufficientEntities,
+    brief.entities.length - usefulEntities,
+  );
+  if (brief.comparisonEvidence.insufficientEntities) {
+    assert.equal(brief.status, 'partial');
+    assert.equal(envelope.meta.partial, true);
+  }
   assert.ok(
     brief.entities.length <= 3 && brief.bounds.readAttempts <= 3 && brief.bounds.toolCalls <= 2,
   );
@@ -49,13 +61,7 @@ export function briefObservation(incoming: unknown, start: number, end: number) 
     factChecks,
     entities: brief.entities.length,
     facts: brief.entities.reduce((n, entity) => n + entity.facts.length, 0),
-    usefulEntities: brief.entities.filter(
-      (entity) =>
-        entity.facts.some((fact) => fact.field === 'title') &&
-        entity.facts.some((fact) =>
-          ['location', 'company', 'description', 'listedAt'].includes(fact.field),
-        ),
-    ).length,
+    usefulEntities,
     reads: brief.reads.map((read) => ({ tool: read.tool, status: read.status, code: read.code })),
     bounds: brief.bounds,
   };

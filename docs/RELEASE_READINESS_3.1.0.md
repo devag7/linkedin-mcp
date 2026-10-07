@@ -33,7 +33,7 @@ and current source/package workflows are carried with the dependency repair;
 CI's published **3.0.0** verifier stays distinct from this draft's 23-tool artifact.
 No released version, source endpoint, pacing, write gate or read ceiling changed.
 
-Local tests pass: 562, including 26 real-SDK/synthetic-provider research tests.
+Dependency-refresh snapshot at `3666009`: 562 tests, including 26 real-SDK/synthetic-provider research tests.
 Lint, typecheck, metadata, build, exact 15-file inventory and installed package
 checks pass on macOS/Node 22. These checks prove source/build/offline protocol
 behavior, not native client discovery or provider compatibility. Production,
@@ -60,3 +60,49 @@ merge PR #5 or publish 3.1.0 until fresh consent and its useful source-linked
 result criterion pass. Required cash $0; no participant attempt was started.
 
 Publisher bootstrap first failed with `EBADENGINE` under local Node 22.14.0: npm 12.2.0 requires ^22.22.2 || ^24.15.0 || >=26.0.0. The unchanged installer passed under already installed Node 24.16.0 with zero audit findings. No engine check was disabled. The fresh tarball consumer resolves SDK 1.32.1 / proxy-addr 2.0.8 and full consumer audit zero.
+
+
+## October 8 comparison-evidence repair
+
+Reviewed core main `4b9e81681b3d05ced9148199554b21c53c81d141` (PR #12) is
+carried by a merge commit, preserving history. PR #5 remains draft. A disposable
+SDK fixture reproduces a supported defect: a coherent title-only search with
+no enrichment returned both statuses `ok` despite zero useful comparison entities.
+This is a reporting defect; it does not diagnose the consumed live provider error.
+
+The repair adds bounded `comparisonEvidence` counts. Each linked job needs a title
+plus location, company, description or listing date; workplace type alone does not
+qualify. Any insufficient entity makes data/meta partial. An entirely insufficient
+brief is highlighted, each weak job is labelled, and its exact source facts remain.
+Mixed partial results retain useful enriched facts. Coherent empty pages remain
+empty. Read errors recommend stopping; there are no new reads, retries, routes,
+field guesses or relaxed identity defenses. The schema is additive to an unpublished
+tool only; earlier draft users must refresh their build/tool schema. Released
+3.0.0, its 22 tools, immutable tag and archive are unchanged.
+
+Local source suite: 567 tests, including 31 actual-SDK/synthetic-provider brief
+tests; lint, typecheck, generated metadata, build, exact 15-file package and
+installed CLI/SDK gates pass. Production and isolated publisher audits are zero;
+a fresh consumer resolves SDK 1.32.1 / proxy-addr 2.0.8 with full audit zero.
+One low development-only esbuild finding remains through tsup; its October 8
+exposure assessment and next review are unchanged. The independent code review
+is clean. Exact committed head, final hash, hosted matrix and dry-run receipts
+are recorded on PR #5 after execution, not inferred from this local snapshot.
+
+Consent has not been renewed. The next attempt uses the exact gated head and
+[existing bounded protocol](JOB_BRIEF_REST_VALIDATION_PROTOCOL_2026-10-02.md),
+one TypeScript engineer query/count 3/optional first detail, three explicit Voyager
+attempts maximum, no retries or writes, redacted counts and verified cleanup.
+An SDK source-runtime check is not an installed stdio/native-client proof. A newly
+consented useful source-linked live result is still required before merge/release.
+
+First-use remains 0/0 (not measured). The participant kit and scoring stay unchanged:
+first attempt once per eligible person, all started failures retained, later clients
+separate, anonymous tally consent required and private rows optional. No recruitment
+or account operation occurred. Current native UI access exposed a shared VS Code
+window; temporary-profile command actions did not produce a verified isolated
+window. No client configuration was imported and no model/tool prompt was sent.
+Claude native published-package discovery and Cursor remain untested; prior VS Code
+chat-runtime failure/source inspection do not count as native success. Mandatory
+maintainer cost remains $0. Erasure, native Windows ACL proof and Glama's generic
+hosted instructions remain separate open limitations.

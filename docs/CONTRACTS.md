@@ -85,13 +85,24 @@ Unsubmitted previews do not survive restart. The server cannot infer human conse
 
 This new draft read tool returns an engine-assembled brief with exact query,
 bounds, source-linked entities/facts, unknown fields, per-read status/codes/guidance,
-gaps, next steps and Markdown. Each fact has sourceTool, sourceUrl, fetchedAt and
+gaps, next steps, comparisonEvidence counts and Markdown. Each fact has sourceTool, sourceUrl, fetchedAt and
 truncation. `data.status` and `meta.status` agree: ok/empty/partial. A complete
 empty first page returns both statuses empty with meta.partial:false; an empty
 page without completeness evidence remains partial in both fields. Source read
 errors are retained in
 a **partial report**, even with zero entities, so consumers must inspect reads
 and gaps; a successful MCP envelope does not imply successful provider work.
+Each linked job needs an observed title plus at least one of location, company,
+description or listing date to have sufficient comparison evidence. A title alone,
+workplace type alone, or a missing title is insufficient. Any insufficient entity
+makes both statuses partial and meta.partial:true, even when the provider page is
+complete. comparisonEvidence reports sufficientEntities and insufficientEntities;
+these sum to the linked entity count. Markdown highlights an entirely insufficient
+brief and labels each insufficient job while preserving its cited observations.
+A partial brief can still meet the live validation's minimum useful-entity criterion
+when at least one linked job meets that evidence threshold; it remains partial and
+does not establish fit, salary, availability or live compatibility. No extra reads
+are made to fill missing fields. A coherent empty page retains empty status.
 Input errors/cancellation before execution retain the existing error envelope.
 A read failure prevents subsequent composition reads. No automatic pagination,
 retry, storage or writes. The request ceiling is enforced at Voyager GET entry

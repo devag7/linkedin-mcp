@@ -6,7 +6,7 @@ import { readLimit, type ReadLimit } from '../safety/read-limit.js';
 import { registerTool, invokeBriefRead } from './register.js';
 import { ok, run } from './result.js';
 import { outputSchema } from './contracts.js';
-import { briefSchema, type briefFactSchema } from './research-contract.js';
+import { briefSchema, hasComparisonEvidence, type briefFactSchema } from './research-contract.js';
 type Brief = z.infer<typeof briefSchema>;
 type Fact = z.infer<typeof briefFactSchema>;
 const source = (value: unknown): string | undefined =>
@@ -31,6 +31,12 @@ export function renderBrief(brief: Omit<Brief, 'markdown'>): string {
   const lines = [
     `# Job research: ${md(brief.topic)}`,
     `Generated ${brief.generatedAt}; status: ${brief.status}.`,
+    `Comparison evidence: ${brief.comparisonEvidence.sufficientEntities}/${brief.entities.length} jobs have an observed title plus location, company, description or listing date. This does not establish fit or availability.`,
+    ...(brief.entities.length && !brief.comparisonEvidence.sufficientEntities
+      ? [
+          'Insufficient evidence to compare these jobs. The source-linked observations below are retained, not presented as a useful comparison.',
+        ]
+      : []),
     brief.scope,
     `Query: first ${brief.query.count} results; location geo ID: ${brief.query.locationGeoId ?? 'not specified'}; first-job enrichment: ${brief.query.enrichFirst}.`,
     `Bounds: ${brief.bounds.readAttempts}/3 explicit Voyager read attempts (identity included); ${brief.bounds.toolCalls}/2 tool calls; ${brief.entities.length}/10 entities. Browser navigation/assets are not counted.`,
@@ -38,6 +44,10 @@ export function renderBrief(brief: Omit<Brief, 'markdown'>): string {
   ];
   for (const [i, entity] of brief.entities.entries()) {
     lines.push(`\n## ${i + 1}. [Job source](${entity.sourceUrl})`);
+    if (!hasComparisonEvidence(entity.facts))
+      lines.push(
+        'Insufficient comparison evidence: a title plus at least one comparison field is required.',
+      );
     for (const fact of entity.facts)
       lines.push(
         `- ${fact.field}: ${md(fact.value)}${fact.truncated ? ' [excerpt truncated]' : ''} ([source](${fact.sourceUrl}), ${fact.sourceTool}, fetched ${fact.fetchedAt})`,
@@ -88,6 +98,7 @@ export function registerResearchTools(server: McpServer, logger: Logger): void {
             query: { keywords, locationGeoId: location_geo_id, count, enrichFirst: enrich_first },
             generatedAt: new Date().toISOString(),
             status: 'ok',
+            comparisonEvidence: { sufficientEntities: 0, insufficientEntities: 0 },
             scope:
               'One first-page job search and at most one job-detail read. Source observations, not recommendations.',
             bounds: {
@@ -231,6 +242,14 @@ export function registerResearchTools(server: McpServer, logger: Logger): void {
             if (rows.length === 0 && !search.meta.partial) brief.status = 'empty';
           }
           for (const entity of brief.entities) {
+            if (hasComparisonEvidence(entity.facts)) brief.comparisonEvidence.sufficientEntities++;
+            else {
+              brief.comparisonEvidence.insufficientEntities++;
+              brief.status = 'partial';
+              brief.gaps.push(
+                'Some linked jobs lack a title plus location, company, description or listing date; their comparison evidence is insufficient. No missing facts are inferred or extra reads made.',
+              );
+            }
             entity.unknownFields = fields.filter(
               (field) => !entity.facts.some((f) => f.field === field),
             );
@@ -249,6 +268,12 @@ export function registerResearchTools(server: McpServer, logger: Logger): void {
             }
           }
           brief.gaps = [...new Set(brief.gaps)].slice(0, 20);
+          if (brief.entities.length && !brief.comparisonEvidence.sufficientEntities)
+            brief.nextSteps[0] =
+              'This brief lacks enough observed facts for job comparison. Inspect the source listings manually; title-only results do not establish suitability.';
+          if (brief.reads.some((read) => read.status === 'error'))
+            brief.nextSteps[2] =
+              'Stop automated reads here. Follow the returned recovery guidance; checkpoints require a manual stop. This brief does not retry or add probes.';
           brief.bounds.readAttempts = limit.attempts;
           brief.generatedAt = new Date().toISOString();
           const data = { ...brief, markdown: renderBrief(brief) };
