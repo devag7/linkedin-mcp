@@ -38,13 +38,22 @@ function profileArgument(command: string, profile: string): boolean {
 }
 
 /** POSIX adapter for the macOS-only diagnostic. Never writes native inventory. */
-export function readValidationProcesses(): ValidationProcess[] {
-  const text = execFileSync('ps', ['-eo', 'pid=,ppid=,stat=,lstart=,args='], {
-    encoding: 'utf8',
-    timeout: 1000,
-    maxBuffer: 2 * 1024 * 1024,
-    env: { ...process.env, LC_ALL: 'C', TZ: 'UTC' },
-  });
+export function readValidationProcesses(
+  execute: () => string = () =>
+    execFileSync('ps', ['-eo', 'pid=,ppid=,stat=,lstart=,args='], {
+      encoding: 'utf8',
+      stdio: 'pipe', // Node may otherwise echo stderr before throwing; never leak inventory.
+      timeout: 1000,
+      maxBuffer: 2 * 1024 * 1024,
+      env: { ...process.env, LC_ALL: 'C', TZ: 'UTC' },
+    }),
+): ValidationProcess[] {
+  let text: string;
+  try {
+    text = execute();
+  } catch {
+    throw new Error('PROCESS_SNAPSHOT_FAILED');
+  }
   const rows = parseValidationProcesses(text);
   if (!rows.some((row) => row.pid === process.pid)) throw new Error('PROCESS_SNAPSHOT_INCOMPLETE');
   return rows;

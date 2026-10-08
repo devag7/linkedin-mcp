@@ -302,7 +302,10 @@ four defects: substring false attribution, recycled PID false attribution, lost
 newly observed/reparented children, and malformed inventory becoming zero.
 The repaired tracker uses explicit profile flags, birth stamps, persistent observed
 descendants and strict snapshot validation. Uncertain argument boundaries, probes,
-same-stamp reuse and zombies cannot certify cleanup. Two disposable delayed-exit
+same-stamp reuse and zombies cannot certify cleanup. Native probe errors are
+explicitly captured and replaced by a fixed error code before preflight, so
+partial command output cannot
+escape through an uncaught execution error. Two disposable delayed-exit
 processes also reproduce two remaining at both checks; their later exit does not
 change the failed receipt. Both actual temporary empty-profile Chrome fixtures
 closed nine observed processes cleanly, so neither proves why two remained live.
@@ -317,7 +320,7 @@ record fixed counts, never values or namespace, and cannot authorize attribution
 The actual rejected namespace and alternative binding remain unknown. No blind
 fallback, endpoint guess, source relaxation or extra request is introduced.
 
-Local clean-install gates pass: 680 tests across 32 files, lint, strict source and
+Local clean-install gates pass: 683 tests across 32 files, lint, strict source and
 runner types, generated metadata, build, exact normal/ignore-scripts 15-file
 package checks, installed CLI/setup and SDK checks. Production, isolated publisher
 and full fresh-consumer audits have zero findings; consumer SDK 1.32.1 and

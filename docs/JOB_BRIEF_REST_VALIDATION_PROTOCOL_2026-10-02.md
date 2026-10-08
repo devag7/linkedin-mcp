@@ -349,7 +349,10 @@ after reparenting (zero instead of one), and treated malformed inventory as zero
 The repair uses explicit profile flags and PID plus start stamp, persists every
 observed descendant across polls, and fails on malformed, empty or incomplete
 native snapshots and uncertain argument boundaries. Zombies and same-stamp PID
-reuse remain conservative failures. A separate two-process disposable fixture
+reuse remain conservative failures. Native probe exceptions (including partial
+stdout/stderr) are explicitly captured and reduced to a fixed code before
+preflight and cannot retain or
+print a process inventory. A separate two-process disposable fixture
 records two at both checks when exit occurs after the bound; its later zero count
 does not rewrite that failure. Verification never kills processes to pass.
 

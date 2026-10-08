@@ -1,7 +1,7 @@
 /** Synthetic inventories and disposable Node fixtures only; never an account/profile. */
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { once } from 'node:events';
-import { mkdtempSync, realpathSync, rmSync } from 'node:fs';
+import { mkdtempSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { expect, it } from 'vitest';
@@ -127,6 +127,56 @@ it('rejects malformed/empty ps output and normalizes birth-stamp spacing', () =>
     parseValidationProcesses(' 10 1 S Thu Oct  8 12:00:00 2026 synthetic-command')[0]?.start,
   ).toBe('Thu Oct 8 12:00:00 2026');
 });
+it('redacts native probe errors including partial stdout before the runner preflight', () => {
+  const secret = 'PRIVATE-PROCESS-COMMAND-PATH';
+  const nativeError = Object.assign(new Error(secret), { stdout: secret, stderr: secret });
+  let observed: unknown;
+  try {
+    readValidationProcesses(() => {
+      throw nativeError;
+    });
+  } catch (error) {
+    observed = error;
+  }
+  expect(observed).toBeInstanceOf(Error);
+  expect((observed as Error).message).toBe('PROCESS_SNAPSHOT_FAILED');
+  expect(String(observed) + JSON.stringify(observed)).not.toContain(secret);
+});
+it('rejects an incomplete native inventory lacking the observer process', () => {
+  expect(() => readValidationProcesses(() => '0 0 S Thu Oct 8 12:00:00 2026 kernel')).toThrow(
+    'PROCESS_SNAPSHOT_INCOMPLETE',
+  );
+});
+it.skipIf(process.platform === 'win32')(
+  'captures native subprocess stderr before a failed preflight',
+  () => {
+    const dir = realpathSync(mkdtempSync(join(tmpdir(), 'linkedin-ps-failure-')));
+    try {
+      writeFileSync(
+        join(dir, 'ps'),
+        "#!/bin/sh\nprintf '%s' 'PRIVATE-NATIVE-INVENTORY' >&2\nexit 1\n",
+        { mode: 0o700 },
+      );
+      const result = spawnSync(
+        process.execPath,
+        [
+          '--import',
+          'tsx',
+          '--input-type=module',
+          '-e',
+          `import {readValidationProcesses} from ${JSON.stringify(new URL('../scripts/validation-processes.ts', import.meta.url).href)};
+      try {readValidationProcesses();} catch(error) {console.log(error.message);}`,
+        ],
+        { env: { ...process.env, PATH: dir }, encoding: 'utf8', timeout: 10000 },
+      );
+      expect(result.status).toBe(0);
+      expect(result.stdout.trim()).toBe('PROCESS_SNAPSHOT_FAILED');
+      expect(result.stderr).toBe('');
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  },
+);
 it('keeps process identity and commands out of the persisted cleanup report', async () => {
   const tracker = new ValidationProcessTracker(profile);
   let phase = 0;
