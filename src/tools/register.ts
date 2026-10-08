@@ -4,6 +4,7 @@ import { CAPABILITIES, type ToolName } from './capabilities.js';
 import { outputSchema } from './contracts.js';
 import { requestCancellation } from './cancellation.js';
 import { failure } from './result.js';
+import { recordJobDetailCheck } from './job-detail-diagnostic.js';
 type Extra = Parameters<ToolCallback<z.ZodRawShape>>[1];
 type ReadCallback = (
   args: Record<string, unknown>,
@@ -51,12 +52,16 @@ export function registerTool<Args extends z.ZodRawShape>(
       const result = await requestCancellation.run(extra.signal, () =>
         (callback as ToolCallback<z.ZodRawShape>)(args, extra),
       );
-      if (
-        !result.isError &&
-        (!schema.safeParse(result.structuredContent).success ||
-          result.structuredContent?.data === null)
-      )
-        return failure(name, 'RESPONSE_SHAPE_CHANGED');
+      if (!result.isError) {
+        const valid = schema.safeParse(result.structuredContent).success;
+        const nullData = result.structuredContent?.data === null;
+        if (name === 'get_job_details')
+          recordJobDetailCheck(
+            server,
+            !valid ? 'output_shape_rejected' : nullData ? 'output_null_data' : 'output_accepted',
+          );
+        if (!valid || nullData) return failure(name, 'RESPONSE_SHAPE_CHANGED');
+      }
       return result;
     },
   );
@@ -66,9 +71,20 @@ export function registerTool<Args extends z.ZodRawShape>(
       if (extra.signal.aborted) return failure(name, 'CANCELLED');
       const parsed = z.object(inputSchema).strict().parse(args);
       const result = await (callback as ToolCallback<z.ZodRawShape>)(parsed, extra);
-      return !result.isError && !schema.safeParse(result.structuredContent).success
-        ? failure(name, 'RESPONSE_SHAPE_CHANGED')
-        : result;
+      if (!result.isError) {
+        const valid = schema.safeParse(result.structuredContent).success;
+        if (name === 'get_job_details')
+          recordJobDetailCheck(
+            server,
+            !valid
+              ? 'output_shape_rejected'
+              : result.structuredContent?.data === null
+                ? 'output_null_data'
+                : 'output_accepted',
+          );
+        if (!valid) return failure(name, 'RESPONSE_SHAPE_CHANGED');
+      }
+      return result;
     });
     briefReads.set(server, reads);
   }

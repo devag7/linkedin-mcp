@@ -33,6 +33,7 @@ import * as ep from '../browser/endpoints.js';
 import { ok, run, ToolError } from './result.js';
 import { registerTool } from './register.js';
 import { assertReadResponse, readRows } from './provider-shape.js';
+import { recordJobDetailCheck } from './job-detail-diagnostic.js';
 import { pageFields, pageStart, pageResult, firstPage } from './pagination.js';
 
 export function registerDiscoveryTools(
@@ -118,10 +119,38 @@ export function registerDiscoveryTools(
         const raw = await guard.run(ACTIONS.readGeneric, () =>
           voyager.voyagerGet<NormalizedResponse>(ep.jobPosting(job_id)),
         );
-        assertReadResponse(raw);
+        try {
+          assertReadResponse(raw);
+          recordJobDetailCheck(server, 'envelope_accepted');
+        } catch (error) {
+          recordJobDetailCheck(
+            server,
+            error instanceof ToolError && error.code === 'RESPONSE_SHAPE_CHANGED'
+              ? 'envelope_shape_rejected'
+              : error instanceof ToolError && error.code === 'PROVIDER_ERROR'
+                ? 'envelope_provider_error'
+                : 'envelope_unclassified_error',
+          );
+          throw error;
+        }
         const job = shapeJobDetails(raw);
+        if (!job.title) {
+          recordJobDetailCheck(server, 'title_missing');
+          throw new ToolError('RESPONSE_SHAPE_CHANGED');
+        }
+        recordJobDetailCheck(server, 'title_present');
         const returnedId = /^urn:li:(?:fsd_)?jobPosting:([0-9]{1,20})$/.exec(job.jobUrn ?? '')?.[1];
-        if (!job.title || returnedId !== job_id) throw new ToolError('RESPONSE_SHAPE_CHANGED');
+        recordJobDetailCheck(
+          server,
+          !job.jobUrn
+            ? 'identity_absent'
+            : returnedId === undefined
+              ? 'identity_unsupported'
+              : returnedId !== job_id
+                ? 'identity_mismatch'
+                : 'identity_match',
+        );
+        if (returnedId !== job_id) throw new ToolError('RESPONSE_SHAPE_CHANGED');
         return ok({ ...job, sourceUrl: `https://www.linkedin.com/jobs/view/${job_id}/` });
       }),
   );

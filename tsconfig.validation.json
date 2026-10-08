@@ -1,0 +1,6 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": { "rootDir": "." },
+  "include": ["scripts/diagnose-job-brief.ts"],
+  "exclude": ["node_modules", "dist", "tests", "**/* 2.ts"]
+}

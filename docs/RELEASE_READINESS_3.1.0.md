@@ -89,10 +89,12 @@ exposure assessment and next review are unchanged. The independent code review
 is clean. Exact committed head, final hash, hosted matrix and dry-run receipts
 are recorded on PR #5 after execution, not inferred from this local snapshot.
 
-Consent has not been renewed. The next attempt uses the exact gated head and
+At this preparation snapshot consent had not been renewed. The subsequently
+consumed October 8 attempt used that exact gated head and
 [existing bounded protocol](JOB_BRIEF_REST_VALIDATION_PROTOCOL_2026-10-02.md),
 one TypeScript engineer query/count 3/optional first detail, three explicit Voyager
-attempts maximum, no retries or writes, redacted counts and verified cleanup.
+attempts maximum, no retries or writes and redacted counts. The protocol required
+verified cleanup; that attempt failed its recorded cleanup gate as detailed below.
 An SDK source-runtime check is not an installed stdio/native-client proof. A newly
 consented useful source-linked live result is still required before merge/release.
 
@@ -106,3 +108,61 @@ Claude native published-package discovery and Cursor remain untested; prior VS C
 chat-runtime failure/source inspection do not count as native success. Mandatory
 maintainer cost remains $0. Erasure, native Windows ACL proof and Glama's generic
 hosted instructions remain separate open limitations.
+
+
+## October 8 rejection-stage and cleanup investigation (offline only)
+
+The subsequent live run at `67a4f23288177378953e916c63b206b773280257`
+failed: 39,353 ms, three explicit GET attempts/two read tools, three linked title
+facts, zero useful entities, `partial` in both status fields and detail
+`RESPONSE_SHAPE_CHANGED`. Original cleanup `verified:false` (18 observed,
+two remaining, ownership released) is retained, not replaced by later local
+zero-process checks. The receipt hash and the narrower future consent scope are
+in the [protocol](JOB_BRIEF_REST_VALIDATION_PROTOCOL_2026-10-02.md).
+No LinkedIn request was made during this investigation.
+
+Every path that can surface the detail shape code is traced below. Line numbers
+refer to this investigation's source; SDK fixtures use disposable profiles and
+synthetic browser responses, never a real account.
+
+| Rejection path | Source | Offline coverage and live evidence limit |
+| --- | --- | --- |
+| Provider envelope: non-object/array root, traversal remaining after 10,000 nodes, invalid included container/member, invalid data container, or no included array and missing/empty data | `src/tools/provider-shape.ts:4-31`, called at `src/tools/discovery.ts:123` | SDK fixtures distinguish every category. Retained object/data/array types constrain visible fields; truncated evidence cannot exclude unseen members or traversal overflow. |
+| Missing normalized title, including a non-job-like title-only object | `src/browser/normalize.ts:258-290`, `src/tools/discovery.ts:136-139` | SDK fixtures cover absent, blank, whitespace and unsupported title shape. Mirrored retained field types select a title if the envelope passes; this is conditional, not a diagnosis of live rejection. |
+| Absent/unsupported/mismatched numeric job URN | `src/tools/discovery.ts:142-154` | Both `urn:li:jobPosting:<id>` and `urn:li:fsd_jobPosting:<id>` must match before attaching a source. SDK fixtures cover both matching/mismatching forms and missing/unsupported IDs. Retained string type cannot identify which occurred live. |
+| Standalone success output violates schema or has null data | `src/tools/register.ts:55-63` | SDK fixtures inject internal contract corruption and null success. These illustrate wrapper defenses, not observed provider behavior. |
+| Composed success output violates schema | `src/tools/register.ts:74-85` | SDK composed fixture rejects corrupted output before enrichment. Composed null success retains its existing handling (`PROVIDER_ERROR` in research), not a newly relaxed shape check. |
+| Research composition cannot parse the returned detail envelope, including malformed error envelope | `src/tools/research.ts:126-138` | SDK fixture injects a malformed internal error envelope; no extra detail request. Separate brief identity validation is unchanged. |
+
+Nested provider errors are `PROVIDER_ERROR`, not this shape code. Account,
+authentication, HTTP/JSON transport, pacing, checkpoint, cancellation and deadline
+failures have their own codes; generic exceptions are `INTERNAL_ERROR`.
+`readRows`' unknown-row guard is not on the detail path. No new endpoint, blind
+fallback, broadened identity acceptance or field guess was introduced. The
+retained truncated receipt does **not** establish the exact live rejection.
+
+The prepared diagnostic counts only fixed per-server stage enums and cannot
+observe payload values, URNs/IDs/URLs or messages. No broad shape capture is
+retained in a future run. Tests cover privacy, observer isolation/detachment and
+observer exceptions preserving safety failures. Public tool input/output schemas
+are unchanged. The validation runner is now included in strict typechecking.
+
+Disposable Node-child tests reproduce a one-shot cleanup snapshot failing before
+a delayed process exit. A five-second final process/owner/context check now
+records both snapshots, fails on retained/unknown state or teardown exceptions,
+and never kills/relaunches anything. This establishes a possible timing mechanism,
+**not** the historical two-process cause, whose PID history was not retained.
+Original redacted receipts, protected sync copies and backups remain unchanged.
+
+Local investigation gates pass: 602 tests across 31 files, lint, strict source
+and runner typechecking, generated metadata, build, exact 15-file inventory,
+normal/ignore-scripts packaging and installed CLI/SDK checks. Production, isolated
+publisher and full fresh-consumer audits have zero findings; the consumer resolves
+SDK 1.32.1 / proxy-addr 2.0.8. Full source audit still returns one low development-only
+esbuild finding through tsup, with its previously reviewed Windows development
+server exposure; no audit suppression or dependency change was made.
+
+Hosted receipts and the new source/archive identity are recorded on PR #5 after
+execution; previous head gates do not certify the changed runner. PR #5 stays draft with useful live acceptance open. Released 3.0.0 and
+its archive are unchanged. First-use cohort stays 0/0, private rows stay private,
+and no recruitment/contact occurred. Mandatory maintainer cost remains $0.

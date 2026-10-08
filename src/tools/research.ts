@@ -7,6 +7,7 @@ import { registerTool, invokeBriefRead } from './register.js';
 import { ok, run } from './result.js';
 import { outputSchema } from './contracts.js';
 import { briefSchema, hasComparisonEvidence, type briefFactSchema } from './research-contract.js';
+import { recordJobDetailCheck } from './job-detail-diagnostic.js';
 type Brief = z.infer<typeof briefSchema>;
 type Fact = z.infer<typeof briefFactSchema>;
 const source = (value: unknown): string | undefined =>
@@ -125,6 +126,8 @@ export function registerResearchTools(server: McpServer, logger: Logger): void {
             const result = await invokeBriefRead(server, tool, args, extra);
             const parsed = outputSchema(tool).safeParse(result.structuredContent);
             if (!parsed.success) {
+              if (tool === 'get_job_details')
+                recordJobDetailCheck(server, 'composition_envelope_rejected');
               brief.reads.push({
                 tool,
                 status: 'error',
