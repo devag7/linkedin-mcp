@@ -114,8 +114,9 @@ included array. Its 519-node report is **truncated**. It records neither URN
 values nor ID comparisons nor validation stage. The same field types with
 synthetic values can succeed or fail identity. Conditional on envelope
 acceptance, that root's title and job markers select a nonblank normalized title;
-it does not explain the live rejection. The incomplete report cannot exclude
-an unseen malformed included member or the validator's 10,000-node ceiling.
+it does not explain the live rejection. Both observed included members are
+objects. The incomplete report cannot establish the validator's full traversal
+size or exclude its 10,000-node ceiling.
 No exact live cause is proven. No endpoint, field mapping, numeric identity
 check or source attribution is relaxed and no fallback is added.
 
