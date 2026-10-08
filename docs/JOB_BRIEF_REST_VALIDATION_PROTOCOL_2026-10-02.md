@@ -208,3 +208,58 @@ Any further diagnostic needs a new exact build/scope and fresh human consent;
 this document does not schedule or authorize one. Published 3.0.0 first-use
 remains a separate owner-led milestone with zero volunteer attempts and $0
 mandatory maintainer cash.
+
+
+## Prepared structural selection diagnostic — not authorized
+
+The offline repair after `a886fcb` proves that first-object selection can reject an
+unsupported object while a unique supported numeric match exists elsewhere. The
+retained live evidence cannot establish whether that happened live. Historical
+receipts and their stage semantics above remain frozen; new counts must not be
+used to reinterpret a consumed run. No new account request has been made.
+
+After independent review and exact-head source, package, audit, hosted matrix and
+release dry-run gates, record the full source SHA, 15-file archive SHA256/integrity
+and runner hash in the private freeze receipt and PR #5 evidence before requesting
+fresh consent. The runner requires that clean source SHA, a new owner-only receipt
+path and exclusive start marker; these are accidental-run guards, not consent.
+This document and any previous approval do not authorize execution.
+
+Proposed scope: **one** SDK source-runtime `research_jobs` call, keywords
+`TypeScript engineer`, `count:1`, `enrich_first:true`, using the same existing Mac
+profile with normal pacing. At most **three explicit Voyager GET attempts**
+including identity, one search and optional first-job detail through the existing
+REST route; at most two underlying tools and one entity. No login, retries,
+pagination, fallback, extra health/profile probe, writes or account reset.
+Ordinary Chrome navigation/background traffic remain outside the explicit API
+counter. The existing checkpoint, provider failure, restriction, rate-limit,
+cancellation and 180-second deadline stop rules apply. Do not continue with an
+extra read after any stop condition.
+
+Retain only fixed stage/classification counts, redacted status/code, validation
+counts, source/platform/timing and immediate/final cleanup booleans/counts. New
+fixed structural classes distinguish candidates in data/included, absent identity,
+supported numeric match or other ID, unsupported identity, exact legacy/dash form,
+a form that would match after trim (still rejected), empty/non-numeric/overlong
+known-form suffix, other LinkedIn URN, other URN, non-URN and boundary whitespace.
+Selection records unique/no-job/no-match/ambiguous and a traversal-limit failure.
+Never record the actual identifier, arbitrary prefix, job ID, URN, URL, content,
+payload path/key, dynamic type, error message, header, cookie, command line or PID.
+No broad shape capture or raw logging is added. Counts classify all job-like
+candidates within the existing bounded traversal; they do not prove support for
+any unrecognized namespace. Exact facts/provenance are checked only in memory.
+
+The observer is opt-in for this server, cannot add reads or change rejection, and
+is detached during cleanup. Immediate teardown and the bounded five-second final
+process/ownership/context check remain mandatory, preserving both observations;
+unknown state, remaining processes/ownership/context or teardown errors fail the
+run. No cleanup retry against LinkedIn is allowed. The previous cleanup failure
+remains failed regardless of a future result.
+
+Useful acceptance still requires at least one exact source-linked title plus
+observed location/company/description/listing time, valid freshness/provenance,
+request bounds and verified cleanup. Title-only, empty or invalid identity never
+passes. Useful partial evidence remains explicitly partial. A diagnostic-only
+result cannot satisfy release readiness. Keep PR #5 draft until its separate
+useful live gate and remaining release gates pass. Published 3.0.0 first-use and
+its zero-attempt cohort remain a separate owner-led milestone.

@@ -1,5 +1,6 @@
 /** Opt-in, per-server stage counts. Never observes payloads, identifiers or messages. */
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { JOB_DETAIL_STRUCTURE_CHECKS } from '../browser/job-detail-selection.js';
 
 export const JOB_DETAIL_CHECKS = [
   'envelope_accepted',
@@ -12,10 +13,13 @@ export const JOB_DETAIL_CHECKS = [
   'identity_absent',
   'identity_unsupported',
   'identity_mismatch',
+  'identity_ambiguous',
+  'selection_traversal_limit',
   'output_accepted',
   'output_shape_rejected',
   'output_null_data',
   'composition_envelope_rejected',
+  ...JOB_DETAIL_STRUCTURE_CHECKS,
 ] as const;
 export type JobDetailCheck = (typeof JOB_DETAIL_CHECKS)[number];
 type Observer = (check: JobDetailCheck) => void;

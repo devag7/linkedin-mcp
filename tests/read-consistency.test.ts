@@ -18,6 +18,7 @@ import { registerTool } from '../src/tools/register.js';
 import { ok } from '../src/tools/result.js';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import { JOB_DETAIL_STRUCTURE_CHECKS } from '../src/browser/job-detail-selection.js';
 
 const identity = JSON.parse(
   readFileSync(new URL('./fixtures/contracts-v1.json', import.meta.url), 'utf8'),
@@ -202,9 +203,314 @@ describe('SDK job-detail identity', () => {
   );
 });
 
-function diagnostic() {
+describe('SDK identity-aware job-detail selection', () => {
+  it.each(['urn:li:jobPosting:123', 'urn:li:fsd_jobPosting:123'])(
+    'selects a unique matching %s behind an unsupported first object',
+    async (urn) => {
+      raw = {
+        data: {
+          title: 'Unrelated first title',
+          description: 'Unrelated description',
+          formattedLocation: 'Unrelated location',
+          companyDetails: { name: 'Unrelated employer' },
+          entityUrn: 'urn:li:other:123',
+        },
+        included: [
+          {
+            title: 'Selected title',
+            description: { text: 'Selected description' },
+            formattedLocation: 'Selected location',
+            companyDetails: { name: 'Selected employer' },
+            entityUrn: urn,
+          },
+        ],
+      };
+      const { result, envelope } = await call('get_job_details', { job_id: '123' });
+      expect(result.isError).not.toBe(true);
+      expect(envelope.data).toMatchObject({
+        title: 'Selected title',
+        description: 'Selected description',
+        location: 'Selected location',
+        company: 'Selected employer',
+        jobUrn: urn,
+        sourceUrl: 'https://www.linkedin.com/jobs/view/123/',
+      });
+      expect(JSON.stringify(envelope.data)).not.toContain('Unrelated');
+      expect(fetches).toHaveBeenCalledTimes(2);
+    },
+  );
+
+  it.each(['data array, before', 'data array, after', 'nested data', 'nested included'])(
+    'finds one exact match independent of ordering/container: %s',
+    async (placement) => {
+      const selected = {
+        title: 'Selected',
+        jobState: 'SYNTHETIC',
+        entityUrn: 'urn:li:jobPosting:123',
+      };
+      const other = {
+        title: 'Other',
+        description: 'Must not leak',
+        entityUrn: 'urn:li:fsd_jobPosting:99',
+      };
+      raw =
+        placement === 'data array, before'
+          ? { data: { rows: [other, selected] } }
+          : placement === 'data array, after'
+            ? { data: { rows: [selected, other] } }
+            : placement === 'nested data'
+              ? { data: { ...other, children: { selected } } }
+              : { data: other, included: [{ wrapped: selected }] };
+      const { envelope } = await call('get_job_details', { job_id: '123' });
+      expect(envelope.data).toMatchObject({
+        title: 'Selected',
+        jobUrn: selected.entityUrn,
+        sourceUrl: 'https://www.linkedin.com/jobs/view/123/',
+      });
+      expect(envelope.data.description).toBeUndefined();
+      expect(fetches).toHaveBeenCalledTimes(2);
+    },
+  );
+
+  it.each([
+    { label: 'absent', urn: undefined, stage: 'identity_absent' },
+    { label: 'non-string', urn: 123, stage: 'identity_absent' },
+    { label: 'unsupported namespace', urn: 'urn:li:other:123', stage: 'identity_unsupported' },
+    { label: 'wrong legacy ID', urn: 'urn:li:jobPosting:99', stage: 'identity_mismatch' },
+    { label: 'wrong dash ID', urn: 'urn:li:fsd_jobPosting:99', stage: 'identity_mismatch' },
+    { label: 'trailing newline', urn: 'urn:li:jobPosting:123\n', stage: 'identity_unsupported' },
+    { label: 'boundary spaces', urn: ' urn:li:fsd_jobPosting:123 ', stage: 'identity_unsupported' },
+    {
+      label: 'overlong numeric ID',
+      urn: 'urn:li:jobPosting:123456789012345678901',
+      stage: 'identity_unsupported',
+    },
+    {
+      label: 'blank matching title',
+      urn: 'urn:li:jobPosting:123',
+      title: '   ',
+      stage: 'title_missing',
+    },
+  ])(
+    'rejects $label with no certified selection, no source attribution and no retry',
+    async ({ urn, title, stage }) => {
+      raw = { data: { title: title ?? 'Synthetic', jobState: 'SYNTHETIC', entityUrn: urn } };
+      const checks = diagnostic();
+      const { result, envelope } = await call('get_job_details', { job_id: '123' });
+      expect(result.isError).toBe(true);
+      expect(envelope).toMatchObject({
+        data: null,
+        code: 'RESPONSE_SHAPE_CHANGED',
+        meta: { status: 'error' },
+      });
+      expect(checks).toContain(stage);
+      expect(JSON.stringify(envelope)).not.toContain('jobs/view/');
+      expect(fetches).toHaveBeenCalledTimes(2);
+    },
+  );
+
+  it.each([
+    'same form with conflicting facts',
+    'both supported forms',
+    'identical separate objects',
+  ])('rejects two matching objects as ambiguous: %s', async (variant) => {
+    const first = {
+      title: 'First',
+      description: 'First facts',
+      entityUrn: 'urn:li:jobPosting:123',
+    };
+    const second =
+      variant === 'identical separate objects'
+        ? { ...first }
+        : {
+            title: 'Second',
+            description: 'Second facts',
+            entityUrn:
+              variant === 'both supported forms' ? 'urn:li:fsd_jobPosting:123' : first.entityUrn,
+          };
+    raw = { data: first, included: [second] };
+    const checks = diagnostic(true);
+    const { result, envelope } = await call('get_job_details', { job_id: '123' });
+    expect(result.isError).toBe(true);
+    expect(envelope).toMatchObject({ data: null, code: 'RESPONSE_SHAPE_CHANGED' });
+    expect(checks.filter((check) => check === 'candidate_supported_match')).toHaveLength(2);
+    expect(checks).toContain('selection_ambiguous');
+    expect(checks).toContain('identity_ambiguous');
+    expect(checks).not.toContain('identity_match');
+    expect(JSON.stringify(envelope)).not.toMatch(/First facts|Second facts|jobs\/view/);
+    expect(fetches).toHaveBeenCalledTimes(2);
+  });
+
+  it('does not borrow an unrelated title or comparison facts for a matching blank-title job', async () => {
+    raw = {
+      data: { title: 'Other', description: 'Unrelated facts', entityUrn: 'urn:li:other:123' },
+      included: [{ title: ' ', jobState: 'SYNTHETIC', entityUrn: 'urn:li:fsd_jobPosting:123' }],
+    };
+    const { envelope } = await call('get_job_details', { job_id: '123' });
+    expect(envelope).toMatchObject({ data: null, code: 'RESPONSE_SHAPE_CHANGED' });
+    expect(fetches).toHaveBeenCalledTimes(2);
+  });
+
+  it('never promotes a title-only metadata object to a certified job candidate', async () => {
+    raw = {
+      data: { title: 'Unsupported', description: 'Synthetic', entityUrn: 'urn:li:other:123' },
+      included: [{ title: 'Metadata only', entityUrn: 'urn:li:jobPosting:123' }],
+    };
+    const { envelope } = await call('get_job_details', { job_id: '123' });
+    expect(envelope).toMatchObject({ data: null, code: 'RESPONSE_SHAPE_CHANGED' });
+    expect(fetches).toHaveBeenCalledTimes(2);
+  });
+
+  it('retains exact brief provenance and the three-attempt ceiling when a unique nested match is enriched', async () => {
+    const detail = {
+      data: { title: 'Wrong first object', description: 'Unrelated', entityUrn: 'urn:li:other:1' },
+      included: [
+        {
+          title: 'Selected',
+          formattedLocation: 'Synthetic location',
+          entityUrn: 'urn:li:fsd_jobPosting:1',
+        },
+      ],
+    };
+    fetches.mockImplementation(async (_fn, { url }: { url: string }) => ({
+      status: 200,
+      ok: true,
+      type: 'basic',
+      url,
+      body: JSON.stringify(
+        url.endsWith('/me')
+          ? identity
+          : url.includes('/jobs/jobPostings/')
+            ? detail
+            : page(1, 1, 0, 1),
+      ),
+    }));
+    const { result, envelope } = await call('research_jobs', { keywords: 'synthetic', count: 1 });
+    expect(result.isError).not.toBe(true);
+    const brief = envelope.data;
+    expect(brief.comparisonEvidence).toMatchObject({
+      sufficientEntities: 1,
+      insufficientEntities: 0,
+    });
+    expect(brief.bounds).toMatchObject({ readAttempts: 3, toolCalls: 2 });
+    expect(brief.entities[0].sourceUrl).toBe('https://www.linkedin.com/jobs/view/1/');
+    expect(brief.entities[0].facts).toContainEqual(
+      expect.objectContaining({
+        field: 'location',
+        value: 'Synthetic location',
+        sourceTool: 'get_job_details',
+        sourceUrl: brief.entities[0].sourceUrl,
+      }),
+    );
+    expect(JSON.stringify(brief.entities)).not.toMatch(/Wrong first object|Unrelated/);
+    expect(fetches).toHaveBeenCalledTimes(3);
+  });
+});
+
+describe('SDK value-free identifier format classification', () => {
+  it.each([
+    { urn: undefined, format: 'format_missing' },
+    { urn: null, format: 'format_missing' },
+    { urn: '', format: 'format_missing' },
+    { urn: 73129, format: 'format_non_string' },
+    { urn: { secret: 'PRIVATE-STRUCTURE-VALUE' }, format: 'format_non_string' },
+    { urn: 'urn:li:jobPosting:73129', format: 'format_supported_legacy', accepted: true },
+    { urn: 'urn:li:fsd_jobPosting:73129', format: 'format_supported_dash', accepted: true },
+    { urn: ' urn:li:jobPosting:73129 ', format: 'format_supported_after_trim', whitespace: true },
+    {
+      urn: 'urn:li:fsd_jobPosting:73129\n',
+      format: 'format_supported_after_trim',
+      whitespace: true,
+    },
+    { urn: 'urn:li:jobPosting:', format: 'format_known_prefix_empty' },
+    {
+      urn: 'urn:li:fsd_jobPosting:PRIVATE-STRUCTURE-VALUE',
+      format: 'format_known_prefix_non_numeric',
+    },
+    {
+      urn: 'urn:li:jobPosting:731291234567890123456',
+      format: 'format_known_prefix_numeric_over_limit',
+    },
+    { urn: 'urn:li:PRIVATE-STRUCTURE-VALUE:73129', format: 'format_other_linkedin_urn' },
+    { urn: 'urn:PRIVATE-STRUCTURE-VALUE:73129', format: 'format_other_urn' },
+    { urn: 'https://private.invalid/73129/PRIVATE-STRUCTURE-VALUE', format: 'format_non_urn' },
+  ])(
+    'retains only fixed classifications for $format',
+    async ({ urn, format, accepted, whitespace }) => {
+      raw = {
+        data: {
+          title: 'PRIVATE-STRUCTURE-TITLE',
+          description: 'PRIVATE-STRUCTURE-CONTENT',
+          entityUrn: urn,
+        },
+      };
+      const checks = diagnostic(true);
+      const { result, envelope } = await call('get_job_details', { job_id: '73129' });
+      expect(
+        checks.filter(
+          (check) => check.startsWith('format_') && check !== 'format_boundary_whitespace',
+        ),
+      ).toEqual([format]);
+      expect(checks.includes('format_boundary_whitespace')).toBe(Boolean(whitespace));
+      expect(
+        checks.every((check) => (JOB_DETAIL_CHECKS as readonly string[]).includes(check)),
+      ).toBe(true);
+      const receipt = JSON.stringify(
+        Object.fromEntries(
+          JOB_DETAIL_CHECKS.map((check) => [
+            check,
+            checks.filter((observed) => observed === check).length,
+          ]),
+        ),
+      );
+      expect(receipt).not.toMatch(/73129|PRIVATE-STRUCTURE|urn:|https:|entityUrn|description/);
+      if (accepted) {
+        expect(result.isError).not.toBe(true);
+        expect(envelope.data.sourceUrl).toBe('https://www.linkedin.com/jobs/view/73129/');
+      } else {
+        expect(result.isError).toBe(true);
+        expect(envelope).toMatchObject({ data: null, code: 'RESPONSE_SHAPE_CHANGED' });
+        expect(checks).not.toContain('identity_match');
+        expect(checks).toContain('selection_no_match');
+      }
+      expect(fetches).toHaveBeenCalledTimes(2);
+    },
+  );
+
+  it('distinguishes a hidden unique match from unsupported and mismatched candidates without retaining values', async () => {
+    raw = {
+      data: { title: 'Private root', jobState: 'SYNTHETIC', entityUrn: 'urn:li:other:73129' },
+      included: [
+        { title: 'Private wrong job', jobState: 'SYNTHETIC', entityUrn: 'urn:li:jobPosting:77' },
+        {
+          title: 'Private selected job',
+          formattedLocation: 'Private location',
+          entityUrn: 'urn:li:fsd_jobPosting:73129',
+        },
+      ],
+    };
+    const checks = diagnostic(true);
+    const { envelope } = await call('get_job_details', { job_id: '73129' });
+    const count = (check: string) => checks.filter((observed) => observed === check).length;
+    expect(count('candidate_in_data')).toBe(1);
+    expect(count('candidate_in_included')).toBe(2);
+    expect(count('candidate_unsupported')).toBe(1);
+    expect(count('candidate_supported_other')).toBe(1);
+    expect(count('candidate_supported_match')).toBe(1);
+    expect(count('selection_unique')).toBe(1);
+    expect(checks).toContain('identity_match');
+    expect(envelope.data.title).toBe('Private selected job');
+    expect(JSON.stringify(checks)).not.toMatch(/73129|Private|urn:|https:/);
+    expect(fetches).toHaveBeenCalledTimes(2);
+  });
+});
+
+function diagnostic(structural = false) {
   const checks: string[] = [];
-  observeJobDetailChecks(server, (check) => checks.push(check));
+  observeJobDetailChecks(server, (check) => {
+    if (structural || !(JOB_DETAIL_STRUCTURE_CHECKS as readonly string[]).includes(check))
+      checks.push(check);
+  });
   return checks;
 }
 
@@ -224,12 +530,12 @@ describe('SDK value-free detail rejection stages', () => {
         included: [{}, {}],
       };
       const { envelope } = await call('get_job_details', { job_id: '123' });
-      expect(checks.slice(0, 2)).toEqual(['envelope_accepted', 'title_present']);
       if (urn.endsWith(':123')) {
+        expect(checks.slice(0, 2)).toEqual(['envelope_accepted', 'title_present']);
         expect(envelope.data.sourceUrl).toBe('https://www.linkedin.com/jobs/view/123/');
       } else {
         expect(envelope).toMatchObject({ data: null, code: 'RESPONSE_SHAPE_CHANGED' });
-        expect(checks[2]).toBe('identity_mismatch');
+        expect(checks).toEqual(['envelope_accepted', 'identity_mismatch']);
       }
     }
     expect(fetches).toHaveBeenCalledTimes(3); // One identity and two synthetic details.
@@ -316,7 +622,7 @@ describe('SDK value-free detail rejection stages', () => {
     const { envelope } = await call('get_job_details', { job_id: '123' });
     expect(checks).toEqual([
       'envelope_accepted',
-      'title_present',
+      ...(stage === 'identity_match' ? ['title_present'] : []),
       stage,
       ...(stage === 'identity_match' ? ['output_accepted'] : []),
     ]);

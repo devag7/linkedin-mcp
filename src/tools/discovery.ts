@@ -34,6 +34,7 @@ import { ok, run, ToolError } from './result.js';
 import { registerTool } from './register.js';
 import { assertReadResponse, readRows } from './provider-shape.js';
 import { recordJobDetailCheck } from './job-detail-diagnostic.js';
+import { JobDetailSelectionError } from '../browser/job-detail-selection.js';
 import { pageFields, pageStart, pageResult, firstPage } from './pagination.js';
 
 export function registerDiscoveryTools(
@@ -133,13 +134,21 @@ export function registerDiscoveryTools(
           );
           throw error;
         }
-        const job = shapeJobDetails(raw);
+        let job: ReturnType<typeof shapeJobDetails>;
+        try {
+          job = shapeJobDetails(raw, job_id, (check) => recordJobDetailCheck(server, check));
+        } catch (error) {
+          if (!(error instanceof JobDetailSelectionError)) throw error;
+          recordJobDetailCheck(server, error.reason);
+          throw new ToolError('RESPONSE_SHAPE_CHANGED');
+        }
         if (!job.title) {
           recordJobDetailCheck(server, 'title_missing');
           throw new ToolError('RESPONSE_SHAPE_CHANGED');
         }
         recordJobDetailCheck(server, 'title_present');
-        const returnedId = /^urn:li:(?:fsd_)?jobPosting:([0-9]{1,20})$/.exec(job.jobUrn ?? '')?.[1];
+        const returned = /^urn:li:(?:fsd_)?jobPosting:([0-9]{1,20})$/.exec(job.jobUrn ?? '');
+        const returnedId = returned?.[0] === job.jobUrn ? returned?.[1] : undefined;
         recordJobDetailCheck(
           server,
           !job.jobUrn

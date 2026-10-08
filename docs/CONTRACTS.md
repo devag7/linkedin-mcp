@@ -21,10 +21,16 @@ zero/short/oversized pages retain their bounded observations with partial status
 unknown continuation and no next cursor. A coherent short final page and a
 coherent zero-total page can establish end; no page is followed automatically.
 
-`get_job_details` verifies a numeric `urn:li:jobPosting:<id>` or
-`urn:li:fsd_jobPosting:<id>` matches the requested ID before attaching its canonical
-job source URL. An absent, unsupported or mismatched identity returns
-RESPONSE_SHAPE_CHANGED with null data and no provenance; it is never retried.
+`get_job_details` selects exactly one job-like object across the validated data
+and included containers whose full `urn:li:jobPosting:<id>` or
+`urn:li:fsd_jobPosting:<id>` matches the requested numeric ID (1–20 digits).
+An earlier unrelated object cannot hide that unique match. Distinct matching
+objects are ambiguous even if their fields are identical or use the two supported
+forms; absent, unsupported, mismatched or ambiguous identities return
+RESPONSE_SHAPE_CHANGED with null data and no provenance. No whitespace trimming,
+new identifier namespace or fallback is accepted. A nonblank title is required.
+Only the selected object's facts are normalized, and the numeric identity is
+checked again before attaching its canonical job source URL. No retry is made.
 Company attribution uses only the selected job's own companyDetails.name.
 Unassociated included Company entities are not evidence; missing employer stays
 unknown rather than borrowing a name from another job.

@@ -7,6 +7,7 @@
  * `included[]` and exposes resolvers + per-domain shapers that pluck only the
  * fields a tool promises, producing small, stable, human-readable objects.
  */
+import { selectJobDetailNode, type JobDetailStructureCheck } from './job-detail-selection.js';
 
 export interface NormalizedResponse {
   data?: Record<string, unknown>;
@@ -251,35 +252,14 @@ export interface ShapedJobDetails {
   listedAt?: number;
 }
 
-/** Shape a single job posting. Deep-walks the response — the job node may live
- *  in data.data or included depending on the query — and picks the first
- *  job-like object (has a title + job-ish fields). Company facts must be supplied
- *  by that job; an arbitrary included company has no proven relationship. */
-export function shapeJobDetails(resp: NormalizedResponse): ShapedJobDetails {
-  let job: Record<string, unknown> | undefined;
-
-  const looksJob = (o: Record<string, unknown>): boolean =>
-    typeof o['title'] === 'string' &&
-    ('description' in o ||
-      'jobState' in o ||
-      'companyDetails' in o ||
-      'formattedLocation' in o ||
-      'workRemoteAllowed' in o);
-
-  const visit = (n: unknown): void => {
-    if (!n || typeof n !== 'object') return;
-    if (Array.isArray(n)) {
-      n.forEach(visit);
-      return;
-    }
-    const o = n as Record<string, unknown>;
-    if (!job && looksJob(o)) job = o;
-    for (const v of Object.values(o)) visit(v);
-  };
-  visit(resp.data);
-  visit(resp.included);
-
-  const j = job ?? {};
+/** Normalize only the unique job-like object with the requested supported identity.
+ * Company facts must be supplied by that job; other candidates never supply facts. */
+export function shapeJobDetails(
+  resp: NormalizedResponse,
+  requestedId: string,
+  observer?: (check: JobDetailStructureCheck) => void,
+): ShapedJobDetails {
+  const j = selectJobDetailNode(resp, requestedId, observer);
   return {
     title: asText(j['title']),
     description: asText(j['description']),

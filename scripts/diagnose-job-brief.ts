@@ -103,7 +103,7 @@ const record: Record<string, unknown> = {
   platform: process.platform,
   transport: 'SDK in-memory, actual production runtime',
   scope:
-    'One separately consented count-one brief with value-free detail stage counts; not installed-client or general provider compatibility evidence.',
+    'One separately consented count-one brief with value-free detail stage and identifier structure counts; not installed-client or general provider compatibility evidence.',
   startedAt: new Date().toISOString(),
 };
 let startedProcesses: number[] = [];

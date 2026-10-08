@@ -196,3 +196,54 @@ account access/merge/publication is authorized. First-use remains 0/0, separate
 from these maintainer checks. Original backups/sync files and released3.0.0 remain
 unchanged. Required maintainer cash stays $0. These documentation changes record
 a failed feature gate; they do not qualify the brief as useful or live-compatible.
+
+
+## Identity-aware detail selection — offline repair after a886fcb
+
+Two failing SDK regressions at `a886fcb91a4ad44e1a72776a28a8d53d35451518`
+reproduce a concrete defect: an unsupported job-like object in data was selected
+before a uniquely matching supported object in included, for either supported
+URN form. The repair searches the existing validated containers for exactly one
+full numeric identity match, preserves only that object's facts, and retains the
+final independent identity check before canonical source attribution. Distinct
+matching objects are rejected as ambiguous, including identical objects or a
+pair using both supported forms. Missing, non-string, unsupported, mismatched,
+whitespace-suffixed and overlong identifiers remain rejected; a matching object
+with a blank title cannot borrow another object's facts. No endpoint, payload,
+retry, fallback or research composition identity rule changes.
+
+This is a proven offline defect, **not a proven explanation of either live run**.
+The original truncated shape receipt does not establish another job-like matching
+object; the later fixed stage counts only identify the formerly selected object's
+unsupported identity. Neither retained receipt contains identifier values or the
+new candidate classifications. Both receipts, the original cleanup failure and
+all protected backups remain unchanged. No LinkedIn access occurred for this fix.
+
+The prepared diagnostic now reports only fixed candidate and identifier-format
+classes in per-server counts: data/included candidate location, supported match
+or different numeric identity, absent/unsupported identity, and known-form versus
+other-URN/non-URN/whitespace classification. It cannot retain an arbitrary prefix,
+URN, ID, URL, title, content, payload path or message. A generic other-LinkedIn-URN
+class cannot identify its actual namespace or justify accepting it. Synthetic SDK
+privacy regressions cover every class, mixed candidates, failed identities and
+successful selection; observer errors still cannot change validation outcomes.
+Public tool schemas and the three-attempt request ceiling are unchanged.
+
+The [new unexecuted diagnostic scope](JOB_BRIEF_REST_VALIDATION_PROTOCOL_2026-10-02.md#prepared-structural-selection-diagnostic--not-authorized)
+requires a reviewed exact source/archive and fresh human consent. It is not a live
+compatibility or usefulness claim. PR #5 remains draft and unpublished; 3.0.0 and
+its archive remain intact. First-use cohort stays 0/0; mandatory cash stays $0.
+
+
+Repair local gates: 639 tests across 31 files, lint, strict source/runner types,
+generated metadata, build and normal/ignore-scripts exact 15-file package checks
+pass. Installed artifact CLI/setup and SDK checks pass offline. Production,
+isolated publisher and full fresh-consumer audits have zero findings; the consumer
+resolves SDK 1.32.1 and proxy-addr 2.0.8. Source audit retains one
+low development-only esbuild finding (GHSA-g7r4-m6w7-qqqr), with the reviewed
+Windows development-server exposure; this one-shot build does not run that server.
+No dependency suppression, override or identity relaxation was used. The archive
+SHA256 is `7f540398e39a7fb584ac54c47991b32b026afbd99e156f1fb9a39f2b2935f912`.
+Independent code/privacy/evidence review found no actionable issue. Exact committed
+head, hosted checks, pinned dry run and freeze receipt will be recorded on PR #5;
+local results alone do not certify live provider behavior or authorize a run.
