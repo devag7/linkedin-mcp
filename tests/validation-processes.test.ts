@@ -24,14 +24,45 @@ const row = (
 const root = (pid = 10) => row(pid, 1, `chrome --user-data-dir=${profile} --remote-debugging-pipe`);
 
 it.each([
-  'reader /synthetic/private/profile',
+  'reader /synthetic/private/profile-other',
   'chrome --user-data-dir=/synthetic/private/profile-other --headless',
-  'chrome --user-data-dir=/synthetic/private/profile/subdirectory --headless',
-  'fixture note=--user-data-dir=/synthetic/private/profile --headless',
-])('rejects unrelated profile substrings as roots: %s', (command) => {
+])('does not attribute a distinct path prefix as a profile root: %s', (command) => {
   const result = new ValidationProcessTracker(profile).sample([row(10, 1, command)]);
   expect(result.remainingProcesses).toBe(0);
-  expect(result.processAccounting.unrelatedSubstringMatches).toBe(1);
+  expect(result.processAccounting.unclassifiedProfileReferences).toBe(0);
+});
+it.each([
+  'reader /synthetic/private/profile',
+  'fixture note=--user-data-dir=/synthetic/private/profile --headless',
+  'synthetic-auxiliary --database=/synthetic/private/profile/Crashpad',
+  'chrome --user-data-dir=/synthetic/private/profile/subdirectory --headless',
+])('retains an unclassified profile footprint as uncertain: %s', async (command) => {
+  const tracker = new ValidationProcessTracker(profile);
+  const result = tracker.sample([row(10, 1, command)]);
+  expect(result.remainingProcesses).toBe(1);
+  expect(result.processAccounting.directProfileRoots).toBe(0);
+  expect(result.processAccounting.unclassifiedProfileReferences).toBe(1);
+  // Its birth stays tracked even if the footprint disappears from its command.
+  expect(tracker.sample([row(10, 1, 'changed command')]).remainingProcesses).toBe(1);
+  const cleanup = await verifyFinalCleanup(
+    () => ({ ...result, ownershipReleased: true, contextInactive: true }),
+    { maximumMs: 0 },
+  );
+  expect(cleanup.verified).toBe(false);
+  expect(tracker.sample([row(99)]).remainingProcesses).toBe(0);
+});
+it('never accepts inconsistent zero process counts with an uncertain profile reference', async () => {
+  const counts = Object.fromEntries(PROCESS_ACCOUNTING_KEYS.map((key) => [key, 0]));
+  const result = await verifyFinalCleanup(
+    () => ({
+      remainingProcesses: 0,
+      ownershipReleased: true,
+      contextInactive: true,
+      processAccounting: { ...counts, unclassifiedProfileReferences: 1 } as any,
+    }),
+    { maximumMs: 0 },
+  );
+  expect(result.verified).toBe(false);
 });
 it.each([
   `chrome --user-data-dir=${profile}`,

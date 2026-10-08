@@ -361,11 +361,21 @@ were actually observed. It cannot prove the absence of an unobserved detached
 process. Native `ps` start stamps have one-second precision; same-stamp reuse cannot
 be disambiguated and stays counted. The native adapter is for this macOS protocol;
 synthetic Windows tests do not establish native Windows ACL or process proof.
-Retained cleanup accounting contains only seven fixed count keys:
+Retained cleanup accounting before teardown and at immediate/final checks contains
+only seven fixed count keys:
 `directProfileRoots`, `trackedAlive`, `newDescendants`, `reparented`, `zombies`,
-`reusedPids`, `unrelatedSubstringMatches`. PIDs, parent IDs, commands, profile paths
+`reusedPids`, `unclassifiedProfileReferences`. PIDs, parent IDs, commands, profile paths
 and start stamps are memory-only. Reparented counts mean an observed parent change
 from the original tracked birth, not an inferred process role.
+
+An unrecognized argument referencing the profile tree can be an auxiliary rather
+than an unrelated log line. Such footprints remain selected and birth-tracked as
+uncertain, including after their command changes; they cannot certify cleanup.
+Only a distinct sibling path prefix is excluded on this basis. No process is
+dropped solely for lacking the root profile flag. The new uncertain-footprint
+fixtures prove this conservative rule, not the presence or role of such a process
+in either historical failure. Pre-teardown fixed counts help distinguish this
+uncertainty without retaining individual process identities.
 
 For identity, the retained search shape contains a string `*jobPosting` reference;
 the older truncated detail shape does not establish that field or its semantics.

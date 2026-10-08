@@ -13,7 +13,11 @@ import { inspectSetup } from '../src/doctor.js';
 import { profilePath } from '../src/safety/state-lock.js';
 import { JOB_DETAIL_CHECKS, observeJobDetailChecks } from '../src/tools/job-detail-diagnostic.js';
 import { verifyFinalCleanup } from './validation-cleanup.js';
-import { readValidationProcesses, ValidationProcessTracker } from './validation-processes.js';
+import {
+  readValidationProcesses,
+  ValidationProcessTracker,
+  type ProcessAccountingCounts,
+} from './validation-processes.js';
 
 // This is an accidental-run guard, not proof of human approval. The agent must
 // obtain explicit consent for this exact source, query, bounds and retention first.
@@ -87,6 +91,7 @@ const record: Record<string, unknown> = {
   startedAt: new Date().toISOString(),
 };
 let observedProcesses = 0;
+let observedProcessAccounting: ProcessAccountingCounts | undefined;
 let failure = false;
 try {
   await server.connect(serverTransport);
@@ -119,7 +124,9 @@ try {
 } finally {
   let teardownFailed = false;
   try {
-    observedProcesses = processes().remainingProcesses;
+    const beforeTeardown = processes();
+    observedProcesses = beforeTeardown.remainingProcesses;
+    observedProcessAccounting = beforeTeardown.processAccounting;
   } catch {
     teardownFailed = true;
   }
@@ -162,6 +169,7 @@ try {
   record.cleanup = {
     closeSession: closed,
     observedProcesses,
+    ...(observedProcessAccounting ? { observedProcessAccounting } : {}),
     processProbeDeadlineMs: 1000,
     ...verification,
   };

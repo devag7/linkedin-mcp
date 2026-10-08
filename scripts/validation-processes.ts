@@ -15,7 +15,7 @@ export const PROCESS_ACCOUNTING_KEYS = [
   'reparented',
   'zombies',
   'reusedPids',
-  'unrelatedSubstringMatches',
+  'unclassifiedProfileReferences',
 ] as const;
 export type ProcessAccountingCounts = Record<(typeof PROCESS_ACCOUNTING_KEYS)[number], number>;
 
@@ -33,6 +33,18 @@ function profileArgument(command: string, profile: string): boolean {
       if (!rest || rest.startsWith('--')) return true;
       throw new Error('PROCESS_ARGUMENT_AMBIGUOUS');
     }
+  }
+  return false;
+}
+
+/** A profile-tree footprint may be a detached helper. It is never proof of unrelatedness. */
+function profileFootprint(command: string, profile: string): boolean {
+  for (let from = 0; from < command.length; ) {
+    const index = command.indexOf(profile, from);
+    if (index < 0) return false;
+    const after = command[index + profile.length];
+    if (after === undefined || /[\s/'"]/.test(after)) return true;
+    from = index + profile.length;
   }
   return false;
 }
@@ -112,7 +124,12 @@ export class ValidationProcessTracker {
       if (direct) {
         selected.add(row.pid);
         counts.directProfileRoots++;
-      } else if (row.command.includes(this.profile)) counts.unrelatedSubstringMatches++;
+      } else if (profileFootprint(row.command, this.profile)) {
+        // Preserve possible ownership and its birth identity; do not filter a
+        // profile-associated auxiliary just because it lacks the root flag.
+        selected.add(row.pid);
+        counts.unclassifiedProfileReferences++;
+      }
       if (original?.start === row.start) {
         selected.add(row.pid);
         counts.trackedAlive++;

@@ -68,6 +68,7 @@ export async function verifyFinalCleanup(
     } catch {
       probeFailed = true;
       return {
+        processAccounting: undefined,
         remainingProcesses: null,
         ownershipReleased: null,
         contextInactive: null,
@@ -78,6 +79,7 @@ export async function verifyFinalCleanup(
   };
   const clean = (state: ReturnType<typeof sample>) =>
     !state.probeFailed &&
+    (state.processAccounting?.unclassifiedProfileReferences ?? 0) === 0 &&
     state.remainingProcesses === 0 &&
     state.ownershipReleased === true &&
     state.contextInactive === true;

@@ -320,7 +320,7 @@ record fixed counts, never values or namespace, and cannot authorize attribution
 The actual rejected namespace and alternative binding remain unknown. No blind
 fallback, endpoint guess, source relaxation or extra request is introduced.
 
-Local clean-install gates pass: 683 tests across 32 files, lint, strict source and
+Local clean-install gates pass: 686 tests across 32 files, lint, strict source and
 runner types, generated metadata, build, exact normal/ignore-scripts 15-file
 package checks, installed CLI/setup and SDK checks. Production, isolated publisher
 and full fresh-consumer audits have zero findings; consumer SDK 1.32.1 and
@@ -328,7 +328,7 @@ proxy-addr 2.0.8 meet the shipped floors. The full source audit's development-on
 esbuild finding is recorded separately; no advisory is suppressed. Local draft
 archive SHA256 is
 `87a414bfc8c63f2b7d78bd960920a29c3fb3a7a36c3d7d6213364bce6ccd9caf`,
-runner SHA256 is `ddb451ef7e60cb7950ac3db0dd176a98bb01e0380365205d56ceb8f5ae982f45`.
+runner SHA256 is `183aab6ac91ad23a599cc9fdf34da6d45cb7b84fcd4a8d0590da418c2ac1e654`.
 Exact committed source, independent review, hosted matrix and pinned release
 dry-run receipts will be recorded on PR #5 before this build is proposed for
 fresh consent. Offline tests and dry runs cannot establish provider usefulness,
@@ -364,3 +364,11 @@ probe and is not changed or authorized by these offline fixture updates.
 A new reviewed head must pass fresh local/hosted gates and a pinned dry run before
 it can be offered for consent. Passing a later fixture cannot relabel this
 historical failure or establish why it occurred. Core 3.0.0 remains immutable.
+
+Unrecognized profile-tree footprints remain conservatively selected and tracked
+by birth, even when an auxiliary lacks the root flag or changes its command.
+They are classified as uncertain and cannot certify cleanup. Distinct sibling
+path prefixes are excluded; no possible profile-associated helper is dropped to
+pass a gate. Fixed pre-teardown accounting is retained alongside immediate/final
+counts. These synthetic edge cases neither identify historical process roles nor
+change any job identity or request rule.
