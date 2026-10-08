@@ -166,3 +166,33 @@ Hosted receipts and the new source/archive identity are recorded on PR #5 after
 execution; previous head gates do not certify the changed runner. PR #5 stays draft with useful live acceptance open. Released 3.0.0 and
 its archive are unchanged. First-use cohort stays 0/0, private rows stay private,
 and no recruitment/contact occurred. Mandatory maintainer cost remains $0.
+
+
+## Subsequent consented count-one result — feature gate still failed
+
+The separate approved call at source `0b16f70e914f358e977200d1f4a9c366b0ea6cf3`
+used archive SHA256 `3aecb6cd664607fd263b2f25008b71ebec68bbe824faeacb2aa137d131a96538`.
+Its exact-head CI passed 12/12 jobs and pinned release dry run passed 10/10,
+with publishing mutations skipped and local/hosted archive bytes identical:
+[CI](https://github.com/devag7/linkedin-mcp/actions/runs/37732838030),
+[dry run](https://github.com/devag7/linkedin-mcp/actions/runs/37732869616).
+
+The 19,955 ms read used the authorized three explicit GET attempts/two read tools,
+no retries/writes, and returned one title fact / zero useful entities. Both status
+fields were partial; the runner correctly exited 1 for failed useful acceptance.
+Stage counts prove **this run** rejected a present identifier that did not match
+either supported numeric job URN form, after envelope and title passed. No numeric
+ID comparison or output/source-link attachment followed. The raw format is unknown;
+this does not authorize relaxed identity checks or retrospectively diagnose the
+first October 8 rejection. No endpoint, normalization, fallback or runtime code
+was changed after this run. Its [protocol result](JOB_BRIEF_REST_VALIDATION_PROTOCOL_2026-10-02.md#consumed-count-one-result-unsupported-returned-identifier)
+records precise limits and the private immutable receipt hash.
+
+This run's cleanup passed both observations: zero remaining processes, owner
+released, inactive context, final check at 186 ms within the five-second bound.
+The original two-process failure remains failed and preserved; its historical
+cause is still unknown. Consent is consumed, PR #5 remains draft, and no further
+account access/merge/publication is authorized. First-use remains 0/0, separate
+from these maintainer checks. Original backups/sync files and released3.0.0 remain
+unchanged. Required maintainer cash stays $0. These documentation changes record
+a failed feature gate; they do not qualify the brief as useful or live-compatible.

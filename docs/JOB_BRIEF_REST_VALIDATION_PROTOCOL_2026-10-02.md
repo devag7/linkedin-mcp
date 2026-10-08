@@ -120,11 +120,12 @@ size or exclude its 10,000-node ceiling.
 No exact live cause is proven. No endpoint, field mapping, numeric identity
 check or source attribution is relaxed and no fallback is added.
 
-## Prepared next diagnostic — fresh consent required, not executed
+## Historical count-one diagnostic scope — consumed on October 8
 
-After exact-head source/package/hosted and dry-run gates, freeze a **new** source
-SHA and 15-file archive hash in the consent request. This prepared scope is
-smaller than the consumed run: one `research_jobs` call, TypeScript engineer,
+The following scope was prepared after exact-head source/package/hosted and
+dry-run gates, then separately authorized and consumed at source `0b16f70`
+with the archive hash recorded below. It is not permission for another run. It is
+smaller than the earlier count-three run: one `research_jobs` call, TypeScript engineer,
 **count 1**, `enrich_first:true`, same existing Mac profile and normal pacing.
 
 ```json
@@ -168,3 +169,42 @@ plus observed location/company/description/listing time and all provenance,
 freshness, bounds and cleanup checks; partial evidence stays labelled partial.
 PR #5 remains draft until that useful live gate passes. Published 3.0.0 first-use
 is separate and owner-led, with zero volunteer attempts; required cash remains $0.
+
+
+## Consumed count-one result: unsupported returned identifier
+
+Fresh human authorization was verified in the source chat against the exact
+count-one question. One SDK source-runtime call used source
+`0b16f70e914f358e977200d1f4a9c366b0ea6cf3` and approved archive SHA256
+`3aecb6cd664607fd263b2f25008b71ebec68bbe824faeacb2aa137d131a96538`.
+It took 19,955 ms, with three explicit Voyager GET attempts including identity,
+two underlying tools, no retry or writes. It returned one linked title fact,
+zero useful entities and `partial` in both status fields. Acceptance failed;
+runner exit 1 is the intended useful-result failure, not a cleanup failure.
+
+Fixed counts identify this run's detail rejection: `envelope_accepted:1`,
+`title_present:1`, `identity_unsupported:1`. Envelope/title rejection,
+identity absence/mismatch/match, output and composition rejection counts were
+zero. The nonempty normalized job URN did not match either supported exact
+numeric `urn:li:jobPosting:<id>` or `urn:li:fsd_jobPosting:<id>` pattern (1–20
+digits). Numeric ID comparison was therefore not reached. No canonical detail
+source URL was attached. The raw identifier's prefix/content and reason for
+its unsupported format remain unknown because values were not retained. These
+counts prove this rejection stage only; they do not retrospectively identify
+the earlier run's stage or justify accepting a different identifier format.
+Do not guess a new endpoint, trim/relabel identifiers or add a blind fallback.
+
+Cleanup independently passed: 14 processes observed before teardown; immediate
+and final counts both zero, ownership released, inactive context, no probe or
+teardown failures. The separate final observation completed at 186 ms within
+the five-second polling bound. The earlier two-process cleanup failure remains
+preserved and its cause unproven. The private redacted receipt is immutable,
+SHA256 `b7ea4a5fc537167097de3773b12bc058410ce3f8c22be1029e51efa30531dfb5`;
+no raw logs, shapes, titles, IDs, URLs or response values were saved.
+
+This consent is consumed. No automatic retry, further account access, merge or
+publication is authorized. PR #5 remains draft because this result is title-only.
+Any further diagnostic needs a new exact build/scope and fresh human consent;
+this document does not schedule or authorize one. Published 3.0.0 first-use
+remains a separate owner-led milestone with zero volunteer attempts and $0
+mandatory maintainer cash.
