@@ -210,7 +210,12 @@ remains a separate owner-led milestone with zero volunteer attempts and $0
 mandatory maintainer cash.
 
 
-## Prepared structural selection diagnostic — not authorized
+## Structural selection diagnostic scope — consumed on October 8
+
+This exact scope was subsequently authorized by the direct human reply to the
+frozen-build question and consumed at `2a8820d`, as recorded below. The preparation
+instructions in this section describe its pre-execution state; they are not
+permission to repeat it. No new run is scheduled or authorized.
 
 The offline repair after `a886fcb` proves that first-object selection can reject an
 unsupported object while a unique supported numeric match exists elsewhere. The
@@ -263,3 +268,64 @@ passes. Useful partial evidence remains explicitly partial. A diagnostic-only
 result cannot satisfy release readiness. Keep PR #5 draft until its separate
 useful live gate and remaining release gates pass. Published 3.0.0 first-use and
 its zero-attempt cohort remain a separate owner-led milestone.
+
+
+## Consumed structural selection result — identity and cleanup gates failed
+
+Direct human authorization was verified against the exact single-use question in
+the source chat. One SDK source-runtime run used
+`2a8820d70274f3f27bed6fbdf50af01b3054979f`, archive SHA256
+`7f540398e39a7fb584ac54c47991b32b026afbd99e156f1fb9a39f2b2935f912`
+and runner SHA256 `c9d6769a95c68d68ab298d022a23de8f65c013feda4f6c936dc3d679e6c2af6f`.
+Clean source, exact archive contents and zero production/publisher/fresh-consumer
+audit findings were rechecked before execution. No scope or runtime changes were
+made. The single attempt took 31,288 ms, used three explicit GET attempts including
+identity/two underlying tools and no retries, login, extra probe or writes.
+
+Both statuses were partial: one entity, one linked title fact, zero useful
+entities. The SDK contract, provenance/freshness and request-bound checks passed
+in memory; `get_job_details` returned RESPONSE_SHAPE_CHANGED. These six fixed
+counts were each one: `envelope_accepted`, `candidate_in_data`,
+`candidate_unsupported`, `format_other_linkedin_urn`, `selection_no_match` and
+`identity_unsupported`. All other detail classifications/stages were zero.
+
+This run proves one recognized job-like candidate in data had a nonempty
+identifier in the generic other-LinkedIn-URN class; no supported numeric match
+was observed in any recognized candidate. No candidate was observed in included,
+no ambiguous selection occurred, and neither supported form, trim-sensitive form
+nor known-prefix suffix class was observed. Selection failed before nonblank-title
+validation and final numeric/source attribution, so a zero `title_present` count
+here is **not** evidence of a missing title. A string title is part of the
+candidate criterion; its value was not retained. No canonical detail source URL
+was attached.
+
+The offline first-object repair did not resolve this run: there was no hidden
+supported match under the existing job-like criteria. The actual unsupported
+namespace, identifier value and alternative identity fields remain unknown; the
+coarse class does not establish their meaning or authorize a new accepted form.
+These observations do not retrospectively diagnose either previous run. No
+endpoint, numeric identity check, source attribution, fallback or field mapping
+is relaxed.
+
+Cleanup failed independently of usefulness. Sixteen processes were observed before
+teardown; immediate and final snapshots both counted two remaining tracked
+processes, with ownership released and context inactive. There were 37 local
+checks; the final snapshot was at 5,036 ms within the five-second polling interval
+plus its bounded in-flight process probe (one-second maximum). No probe/teardown
+exception occurred, but `verified:false` is correct. Runner exit 1 therefore
+reflects **both** failed usefulness and failed cleanup. The receipt is immutable,
+SHA256 `cc821e1440037dd52f307948560d64ec2c35638da6e5d49b7751e36329224879`.
+No URN, job ID, URL, content, arbitrary prefix, raw response/log, process command
+or PID was retained.
+
+A subsequent **local-only** observation found zero current profile-argument
+matches/descendants and released ownership, with no provider request. Since the
+original tracked PIDs were not retained, this cannot certify their later exit,
+identify their type or cause, or retroactively pass the failed bounded cleanup.
+All older receipts and cleanup failures remain unchanged.
+
+Consent is consumed. No retry, further LinkedIn request, merge, publication or
+volunteer contact is authorized. PR #5 stays draft, useful-brief acceptance remains
+failed, and the source/archive above remain the actual tested build. Published
+3.0.0 is unchanged; its separate first-use cohort remains 0/0. Mandatory cash is $0.
+Any further account observation requires a new concrete scope and fresh consent.

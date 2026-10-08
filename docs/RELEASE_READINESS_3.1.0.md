@@ -229,10 +229,12 @@ privacy regressions cover every class, mixed candidates, failed identities and
 successful selection; observer errors still cannot change validation outcomes.
 Public tool schemas and the three-attempt request ceiling are unchanged.
 
-The [new unexecuted diagnostic scope](JOB_BRIEF_REST_VALIDATION_PROTOCOL_2026-10-02.md#prepared-structural-selection-diagnostic--not-authorized)
-requires a reviewed exact source/archive and fresh human consent. It is not a live
-compatibility or usefulness claim. PR #5 remains draft and unpublished; 3.0.0 and
-its archive remain intact. First-use cohort stays 0/0; mandatory cash stays $0.
+The [structural diagnostic scope](JOB_BRIEF_REST_VALIDATION_PROTOCOL_2026-10-02.md#structural-selection-diagnostic-scope--consumed-on-october-8)
+was prepared for a reviewed exact source/archive and fresh human consent. That
+single-use approval was subsequently consumed as recorded below; it does not
+permit another run. This is not a live compatibility or usefulness claim.
+PR #5 remains draft and unpublished; 3.0.0 and its archive remain intact.
+First-use cohort stays 0/0; mandatory cash stays $0.
 
 
 Repair local gates: 639 tests across 31 files, lint, strict source/runner types,
@@ -247,3 +249,47 @@ SHA256 is `7f540398e39a7fb584ac54c47991b32b026afbd99e156f1fb9a39f2b2935f912`.
 Independent code/privacy/evidence review found no actionable issue. Exact committed
 head, hosted checks, pinned dry run and freeze receipt will be recorded on PR #5;
 local results alone do not certify live provider behavior or authorize a run.
+
+
+## Structural count-one validation — consumed, feature still blocked
+
+The reviewed `2a8820d70274f3f27bed6fbdf50af01b3054979f` source and 15-file
+archive SHA256 `7f540398e39a7fb584ac54c47991b32b026afbd99e156f1fb9a39f2b2935f912`
+passed [12-job CI](https://github.com/devag7/linkedin-mcp/actions/runs/37740355457)
+and [10-job pinned dry run](https://github.com/devag7/linkedin-mcp/actions/runs/37740368641).
+Local/hosted archive bytes and integrity matched; publishing/authentication/tag/
+finalization mutations were skipped. Exact source/runner/archive and clean
+production/publisher/fresh-consumer audits were rechecked after fresh human consent.
+
+The single SDK source-runtime run then took 31,288 ms, using exactly three
+explicit GET attempts including identity/two tools, without retries or writes.
+Both statuses were partial, with one linked title fact and zero useful entities.
+The detail failed RESPONSE_SHAPE_CHANGED. Fixed classifications establish one
+recognized job-like data candidate with an unsupported **other LinkedIn URN**
+format, no included candidate and no supported matching or ambiguous identity.
+The unique-match repair is validated offline but was insufficient for this live
+response. Its actual namespace/value and alternative identity fields remain
+unknown; no new form, endpoint, fallback or mapping is justified. Nonblank-title
+validation was not reached after selection failed; a zero title-stage count
+must not be interpreted as title absence or compared directly with the older
+stage order. Prior live causes remain separately unproven.
+
+Cleanup also failed: 16 processes observed, two remaining at both immediate and
+final checks, owner released/context inactive, final at 5,036 ms after 37 local
+checks (five-second polling plus a bounded in-flight probe). Runner exit 1 reports
+failed usefulness **and** failed cleanup. A later local-only profile-match count
+of zero cannot identify the original tracked processes or retroactively pass
+cleanup. The new immutable receipt SHA256 is
+`cc821e1440037dd52f307948560d64ec2c35638da6e5d49b7751e36329224879`;
+only approved fixed counts/timing/status/validation/cleanup fields were retained.
+Original receipts, cleanup failures and protected backups remain unchanged.
+
+See the [precise result and evidence limits](JOB_BRIEF_REST_VALIDATION_PROTOCOL_2026-10-02.md#consumed-structural-selection-result--identity-and-cleanup-gates-failed).
+Consent is consumed; no further account request, retry, merge or publication was
+made. PR #5 stays draft and blocked on useful live evidence and verified cleanup.
+These result-only documents do not change runtime or packaged files. Their own
+commit's CI evidence will be recorded on the PR after commit and verification.
+The above source/archive remain the
+actual consented build, not permission to test a later head. Core 3.0.0 and its
+archive remain unchanged; the owner-led first-use pilot stays 0/0 and required
+maintainer cash stays $0. No volunteer contact occurred.
