@@ -78,6 +78,31 @@ it('fails at the bound when a disposable process remains and leaves termination 
   }
 });
 
+it('preserves failed immediate and final counts for two processes that exit after the bound', async () => {
+  const fixtures = await Promise.all([fixture(), fixture()]);
+  try {
+    const exited = fixtures.map((f) => once(f.child, 'exit'));
+    for (const f of fixtures) f.child.send(1500);
+    const report = await verifyFinalCleanup(
+      () => ({
+        remainingProcesses: fixtures.reduce((sum, f) => sum + f.probe().remainingProcesses, 0),
+        ownershipReleased: fixtures.every((f) => f.probe().ownershipReleased),
+        contextInactive: true,
+      }),
+      { maximumMs: 60, intervalMs: 10 },
+    );
+    expect(report.immediate.remainingProcesses).toBe(2);
+    expect(report.final.remainingProcesses).toBe(2);
+    expect(report.verified).toBe(false);
+    await Promise.all(exited);
+    expect(fixtures.every((f) => f.probe().remainingProcesses === 0)).toBe(true);
+    expect(report.final.remainingProcesses).toBe(2);
+    expect(report.verified).toBe(false);
+  } finally {
+    await Promise.all(fixtures.map((f) => f.close()));
+  }
+});
+
 it.each([
   { remainingProcesses: 0, ownershipReleased: false, contextInactive: true },
   { remainingProcesses: 0, ownershipReleased: true, contextInactive: false },

@@ -13,6 +13,7 @@ import { inspectSetup } from '../src/doctor.js';
 import { profilePath } from '../src/safety/state-lock.js';
 import { JOB_DETAIL_CHECKS, observeJobDetailChecks } from '../src/tools/job-detail-diagnostic.js';
 import { verifyFinalCleanup } from './validation-cleanup.js';
+import { readValidationProcesses, ValidationProcessTracker } from './validation-processes.js';
 
 // This is an accidental-run guard, not proof of human approval. The agent must
 // obtain explicit consent for this exact source, query, bounds and retention first.
@@ -50,31 +51,10 @@ assert.ok(
     diagnosis.checks.safetyState === 'valid',
   'OFFLINE_READINESS_FAILED',
 );
-// Process command lines are read locally for cleanup only; never written out.
-function processes(tracked: number[] = []) {
-  const rows = execFileSync('ps', ['-eo', 'pid=,ppid=,args='], {
-    encoding: 'utf8',
-    timeout: 1000,
-    maxBuffer: 2 * 1024 * 1024,
-  })
-    .split('\n')
-    .flatMap((line) => {
-      const match = /^\s*(\d+)\s+(\d+)\s+(.*)$/.exec(line);
-      return match ? [{ pid: Number(match[1]), parent: Number(match[2]), command: match[3]! }] : [];
-    });
-  const selected = new Set(tracked);
-  for (const row of rows) if (row.command.includes(profile)) selected.add(row.pid);
-  for (let changed = true; changed; ) {
-    changed = false;
-    for (const row of rows)
-      if (selected.has(row.parent) && !selected.has(row.pid)) {
-        selected.add(row.pid);
-        changed = true;
-      }
-  }
-  return rows.filter((row) => selected.has(row.pid)).map((row) => row.pid);
-}
-assert.equal(processes().length, 0, 'PROFILE_ALREADY_ACTIVE');
+// Local inventory stays in memory. Track exact profile roots and observed birth identities.
+const processTracker = new ValidationProcessTracker(profile);
+const processes = () => processTracker.sample(readValidationProcesses());
+assert.equal(processes().remainingProcesses, 0, 'PROFILE_ALREADY_ACTIVE');
 // Preserve an exclusive start marker even if the process crashes before its receipt.
 // A marker prevents an accidental retry at the same output path; it is not consent.
 writeFileSync(
@@ -106,7 +86,7 @@ const record: Record<string, unknown> = {
     'One separately consented count-one brief with value-free detail stage and identifier structure counts; not installed-client or general provider compatibility evidence.',
   startedAt: new Date().toISOString(),
 };
-let startedProcesses: number[] = [];
+let observedProcesses = 0;
 let failure = false;
 try {
   await server.connect(serverTransport);
@@ -139,7 +119,7 @@ try {
 } finally {
   let teardownFailed = false;
   try {
-    startedProcesses = processes();
+    observedProcesses = processes().remainingProcesses;
   } catch {
     teardownFailed = true;
   }
@@ -173,7 +153,7 @@ try {
   });
   const verification = await verifyFinalCleanup(
     () => ({
-      remainingProcesses: processes(startedProcesses).length,
+      ...processes(),
       ownershipReleased: !existsSync(`${profile}.owner.lock`),
       contextInactive: !runtime.engine.hasActiveContext,
     }),
@@ -181,7 +161,7 @@ try {
   );
   record.cleanup = {
     closeSession: closed,
-    observedProcesses: startedProcesses.length,
+    observedProcesses,
     processProbeDeadlineMs: 1000,
     ...verification,
   };

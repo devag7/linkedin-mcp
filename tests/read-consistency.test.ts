@@ -204,6 +204,67 @@ describe('SDK job-detail identity', () => {
 });
 
 describe('SDK identity-aware job-detail selection', () => {
+  it.each([
+    { label: 'matching reference alone', included: [] },
+    {
+      label: 'matching title-only metadata',
+      included: [{ title: 'Metadata', entityUrn: 'urn:li:jobPosting:123' }],
+    },
+    {
+      label: 'mismatched referenced job',
+      included: [{ title: 'Other', jobState: 'SYNTHETIC', entityUrn: 'urn:li:jobPosting:99' }],
+    },
+    {
+      label: 'duplicate referenced jobs',
+      included: [
+        { title: 'First', jobState: 'SYNTHETIC', entityUrn: 'urn:li:jobPosting:123' },
+        { title: 'Second', jobState: 'SYNTHETIC', entityUrn: 'urn:li:jobPosting:123' },
+      ],
+    },
+  ])('does not certify unsupported detail identity from $label', async ({ included }) => {
+    raw = {
+      data: {
+        $type: 'fixture.JobPosting',
+        title: 'Uncertified',
+        description: 'Uncertified facts',
+        entityUrn: 'urn:li:synthetic_unsupported:123',
+        '*jobPosting': 'urn:li:jobPosting:123',
+        jobId: '123',
+        url: 'https://www.linkedin.com/jobs/view/123/',
+      },
+      included,
+    };
+    const checks = diagnostic(true);
+    const { result, envelope } = await call('get_job_details', { job_id: '123' });
+    expect(result.isError).toBe(true);
+    expect(envelope).toMatchObject({ data: null, code: 'RESPONSE_SHAPE_CHANGED' });
+    expect(checks).toContain('reference_supported_match');
+    expect(checks).not.toContain('identity_match');
+    expect(JSON.stringify(envelope)).not.toMatch(/Uncertified|jobs\/view/);
+    expect(fetches).toHaveBeenCalledTimes(2);
+  });
+
+  it('selects only a uniquely verified included job and never borrows referenced wrapper facts', async () => {
+    raw = {
+      data: {
+        title: 'Wrapper',
+        description: 'WRAPPER-PRIVATE-CONTENT',
+        entityUrn: 'urn:li:synthetic_unsupported:123',
+        '*jobPosting': 'urn:li:jobPosting:123',
+      },
+      included: [{ title: 'Selected', jobState: 'SYNTHETIC', entityUrn: 'urn:li:jobPosting:123' }],
+    };
+    const { result, envelope } = await call('get_job_details', { job_id: '123' });
+    expect(result.isError).not.toBe(true);
+    expect(envelope.data).toMatchObject({
+      title: 'Selected',
+      sourceUrl: 'https://www.linkedin.com/jobs/view/123/',
+    });
+    expect(envelope.data.description).toBeUndefined();
+    expect(JSON.stringify(envelope.data)).not.toMatch(/Wrapper|WRAPPER/);
+    expect(fetches).toHaveBeenCalledTimes(2);
+  });
+
   it.each(['urn:li:jobPosting:123', 'urn:li:fsd_jobPosting:123'])(
     'selects a unique matching %s behind an unsupported first object',
     async (urn) => {
@@ -408,6 +469,36 @@ describe('SDK identity-aware job-detail selection', () => {
 });
 
 describe('SDK value-free identifier format classification', () => {
+  it.each([
+    { reference: undefined, check: 'reference_missing' },
+    { reference: null, check: 'reference_missing' },
+    { reference: '', check: 'reference_missing' },
+    { reference: { private: 'PRIVATE-REFERENCE' }, check: 'reference_non_string' },
+    { reference: 'urn:li:jobPosting:73129', check: 'reference_supported_match' },
+    { reference: 'urn:li:fsd_jobPosting:73129', check: 'reference_supported_match' },
+    { reference: 'urn:li:jobPosting:77', check: 'reference_supported_other' },
+    { reference: 'urn:li:PRIVATE-REFERENCE:73129', check: 'reference_unsupported' },
+    { reference: ' urn:li:jobPosting:73129 ', check: 'reference_unsupported' },
+  ])('observes $check without promoting a reference to identity', async ({ reference, check }) => {
+    raw = {
+      data: {
+        title: 'PRIVATE-REFERENCE-TITLE',
+        jobState: 'SYNTHETIC',
+        entityUrn: 'urn:li:PRIVATE-REFERENCE:73129',
+        '*jobPosting': reference,
+      },
+    };
+    const checks = diagnostic(true);
+    const { envelope } = await call('get_job_details', { job_id: '73129' });
+    expect(envelope).toMatchObject({ data: null, code: 'RESPONSE_SHAPE_CHANGED' });
+    expect(checks.filter((value) => value.startsWith('reference_'))).toEqual([check]);
+    expect(JSON.stringify(checks)).not.toMatch(/73129|PRIVATE|urn:|https:|\*jobPosting/);
+    expect(checks.every((value) => (JOB_DETAIL_CHECKS as readonly string[]).includes(value))).toBe(
+      true,
+    );
+    expect(fetches).toHaveBeenCalledTimes(2);
+  });
+
   it.each([
     { urn: undefined, format: 'format_missing' },
     { urn: null, format: 'format_missing' },

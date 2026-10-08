@@ -329,3 +329,75 @@ volunteer contact is authorized. PR #5 stays draft, useful-brief acceptance rema
 failed, and the source/archive above remain the actual tested build. Published
 3.0.0 is unchanged; its separate first-use cohort remains 0/0. Mandatory cash is $0.
 Any further account observation requires a new concrete scope and fresh consent.
+
+## Offline cleanup repair and proposed reference observation — not authorized to run
+
+The failed receipt above remains failed and byte-identical. No retained PID,
+birth stamp, process role or command identifies its two leftovers. Delayed exit,
+unrelated substring attribution and PID reuse are possible explanations, not
+established causes. Two empty-profile Chrome fixtures, using only about:blank and
+local synthetic content, each observed nine processes and closed cleanly; neither
+reproduced the historical failure. The repaired fixture's immediate/final counts
+were both zero, final at 185 ms, with released ownership and inactive context.
+This proves that fixture only; no LinkedIn account, provider route or client was
+tested.
+
+The exact old process function at `6c9220b` was extracted and run against synthetic
+inventories. It counted one unrelated profile substring instead of zero, counted
+two unrelated recycled-PID processes instead of zero, lost a newly observed child
+after reparenting (zero instead of one), and treated malformed inventory as zero.
+The repair uses explicit profile flags and PID plus start stamp, persists every
+observed descendant across polls, and fails on malformed, empty or incomplete
+native snapshots and uncertain argument boundaries. Zombies and same-stamp PID
+reuse remain conservative failures. A separate two-process disposable fixture
+records two at both checks when exit occurs after the bound; its later zero count
+does not rewrite that failure. Verification never kills processes to pass.
+
+Process observation is limited to recognized profile roots and descendants that
+were actually observed. It cannot prove the absence of an unobserved detached
+process. Native `ps` start stamps have one-second precision; same-stamp reuse cannot
+be disambiguated and stays counted. The native adapter is for this macOS protocol;
+synthetic Windows tests do not establish native Windows ACL or process proof.
+Retained cleanup accounting contains only seven fixed count keys:
+`directProfileRoots`, `trackedAlive`, `newDescendants`, `reparented`, `zombies`,
+`reusedPids`, `unrelatedSubstringMatches`. PIDs, parent IDs, commands, profile paths
+and start stamps are memory-only. Reparented counts mean an observed parent change
+from the original tracked birth, not an inferred process role.
+
+For identity, the retained search shape contains a string `*jobPosting` reference;
+the older truncated detail shape does not establish that field or its semantics.
+No evidence supports accepting the unsupported detail namespace. SDK tests reject
+a matching reference alone, numeric hints, canonical-looking URL, type label,
+title-only metadata, mismatched referenced jobs and duplicate matching jobs.
+A single independently valid included job supplies only its own facts; wrapper
+facts are never borrowed. Exact supported numeric identity, final attribution and
+research's independent identity check remain unchanged. No endpoint or fallback
+is added. None of these fixtures identifies the actual live namespace or proves a
+new binding for the rejected detail.
+
+The proposed observer adds only `reference_missing`, `reference_non_string`,
+`reference_supported_match`, `reference_supported_other`, `reference_unsupported`
+counts for that existing field on recognized candidates. It records no field
+value, URN, ID, URL, prefix, namespace, content or dynamic key. Observation cannot
+select a detail, attach a source or change request behavior. Even a matching
+reference alone would remain insufficient for acceptance. These new counts are
+not inferred retroactively for any old receipt.
+
+Any future request must name the reviewed full source SHA, artifact and runner
+hashes and this expanded retention scope. Proposed scope remains one
+`research_jobs` call, “TypeScript engineer”, count 1, `enrich_first:true`, existing
+profile, at most three explicit Voyager GET attempts including identity/search/
+optional first-job detail, at most two underlying read tools, normal pacing and a
+180-second tool deadline. No login, retry, extra health probe, endpoint fallback or
+write. Stop on checkpoint, authentication restriction, request bound, contract or
+identity failure; retain only redacted timing/status and allowlisted validation/
+cleanup counts. Always close the session; record immediate teardown plus bounded
+final ownership/context/process verification (five-second polling, with at most
+one in-flight one-second process probe). Any retained process, uncertain probe or
+teardown error fails cleanup. A useful brief still requires linked title plus a
+certified comparison fact; title-only remains failure. No new consent is implied.
+
+Local source/runner, package and audit evidence and hosted receipts for the exact
+reviewed build are recorded in readiness and PR #5 before seeking any fresh
+consent. This is offline preparation, not a run request or live compatibility
+claim. PR #5 stays draft; core 3.0.0 and its owner-led 0/0 pilot remain separate.

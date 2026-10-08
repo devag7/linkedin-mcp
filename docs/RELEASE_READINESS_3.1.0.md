@@ -293,3 +293,41 @@ The above source/archive remain the
 actual consented build, not permission to test a later head. Core 3.0.0 and its
 archive remain unchanged; the owner-led first-use pilot stays 0/0 and required
 maintainer cash stays $0. No volunteer contact occurred.
+
+## Offline process accounting repair — historical causes remain unknown
+
+The October 8 failed receipt and original cleanup failure remain immutable.
+Running the old `6c9220b` accounting function with synthetic inventories proves
+four defects: substring false attribution, recycled PID false attribution, lost
+newly observed/reparented children, and malformed inventory becoming zero.
+The repaired tracker uses explicit profile flags, birth stamps, persistent observed
+descendants and strict snapshot validation. Uncertain argument boundaries, probes,
+same-stamp reuse and zombies cannot certify cleanup. Two disposable delayed-exit
+processes also reproduce two remaining at both checks; their later exit does not
+change the failed receipt. Both actual temporary empty-profile Chrome fixtures
+closed nine observed processes cleanly, so neither proves why two remained live.
+No account was accessed. See the [scope and evidence limits](JOB_BRIEF_REST_VALIDATION_PROTOCOL_2026-10-02.md#offline-cleanup-repair-and-proposed-reference-observation--not-authorized-to-run).
+
+Identity acceptance is unchanged. New SDK cases reject an unsupported detail even
+with a matching reference, numeric hint, URL or type, reject ambiguous referenced
+jobs, and keep facts confined to a uniquely verified object's own supported
+numeric identity. The existing `*jobPosting` field has retained search-shape
+evidence but no established detail semantics. Its five new observer-only classes
+record fixed counts, never values or namespace, and cannot authorize attribution.
+The actual rejected namespace and alternative binding remain unknown. No blind
+fallback, endpoint guess, source relaxation or extra request is introduced.
+
+Local clean-install gates pass: 680 tests across 32 files, lint, strict source and
+runner types, generated metadata, build, exact normal/ignore-scripts 15-file
+package checks, installed CLI/setup and SDK checks. Production, isolated publisher
+and full fresh-consumer audits have zero findings; consumer SDK 1.32.1 and
+proxy-addr 2.0.8 meet the shipped floors. The full source audit's development-only
+esbuild finding is recorded separately; no advisory is suppressed. Local draft
+archive SHA256 is
+`87a414bfc8c63f2b7d78bd960920a29c3fb3a7a36c3d7d6213364bce6ccd9caf`,
+runner SHA256 is `ddb451ef7e60cb7950ac3db0dd176a98bb01e0380365205d56ceb8f5ae982f45`.
+Exact committed source, independent review, hosted matrix and pinned release
+dry-run receipts will be recorded on PR #5 before this build is proposed for
+fresh consent. Offline tests and dry runs cannot establish provider usefulness,
+native-client success, Windows ACL proof or volunteer first use. Required cash is
+$0; PR #5 remains draft, with no merge, release, recruitment or account request.

@@ -20,6 +20,11 @@ export const JOB_DETAIL_STRUCTURE_CHECKS = [
   'format_other_urn',
   'format_non_urn',
   'format_boundary_whitespace',
+  'reference_missing',
+  'reference_non_string',
+  'reference_supported_match',
+  'reference_supported_other',
+  'reference_unsupported',
   'selection_unique',
   'selection_no_job',
   'selection_no_match',
@@ -108,6 +113,21 @@ export function selectJobDetailNode(
       emit(origin === 'data' ? 'candidate_in_data' : 'candidate_in_included');
       const urn = node.entityUrn;
       emit(formatClass(urn));
+      // This field was observed in retained search shapes, not established as
+      // detail identity. Observe only; it must never authorize attribution.
+      const reference = node['*jobPosting'];
+      const referenceId = supportedId(reference);
+      emit(
+        reference === undefined || reference === null || reference === ''
+          ? 'reference_missing'
+          : typeof reference !== 'string'
+            ? 'reference_non_string'
+            : referenceId === requestedId
+              ? 'reference_supported_match'
+              : referenceId !== undefined
+                ? 'reference_supported_other'
+                : 'reference_unsupported',
+      );
       if (typeof urn === 'string' && urn.trim() !== urn) emit('format_boundary_whitespace');
       const id = supportedId(urn);
       if (id !== undefined && id === requestedId) {

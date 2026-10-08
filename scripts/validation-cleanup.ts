@@ -1,11 +1,13 @@
 /** Local verification only: poll counts/ownership, never kill, relaunch or access a provider. */
 import { performance } from 'node:perf_hooks';
 import { setTimeout as delay } from 'node:timers/promises';
+import { PROCESS_ACCOUNTING_KEYS, type ProcessAccountingCounts } from './validation-processes.js';
 
 export interface CleanupState {
   remainingProcesses: number;
   ownershipReleased: boolean;
   contextInactive: boolean;
+  processAccounting?: ProcessAccountingCounts;
 }
 export async function verifyFinalCleanup(
   probe: () => CleanupState,
@@ -44,7 +46,19 @@ export async function verifyFinalCleanup(
         typeof state.contextInactive !== 'boolean'
       )
         throw new Error('INVALID_CLEANUP_STATE');
+      let accounting: ProcessAccountingCounts | undefined;
+      if (state.processAccounting !== undefined) {
+        accounting = Object.fromEntries(
+          PROCESS_ACCOUNTING_KEYS.map((key) => {
+            const count = state.processAccounting![key];
+            if (!Number.isSafeInteger(count) || count < 0)
+              throw new Error('INVALID_PROCESS_ACCOUNTING');
+            return [key, count];
+          }),
+        ) as ProcessAccountingCounts;
+      }
       return {
+        ...(accounting ? { processAccounting: accounting } : {}),
         remainingProcesses: state.remainingProcesses,
         ownershipReleased: state.ownershipReleased,
         contextInactive: state.contextInactive,
