@@ -404,3 +404,12 @@ Local source/runner, package and audit evidence and hosted receipts for the exac
 reviewed build are recorded in readiness and PR #5 before seeking any fresh
 consent. This is offline preparation, not a run request or live compatibility
 claim. PR #5 stays draft; core 3.0.0 and its owner-led 0/0 pilot remain separate.
+
+The offline release dry run at `d0483dc` additionally failed the temporary Chrome
+lifecycle step with `CHROME_CLEANUP_NOT_VERIFIED` on macOS/Node 20. That log has no
+individual cleanup values, so its precise failed condition and relationship to
+either live cleanup failure remain unknown. It is preserved as a failed gate.
+The lifecycle fixture now shares POSIX tracking and bounded-final verification
+and reports fixed cleanup flags/counts even on failure. It does not access an
+account or authorize this protocol. [Readiness records the exact failed run and
+remaining Windows accounting limit](RELEASE_READINESS_3.1.0.md#additional-hosted-lifecycle-gate-failure--preserved).

@@ -37,7 +37,7 @@ function profileArgument(command: string, profile: string): boolean {
   return false;
 }
 
-/** POSIX adapter for the macOS-only diagnostic. Never writes native inventory. */
+/** POSIX inventory for the macOS diagnostic and disposable lifecycle fixtures. Never writes native inventory. */
 export function readValidationProcesses(
   execute: () => string = () =>
     execFileSync('ps', ['-eo', 'pid=,ppid=,stat=,lstart=,args='], {

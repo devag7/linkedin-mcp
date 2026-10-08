@@ -334,3 +334,33 @@ dry-run receipts will be recorded on PR #5 before this build is proposed for
 fresh consent. Offline tests and dry runs cannot establish provider usefulness,
 native-client success, Windows ACL proof or volunteer first use. Required cash is
 $0; PR #5 remains draft, with no merge, release, recruitment or account request.
+
+### Additional hosted lifecycle gate failure — preserved
+
+At reviewed head `d0483dcabb90417861f563b62aeff1b74896b663`,
+[CI](https://github.com/devag7/linkedin-mcp/actions/runs/37778512012) passed
+all 12 source/package jobs, but the
+[pinned dry run](https://github.com/devag7/linkedin-mcp/actions/runs/37778541715)
+failed its macOS/Node 20 `npm run verify:browser` step with
+`CHROME_CLEANUP_NOT_VERIFIED` (job `113315502340`). Five compatibility jobs
+passed; release, GitHub Packages, Registry and finalization were skipped. This
+failed gate remains recorded. Its old fixture checked process count, close event,
+context and ownership without recording their individual values, so the log
+cannot distinguish actual remaining processes from another failed condition or
+an accounting error. It does not diagnose either account-validation receipt.
+
+The offline Chrome fixture now uses the same tested birth-aware accounting on
+POSIX and the same immediate/bounded-final verifier as the diagnostic. It records
+fixed cleanup counts and close/context/ownership flags on failure as well as
+success. It keeps the five-second polling bound plus one bounded in-flight probe,
+counts surviving observed processes, retains uncertain fixtures and never kills
+to pass. Both executable validation scripts are included in strict typechecking.
+Windows keeps its existing conservative PID inventory, now persisting observed
+children and using a five-second captured process-probe deadline; Windows birth
+identity, ACL and privacy proof remain open. Its inventory limitation is labeled
+in each fixture result. The macOS account protocol still uses the one-second
+probe and is not changed or authorized by these offline fixture updates.
+
+A new reviewed head must pass fresh local/hosted gates and a pinned dry run before
+it can be offered for consent. Passing a later fixture cannot relabel this
+historical failure or establish why it occurred. Core 3.0.0 remains immutable.
