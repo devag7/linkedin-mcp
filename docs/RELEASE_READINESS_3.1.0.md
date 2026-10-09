@@ -508,3 +508,15 @@ proxy-addr 2.0.8. The full source audit still has one low development-only esbui
 finding through tsup (GHSA-g7r4-m6w7-qqqr); the build uses neither serve nor watch.
 These are offline package/lifecycle proofs, not native-client first use or live
 provider usefulness. Exact-head hosted/dry-run checks and new freeze are pending.
+
+### Post-v2 offline repair — October 9
+
+The preceding preparation is historical: the exact-head gates passed before a
+separately consented v2 run at `ec0b153`. That consent is consumed. The run failed
+usefulness (zero useful jobs) and cleanup (two tracked processes at both checks).
+Its private failed receipt is immutable. See the [post-v2 findings](POST_V2_OFFLINE_FINDINGS_2026-10-09.md)
+for reproduced signal-status and observer-accounting repairs, public normalized
+identity research and a longer disposable Chrome cleanup failure. No normalized
+identity acceptance or endpoint change is justified. PR #5 remains draft; neither
+a new account run nor release is ready. Fresh gates for the repaired head must
+not be interpreted as closing these live-usefulness/native-cleanup blockers.

@@ -283,3 +283,60 @@ it.skipIf(process.platform === 'win32')(
     }
   },
 );
+
+it('does not select the known observer or expand its ordinary probe descendants', () => {
+  const tracker = new ValidationProcessTracker(profile);
+  const observer = row(process.pid, 1, `node observer --user-data-dir=${profile}`);
+  const probe = row(999999, process.pid, 'ps -eo synthetic-columns');
+  expect(tracker.sample([observer, probe]).remainingProcesses).toBe(0);
+  expect(tracker.sample([{ ...observer, command: 'observer' }, probe]).remainingProcesses).toBe(0);
+});
+it('still selects a real profile child of the observer independently', () => {
+  const tracker = new ValidationProcessTracker(profile);
+  const result = tracker.sample([
+    row(process.pid, 1, `node observer --user-data-dir=${profile}`),
+    row(999999, process.pid, `chrome --user-data-dir=${profile}`),
+    row(999998, 999999),
+  ]);
+  expect(result.remainingProcesses).toBe(2);
+  expect(result.processAccounting.directProfileRoots).toBe(1);
+});
+it('validates malformed observer records before excluding them', () => {
+  expect(() =>
+    new ValidationProcessTracker(profile).sample([{ ...row(process.pid), start: '' }]),
+  ).toThrow('PROCESS_SNAPSHOT_INVALID');
+});
+it.skipIf(process.platform === 'win32')(
+  'does not falsely track a disposable observer carrying its own profile argument',
+  () => {
+    const dir = realpathSync(mkdtempSync(join(tmpdir(), 'observer-process-fixture-')));
+    const observer = join(dir, 'observer.mts');
+    const target = join(dir, 'profile');
+    writeFileSync(
+      observer,
+      `
+    import {spawn} from 'node:child_process';import {once} from 'node:events';
+    import {readValidationProcesses,ValidationProcessTracker} from ${JSON.stringify(new URL('../scripts/validation-processes.ts', import.meta.url).href)};
+    const helper=spawn(process.execPath,['-e','setInterval(()=>{},1000)'],{stdio:'ignore'});
+    const exited=once(helper,'exit');
+    await once(helper,'spawn');await new Promise(r=>setTimeout(r,100));
+    try{const profile=process.argv[2].slice('--user-data-dir='.length);
+      const result=new ValidationProcessTracker(profile).sample(readValidationProcesses());
+      console.log(JSON.stringify(result));
+    }finally{helper.kill();await exited;}
+  `,
+    );
+    try {
+      const result = spawnSync(
+        process.execPath,
+        ['--import', 'tsx', observer, '--user-data-dir=' + target],
+        { cwd: new URL('..', import.meta.url), encoding: 'utf8', timeout: 10000 },
+      );
+      expect(result.error).toBeUndefined();
+      expect(result.status).toBe(0);
+      expect(JSON.parse(result.stdout).remainingProcesses).toBe(0);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  },
+);

@@ -973,3 +973,27 @@ describe('SDK opt-in redacted identifier observation', () => {
     expect(reports).toHaveLength(1);
   });
 });
+
+it.each([
+  { objectUrn: 'urn:li:jobPosting:123' },
+  { objectUrn: 'urn:li:jobPosting:456' },
+  { jobPostingUrn: 'urn:li:fsd_jobPosting:123' },
+])(
+  'does not promote public normalized/type/identity hints into trusted detail identity: %j',
+  async (hint) => {
+    raw = {
+      data: {
+        $type: 'com.linkedin.voyager.jobs.JobPosting',
+        entityUrn: 'urn:li:fs_normalized_jobPosting:123',
+        title: 'Synthetic normalized posting',
+        description: 'Synthetic detail',
+        ...hint,
+      },
+    };
+    const { envelope } = await call('get_job_details', { job_id: '123' });
+    expect(envelope.code).toBe('RESPONSE_SHAPE_CHANGED');
+    expect(envelope.data).toBeNull();
+    expect(JSON.stringify(envelope)).not.toContain('/jobs/view/123/');
+    expect(fetches).toHaveBeenCalledTimes(2);
+  },
+);

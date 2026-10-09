@@ -593,3 +593,19 @@ suspected runtime defect was not reproduced, so no identity behavior was changed
 The misleading source comment about JavaScript's non-multiline `$` was corrected;
 the explicit whole-value check remains. The new SDK cases guard these independent
 composition boundaries without substituting for live-provider evidence.
+
+## Version 2 result and offline continuation — consent consumed
+
+The prepared scope above is historical. Version 2 was separately authorized and
+consumed at `ec0b153d84e01987e524f63b8583957d3944bb1f`; no approval remains.
+Its private receipt SHA256 is
+`3d0151e612dff782c94c6b9cfa59245244401f3968a19b0a0876b02541265c0d`.
+Three explicit attempts/two reads produced partial in both fields, one sourced
+title fact and zero useful jobs. Identity selection rejected numeric agreement
+in an unsupported namespace. Cleanup failed with two tracked processes at both
+checks. The complete private report and original failure remain unchanged.
+
+[Post-v2 offline findings](POST_V2_OFFLINE_FINDINGS_2026-10-09.md) distinguish two
+proven repairs from an unresolved longer native cleanup failure and insufficient
+canonical identity evidence. Production identity checks remain strict. Repeating
+the same v2 diagnostic cannot resolve these gates; no new live run is proposed.

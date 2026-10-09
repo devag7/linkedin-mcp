@@ -118,6 +118,11 @@ export class ValidationProcessTracker {
       )
         throw new Error('PROCESS_SNAPSHOT_INVALID');
       present.add(row.pid);
+      // The known Node observer is not a Chrome/profile process, even if its
+      // argv quotes the profile. Do not seed its probe/compiler descendants.
+      // Other rows (including genuine profile children of this observer) still
+      // require their own normal classification. Never exclude an entire tree.
+      if (row.pid === process.pid) continue;
       const original = this.tracked.get(row.pid);
       if (original !== undefined && original.start !== row.start) counts.reusedPids++;
       const direct = profileArgument(row.command, this.profile);
@@ -138,7 +143,7 @@ export class ValidationProcessTracker {
     for (let changed = true; changed; ) {
       changed = false;
       for (const row of rows)
-        if (selected.has(row.parent) && !selected.has(row.pid)) {
+        if (row.pid !== process.pid && selected.has(row.parent) && !selected.has(row.pid)) {
           selected.add(row.pid);
           counts.newDescendants++;
           changed = true;
