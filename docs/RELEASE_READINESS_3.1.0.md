@@ -424,3 +424,38 @@ access, merge, publication or volunteer contact has occurred. The separate
 published-3.0.0 first-use cohort remains zero started attempts; the owner can send
 the existing [volunteer kit](FIRST_USE_VOLUNTEER_KIT.md) to a willing new
 participant and return only its consented redacted outcome. Mandatory cash is $0.
+
+At `630aba2d05cfc11a5ca73fff5cd99866c5cac565`,
+[CI](https://github.com/devag7/linkedin-mcp/actions/runs/37897942535) passed all
+12 jobs with standard `npm test`: Linux/macOS 744 passes; Windows 742 passes and
+two explicitly POSIX-only fixture skips. An initial
+[dry run](https://github.com/devag7/linkedin-mcp/actions/runs/37897958050) failed
+checkout because an abbreviated SHA was supplied; no code/publication ran.
+The corrected [full-SHA dry run](https://github.com/devag7/linkedin-mcp/actions/runs/37898090070)
+passed five compatibility jobs but failed Windows/Node 22 `verify:browser`
+(job `113714070747`) with only `BROWSER_LIFECYCLE_FAILED`, before its lifecycle
+receipt. All publication jobs were skipped. The elapsed time cannot distinguish
+native inventory timeout, browser launch or another pre-receipt failure. These
+failed gates remain preserved, with no claim that a cause was established.
+
+The offline lifecycle fixture now emits only fixed stage/error classes and retains
+an allowlisted probe classification when final cleanup catches it. Its extracted
+Windows inventory boundary distinguishes known timeout, execution, malformed or
+incomplete inventory without exposing native messages, commands or stderr. It
+rejects null/malformed records and duplicate PIDs. Arbitrary uppercase messages
+are no longer forwarded. Synthetic injected-error/inventory fixtures passed;
+the five-second Windows probe, one-second macOS probe and strict bounded-final
+acceptance remain unchanged. This improves observability; it does not fix or
+explain the historical failure, establish Windows birth identity/ACL proof, or
+alter the macOS account diagnostic. The revised head needs fresh local, hosted
+and pinned dry-run gates before freeze and consent.
+
+Fresh local repair gates passed: 757 tests/34 files with one worker and unchanged
+deadlines/assertions; the final uppercase-private-value regression also passed
+all 13 injected Windows boundary cases. Lint, source/runner types, metadata,
+build, actual empty-profile Chrome lifecycle, exact 15-file package/installed
+CLI/setup/SDK checks and production/publisher/full-consumer audits passed.
+The draft archive remains SHA256
+`b926a31f86fe252c9d4220506079ac18cc5972479ab528512a2d396a0f8c5520`;
+the offline-only fixture repair does not enter that bundle. Exact revised source,
+review, hosted gates and freeze receipt will be recorded on PR #5 before consent.
