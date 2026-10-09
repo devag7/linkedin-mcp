@@ -45,22 +45,33 @@ export class JobDetailSelectionError extends Error {
   }
 }
 
-const supportedId = (urn: unknown) => {
+export const supportedJobId = (urn: unknown) => {
   if (typeof urn !== 'string') return undefined;
   const match = /^urn:li:(?:fsd_)?jobPosting:([0-9]{1,20})$/.exec(urn);
   // JavaScript's $ also matches before a final newline. Require the whole value.
   return match?.[0] === urn ? match[1] : undefined;
 };
 
+export function isJobDetailCandidate(value: unknown): value is Record<string, unknown> {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  const node = value as Record<string, unknown>;
+  return (
+    typeof node.title === 'string' &&
+    ['description', 'jobState', 'companyDetails', 'formattedLocation', 'workRemoteAllowed'].some(
+      (key) => key in node,
+    )
+  );
+}
+
 /** Classify without normalizing or accepting unsupported identifiers. */
 function formatClass(urn: unknown): JobDetailStructureCheck {
   if (urn === undefined || urn === null || urn === '') return 'format_missing';
   if (typeof urn !== 'string') return 'format_non_string';
-  if (supportedId(urn) !== undefined)
+  if (supportedJobId(urn) !== undefined)
     return urn.startsWith('urn:li:fsd_jobPosting:')
       ? 'format_supported_dash'
       : 'format_supported_legacy';
-  if (supportedId(urn.trim()) !== undefined) return 'format_supported_after_trim';
+  if (supportedJobId(urn.trim()) !== undefined) return 'format_supported_after_trim';
   const known = /^urn:li:(?:fsd_)?jobPosting:([\s\S]*)$/.exec(urn);
   if (known) {
     if (!known[1]) return 'format_known_prefix_empty';
@@ -102,13 +113,7 @@ export function selectJobDetailNode(
     if (++inspected > 10000) throw new JobDetailSelectionError('selection_traversal_limit');
     seen.add(value);
     const node = value as Record<string, unknown>;
-    if (
-      !Array.isArray(value) &&
-      typeof node.title === 'string' &&
-      ['description', 'jobState', 'companyDetails', 'formattedLocation', 'workRemoteAllowed'].some(
-        (key) => key in node,
-      )
-    ) {
+    if (isJobDetailCandidate(value)) {
       candidates++;
       emit(origin === 'data' ? 'candidate_in_data' : 'candidate_in_included');
       const urn = node.entityUrn;
@@ -116,7 +121,7 @@ export function selectJobDetailNode(
       // This field was observed in retained search shapes, not established as
       // detail identity. Observe only; it must never authorize attribution.
       const reference = node['*jobPosting'];
-      const referenceId = supportedId(reference);
+      const referenceId = supportedJobId(reference);
       emit(
         reference === undefined || reference === null || reference === ''
           ? 'reference_missing'
@@ -129,7 +134,7 @@ export function selectJobDetailNode(
                 : 'reference_unsupported',
       );
       if (typeof urn === 'string' && urn.trim() !== urn) emit('format_boundary_whitespace');
-      const id = supportedId(urn);
+      const id = supportedJobId(urn);
       if (id !== undefined && id === requestedId) {
         matches.push(node);
         emit('candidate_supported_match');

@@ -3,15 +3,17 @@ import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { existsSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { Client } from '@modelcontextprotocol/sdk/client/index.js';
-import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
-import { createRuntime, createServer } from '../src/server.js';
-import { loadConfig } from '../src/config/env.js';
-import { Logger } from '../src/types.js';
-import { briefObservation } from './job-brief-observation.js';
-import { inspectSetup } from '../src/doctor.js';
-import { profilePath } from '../src/safety/state-lock.js';
-import { JOB_DETAIL_CHECKS, observeJobDetailChecks } from '../src/tools/job-detail-diagnostic.js';
+import {
+  JOB_DETAIL_CHECKS,
+  observeJobDetailChecks,
+  observeJobIdentifiers,
+} from '../src/tools/job-detail-diagnostic.js';
+import {
+  IDENTIFIER_DIAGNOSTIC_SCHEMA,
+  JOB_IDENTIFIER_NAMESPACES,
+  IDENTIFIER_DIAGNOSTIC_LIMITS,
+  type JobIdentifierObservation,
+} from '../src/browser/job-identifier-diagnostic.js';
 import { verifyFinalCleanup } from './validation-cleanup.js';
 import {
   readValidationProcesses,
@@ -28,6 +30,11 @@ const head = execFileSync('git', ['rev-parse', 'HEAD'], {
 }).trim();
 assert.equal(process.env.LINKEDIN_JOB_SHAPE_CONSENT_SHA, head, 'FRESH_SOURCE_CONSENT_REQUIRED');
 assert.equal(
+  process.env.LINKEDIN_JOB_IDENTIFIER_SCOPE,
+  IDENTIFIER_DIAGNOSTIC_SCHEMA,
+  'CHANGED_RETENTION_CONSENT_REQUIRED',
+);
+assert.equal(
   execFileSync('git', ['status', '--porcelain', '--untracked-files=normal'], {
     cwd: sourceRoot,
     encoding: 'utf8',
@@ -38,6 +45,27 @@ assert.equal(
 assert.equal(process.platform, 'darwin', 'PROTOCOL_IS_MACOS_ONLY');
 const output = process.env.LINKEDIN_JOB_SHAPE_OUTPUT;
 assert.ok(output && output.startsWith('/') && !existsSync(output), 'NEW_PRIVATE_OUTPUT_REQUIRED');
+// A denied/outdated scope must stop before loading the browser/SDK/config stack.
+// These independent imports occur only after all accidental-run guards pass.
+const [
+  { Client },
+  { InMemoryTransport },
+  { createRuntime, createServer },
+  { loadConfig },
+  { Logger },
+  { briefObservation, encodeDiagnosticReceipt },
+  { inspectSetup },
+  { profilePath },
+] = await Promise.all([
+  import('@modelcontextprotocol/sdk/client/index.js'),
+  import('@modelcontextprotocol/sdk/inMemory.js'),
+  import('../src/server.js'),
+  import('../src/config/env.js'),
+  import('../src/types.js'),
+  import('./job-brief-observation.js'),
+  import('../src/doctor.js'),
+  import('../src/safety/state-lock.js'),
+]);
 process.env.TRANSPORT = 'stdio';
 process.env.LINKEDIN_PROVIDER = 'browser';
 process.env.LINKEDIN_ENABLE_WRITES = 'false';
@@ -79,6 +107,11 @@ const detailChecks = Object.fromEntries(JOB_DETAIL_CHECKS.map((check) => [check,
 const stopObserving = observeJobDetailChecks(server, (check) => {
   detailChecks[check]++;
 });
+const identifierObservations: JobIdentifierObservation[] = [];
+const stopIdentifierObservation = observeJobIdentifiers(server, (report) => {
+  assert.equal(identifierObservations.length, 0, 'ONE_DETAIL_OBSERVATION_ONLY');
+  identifierObservations.push(report);
+});
 const client = new Client({ name: 'consented-shape-diagnostic', version: '1' });
 const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
 const record: Record<string, unknown> = {
@@ -87,7 +120,12 @@ const record: Record<string, unknown> = {
   platform: process.platform,
   transport: 'SDK in-memory, actual production runtime',
   scope:
-    'One separately consented count-one brief with value-free detail stage and identifier structure counts; not installed-client or general provider compatibility evidence.',
+    'One separately consented count-one brief with bounded redacted identifier trees, finite public namespace labels and exact in-memory numeric comparisons; not new identity acceptance, semantics or compatibility proof.',
+  identifierDisclosurePolicy: {
+    schema: IDENTIFIER_DIAGNOSTIC_SCHEMA,
+    namespaceVocabulary: JOB_IDENTIFIER_NAMESPACES,
+    limits: IDENTIFIER_DIAGNOSTIC_LIMITS,
+  },
   startedAt: new Date().toISOString(),
 };
 let observedProcesses = 0;
@@ -175,10 +213,17 @@ try {
   };
   if (!verification.verified) failure = true;
   stopObserving();
+  stopIdentifierObservation();
   record.detailValidationCounts = detailChecks;
+  record.identifierObservations = identifierObservations;
+  record.identifierDiagnosticComplete =
+    identifierObservations.length === 1 &&
+    identifierObservations[0]!.diagnosticComplete &&
+    detailChecks.identifier_observer_failed === 0;
+  if (!record.identifierDiagnosticComplete) failure = true;
   record.endedAt = new Date().toISOString();
   record.acceptancePassed = !failure;
-  writeFileSync(output!, JSON.stringify(record, null, 2) + '\n', { mode: 0o600, flag: 'wx' });
+  writeFileSync(output!, encodeDiagnosticReceipt(record), { mode: 0o600, flag: 'wx' });
 }
 // Emit a fixed result only; the private redacted receipt is inspected separately.
 console.log(failure ? 'DIAGNOSTIC_STOPPED' : 'DIAGNOSTIC_RECORDED');

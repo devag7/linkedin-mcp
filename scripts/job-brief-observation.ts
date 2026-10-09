@@ -3,6 +3,19 @@ import assert from 'node:assert/strict';
 import { CallToolResultSchema } from '@modelcontextprotocol/sdk/types.js';
 import { outputSchema } from '../src/tools/contracts.js';
 import { briefSchema, hasComparisonEvidence } from '../src/tools/research-contract.js';
+import { IDENTIFIER_DIAGNOSTIC_LIMITS } from '../src/browser/job-identifier-diagnostic.js';
+
+/** Persist the diagnostic's canonical compact representation, not an expanded pretty tree. */
+export function encodeDiagnosticReceipt(record: Record<string, unknown>): string {
+  const reports = record.identifierObservations;
+  assert.ok(Array.isArray(reports) && reports.length <= 1, 'INVALID_DIAGNOSTIC_REPORT_COUNT');
+  for (const report of reports)
+    assert.ok(
+      Buffer.byteLength(JSON.stringify(report), 'utf8') <= IDENTIFIER_DIAGNOSTIC_LIMITS.reportBytes,
+      'DIAGNOSTIC_REPORT_TOO_LARGE',
+    );
+  return JSON.stringify(record) + '\n';
+}
 export function briefObservation(incoming: unknown, start: number, end: number) {
   const result = CallToolResultSchema.parse(incoming);
   const envelope = outputSchema('research_jobs').parse(result.structuredContent);

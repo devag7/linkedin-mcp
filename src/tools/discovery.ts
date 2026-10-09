@@ -33,7 +33,7 @@ import * as ep from '../browser/endpoints.js';
 import { ok, run, ToolError } from './result.js';
 import { registerTool } from './register.js';
 import { assertReadResponse, readRows } from './provider-shape.js';
-import { recordJobDetailCheck } from './job-detail-diagnostic.js';
+import { recordJobDetailCheck, recordJobIdentifiers } from './job-detail-diagnostic.js';
 import { JobDetailSelectionError } from '../browser/job-detail-selection.js';
 import { pageFields, pageStart, pageResult, firstPage } from './pagination.js';
 
@@ -134,6 +134,7 @@ export function registerDiscoveryTools(
           );
           throw error;
         }
+        recordJobIdentifiers(server, raw, job_id);
         let job: ReturnType<typeof shapeJobDetails>;
         try {
           job = shapeJobDetails(raw, job_id, (check) => recordJobDetailCheck(server, check));

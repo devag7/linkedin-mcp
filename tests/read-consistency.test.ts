@@ -11,7 +11,10 @@ import {
   JOB_DETAIL_CHECKS,
   observeJobDetailChecks,
   recordJobDetailCheck,
+  observeJobIdentifiers,
+  recordJobIdentifiers,
 } from '../src/tools/job-detail-diagnostic.js';
+import type { JobIdentifierObservation } from '../src/browser/job-identifier-diagnostic.js';
 import * as normalize from '../src/browser/normalize.js';
 import * as registration from '../src/tools/register.js';
 import { registerTool } from '../src/tools/register.js';
@@ -824,5 +827,146 @@ describe('SDK value-free detail rejection stages', () => {
     const { envelope } = await call('get_job_details', { job_id: '123' });
     expect(envelope.code).toBe('RESPONSE_SHAPE_CHANGED');
     expect(fetches).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe('SDK opt-in redacted identifier observation', () => {
+  it.each(['jobPosting', 'fsd_jobPosting'])(
+    'keeps strict supported identity and source attribution: %s',
+    async (namespace) => {
+      const reports: JobIdentifierObservation[] = [];
+      observeJobIdentifiers(server, (report) => reports.push(report));
+      raw = {
+        data: {
+          title: 'Synthetic',
+          description: 'Synthetic',
+          entityUrn: 'urn:li:' + namespace + ':123',
+        },
+      };
+      const { envelope } = await call('get_job_details', { job_id: '123' });
+      expect(envelope.data.sourceUrl).toBe('https://www.linkedin.com/jobs/view/123/');
+      expect(reports[0]!.supportedEntityBinding).toBe('unique');
+      expect(JSON.stringify(reports)).not.toContain('123');
+      expect(fetches).toHaveBeenCalledTimes(2);
+    },
+  );
+  it('discriminates an unsupported wrapper/tuple/reference without authorizing it', async () => {
+    const reports: JobIdentifierObservation[] = [];
+    observeJobIdentifiers(server, (report) => reports.push(report));
+    raw = {
+      data: {
+        title: 'PRIVATE_TITLE',
+        description: 'PRIVATE_CONTENT',
+        entityUrn: 'urn:li:fsd_jobPostingCard:(123,PRIVATE_TOKEN)',
+        '*jobPosting': 'urn:li:fsd_jobPosting:123',
+      },
+    };
+    const { envelope } = await call('get_job_details', { job_id: '123' });
+    expect(envelope.code).toBe('RESPONSE_SHAPE_CHANGED');
+    expect(envelope.data).toBeNull();
+    expect(reports[0]).toMatchObject({
+      diagnosticComplete: true,
+      supportedEntityBinding: 'none',
+      candidates: [{ relationship: 'different' }],
+    });
+    expect(JSON.stringify(reports)).not.toMatch(/123|PRIVATE_/);
+    expect(fetches).toHaveBeenCalledTimes(2);
+  });
+  it('preserves ambiguity even when every observed number matches', async () => {
+    const reports: JobIdentifierObservation[] = [];
+    observeJobIdentifiers(server, (report) => reports.push(report));
+    const job = {
+      title: 'Synthetic',
+      description: 'Synthetic',
+      entityUrn: 'urn:li:fsd_jobPosting:123',
+    };
+    raw = { data: job, included: [{ ...job }] };
+    const { envelope } = await call('get_job_details', { job_id: '123' });
+    expect(envelope.code).toBe('RESPONSE_SHAPE_CHANGED');
+    expect(reports[0]!.supportedEntityBinding).toBe('ambiguous');
+    expect(fetches).toHaveBeenCalledTimes(2);
+  });
+  it.each([false, true])(
+    'observer exceptions neither change rejection nor successful attribution (supported=%s)',
+    async (supported) => {
+      const checks = diagnostic(true);
+      observeJobIdentifiers(server, () => {
+        throw new Error('PRIVATE_OBSERVER_FAILURE');
+      });
+      raw = {
+        data: {
+          title: 'Synthetic',
+          description: 'Synthetic',
+          entityUrn: 'urn:li:' + (supported ? 'fsd_jobPosting' : 'PRIVATE_NAMESPACE') + ':123',
+        },
+      };
+      const { envelope } = await call('get_job_details', { job_id: '123' });
+      expect(checks).toContain('identifier_observer_failed');
+      if (supported)
+        expect(envelope.data.sourceUrl).toBe('https://www.linkedin.com/jobs/view/123/');
+      else expect(envelope.code).toBe('RESPONSE_SHAPE_CHANGED');
+      expect(JSON.stringify(envelope)).not.toContain('PRIVATE_OBSERVER_FAILURE');
+      expect(fetches).toHaveBeenCalledTimes(2);
+    },
+  );
+  it('observes the composed partial result with exactly three attempts and no extra read', async () => {
+    const reports: JobIdentifierObservation[] = [];
+    observeJobIdentifiers(server, (report) => reports.push(report));
+    const original = fetches.getMockImplementation()!;
+    fetches.mockImplementation(async (fn, args) =>
+      args.url.includes('/voyager/api/jobs/jobPostings/')
+        ? {
+            status: 200,
+            ok: true,
+            type: 'basic',
+            url: args.url,
+            body: JSON.stringify({
+              data: {
+                title: 'PRIVATE_TITLE',
+                description: 'PRIVATE_CONTENT',
+                entityUrn: 'urn:li:fsd_jobPostingCard:(1,PRIVATE_TOKEN)',
+              },
+            }),
+          }
+        : original(fn, args),
+    );
+    raw = page(1, 1, 0, 1);
+    const { envelope } = await call('research_jobs', {
+      keywords: 'synthetic',
+      count: 1,
+      enrich_first: true,
+    });
+    expect(envelope.data.status).toBe('partial');
+    expect(envelope.meta.status).toBe('partial');
+    expect(envelope.data.reads[1].code).toBe('RESPONSE_SHAPE_CHANGED');
+    expect(reports).toHaveLength(1);
+    expect(JSON.stringify(reports)).not.toMatch(/PRIVATE_/);
+    expect(fetches).toHaveBeenCalledTimes(3);
+  });
+  it('isolates per-server observers and handles detach/replacement without cross-server reports', () => {
+    const other = new McpServer({ name: 'separate-identifier-fixture', version: '1' });
+    const reports: JobIdentifierObservation[] = [];
+    const detach = observeJobIdentifiers(server, (report) => reports.push(report));
+    expect(() => observeJobIdentifiers(server, () => {})).toThrow(
+      'JOB_IDENTIFIER_OBSERVER_ALREADY_ATTACHED',
+    );
+    const value = {
+      data: {
+        title: 'Synthetic',
+        description: 'Synthetic',
+        entityUrn: 'urn:li:fsd_jobPosting:123',
+      },
+    };
+    recordJobIdentifiers(other, value, '123');
+    expect(reports).toEqual([]);
+    recordJobIdentifiers(server, value, '123');
+    expect(reports).toHaveLength(1);
+    detach();
+    const replacement: JobIdentifierObservation[] = [];
+    observeJobIdentifiers(server, (report) => replacement.push(report));
+    detach();
+    recordJobIdentifiers(server, value, '123');
+    expect(replacement).toHaveLength(1);
+    expect(reports).toHaveLength(1);
   });
 });

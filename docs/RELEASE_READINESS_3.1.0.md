@@ -372,3 +372,55 @@ path prefixes are excluded; no possible profile-associated helper is dropped to
 pass a gate. Fixed pre-teardown accounting is retained alongside immediate/final
 counts. These synthetic edge cases neither identify historical process roles nor
 change any job identity or request rule.
+
+### Changed identifier disclosure proposal — October 9, offline only
+
+The prior reference-count-only proposal cannot identify the rejected namespace or
+prove a safe binding. It is superseded by the [changed disclosure scope](JOB_BRIEF_REST_VALIDATION_PROTOCOL_2026-10-02.md#changed-identifier-structure-scope--fresh-consent-required).
+An opt-in, server-local observer projects only bounded `entityUrn`/`*jobPosting`
+trees: fixed grammar classes, three exact reviewed namespace labels, whole-atom
+requested-ID equality, same-object reference equality and supported-entity
+ambiguity. Arbitrary namespaces and values never leave memory. Unknown labels,
+unsupported grammar, bounds and observer errors fail diagnostic completeness.
+The public `fsd_jobPostingCard` label is disclosure vocabulary only; production
+identity acceptance remains restricted to the two supported whole numeric URNs.
+One structure cannot establish a general provider contract or authorize a new
+binding. No endpoint, identity guard, source attribution or request budget changes.
+
+Independent privacy review found and resolved two issues: the persisted report
+now uses compact JSON to enforce the actual 8 KiB bound, with a worst-case fixture;
+container-origin wording no longer implies wrapper semantics. The new scope guard
+rejects prior/missing consent scope before importing the browser/SDK/config stack.
+Disposable tests cover arbitrary-value redaction, exact comparisons, ambiguity,
+bounds, SDK observer isolation/failure, denied scope and compact private receipts.
+Existing delayed-exit/process-accounting fixtures remain strict: a probe failure,
+uncertain footprint or surviving process cannot be turned into cleanup success.
+
+Preserved local full-suite attempts failed: `reviewed-candidate` had 740 passes
+and four failures (two scope-startup deadlines, ownership timeout and native
+process probe); `final-candidate` had 743 passes and an ownership timeout;
+`bounded-workers-candidate` had 743 passes and an unknown final process sample.
+Their logs remain in the private October 9 evidence directory. Heavy imports were
+deferred after denied-scope guards; this does not prove the historical failures'
+causes. The unchanged cleanup/ownership suites passed 59 cases in isolation.
+A fresh complete run with `--maxWorkers=1` passed all 744 tests across 33 files,
+without skips, selectors, timeout changes or relaxed assertions. Lint and strict
+source/runner typechecking, metadata and build passed. Normal/ignore-scripts exact
+15-file package checks, fresh installed CLI/setup/SDK checks and actual disposable
+Chrome lifecycle passed. Production, isolated publisher and full fresh-consumer
+audits have zero findings; consumer SDK 1.32.1 and proxy-addr 2.0.8 meet the floors.
+The full source audit retains one low development-only esbuild finding,
+GHSA-g7r4-m6w7-qqqr, through tsup; its Windows development-server exposure does not
+describe this one-shot build, but the unsupported upgrade remains an explicit
+follow-up rather than a suppressed advisory. Exact-head hosted and
+pinned dry-run evidence must pass and be recorded at the committed PR head before
+the build is frozen or offered for fresh consent. Concurrent local failures remain
+recorded failures even if later gates pass.
+
+The three consumed October 8 receipts, original failed cleanup, old freezes and
+60 protected backup files (including all 57 sync copies and `pr_diff.txt`) remain
+byte-identical. PR #5 stays draft, core 3.0.0 remains immutable, and no LinkedIn
+access, merge, publication or volunteer contact has occurred. The separate
+published-3.0.0 first-use cohort remains zero started attempts; the owner can send
+the existing [volunteer kit](FIRST_USE_VOLUNTEER_KIT.md) to a willing new
+participant and return only its consented redacted outcome. Mandatory cash is $0.

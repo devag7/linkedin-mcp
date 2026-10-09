@@ -423,3 +423,107 @@ The lifecycle fixture now shares POSIX tracking and bounded-final verification
 and reports fixed cleanup flags/counts even on failure. It does not access an
 account or authorize this protocol. [Readiness records the exact failed run and
 remaining Windows accounting limit](RELEASE_READINESS_3.1.0.md#additional-hosted-lifecycle-gate-failure--preserved).
+
+## Changed identifier-structure scope — fresh consent required
+
+Prepared October 9, 2026, offline only. This **supersedes the proposed reference-count-only
+diagnostic** above; neither that proposal nor a prior consumed consent authorizes
+this run. The old receipts, failed cleanup and frozen historical builds remain
+unchanged. No account has been accessed to prepare this scope.
+
+The new projection is `job-identifier-structure/v1`. It observes only `entityUrn`
+and `*jobPosting` on objects recognized by the existing job-detail candidate
+predicate, in the existing validated `data`/`included` containers. Normal clients
+receive no new output fields. An observer is explicitly attached by the reviewed
+runner; without it, no structural projection runs. It cannot select a job, change
+an endpoint, add a request, borrow another object's facts or attach a source URL.
+
+### Exact disclosure policy and sufficiency
+
+| Retained field | Allowed disclosure | Why needed |
+| --- | --- | --- |
+| `schema` | Fixed `job-identifier-structure/v1` | Identifies the reviewed policy. |
+| `diagnosticComplete` | Boolean | Marks unknown namespaces, unsupported grammar and bounds; incomplete reports cannot establish absence or uniqueness. |
+| `supportedEntityBinding` | `none`, `unique`, `ambiguous`, `incomplete` | Counts distinct objects whose **whole existing supported numeric entity URN** matches the requested ID; aliases count once. This is an identity observation, not acceptance of a title or provider semantics. |
+| Candidate `origin` | `data` or `included` | Records which container held a recognized candidate. It does not establish wrapper semantics or independent identity support. No dynamic path, key or object value is retained. |
+| `entityUrn`, `jobPostingReference` | Bounded redacted identifier trees | Reveals namespace and atom/tuple layout without instance values. |
+| Tree `kind` | `missing`, `non_string`, `opaque`, `invalid`, `limited`, `number_over_limit`, `number`, `tuple`, `urn` | Distinguishes absent identity, parsing limits and structural forms. |
+| Tree `namespace` | Exactly the three code-owned literals below, or `unrecognized` | Identifies reviewed structural types; arbitrary provider text is never copied. |
+| Numeric `comparison` | `requested_id_equal` or `requested_id_different` | Exact in-memory comparison of a complete decimal atom of at most 20 digits. No trim, decoding, coercion, substring match, number or length is retained. |
+| Tuple `items`, URN `payload` | Ordered redacted child trees | Locates an equality within a composite identifier without preserving the identifier. |
+| Candidate `relationship` | `equal`, `different`, `not_comparable` | Compares the complete same-object entity/reference strings in memory only when both parse completely as reviewed LinkedIn URNs; never borrows another candidate's relationship. |
+
+Namespace vocabulary is immutable and case-sensitive:
+
+- `jobPosting` and `fsd_jobPosting`: the existing [numeric identity contract](CONTRACTS.md).
+- `fsd_jobPostingCard`: present at line 33 of a
+  [public implementation pinned to commit `dc37668`](https://github.com/seriserendipia/linkedin-applicant-filter/blob/dc37668cc50d534a0f67d8f02fabe50b87cc9612/main_world.js#L33).
+  This establishes a public disclosure label only. It does **not** establish
+  this account's returned namespace, detail semantics or a verified endpoint.
+  This namespace remains rejected by production identity checks.
+
+This is sufficient to distinguish those reviewed namespaces and a scalar versus
+a nested/composite identifier, locate exact requested-ID agreement, and expose
+supported-object ambiguity. A matching tuple member or reference alone does
+**not** prove a safe canonical job binding. The strict supported whole entity URN,
+unique-object selection, nonblank title and research's independent identity check
+still govern attribution. A single response does not establish a general provider
+contract. If the actual namespace is not in this finite vocabulary, it remains
+`unrecognized` and diagnostic completeness fails. We cannot guarantee identifying
+an unseen literal while promising that all arbitrary values are removed. There
+is no automatic vocabulary expansion, second observation or retry.
+
+All other atoms are `opaque`; unexpected URN families are opaque/incomplete.
+Missing/non-string fields reveal only their fixed class. No URN, numeric ID,
+opaque token, URL, content, type-field value, arbitrary namespace/prefix, hash,
+input length, raw response, error text, dynamic key or process identity is retained.
+The reports are new value-free graphs; observers never receive the raw response
+or requested ID. Observer errors produce a fixed failure count without changing
+the tool's outcome. The runner requires exactly one complete detail observation;
+an incomplete/missing observation or observer failure cannot pass diagnostics.
+
+Hard caps are four candidate records, 10,000 response nodes, 2,048 characters per
+input identifier, depth four, 16 nodes per identifier, four items per tuple and
+8 KiB per persisted compact JSON report. The receipt is saved compactly; a pretty
+representation is not the consented persisted form. Exceeded caps/unsupported grammar produce fixed
+limited/invalid/incomplete classifications. The receipt contains at most one report.
+Caps bound the diagnostic; they do not enlarge the provider request budget.
+
+### Separately consented execution, retention and cleanup
+
+Consent must name the new full source SHA, archive, runner, vocabulary/schema
+hashes and the disclosure table above. The runner additionally requires
+`LINKEDIN_JOB_IDENTIFIER_SCOPE=job-identifier-structure/v1`; its environment guards
+prevent accidental execution and are **not** evidence of human approval.
+
+Proposed account scope stays one `research_jobs` call, “TypeScript engineer”,
+count 1, `enrich_first:true`, existing profile on this Mac, at most three explicit
+Voyager GET attempts (identity, search, optional first detail), at most two
+underlying read tools, normal pacing and a 180-second tool deadline. Ordinary
+Chrome navigation and background traffic may occur outside that explicit counter.
+No login, retry, extra health probe, endpoint fallback, pagination or write.
+Stop at checkpoint, authentication/restriction/rate failure, contract/identity
+failure or a bound; no additional read to investigate the stop.
+
+The private mode-0600 receipt retains source/runtime identifiers, UTC start/end
+times, elapsed timing, result/status/usefulness/request/tool counts, existing
+allowlisted stage/reference counts, the new report/disclosure policy, and fixed
+cleanup counts/flags. Process accounting before teardown and at immediate/final
+checks has the seven keys previously listed; PIDs, commands, paths and start stamps
+stay in memory. No public raw receipt or private study row is posted. The owner
+controls deletion of the redacted receipt; no automatic deletion is claimed.
+
+Always close the session/client/server and engine. Record immediate teardown and
+bounded final process/context/ownership verification: five-second polling and at
+most one in-flight one-second macOS process probe. Remaining processes,
+uncertainty, ownership, active context, probe/teardown errors or observer failure
+fail acceptance, even if later local observations are clean. No process is killed
+to pass validation. This account protocol is macOS-only; Windows fixture checks
+do not establish Windows birth identity, ACL or privacy proof.
+
+A useful brief still requires a linked title plus at least one certified comparison
+fact. Title-only remains failed usefulness; diagnostic insight is not a useful
+brief and cannot authorize merge/release. PR #5 remains draft. The published
+3.0.0 pilot remains separate with zero started attempts, under its
+[existing volunteer kit](FIRST_USE_VOLUNTEER_KIT.md); no recruitment or participant
+account access is authorized by this diagnostic scope.
