@@ -527,3 +527,69 @@ brief and cannot authorize merge/release. PR #5 remains draft. The published
 3.0.0 pilot remains separate with zero started attempts, under its
 [existing volunteer kit](FIRST_USE_VOLUNTEER_KIT.md); no recruitment or participant
 account access is authorized by this diagnostic scope.
+
+## Offline continuation: version 2 disclosure proposal
+
+Prepared October 9, after the **consumed** version 1 run at
+`75266b23f557cad6b6be662702fa64447a4ff814`. That run returned partial in both
+fields, three explicit attempts/two read tools, one sourced title fact and zero
+useful entities. Detail identity was rejected; current cleanup passed. The full
+mode-0600 receipt and identifier report stay private. Its receipt SHA256 is
+`d7bbe5ac2ec83b876071517a506dbd8ccd8e6162da2c5761d6e2220b7e40114c`.
+Neither this result nor its cleanup relabels the older failed receipts. No
+namespace literal, provider semantics or safe alternate binding was established.
+
+Version 2 adds **one disclosure label only**, `fs_normalized_jobPosting`. Its
+literal appears in primary public source:
+
+- [Job parser at pinned commit 4110552, lines 87–88](https://github.com/mguttmann/linkedin-internal-api/blob/4110552e08c310188a628b427733d9ff3a7e813c/mcp/lib/jobs_parse.py#L87).
+- [Job-page parser at pinned commit afb44e6, lines 330–335](https://github.com/beastx-ro/first2apply/blob/afb44e63f7ee9f2aab375eb3b30805920ce9e6ad/apps/backend/supabase/functions/_shared/parsers/linkedin.ts#L330).
+
+These sources prove a public vocabulary label, **not** this account's returned
+namespace, current REST compatibility, detail semantics or authority to borrow
+another object's identity. Their parsing/endpoint logic is not adopted.
+The new label remains rejected by production selection, the standalone detail
+guard and research's independent guard, including when its numeric payload or
+reference matches. No endpoint or identity acceptance changes.
+
+The normative version 2 policy has schema `job-identifier-structure/v2` and
+exactly four code-owned, case-sensitive namespace labels: `jobPosting`,
+`fsd_jobPosting`, `fsd_jobPostingCard`, `fs_normalized_jobPosting`; every other
+namespace remains `unrecognized`/incomplete. All other retained fields and their
+purposes remain those in the disclosure table above: origin, bounded trees,
+whole-decimal-atom comparisons, same-object relationships and **existing supported
+entity** binding classifications. In particular, `supportedEntityBinding:none`
+does not certify uniqueness or semantics among normalized-namespace candidates;
+their separate records show multiplicity without accepting any of them.
+No input values, URNs, IDs, URLs, content, arbitrary labels/hashes/lengths,
+dynamic keys, raw errors or process identities are retained. The private receipt
+has at most one compact 8 KiB report/four candidates; all existing traversal,
+identifier, depth, node and tuple limits remain unchanged. Owner-controlled
+deletion and no automatic erasure claim remain unchanged.
+
+The runner requires the new schema guard plus a clean, newly frozen exact source.
+Version 1/missing scope must stop before browser/SDK/config imports. Its guards
+are accidental-run protection, not human consent. **No version 2 account run is
+authorized.** Any future execution requires fresh consent naming the full source,
+archive, runner and policy/schema/vocabulary hashes after independent review,
+local/package/audit, hosted matrix and pinned dry-run gates pass.
+
+The proposed request and cleanup scope is unchanged: one `research_jobs` call,
+“TypeScript engineer”, count 1, `enrich_first:true`, existing Mac profile, normal
+pacing, at most three explicit Voyager GET attempts/two underlying read tools
+and a 180-second tool deadline. Ordinary Chrome navigation/background traffic is
+outside the explicit counter. No login, retry, probe, fallback, pagination or
+write; stop at checkpoint/authentication/restriction/rate/contract/identity failure
+or a bound. Always tear down session/client/server/engine; record immediate and
+five-second bounded final verification plus at most one in-flight one-second
+macOS process probe. Any survivor, uncertainty, ownership/context, teardown,
+probe or observer failure fails acceptance. Title-only still fails usefulness.
+Knowing a namespace label or matching number alone does not permit merge/release.
+The published 3.0.0 participant pilot remains separate, at zero started attempts.
+
+Offline SDK regression work also tested composed URNs and canonical sources
+with a trailing newline. **The existing guards already reject them**; the
+suspected runtime defect was not reproduced, so no identity behavior was changed.
+The misleading source comment about JavaScript's non-multiline `$` was corrected;
+the explicit whole-value check remains. The new SDK cases guard these independent
+composition boundaries without substituting for live-provider evidence.

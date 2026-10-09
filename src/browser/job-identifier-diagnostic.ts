@@ -5,12 +5,14 @@ import { isJobDetailCandidate, supportedJobId } from './job-detail-selection.js'
 // Exact literals only; this is a disclosure vocabulary, NOT accepted job identity.
 // jobPosting/fsd_jobPosting: existing strict identity contract.
 // fsd_jobPostingCard: public implementation, pinned evidence in the protocol.
+// fs_normalized_jobPosting: public parsers, pinned evidence; disclosure only.
 export const JOB_IDENTIFIER_NAMESPACES = Object.freeze([
   'jobPosting',
   'fsd_jobPosting',
   'fsd_jobPostingCard',
+  'fs_normalized_jobPosting',
 ] as const);
-export const IDENTIFIER_DIAGNOSTIC_SCHEMA = 'job-identifier-structure/v1';
+export const IDENTIFIER_DIAGNOSTIC_SCHEMA = 'job-identifier-structure/v2';
 export const IDENTIFIER_DIAGNOSTIC_LIMITS = Object.freeze({
   candidates: 4,
   responseNodes: 10000,

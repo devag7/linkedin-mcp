@@ -33,6 +33,57 @@ const observe = (entity: unknown, reference?: unknown) =>
   summarizeJobIdentifierStructure({ data: candidate(entity, reference) }, requested);
 
 describe('identifier disclosure policy', () => {
+  it('retains multiple normalized candidates without inferring an accepted binding', () => {
+    const job = candidate(`urn:li:fs_normalized_jobPosting:${requested}`);
+    const response = { data: job, included: [{ ...job }] };
+    const report = summarizeJobIdentifierStructure(response, requested);
+    expect(report.diagnosticComplete).toBe(true);
+    expect(report.supportedEntityBinding).toBe('none');
+    expect(report.candidates).toHaveLength(2);
+    expect(() => selectJobDetailNode(response, requested)).toThrow('JOB_DETAIL_SELECTION_REJECTED');
+    expect(JSON.stringify(report)).not.toContain(requested);
+  });
+  it.each([
+    ['8765432109', 'requested_id_equal'],
+    ['9876543210', 'requested_id_different'],
+  ])(
+    'discloses the public normalized namespace without accepting its identity: %s',
+    (id, comparison) => {
+      const urn = `urn:li:fs_normalized_jobPosting:${id}`;
+      const report = observe(urn);
+      expect(report).toMatchObject({
+        schema: 'job-identifier-structure/v2',
+        diagnosticComplete: true,
+        supportedEntityBinding: 'none',
+        candidates: [
+          {
+            entityUrn: {
+              kind: 'urn',
+              namespace: 'fs_normalized_jobPosting',
+              payload: { kind: 'number', comparison },
+            },
+            jobPostingReference: { kind: 'missing' },
+            relationship: 'not_comparable',
+          },
+        ],
+      });
+      expect(JSON.stringify(report)).not.toContain(id);
+      expect(() => selectJobDetailNode({ data: candidate(urn) }, requested)).toThrow(
+        'JOB_DETAIL_SELECTION_REJECTED',
+      );
+    },
+  );
+  it.each([
+    'fs_normalized_jobPostingPRIVATE',
+    'FS_normalized_jobPosting',
+    'fs_normalized_jobPosting_8765432109',
+  ])('does not disclose lookalikes of the newly reviewed label: %s', (namespace) => {
+    const report = observe(`urn:li:${namespace}:${requested}`);
+    expect(report.diagnosticComplete).toBe(false);
+    expect(report.candidates[0]!.entityUrn).toMatchObject({ namespace: 'unrecognized' });
+    expect(JSON.stringify(report)).not.toContain(namespace);
+    expect(JSON.stringify(report)).not.toContain(requested);
+  });
   it.each(['8765432109\n', '8765432109\r', '8765432109\u2028', '8765432109\u2029', '8765432109 '])(
     'requires the complete requested numeric ID: %j',
     (requestedId) => {
@@ -47,7 +98,7 @@ describe('identifier disclosure policy', () => {
       `urn:li:fsd_jobPosting:${requested}`,
     );
     expect(report).toEqual({
-      schema: 'job-identifier-structure/v1',
+      schema: 'job-identifier-structure/v2',
       diagnosticComplete: true,
       supportedEntityBinding: 'none',
       candidates: [
@@ -115,7 +166,7 @@ describe('identifier disclosure policy', () => {
     },
   );
 
-  it.each([undefined, 'old-reference-counts'])(
+  it.each([undefined, 'old-reference-counts', 'job-identifier-structure/v1'])(
     'rejects the superseded runner scope before profile setup: %s',
     (scope) => {
       const dir = realpathSync(mkdtempSync(join(tmpdir(), 'identifier-consent-')));
@@ -258,7 +309,7 @@ describe('candidate relationships and ambiguity', () => {
   });
   it('uses a finite output string vocabulary for adversarial synthetic input', () => {
     const allowed = new Set([
-      'job-identifier-structure/v1',
+      'job-identifier-structure/v2',
       'data',
       'included',
       'none',

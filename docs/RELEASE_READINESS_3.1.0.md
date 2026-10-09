@@ -459,3 +459,52 @@ The draft archive remains SHA256
 `b926a31f86fe252c9d4220506079ac18cc5972479ab528512a2d396a0f8c5520`;
 the offline-only fixture repair does not enter that bundle. Exact revised source,
 review, hosted gates and freeze receipt will be recorded on PR #5 before consent.
+
+
+### Version 2 identifier disclosure — October 9, offline continuation
+
+The one-run version 1 consent at `75266b23f557cad6b6be662702fa64447a4ff814`
+is consumed. Its private receipt SHA256 is
+`d7bbe5ac2ec83b876071517a506dbd8ccd8e6162da2c5761d6e2220b7e40114c`.
+It returned partial in both status fields, three explicit GET attempts/two read
+tools, one sourced title fact and zero useful entities. The accepted envelope
+contained an unsupported entity namespace with a whole numeric atom equal to the
+requested ID; selection rejected it before title validation. The literal
+namespace, its semantics and any safe alternate binding remain unknown. Current
+cleanup passed (15 tracked before teardown, zero at both checks); the older two
+failed cleanup receipts remain failures and byte-identical.
+
+The [version 2 proposal](JOB_BRIEF_REST_VALIDATION_PROTOCOL_2026-10-02.md#offline-continuation-version-2-disclosure-proposal)
+adds the public, pinned-source label `fs_normalized_jobPosting` to the disclosure
+vocabulary only. The schema changes to `job-identifier-structure/v2`; old version
+1 scope is denied before heavy imports. Production still accepts only the two
+existing supported whole numeric URNs; a normalized namespace remains rejected,
+even with exact numeric agreement. Multiple normalized candidates remain separate
+observations and cannot become an accepted binding. No endpoint, request budget,
+source attribution or acceptance guard changes. Every other retention bound and
+field remains unchanged. This label may not be the one returned live.
+
+SDK boundary tests with trailing newlines passed against the unchanged production
+guards: the suspected defect was not reproduced. Their independent composition
+regressions are retained, and a misleading JavaScript regex comment is corrected;
+no runtime identity behavior is claimed to have been repaired. Focused diagnostic,
+read-consistency and research suites passed 203 tests. Full local/package/audit,
+exact-head hosted and dry-run gates, independent review and a new freeze are
+required before requesting fresh consent. No version 2 account run is authorized.
+The separate published-3.0.0 cohort remains zero started attempts; owner-led first
+use, erasure and native Windows privacy proof remain open. Required cash is $0.
+
+
+The version 2 diff passed independent privacy/source review: the two public source
+files were independently fetched at their pinned commits, and strict production
+rejection, finite vocabulary, multiplicity and old-scope denial were confirmed.
+Fresh local gates passed all 768 tests/34 files with one worker, without deadline
+or assertion relaxation; lint, source/runner types, metadata and build passed.
+An actual disposable macOS Chrome lifecycle tracked nine processes to zero at
+both checks with no LinkedIn request. Normal and ignore-scripts exact 15-file
+packages, installed CLI/setup/SDK discovery and zero production, publisher and
+full fresh-consumer audits passed. The fresh consumer resolved SDK 1.32.1 and
+proxy-addr 2.0.8. The full source audit still has one low development-only esbuild
+finding through tsup (GHSA-g7r4-m6w7-qqqr); the build uses neither serve nor watch.
+These are offline package/lifecycle proofs, not native-client first use or live
+provider usefulness. Exact-head hosted/dry-run checks and new freeze are pending.

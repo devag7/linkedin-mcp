@@ -850,28 +850,31 @@ describe('SDK opt-in redacted identifier observation', () => {
       expect(fetches).toHaveBeenCalledTimes(2);
     },
   );
-  it('discriminates an unsupported wrapper/tuple/reference without authorizing it', async () => {
-    const reports: JobIdentifierObservation[] = [];
-    observeJobIdentifiers(server, (report) => reports.push(report));
-    raw = {
-      data: {
-        title: 'PRIVATE_TITLE',
-        description: 'PRIVATE_CONTENT',
-        entityUrn: 'urn:li:fsd_jobPostingCard:(123,PRIVATE_TOKEN)',
-        '*jobPosting': 'urn:li:fsd_jobPosting:123',
-      },
-    };
-    const { envelope } = await call('get_job_details', { job_id: '123' });
-    expect(envelope.code).toBe('RESPONSE_SHAPE_CHANGED');
-    expect(envelope.data).toBeNull();
-    expect(reports[0]).toMatchObject({
-      diagnosticComplete: true,
-      supportedEntityBinding: 'none',
-      candidates: [{ relationship: 'different' }],
-    });
-    expect(JSON.stringify(reports)).not.toMatch(/123|PRIVATE_/);
-    expect(fetches).toHaveBeenCalledTimes(2);
-  });
+  it.each(['urn:li:fsd_jobPostingCard:(123,PRIVATE_TOKEN)', 'urn:li:fs_normalized_jobPosting:123'])(
+    'discloses a reviewed unsupported identifier without authorizing it: %s',
+    async (urn) => {
+      const reports: JobIdentifierObservation[] = [];
+      observeJobIdentifiers(server, (report) => reports.push(report));
+      raw = {
+        data: {
+          title: 'PRIVATE_TITLE',
+          description: 'PRIVATE_CONTENT',
+          entityUrn: urn,
+          '*jobPosting': 'urn:li:fsd_jobPosting:123',
+        },
+      };
+      const { envelope } = await call('get_job_details', { job_id: '123' });
+      expect(envelope.code).toBe('RESPONSE_SHAPE_CHANGED');
+      expect(envelope.data).toBeNull();
+      expect(reports[0]).toMatchObject({
+        diagnosticComplete: true,
+        supportedEntityBinding: 'none',
+        candidates: [{ relationship: 'different' }],
+      });
+      expect(JSON.stringify(reports)).not.toMatch(/123|PRIVATE_/);
+      expect(fetches).toHaveBeenCalledTimes(2);
+    },
+  );
   it('preserves ambiguity even when every observed number matches', async () => {
     const reports: JobIdentifierObservation[] = [];
     observeJobIdentifiers(server, (report) => reports.push(report));

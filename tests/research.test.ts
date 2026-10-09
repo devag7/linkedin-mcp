@@ -585,3 +585,56 @@ it.each(['jobUrn', 'sourceUrl'])(
     expect(fetches).toHaveBeenCalledTimes(3);
   },
 );
+
+it.each(['jobPosting', 'fsd_jobPosting'])(
+  'rejects a trailing newline in the brief independent %s identity check',
+  async (namespace) => {
+    const invoke = registration.invokeBriefRead;
+    vi.spyOn(registration, 'invokeBriefRead').mockImplementation(async (...args) => {
+      const result = await invoke(...args);
+      if (args[1] !== 'get_job_details') return result;
+      const structuredContent = structuredClone(result.structuredContent)!;
+      (structuredContent.data as Record<string, unknown>).jobUrn = `urn:li:${namespace}:1\n`;
+      return {
+        ...result,
+        structuredContent,
+        content: [{ type: 'text' as const, text: JSON.stringify(structuredContent) }],
+      };
+    });
+    const result = await brief();
+    expect(result).toMatchObject({
+      data: { status: 'partial' },
+      meta: { status: 'partial', partial: true },
+    });
+    expect(result.data.gaps.join(' ')).toContain('identity differs');
+    expect(result.data.entities[0].facts.every((f: any) => f.sourceTool === 'search_jobs')).toBe(
+      true,
+    );
+    expect(result.data.bounds).toMatchObject({ readAttempts: 3, toolCalls: 2 });
+    expect(fetches).toHaveBeenCalledTimes(3);
+  },
+);
+
+it('omits a composed search source with a trailing newline before any detail read', async () => {
+  const invoke = registration.invokeBriefRead;
+  vi.spyOn(registration, 'invokeBriefRead').mockImplementation(async (...args) => {
+    const result = await invoke(...args);
+    if (args[1] !== 'search_jobs') return result;
+    const structuredContent = structuredClone(result.structuredContent)!;
+    (structuredContent.data as Record<string, unknown>[])[0]!.sourceUrl =
+      'https://www.linkedin.com/jobs/view/1/\n';
+    return {
+      ...result,
+      structuredContent,
+      content: [{ type: 'text' as const, text: JSON.stringify(structuredContent) }],
+    };
+  });
+  const result = await brief({ count: 1 });
+  expect(result).toMatchObject({
+    data: { status: 'partial', entities: [] },
+    meta: { status: 'partial', partial: true },
+  });
+  expect(result.data.gaps.join(' ')).toContain('no supported exact job source URL');
+  expect(result.data.bounds).toMatchObject({ readAttempts: 2, toolCalls: 1 });
+  expect(fetches).toHaveBeenCalledTimes(2);
+});

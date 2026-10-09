@@ -48,7 +48,7 @@ export class JobDetailSelectionError extends Error {
 export const supportedJobId = (urn: unknown) => {
   if (typeof urn !== 'string') return undefined;
   const match = /^urn:li:(?:fsd_)?jobPosting:([0-9]{1,20})$/.exec(urn);
-  // JavaScript's $ also matches before a final newline. Require the whole value.
+  // Keep an explicit whole-value check; never trim or coerce provider identity.
   return match?.[0] === urn ? match[1] : undefined;
 };
 
