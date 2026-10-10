@@ -1,3 +1,34 @@
+# Search-only3.1.0 candidate readiness
+
+**Current decision: BLOCK after this offline decision cycle.** The fresh disposable
+headed20-second Chrome check observed9 processes;2 tracked processes remained at
+both cleanup checks after5050ms. Context closed/ownership released do not satisfy
+strict cleanup. No updater classification, exemption, account request, retry,
+merge or publication follows. The narrowed live question remains untested.
+
+Current scope supersedes the older enrichment preparations below. PR #5 remains
+draft until the newly frozen search-only build passes useful live output and
+strict cleanup, then exact source/package/audit/hosted/dry-run/independent review.
+Publication is authorized only after those gates pass; no further merge/publication
+permission is needed. Account access still needs concrete exact-build consent.
+
+Only search_jobs is composed: up to ten titles with observed location or listing
+date, exact supported job sources and fetch times; maximum two explicit Voyager
+GETs including identity, one underlying tool. No detail enrichment or normalized
+identity acceptance. True enrichment input is rejected. Useful partials qualify
+only with at least one linked title plus location/listing date and all other gates.
+Title-only, empty, error or uncertain cleanup ends this decision cycle, with no
+retry or diagnostic chain. Historical receipts/failures remain intact.
+
+The [new one-run protocol](SEARCH_ONLY_VALIDATION_2026-10-11.md) defines frozen
+hashes, redaction and strict bounded teardown. Source fixtures are not live proof.
+Published3.0.0 remains immutable; first-use cohort remains zero attempts until a
+participant starts. The authorized single public [opt-in invitation](https://github.com/devag7/linkedin-mcp/issues/13) is posted; private rows stay
+outside GitHub. Mandatory maintainer cash:$0. Native-client, erasure and Windows
+privacy work remain separate. 10,000stars/Trending are measured goals, not promises.
+
+<details><summary>Preserved historical candidate evidence and preparations</summary>
+
 # Additive3.1.0 candidate readiness
 
 Prepared on an isolated branch; PR #5 remains draft. Core 3.0.0 is released.
@@ -537,3 +568,5 @@ fixtures. Current live search fields remain unverified. Normalized job identitie
 remain rejected; fresh local and exact-head hosted gates do not authorize a live
 run, merge or publication. PR #5 remains blocked on representative strict cleanup
 and a newly consented useful-brief result.
+
+</details>

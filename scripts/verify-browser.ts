@@ -3,6 +3,10 @@ import { existsSync, mkdtempSync, realpathSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { verifyFinalCleanup } from './validation-cleanup.js';
+import {
+  monitorValidationProcesses,
+  boundedValidationTeardown,
+} from './search-only-validation-support.js';
 import { readValidationProcesses, ValidationProcessTracker } from './validation-processes.js';
 import {
   readWindowsValidationProcesses,
@@ -18,13 +22,14 @@ const profile = join(directory, 'profile');
 const config = {
   ...loadConfig(),
   LINKEDIN_PROFILE_DIR: profile,
-  LINKEDIN_HEADLESS: true,
+  LINKEDIN_HEADLESS: process.env.VERIFY_BROWSER_HEADED !== 'true',
   LINKEDIN_IDLE_TIMEOUT_MS: 0,
   LINKEDIN_ENABLE_WRITES: false,
   LINKEDIN_ENABLE_EXPERIMENTAL_MESSAGES: false,
 };
 const engine = new BrowserEngine(config, new Logger('error'), false);
 let cleanupVerified = false;
+let disposalAttempted = false;
 const tracker = new ValidationProcessTracker(profile);
 const windowsTracker = new WindowsValidationProcessTracker(profile);
 const processProbeDeadlineMs = process.platform === 'win32' ? 5000 : 1000;
@@ -40,8 +45,12 @@ function observeProcesses() {
   }
 }
 let stage = 'process_preflight';
+let monitor:
+  | ReturnType<typeof monitorValidationProcesses<ReturnType<typeof observeProcesses>>>
+  | undefined;
 try {
   if (observeProcesses().remainingProcesses) throw new Error('TEMP_PROFILE_ALREADY_ACTIVE');
+  monitor = monitorValidationProcesses(observeProcesses, () => {});
   stage = 'browser_launch';
   const [context, sameContext] = await Promise.all([
     engine.ensureContext(),
@@ -59,15 +68,19 @@ try {
   stage = 'process_observation';
   const observedProcesses = observeProcesses().remainingProcesses;
   if (!chromeVersion || !observedProcesses) throw new Error('CHROME_PROCESS_NOT_OBSERVED');
+  stage = 'held_local_session';
+  // Representative held lifecycle; only the synthetic local page is displayed.
+  await new Promise((resolve) => setTimeout(resolve, 20000));
+  if (monitor.failed) throw new Error('PROCESS_OBSERVATION_FAILED');
   let contextClosed = false;
   context.once('close', () => {
     contextClosed = true;
   });
   stage = 'teardown';
-  let teardownFailed = false;
-  await engine.dispose().catch(() => {
-    teardownFailed = true;
-  });
+  disposalAttempted = true;
+  const teardown = await boundedValidationTeardown(() => engine.dispose());
+  const teardownFailed = teardown.failed;
+  monitor.stop();
   stage = 'cleanup_verification';
   const cleanup = await verifyFinalCleanup(
     () => ({
@@ -75,7 +88,7 @@ try {
       ownershipReleased: !existsSync(`${profile}.owner.lock`),
       contextInactive: contextClosed && !engine.hasActiveContext,
     }),
-    { teardownFailed },
+    { teardownFailed: teardownFailed || monitor.failed },
   );
   cleanupVerified = cleanup.verified;
   console.log(
@@ -95,6 +108,11 @@ try {
           ? 'Windows PID and UTC creation stamp'
           : 'POSIX PID and start stamp',
       processProbeDeadlineMs,
+      heldSessionMs: 20000,
+      teardownDeadlineMs: 30000,
+      teardownTimedOut: teardown.timedOut,
+      processObservations: monitor.checks,
+      processObservationFailed: monitor.failed,
       ...(processProbeFailure ? { processProbeFailure } : {}),
       cleanup,
     }),
@@ -106,10 +124,13 @@ try {
   );
   process.exitCode = 1;
 } finally {
-  if (!cleanupVerified)
-    await engine.dispose().catch(() => {
-      process.exitCode = 1;
-    });
+  monitor?.stop();
+  if (!disposalAttempted) {
+    const teardown = await boundedValidationTeardown(() => engine.dispose());
+    if (teardown.failed) process.exitCode = 1;
+  }
   // Keep the temporary profile/owner for diagnosis if shutdown is uncertain.
   if (cleanupVerified) rmSync(directory, { recursive: true, force: true });
 }
+
+if (!cleanupVerified) process.exit(1);

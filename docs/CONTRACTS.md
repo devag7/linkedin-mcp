@@ -87,38 +87,36 @@ After a timeout/restart, repeat the original operation ID and inputs to retrieve
 journaled outcome; no proof is needed for that lookup, and no action is resubmitted.
 Unsubmitted previews do not survive restart. The server cannot infer human consent.
 
-### research_jobs composition
+### research_jobs search-only composition (unreleased)
 
-This new draft read tool returns an engine-assembled brief with exact query,
-bounds, source-linked entities/facts, unknown fields, per-read status/codes/guidance,
-gaps, next steps, comparisonEvidence counts and Markdown. Each fact has sourceTool, sourceUrl, fetchedAt and
-truncation. `data.status` and `meta.status` agree: ok/empty/partial. A complete
-empty first page returns both statuses empty with meta.partial:false; an empty
-page without completeness evidence remains partial in both fields. Source read
-errors are retained in
-a **partial report**, even with zero entities, so consumers must inspect reads
-and gaps; a successful MCP envelope does not imply successful provider work.
-Each linked job needs an observed title plus at least one of location, company,
-description or listing date to have sufficient comparison evidence. A title alone,
-workplace type alone, or a missing title is insufficient. Any insufficient entity
-makes both statuses partial and meta.partial:true, even when the provider page is
-complete. comparisonEvidence reports sufficientEntities and insufficientEntities;
-these sum to the linked entity count. Markdown highlights an entirely insufficient
-brief and labels each insufficient job while preserving its cited observations.
-A partial brief can still meet the live validation's minimum useful-entity criterion
-when at least one linked job meets that evidence threshold; it remains partial and
-does not establish fit, salary, availability or live compatibility. No extra reads
-are made to fill missing fields. A coherent empty page retains empty status.
-With `enrich_first:false`, the brief calls only `search_jobs` (identity preflight
-still counts toward the request ceiling). Search facts are limited to the existing
-same-job title, location and listing date with a supported canonical source;
-company and description remain unknown. A title plus observed location or listing
-date can satisfy the unchanged useful-entity criterion, including in a partial
-brief. A title alone, workplace flag or unsupported normalized identity cannot.
-This search-only path is SDK fixture-tested; current live search facts and a useful
-live search-only brief are not yet verified.
-Input errors/cancellation before execution retain the existing error envelope.
-A read failure prevents subsequent composition reads. No automatic pagination,
-retry, storage or writes. The request ceiling is enforced at Voyager GET entry
-and preserved across queue callbacks; identity preflight counts toward three
-attempts. Browser navigation/assets are outside this explicit API counter.
+One first-page `search_jobs` call returns source-linked title/location/listing-date
+facts, query, enforced bounds, unknown fields, per-read status, gaps, next steps,
+comparisonEvidence and Markdown. Each fact has sourceTool=search_jobs, its exact
+supported canonical job source URL, fetchedAt and truncation. Supported numeric
+job URN and canonical URL must agree; absent, unsupported or mismatched identities
+are omitted. Normalized detail identities remain rejected; no extra read is made.
+
+Inputs: keywords, optional numeric location_geo_id, count1–10 (default5),
+enrich_first=false (default). True is rejected before provider work. The ceilings
+are two explicit Voyager GET attempts including identity, one underlying tool and
+ten deduplicated entities. Navigation/assets/background traffic are excluded.
+No detail enrichment, fallback, paging, retry, storage, writes or model inference.
+The earlier unpublished draft accepted enrichment; its schema must be refreshed.
+Released3.0.0 contracts and tools are unchanged.
+
+Useful means a linked observed title plus location or listing date. Title-only,
+workplace-only, unknown or missing title cannot qualify. Each insufficient job
+forces both data.status and meta.status to partial with meta.partial=true;
+comparisonEvidence counts sum to the linked entity count. A useful partial may
+qualify when at least one entity meets all identity/provenance/freshness checks;
+it stays partial and does not establish fit, salary or availability. Both statuses
+are empty only for a coherent complete empty page; contradictory pagination stays
+partial. Provider errors are retained in a partial report, including zero entities.
+Inspect reads/gaps: successful MCP delivery does not establish provider success.
+
+Facts never borrow unrelated company or detail data. Missing fields are unknown;
+fetch time is observation time, not proof of a recent provider update. Fields are
+bounded to300 characters with explicit truncation. Source content is untrusted.
+Input errors/cancellation retain error envelopes. The GET ceiling is enforced at
+Voyager entry and preserved through queue callbacks, including identity preflight.
+Offline SDK fixtures prove contracts, not useful live behavior or native clients.

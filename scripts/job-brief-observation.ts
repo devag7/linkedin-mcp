@@ -47,7 +47,7 @@ export function briefObservation(incoming: unknown, start: number, end: number) 
     assert.equal(envelope.meta.partial, true);
   }
   assert.ok(
-    brief.entities.length <= 3 && brief.bounds.readAttempts <= 3 && brief.bounds.toolCalls <= 2,
+    brief.entities.length <= 10 && brief.bounds.readAttempts <= 2 && brief.bounds.toolCalls <= 1,
   );
   let factChecks = 0;
   for (const entity of brief.entities) {

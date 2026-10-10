@@ -24,27 +24,15 @@ runtime.engine.getFeedPage = async () =>
       syntheticFetches++;
       const data = url.endsWith('/me')
         ? { included: [{ entityUrn: 'urn:li:fsd_profile:synthetic-brief-owner' }] }
-        : url.includes('jobPosting')
-          ? {
-              data: {
-                title: 'Synthetic platform engineer',
-                entityUrn: 'urn:li:fsd_jobPosting:1',
-                description: {
-                  text: 'Synthetic example: build reliable TypeScript services. Salary and availability are not supplied.',
-                },
-                formattedLocation: 'Synthetic remote region',
-                companyDetails: { name: 'Synthetic Example Company' },
-                workRemoteAllowed: true,
-              },
-            }
-          : {
-              included: [1, 2].map((id) => ({
-                $type: 'com.linkedin.voyager.jobs.JobPosting',
-                title: id === 1 ? 'Synthetic platform engineer' : 'Synthetic API engineer',
-                formattedLocation: 'Synthetic remote region',
-                entityUrn: `urn:li:fsd_jobPosting:${id}`,
-              })),
-            };
+        : {
+            data: { paging: { total: 2, start: 0, count: 2 } },
+            included: [1, 2].map((id) => ({
+              $type: 'com.linkedin.voyager.jobs.JobPosting',
+              title: id === 1 ? 'Synthetic platform engineer' : 'Synthetic API engineer',
+              formattedLocation: 'Synthetic remote region',
+              entityUrn: `urn:li:fsd_jobPosting:${id}`,
+            })),
+          };
       return { status: 200, ok: true, type: 'basic', url, body: JSON.stringify(data) };
     },
   }) as unknown as Page;
@@ -57,14 +45,15 @@ try {
   await client.listTools();
   const response = await client.callTool({
     name: 'research_jobs',
-    arguments: { keywords: 'TypeScript services', count: 2 },
+    arguments: { keywords: 'TypeScript services', count: 2, enrich_first: false },
   });
   if (response.isError) throw new Error('Synthetic demo failed');
   const data = response.structuredContent!;
   console.log(
     JSON.stringify(
       {
-        scope: 'Synthetic offline fixture; source links are illustrative, not observed listings.',
+        scope:
+          'Synthetic offline search-only fixture; source links are illustrative, not observed listings.',
         linkedInRequests: 0,
         browserLaunches: 0,
         syntheticFetches,

@@ -108,7 +108,7 @@
     },
     {
       "name": "research_jobs",
-      "route": "bounded composition of search_jobs + one get_job_details",
+      "route": "bounded search-only composition of one search_jobs first page",
       "source": "voyager",
       "permission": "authenticated_browser",
       "write": false,

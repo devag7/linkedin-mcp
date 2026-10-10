@@ -425,7 +425,7 @@ describe('SDK identity-aware job-detail selection', () => {
     expect(fetches).toHaveBeenCalledTimes(2);
   });
 
-  it('retains exact brief provenance and the three-attempt ceiling when a unique nested match is enriched', async () => {
+  it('does not enrich title-only search observations even when a unique supported detail fixture exists', async () => {
     const detail = {
       data: { title: 'Wrong first object', description: 'Unrelated', entityUrn: 'urn:li:other:1' },
       included: [
@@ -453,21 +453,22 @@ describe('SDK identity-aware job-detail selection', () => {
     expect(result.isError).not.toBe(true);
     const brief = envelope.data;
     expect(brief.comparisonEvidence).toMatchObject({
-      sufficientEntities: 1,
-      insufficientEntities: 0,
+      sufficientEntities: 0,
+      insufficientEntities: 1,
     });
-    expect(brief.bounds).toMatchObject({ readAttempts: 3, toolCalls: 2 });
+    expect(brief.bounds).toMatchObject({ readAttempts: 2, toolCalls: 1 });
     expect(brief.entities[0].sourceUrl).toBe('https://www.linkedin.com/jobs/view/1/');
-    expect(brief.entities[0].facts).toContainEqual(
-      expect.objectContaining({
-        field: 'location',
-        value: 'Synthetic location',
-        sourceTool: 'get_job_details',
-        sourceUrl: brief.entities[0].sourceUrl,
-      }),
+    expect(brief.status).toBe('partial');
+    expect(brief.entities[0].facts.every((fact: any) => fact.sourceTool === 'search_jobs')).toBe(
+      true,
+    );
+    expect(brief.entities[0].unknownFields).toContain('location');
+    expect(brief.reads).toHaveLength(1);
+    expect(fetches.mock.calls.some((entry) => entry[1].url.includes('/jobs/jobPostings/'))).toBe(
+      false,
     );
     expect(JSON.stringify(brief.entities)).not.toMatch(/Wrong first object|Unrelated/);
-    expect(fetches).toHaveBeenCalledTimes(3);
+    expect(fetches).toHaveBeenCalledTimes(2);
   });
 });
 
@@ -739,52 +740,60 @@ describe('SDK value-free detail rejection stages', () => {
     expect(checks).toEqual(['envelope_provider_error']);
   });
 
-  it.each([false, true])(
-    'distinguishes output-contract corruption (composed=%s)',
-    async (composed) => {
-      raw = page(1, 1, 0, 1);
-      vi.spyOn(normalize, 'shapeJobDetails').mockReturnValue({
-        title: 'Synthetic',
-        jobUrn: 'urn:li:fsd_jobPosting:123',
-        location: 7 as any,
-      });
-      // The composed search selects job1; match that ID so identity succeeds first.
-      if (composed)
-        vi.mocked(normalize.shapeJobDetails).mockReturnValue({
-          title: 'Synthetic',
-          jobUrn: 'urn:li:fsd_jobPosting:1',
-          location: 7 as any,
-        });
-      const checks = diagnostic();
-      const { envelope } = await call(
-        composed ? 'research_jobs' : 'get_job_details',
-        composed ? { keywords: 'synthetic', count: 1 } : { job_id: '123' },
-      );
-      expect(checks).toEqual([
-        'envelope_accepted',
-        'title_present',
-        'identity_match',
-        'output_shape_rejected',
-      ]);
-      if (composed) {
-        expect(envelope.data.reads[1]).toMatchObject({ code: 'RESPONSE_SHAPE_CHANGED' });
-        expect(envelope.data.status).toBe('partial');
-      } else expect(envelope.code).toBe('RESPONSE_SHAPE_CHANGED');
-      expect(fetches).toHaveBeenCalledTimes(composed ? 3 : 2);
-    },
-  );
-
-  it('distinguishes a malformed composed error envelope after registered-read dispatch', async () => {
+  it('distinguishes standalone detail output-contract corruption', async () => {
     raw = page(1, 1, 0, 1);
-    const original = registration.invokeBriefRead;
-    vi.spyOn(registration, 'invokeBriefRead').mockImplementation(async (s, name, args, extra) =>
-      name === 'get_job_details' ? { content: [], isError: true } : original(s, name, args, extra),
-    );
+    vi.spyOn(normalize, 'shapeJobDetails').mockReturnValue({
+      title: 'Synthetic',
+      jobUrn: 'urn:li:fsd_jobPosting:123',
+      location: 7 as any,
+    });
+    const checks = diagnostic();
+    const { envelope } = await call('get_job_details', { job_id: '123' });
+    expect(checks).toEqual([
+      'envelope_accepted',
+      'title_present',
+      'identity_match',
+      'output_shape_rejected',
+    ]);
+    expect(envelope.code).toBe('RESPONSE_SHAPE_CHANGED');
+    expect(fetches).toHaveBeenCalledTimes(2);
+  });
+
+  it('never starts detail normalization or diagnostic work for a search-only brief', async () => {
+    raw = page(1, 1, 0, 1);
+    const detailShape = vi.spyOn(normalize, 'shapeJobDetails').mockReturnValue({
+      title: 'Synthetic',
+      jobUrn: 'urn:li:fs_normalized_jobPosting:1',
+      location: 7 as any,
+    });
     const checks = diagnostic();
     const { envelope } = await call('research_jobs', { keywords: 'synthetic', count: 1 });
-    expect(envelope.data.reads[1]).toMatchObject({ code: 'RESPONSE_SHAPE_CHANGED' });
-    expect(checks).toEqual(['composition_envelope_rejected']);
-    expect(fetches).toHaveBeenCalledTimes(2); // Synthetic internal result; no detail provider call.
+    expect(envelope.data.reads).toHaveLength(1);
+    expect(envelope.data.reads[0].tool).toBe('search_jobs');
+    expect(envelope.data.bounds).toMatchObject({ readAttempts: 2, toolCalls: 1 });
+    expect(detailShape).not.toHaveBeenCalled();
+    expect(checks).toEqual([]);
+    expect(fetches).toHaveBeenCalledTimes(2);
+  });
+
+  it('rejects a malformed composed search envelope without attempting detail or another read', async () => {
+    raw = page(1, 1, 0, 1);
+    const original = registration.invokeBriefRead;
+    vi.spyOn(registration, 'invokeBriefRead').mockImplementation(async (s, name, args, extra) => {
+      await original(s, name, args, extra);
+      return { content: [], isError: true };
+    });
+    const checks = diagnostic();
+    const { envelope } = await call('research_jobs', { keywords: 'synthetic', count: 1 });
+    expect(envelope.data.reads).toHaveLength(1);
+    expect(envelope.data.reads[0]).toMatchObject({
+      tool: 'search_jobs',
+      code: 'RESPONSE_SHAPE_CHANGED',
+    });
+    expect(envelope.data.status).toBe('partial');
+    expect(envelope.data.entities).toEqual([]);
+    expect(checks).toEqual([]);
+    expect(fetches).toHaveBeenCalledTimes(2);
   });
 
   it('observes direct null-success rejection without changing its existing contract', async () => {
@@ -912,7 +921,7 @@ describe('SDK opt-in redacted identifier observation', () => {
       expect(fetches).toHaveBeenCalledTimes(2);
     },
   );
-  it('observes the composed partial result with exactly three attempts and no extra read', async () => {
+  it('does not observe job detail identifiers in a search-only partial brief', async () => {
     const reports: JobIdentifierObservation[] = [];
     observeJobIdentifiers(server, (report) => reports.push(report));
     const original = fetches.getMockImplementation()!;
@@ -937,14 +946,16 @@ describe('SDK opt-in redacted identifier observation', () => {
     const { envelope } = await call('research_jobs', {
       keywords: 'synthetic',
       count: 1,
-      enrich_first: true,
+      enrich_first: false,
     });
     expect(envelope.data.status).toBe('partial');
     expect(envelope.meta.status).toBe('partial');
-    expect(envelope.data.reads[1].code).toBe('RESPONSE_SHAPE_CHANGED');
-    expect(reports).toHaveLength(1);
+    expect(envelope.data.reads).toHaveLength(1);
+    expect(envelope.data.reads[0].tool).toBe('search_jobs');
+    expect(envelope.data.bounds).toMatchObject({ readAttempts: 2, toolCalls: 1 });
+    expect(reports).toHaveLength(0);
     expect(JSON.stringify(reports)).not.toMatch(/PRIVATE_/);
-    expect(fetches).toHaveBeenCalledTimes(3);
+    expect(fetches).toHaveBeenCalledTimes(2);
   });
   it('isolates per-server observers and handles detach/replacement without cross-server reports', () => {
     const other = new McpServer({ name: 'separate-identifier-fixture', version: '1' });

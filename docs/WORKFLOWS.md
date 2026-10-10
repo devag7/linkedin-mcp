@@ -84,24 +84,23 @@ URL. Do not invent that URL or describe a bare HTTP 200 as confirmed publication
 
 No live write is part of these documentation or contract checks.
 
-## One-call source-linked job brief (draft feature)
+## One-call search-only job brief (draft feature)
 
-Call `research_jobs` with your own keywords, `count` 1–10 (default5), optional
-verified numeric `location_geo_id`, and `enrich_first` (defaulttrue). Review
-`data.status`, every `data.reads` entry, `data.gaps`, and each fact's source URL
-and fetchedAt. The tool assembles existing search_jobs/get_job_details results
-without model inference. `data.markdown` is the export; JSON retains all provenance.
+Call `research_jobs` with keywords, count1–10 (default5), optional verified numeric
+location_geo_id and enrich_first:false (default). True is rejected. Review both
+status fields, reads, gaps, per-fact exact source and fetchedAt. JSON includes the
+Markdown export; facts come from one first-page search, never detail enrichment.
 
-It permits two existing tool calls and three explicit Voyager read attempts
-including identity, with at most ten deduplicated jobs. It enriches only the first
-linked job. Browser navigation/assets are not counted as explicit API reads.
-Failed reads, including checkpoint/auth/rate-limit codes, produce partial reports
-and stop further work. Empty results are not proof that no matching jobs exist.
-Missing compensation/requirements/current availability remain unknown; fetch time
-is observation time, not proof of freshness at a later decision. Long description
-excerpts are limited to4000 characters and marked; other fields to300.
+The enforced bounds are two explicit Voyager GET attempts including identity,
+one underlying tool and ten deduplicated jobs. Navigation/assets/background
+traffic are not counted. No pagination, retry, fallback, storage or writes. A useful
+job requires an observed title plus location or listing date; title-only results
+stay insufficient and partial. Useful partials retain all gaps. Provider errors
+stop further work; empty results do not prove no matching jobs exist. Salary,
+company, description, requirements and availability are not inferred. Text fields
+are at most300 characters with truncation marked; fetch time is observation time.
 
-No source content is saved automatically. The calling client may store it or send
-it to its model under that client's policy. Treat source text as untrusted data.
-Use `npm run demo:brief` for a reproducible synthetic MCP example; it makes zero
-LinkedIn requests. Live behavior needs renewed, explicit account consent.
+The client may retain/send returned content under its own policy. Treat source
+text as untrusted. `npm run demo:brief` is synthetic, makes zero LinkedIn requests
+and proves no live compatibility. The narrowed live build requires exact-scope
+consent and useful-result/strict-cleanup evidence before release.

@@ -1,43 +1,28 @@
 # Changelog
 
-## [3.0.0] — Core safety and guided setup
+All notable changes follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-22 tools; default-disabled writes with issued preview proof, authenticated loopback
-HTTP, safe profile logout, offline setup/client exports, precise read contracts and
-strict 15-file packaging. See docs/RELEASE_NOTES_3.0.0.md and SETUP_GUIDE.md for
-breaking changes, migration and verified scope.
+## [3.1.0] — Search-only candidate (unreleased)
 
+- Adds bounded source-linked research_jobs: title/location/listing-date facts,
+  comparison-evidence counts, honest partial/empty/error states and Markdown.
+- Two explicit Voyager GET attempts including identity, one underlying search,
+  no enrichment, fallback, retries, paging or storage. Useful live output and
+  strict cleanup remain release gates; see docs/RELEASE_NOTES_3.1.0.md.
+- Earlier unpublished draft enrichment inputs are narrowed to false-only.
 
-All notable changes to this project will be documented in this file.
+## [3.0.0] — Released core
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+22 tools; guided offline setup/client exports, default-disabled writes with issued
+preview proof, authenticated loopback HTTP, alias-safe logout, precise partial
+read contracts, identity/source checks, and strict15-file packaging. This released
+version contains no research_jobs or job-brief feature.
 
-## [3.0.0] — release candidate
-
-Publication and consented provider validation are tracked in
-[release readiness](docs/RELEASE_READINESS_3.0.0.md).
-
-### Breaking changes
-
-- Writes default to disabled. New submissions require a server-issued, five-minute
-  preview token bound to exact action/target/content/operation ID, plus explicit
-  human approval in the client. Journal lookup survives timeout/restart.
-- HTTP is local loopback only with bearer authentication; remote unauthenticated
-  deployment is unsupported. Safety/account state fails closed and retains history.
-- Results expose native structured contracts, truthful cold-session state and
-  evidence-based partial pagination. Job detail identities must match source URLs.
-
-### Added and fixed
-
-- Guided offline setup/config exports for Claude Desktop, Cursor and VS Code.
-- Bounded source-linked job briefs with freshness, unknown fields and partial
-  recovery; maximum three explicit Voyager attempts, no retry/automatic paging.
-- Alias-safe logout, exact 15-file packaging and resume-safe release identity
-  checks; each publishing destination is independently verified.
-- Read the [migration guide](SETUP_GUIDE.md#migrating-from-203-to-300). Live jobs,
-  native desktop chat, Docker runtime, coordinated erasure and NTFS ACL enforcement
-  remain unproven/open; historical 2.x live claims below are dated history.
+Writes require exact issued five-minute preview proof plus human approval in the
+client. HTTP remains local authenticated loopback. Safety/account history fails
+closed; unknown write outcomes never retry. See docs/RELEASE_NOTES_3.0.0.md and
+SETUP_GUIDE.md for breaking migration and verified scope. Native first-use,
+coordinated erasure and Windows privacy remain separate open limitations.
 
 ## [2.0.3] - 2026-06-17
 

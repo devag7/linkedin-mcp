@@ -409,21 +409,27 @@ Made by [Dev Agarwalla](https://github.com/devag7)
 
 </div>
 
-## Source-linked job briefs in unpublished 3.1.0
+## Search-only job briefs in unpublished 3.1.0
 
-`research_jobs({keywords:"platform engineer",count:5,enrich_first:true})`
-returns a comparison of at most ten jobs and enriches the first source-linked
-result. Each observed field carries its exact job URL, source tool and fetch time;
-missing fields remain unknown. JSON includes a ready-to-copy Markdown brief, query,
-request counters, per-read status, gaps and next steps. It never infers salary,
-fit or current availability. One first-page search plus at most one detail read;
-at most three explicit Voyager read attempts including cold identity. Browser
-navigation/assets are outside that counter. No cursor following, retry or saving.
+`research_jobs({keywords:"TypeScript engineer",count:10,enrich_first:false})`
+assembles up to ten first-page observations from `search_jobs`. Each fact has its
+exact supported job source URL, source tool and fetch time. The selected fields
+are title, location and listing date; missing fields remain unknown. A useful job
+requires an observed title plus location or listing date. Title-only results are
+insufficient and remain partial. JSON includes Markdown, query, request counters,
+per-read status, gaps and next steps. It never infers salary, fit or availability.
 
-Run `npm run demo:brief` from the reviewed source for a synthetic offline MCP demo.
-It launches no browser and accesses no LinkedIn account. Fixture URLs are
-illustrative, not observed listings. Current provider compatibility remains
-unverified until the freshly consented useful-brief protocol passes. Published
-3.0.0 does not include this tool. PR #5 stays draft; no merge or publication is
-permitted before its remaining gates pass. See the
-[candidate readiness](docs/RELEASE_READINESS_3.1.0.md) for offline and live evidence.
+The enforced ceiling is two explicit Voyager GET attempts including identity and
+one underlying tool call. Browser navigation/assets/background traffic are outside
+that counter. No detail enrichment, cursor following, fallback, retry or storage.
+`enrich_first` defaults to false; true is rejected before provider work. This
+narrows the earlier unpublished draft; refresh its tool schema if you tested it.
+Existing `get_job_details` stays a separate core tool with strict identity checks;
+this brief does not call it or accept normalized job identifiers.
+
+Run `npm run demo:brief` for a synthetic offline SDK demo. It launches no browser
+and accesses no LinkedIn account; fixture URLs are illustrative. Useful live output
+and strict cleanup have not yet passed for this narrowed build. Published3.0.0 has
+22 tools and does not include job briefs. PR #5 stays draft until its useful live,
+cleanup and exact release gates pass. See [candidate readiness](docs/RELEASE_READINESS_3.1.0.md)
+and [the one-run protocol](docs/SEARCH_ONLY_VALIDATION_2026-10-11.md).

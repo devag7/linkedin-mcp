@@ -12,7 +12,7 @@ Generated from src/tools/capabilities.ts for linkedin-mcp-tools v3.1.0.
 | get_feed | voyagerFeedDashMainFeed | voyager | authenticated_browser | 25 | offline_contract_tested (2026-10-01) | Unchecked |
 | get_notifications | voyagerIdentityDashNotificationCards | voyager | authenticated_browser | 50 | offline_contract_tested (2026-10-01) | Unchecked |
 | search_people | /search/results/people/ | dom | authenticated_browser | 25 | offline_contract_tested (2026-10-01) | Unchecked |
-| research_jobs | bounded composition of search_jobs + one get_job_details | voyager | authenticated_browser | 10 | offline_contract_tested (2026-10-01) | Unchecked |
+| research_jobs | bounded search-only composition of one search_jobs first page | voyager | authenticated_browser | 10 | offline_contract_tested (2026-10-01) | Unchecked |
 | search_jobs | voyagerJobsDashJobCards | voyager | authenticated_browser | 25 | offline_contract_tested (2026-10-01) | Unchecked |
 | get_inbox | /me + messengerConversations | voyager | authenticated_browser | 50 | offline_contract_tested (2026-10-01) | Unchecked |
 | get_job_details | /jobs/jobPostings/:id (provisional; current live validation pending) | voyager | authenticated_browser | — | offline_contract_tested (2026-10-01) | Unchecked |
@@ -32,7 +32,7 @@ These are synthetic contract and registration checks, not current LinkedIn obser
 
 Search/feed/notification offsets use existing endpoint builders, one page per call. nextCursor appears only for matching provider start/count/total metadata. DOM discovery, inbox, conversation and invitation reads expose bounded first pages and mark completeness partial. Profiles make at most six requests (seven for own profile), plus bounded identity verification; optional hidden sections may be unavailable.
 
-research_jobs composes one search_jobs first page and at most one get_job_details for the first linked job. It permits at most three explicit Voyager read attempts including identity, two tool calls and ten entities; navigation/assets are excluded. No pagination, retries, persistence or inferred fit. Source URLs and fetchedAt are attached to every fact; missing fields and partial/error states remain visible.
+research_jobs is search-only: one search_jobs first page, no detail enrichment. It permits at most two explicit Voyager read attempts including identity, one tool call and ten entities; navigation/assets are excluded. No pagination, retries, persistence or inferred fit. Source URLs and fetchedAt are attached to every fact; missing fields and partial/error states remain visible.
 
 For the 3.0.0 safety/client changes, read [migration](../SETUP_GUIDE.md#migrating-from-203-to-300). Preview tokens are mandatory for new writes; human approval remains a client workflow requirement. Offline platform/config checks do not certify current provider behavior, native chat or Windows NTFS privacy.
 

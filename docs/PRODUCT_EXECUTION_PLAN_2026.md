@@ -46,7 +46,7 @@ PR #5 remains draft; its brief is not a core capability.
    finding remains; recheck supported build-tool updates on **October 8** and document
    build exposure, not merely the audit exit code.
 4. **Earn 3.1:** diagnose PR #5's partial result offline against redacted shape/status
-   evidence first. Keep three explicit reads maximum, identity checks, source links,
+   evidence first. Narrow to search-only with two explicit reads maximum, identity checks, source links,
    freshness and partial-result semantics. Acceptance: a separately consented bounded
    check produces a useful brief before merge/release; no new account access is
    authorized by this plan. Saved jobs and richer filters require separate verified
@@ -564,3 +564,22 @@ regressions do not satisfy its freshly consented useful-brief requirement.
 Coordinated erasure, native Windows privacy proof and current native client
 first-read/repeat-use evidence remain open. Required maintainer cash $0;
 10,000 stars and daily Trending remain measured ambitions, not promised outcomes.
+
+
+## October11 search-only decision cycle — blocked
+
+PR#5 is narrowed to one search-only brief (up to10 jobs,2 explicit Voyager GET
+attempts includingidentity, no enrichment). SDK fixtures support source-linked
+title plus location/listing-date usefulness; no live usefulness is claimed.
+The single fresh disposable headed20-second local Chrome check failed strict
+cleanup:9 observed,2 tracked at immediate/final checks after5050ms. Context/owner
+flags passed but do not erase survivors. No ownership investigation, exemption,
+retry, account access, merge or publication follows this failed gate. Historical
+receipts and published3.0.0 remain intact. Required cash:$0.
+
+The owner authorized one public [opt-in3.0.0 pilot invitation](https://github.com/devag7/linkedin-mcp/issues/13),
+now posted. No unsolicited messages or account operation; each participant must
+approve the existing kit's own scope. Cohort remains zero started attempts until
+one actually starts. Prioritize its first observed reproducible problem, counting
+all started first-person failures once and later clients separately. Stars and
+GitHub Trending remain measured outcomes, never promised release gates.
