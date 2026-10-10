@@ -109,6 +109,14 @@ A partial brief can still meet the live validation's minimum useful-entity crite
 when at least one linked job meets that evidence threshold; it remains partial and
 does not establish fit, salary, availability or live compatibility. No extra reads
 are made to fill missing fields. A coherent empty page retains empty status.
+With `enrich_first:false`, the brief calls only `search_jobs` (identity preflight
+still counts toward the request ceiling). Search facts are limited to the existing
+same-job title, location and listing date with a supported canonical source;
+company and description remain unknown. A title plus observed location or listing
+date can satisfy the unchanged useful-entity criterion, including in a partial
+brief. A title alone, workplace flag or unsupported normalized identity cannot.
+This search-only path is SDK fixture-tested; current live search facts and a useful
+live search-only brief are not yet verified.
 Input errors/cancellation before execution retain the existing error envelope.
 A read failure prevents subsequent composition reads. No automatic pagination,
 retry, storage or writes. The request ceiling is enforced at Voyager GET entry

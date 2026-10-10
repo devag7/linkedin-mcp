@@ -520,3 +520,20 @@ identity research and a longer disposable Chrome cleanup failure. No normalized
 identity acceptance or endpoint change is justified. PR #5 remains draft; neither
 a new account run nor release is ready. Fresh gates for the repaired head must
 not be interpreted as closing these live-usefulness/native-cleanup blockers.
+
+### October 10: bounded retry and search-only evaluation
+
+The [retry/ownership/search-only evidence](RETRY_OWNERSHIP_SEARCH_ONLY_2026-10-10.md)
+preserves dry-run attempt 1 at `0154fac` and records its one authorized failed-job
+retry passing at the same source. No Windows preflight code or safety deadline
+was changed; transient delay is consistent with non-recurrence, not a proven root
+cause. A single-profile 20-second disposable Chrome fixture still fails strict
+cleanup with two tracked updater wake descendants from the user-level updater
+installation. Proven Chrome ancestry does not establish exclusive termination
+authority; no updater is killed or excluded. Historical live cleanup stays failed.
+The existing search-only composition can meet the unchanged useful-entity
+criterion from independently attributable title plus location/listing date in SDK
+fixtures. Current live search fields remain unverified. Normalized job identities
+remain rejected; fresh local and exact-head hosted gates do not authorize a live
+run, merge or publication. PR #5 remains blocked on representative strict cleanup
+and a newly consented useful-brief result.

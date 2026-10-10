@@ -438,6 +438,88 @@ it('honors explicit no-enrichment and hard input bounds', async () => {
   expect(invalid.isError).toBe(true);
   expect(fetches).toHaveBeenCalledTimes(2);
 });
+it.each([
+  { comparison: { formattedLocation: 'Synthetic town' }, field: 'location' },
+  { comparison: { listedAt: 1000 }, field: 'listedAt' },
+])(
+  'builds a useful search-only brief from same-job $field facts',
+  async ({ comparison, field }) => {
+    searchRows = [
+      {
+        $type: 'fixture.JobPosting',
+        entityUrn: 'urn:li:fsd_jobPosting:1',
+        title: 'Synthetic observed role',
+        ...comparison,
+      },
+      { $type: 'fixture.JobPosting', entityUrn: 'urn:li:jobPosting:2', title: 'Title only' },
+    ];
+    const started = Date.now();
+    const incoming = await client.callTool({
+      name: 'research_jobs',
+      arguments: { keywords: 'engineering', count: 2, enrich_first: false },
+    });
+    const observed = briefObservation(incoming, started, Date.now());
+    const result = incoming.structuredContent as any;
+    expect(observed).toMatchObject({
+      usefulEntities: 1,
+      entities: 2,
+      dataStatus: 'partial',
+      metaStatus: 'partial',
+      bounds: { readAttempts: 2, toolCalls: 1 },
+    });
+    expect(result.data.comparisonEvidence).toEqual({
+      sufficientEntities: 1,
+      insufficientEntities: 1,
+    });
+    expect(result.data.entities[0].facts.map((fact: any) => fact.field)).toEqual(['title', field]);
+    for (const entity of result.data.entities) {
+      expect(entity.facts.every((fact: any) => fact.sourceTool === 'search_jobs')).toBe(true);
+      expect(entity.facts.every((fact: any) => fact.sourceUrl === entity.sourceUrl)).toBe(true);
+      expect(entity.unknownFields).toContain('company');
+      expect(entity.unknownFields).toContain('description');
+    }
+    expect(result.data.reads).toHaveLength(1);
+    expect(fetches).toHaveBeenCalledTimes(2);
+    expect(fetches.mock.calls.some((call) => call[1].url.includes('/jobs/jobPostings/'))).toBe(
+      false,
+    );
+  },
+);
+it('does not make search-only title, workplace or unsupported identity into a useful job', async () => {
+  searchRows = [
+    {
+      $type: 'fixture.JobPosting',
+      entityUrn: 'urn:li:fsd_jobPosting:1',
+      title: 'Synthetic observed role',
+      workRemoteAllowed: true,
+    },
+    {
+      $type: 'fixture.JobPosting',
+      entityUrn: 'urn:li:fs_normalized_jobPosting:2',
+      title: 'Unattributable role',
+      formattedLocation: 'Unattributable location',
+      listedAt: 1000,
+    },
+  ];
+  const started = Date.now();
+  const incoming = await client.callTool({
+    name: 'research_jobs',
+    arguments: { keywords: 'engineering', count: 2, enrich_first: false },
+  });
+  expect(briefObservation(incoming, started, Date.now())).toMatchObject({
+    usefulEntities: 0,
+    entities: 1,
+    dataStatus: 'partial',
+    metaStatus: 'partial',
+    bounds: { readAttempts: 2, toolCalls: 1 },
+  });
+  const result = incoming.structuredContent as any;
+  expect(result.data.entities[0].facts.map((fact: any) => fact.field)).toEqual(['title']);
+  expect(result.data.markdown).toContain('Insufficient evidence');
+  expect(JSON.stringify(result)).not.toContain('Unattributable');
+  expect(result.data.entities[0].unknownFields).toContain('location');
+  expect(fetches).toHaveBeenCalledTimes(2);
+});
 it('deduplicates jobs and drops unlinked entities without inventing sources', async () => {
   searchRows = [
     searchRows[0]!,

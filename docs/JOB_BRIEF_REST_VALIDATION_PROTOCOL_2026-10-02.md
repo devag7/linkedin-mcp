@@ -609,3 +609,13 @@ checks. The complete private report and original failure remain unchanged.
 proven repairs from an unresolved longer native cleanup failure and insufficient
 canonical identity evidence. Production identity checks remain strict. Repeating
 the same v2 diagnostic cannot resolve these gates; no new live run is proposed.
+
+### October 10 offline continuation
+
+[Retry, updater ownership and search-only evaluation](RETRY_OWNERSHIP_SEARCH_ONLY_2026-10-10.md)
+records both Windows dry-run attempts and a reproduced strict held-session failure.
+No consumed account approval is reused. `fs_normalized_jobPosting` remains rejected.
+Search-only usefulness has an independent unanswered question, but no live scope
+is frozen or authorized while representative cleanup is unresolved. A future
+search-only validation must be separately specified and approved; none of the
+historical detail/identifier scopes above authorize it.
