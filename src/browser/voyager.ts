@@ -1,3 +1,4 @@
+import { reserveReadAttempt } from '../safety/read-limit.js';
 import { assertNotCancelled } from '../tools/cancellation.js';
 /**
  * In-page Voyager client — the core of the v2 architecture.
@@ -90,6 +91,7 @@ export class VoyagerClient {
   async voyagerGet<T = unknown>(apiPath: string): Promise<T> {
     this.logger.debug('voyagerGet');
     assertNotCancelled();
+    reserveReadAttempt();
     const page = await this.engine.getFeedPage();
     const url = `/voyager/api${apiPath}`;
     const raw = await this.inPageFetch(page, url, 'GET');

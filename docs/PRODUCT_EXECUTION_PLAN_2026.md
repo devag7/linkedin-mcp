@@ -46,7 +46,7 @@ PR #5 remains draft; its brief is not a core capability.
    finding remains; recheck supported build-tool updates on **October 8** and document
    build exposure, not merely the audit exit code.
 4. **Earn 3.1:** diagnose PR #5's partial result offline against redacted shape/status
-   evidence first. Keep three explicit reads maximum, identity checks, source links,
+   evidence first. Narrow to search-only with two explicit reads maximum, identity checks, source links,
    freshness and partial-result semantics. Acceptance: a separately consented bounded
    check produces a useful brief before merge/release; no new account access is
    authorized by this plan. Saved jobs and richer filters require separate verified
@@ -338,6 +338,25 @@ introduced. Any further provider diagnosis requires reviewed bounded instrumenta
 and fresh consent. Current counts/error code cannot identify a rotating endpoint
 or permission/normalization cause, so no speculative production fix is made.
 
+## PR #5 follow-up candidate — October2, 2026
+
+PR #5 remains draft. The isolated3.1.0 candidate integrates the core safety/setup
+merge tree, keeps23 tools and preserves its additive bounded research_jobs contract.
+Its first page permits at most3 explicit Voyager attempts including identity,
+2 underlying tools and10 entities; no retries, pagination or inferred fit.
+The original live run returned3 titles only and failed usefulness. A separately
+consented shape-only diagnosis on0200276 observed detail data alongside provider
+errors; strict rejection remains intact. Search card generic text is not mapped
+to employer/location without semantic evidence. The diagnostic consent is consumed.
+
+Offline SDK regressions remove arbitrary unrelated-company attribution and fix
+the source diagnostic's serialized JSON comparison. They do not establish current
+provider compatibility. See [redacted result and protocol](JOB_BRIEF_SHAPE_CAPTURE_PROTOCOL_2026-10-02.md).
+The useful-brief gate, exact resulting-head local/package/hosted/dry-run gates and
+all four publication destinations must pass before feature release. Core must
+finish first. Native first-use/repeat cohorts, erasure/Windows privacy and broad
+promotion remain open; mandatory maintainer cash stays$0.
+
 
 ## Core execution and next milestone — October2
 
@@ -510,6 +529,25 @@ remain unverified; no directory is marked as fully released. The digest failure
 was a21-byte404 JSON body, not an obtained tarball. Publication stays stopped.
 
 
+## Current core and draft feature status — October 8
+
+Core 3.0.0 is released with 22 tools; the publication-pending snapshots above
+are historical. [Launch evidence](LAUNCH_EVIDENCE_2026-10-07.md) records the four
+verified destinations. First-use cohort remains zero attempts; the merged protocol
+requires separate anonymous-tally consent before study start, offers optional
+private-row recording, and counts one first attempt per eligible person.
+80% within 15 minutes, repeat-use adoption, 10,000 stars and daily Trending remain
+unmeasured goals, never guaranteed results.
+
+PR #5 remains draft. Its dependencies and publisher/CI gates now match reviewed
+core; synthetic title-only partial responses correctly have zero useful entities.
+The previous live check failed usefulness, and retained counts cannot diagnose
+its underlying provider cause. REST-primary is provisional, not live proof.
+Exact-head hosted checks, a release dry run and a newly consented useful brief
+are required before feature merge/release. No account request or recruitment
+was made here; required maintainer cash $0. Erasure and native Windows privacy
+proof remain open. See [candidate readiness](RELEASE_READINESS_3.1.0.md).
+
 ## Current core adoption and audit status — October 8
 
 Core 3.0.0 is released with 22 tools; the publication-pending snapshots above
@@ -526,3 +564,22 @@ regressions do not satisfy its freshly consented useful-brief requirement.
 Coordinated erasure, native Windows privacy proof and current native client
 first-read/repeat-use evidence remain open. Required maintainer cash $0;
 10,000 stars and daily Trending remain measured ambitions, not promised outcomes.
+
+
+## October11 search-only decision cycle — blocked
+
+PR#5 is narrowed to one search-only brief (up to10 jobs,2 explicit Voyager GET
+attempts includingidentity, no enrichment). SDK fixtures support source-linked
+title plus location/listing-date usefulness; no live usefulness is claimed.
+The single fresh disposable headed20-second local Chrome check failed strict
+cleanup:9 observed,2 tracked at immediate/final checks after5050ms. Context/owner
+flags passed but do not erase survivors. No ownership investigation, exemption,
+retry, account access, merge or publication follows this failed gate. Historical
+receipts and published3.0.0 remain intact. Required cash:$0.
+
+The owner authorized one public [opt-in3.0.0 pilot invitation](https://github.com/devag7/linkedin-mcp/issues/13),
+now posted. No unsolicited messages or account operation; each participant must
+approve the existing kit's own scope. Cohort remains zero started attempts until
+one actually starts. Prioritize its first observed reproducible problem, counting
+all started first-person failures once and later clients separately. Stars and
+GitHub Trending remain measured outcomes, never promised release gates.

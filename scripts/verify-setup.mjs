@@ -64,7 +64,7 @@ try {
     const transport = new StdioClientTransport({ ...server, stderr: 'pipe' });
     try {
       await client.connect(transport);
-      assert.equal((await client.listTools()).tools.length, 22);
+      assert.equal((await client.listTools()).tools.length, 23);
       const call = async (name, args = {}) =>
         (await client.callTool({ name, arguments: args })).structuredContent;
       assert.equal((await call('whoami')).data.sessionState, 'not_checked');
@@ -83,7 +83,7 @@ try {
         clientConfiguration: name,
         sdkStdio: 'passed',
         scope: 'offline',
-        toolCount: 22,
+        toolCount: 23,
         linkedInRequests: 0,
         browserLaunches: 0,
       }),

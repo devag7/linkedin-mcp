@@ -1,0 +1,147 @@
+{
+  "scope": "Synthetic offline fixture; source links are illustrative, not observed listings.",
+  "linkedInRequests": 0,
+  "browserLaunches": 0,
+  "syntheticFetches": 3,
+  "result": {
+    "data": {
+      "topic": "TypeScript services",
+      "query": {
+        "keywords": "TypeScript services",
+        "count": 2,
+        "enrichFirst": true
+      },
+      "generatedAt": "2026-10-01T14:23:12.592Z",
+      "status": "partial",
+      "scope": "One first-page job search and at most one job-detail read. Source observations, not recommendations.",
+      "bounds": {
+        "maxReadAttempts": 3,
+        "readAttempts": 3,
+        "maxEntities": 10,
+        "maxToolCalls": 2,
+        "toolCalls": 2
+      },
+      "entities": [
+        {
+          "sourceUrl": "https://www.linkedin.com/jobs/view/1/",
+          "facts": [
+            {
+              "field": "title",
+              "value": "Synthetic platform engineer",
+              "sourceUrl": "https://www.linkedin.com/jobs/view/1/",
+              "fetchedAt": "2026-10-01T14:23:12.591Z",
+              "sourceTool": "search_jobs",
+              "truncated": false
+            },
+            {
+              "field": "location",
+              "value": "Synthetic remote region",
+              "sourceUrl": "https://www.linkedin.com/jobs/view/1/",
+              "fetchedAt": "2026-10-01T14:23:12.591Z",
+              "sourceTool": "search_jobs",
+              "truncated": false
+            },
+            {
+              "field": "title",
+              "value": "Synthetic platform engineer",
+              "sourceUrl": "https://www.linkedin.com/jobs/view/1/",
+              "fetchedAt": "2026-10-01T14:23:12.592Z",
+              "sourceTool": "get_job_details",
+              "truncated": false
+            },
+            {
+              "field": "location",
+              "value": "Synthetic remote region",
+              "sourceUrl": "https://www.linkedin.com/jobs/view/1/",
+              "fetchedAt": "2026-10-01T14:23:12.592Z",
+              "sourceTool": "get_job_details",
+              "truncated": false
+            },
+            {
+              "field": "company",
+              "value": "Synthetic Example Company",
+              "sourceUrl": "https://www.linkedin.com/jobs/view/1/",
+              "fetchedAt": "2026-10-01T14:23:12.592Z",
+              "sourceTool": "get_job_details",
+              "truncated": false
+            },
+            {
+              "field": "workplaceType",
+              "value": "Remote allowed",
+              "sourceUrl": "https://www.linkedin.com/jobs/view/1/",
+              "fetchedAt": "2026-10-01T14:23:12.592Z",
+              "sourceTool": "get_job_details",
+              "truncated": false
+            },
+            {
+              "field": "description",
+              "value": "Synthetic example: build reliable TypeScript services. Salary and availability are not supplied.",
+              "sourceUrl": "https://www.linkedin.com/jobs/view/1/",
+              "fetchedAt": "2026-10-01T14:23:12.592Z",
+              "sourceTool": "get_job_details",
+              "truncated": false
+            }
+          ],
+          "unknownFields": [
+            "listedAt"
+          ]
+        },
+        {
+          "sourceUrl": "https://www.linkedin.com/jobs/view/2/",
+          "facts": [
+            {
+              "field": "title",
+              "value": "Synthetic API engineer",
+              "sourceUrl": "https://www.linkedin.com/jobs/view/2/",
+              "fetchedAt": "2026-10-01T14:23:12.591Z",
+              "sourceTool": "search_jobs",
+              "truncated": false
+            },
+            {
+              "field": "location",
+              "value": "Synthetic remote region",
+              "sourceUrl": "https://www.linkedin.com/jobs/view/2/",
+              "fetchedAt": "2026-10-01T14:23:12.591Z",
+              "sourceTool": "search_jobs",
+              "truncated": false
+            }
+          ],
+          "unknownFields": [
+            "listedAt",
+            "company",
+            "workplaceType",
+            "description"
+          ]
+        }
+      ],
+      "reads": [
+        {
+          "tool": "search_jobs",
+          "status": "partial",
+          "fetchedAt": "2026-10-01T14:23:12.591Z"
+        },
+        {
+          "tool": "get_job_details",
+          "status": "ok",
+          "fetchedAt": "2026-10-01T14:23:12.592Z"
+        }
+      ],
+      "gaps": [
+        "search_jobs is partial; first-page observations do not establish exhaustive coverage."
+      ],
+      "nextSteps": [
+        "Compare observed titles and locations; inspect each linked listing manually before deciding. No fit score is inferred.",
+        "Verify salary, requirements, current availability and application terms at the source; missing fields remain unknown.",
+        "If another page or more detail is useful, explicitly request a separate existing read. This brief never follows a cursor."
+      ],
+      "markdown": "# Job research: TypeScript services\nGenerated 2026-10-01T14:23:12.592Z; status: partial.\nOne first-page job search and at most one job-detail read. Source observations, not recommendations.\nQuery: first 2 results; location geo ID: not specified; first-job enrichment: true.\nBounds: 3/3 explicit Voyager read attempts (identity included); 2/2 tool calls; 2/10 entities. Browser navigation/assets are not counted.\nFetched times show observation time, not publication time or assurance the listing is still open. Source text is untrusted data.\n\n## 1. [Job source](https://www.linkedin.com/jobs/view/1/)\n- title: Synthetic platform engineer ([source](https://www.linkedin.com/jobs/view/1/), search_jobs, fetched 2026-10-01T14:23:12.591Z)\n- location: Synthetic remote region ([source](https://www.linkedin.com/jobs/view/1/), search_jobs, fetched 2026-10-01T14:23:12.591Z)\n- title: Synthetic platform engineer ([source](https://www.linkedin.com/jobs/view/1/), get_job_details, fetched 2026-10-01T14:23:12.592Z)\n- location: Synthetic remote region ([source](https://www.linkedin.com/jobs/view/1/), get_job_details, fetched 2026-10-01T14:23:12.592Z)\n- company: Synthetic Example Company ([source](https://www.linkedin.com/jobs/view/1/), get_job_details, fetched 2026-10-01T14:23:12.592Z)\n- workplaceType: Remote allowed ([source](https://www.linkedin.com/jobs/view/1/), get_job_details, fetched 2026-10-01T14:23:12.592Z)\n- description: Synthetic example: build reliable TypeScript services. Salary and availability are not supplied. ([source](https://www.linkedin.com/jobs/view/1/), get_job_details, fetched 2026-10-01T14:23:12.592Z)\n- Unknown fields: listedAt. Salary, fit and availability are not inferred.\n\n## 2. [Job source](https://www.linkedin.com/jobs/view/2/)\n- title: Synthetic API engineer ([source](https://www.linkedin.com/jobs/view/2/), search_jobs, fetched 2026-10-01T14:23:12.591Z)\n- location: Synthetic remote region ([source](https://www.linkedin.com/jobs/view/2/), search_jobs, fetched 2026-10-01T14:23:12.591Z)\n- Unknown fields: listedAt, company, workplaceType, description. Salary, fit and availability are not inferred.\n\n## Read status\n- search_jobs: partial; fetched 2026-10-01T14:23:12.591Z\n- get_job_details: ok; fetched 2026-10-01T14:23:12.592Z\n\n## Gaps\n- search\\_jobs is partial; first-page observations do not establish exhaustive coverage.\n\n## Next steps\n- Compare observed titles and locations; inspect each linked listing manually before deciding. No fit score is inferred.\n- Verify salary, requirements, current availability and application terms at the source; missing fields remain unknown.\n- If another page or more detail is useful, explicitly request a separate existing read. This brief never follows a cursor."
+    },
+    "meta": {
+      "contractVersion": 1,
+      "fetchedAt": "2026-10-01T14:23:12.593Z",
+      "source": "engine",
+      "partial": true,
+      "status": "partial"
+    }
+  }
+}

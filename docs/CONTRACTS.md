@@ -21,10 +21,16 @@ zero/short/oversized pages retain their bounded observations with partial status
 unknown continuation and no next cursor. A coherent short final page and a
 coherent zero-total page can establish end; no page is followed automatically.
 
-`get_job_details` verifies a numeric `urn:li:jobPosting:<id>` or
-`urn:li:fsd_jobPosting:<id>` matches the requested ID before attaching its canonical
-job source URL. An absent, unsupported or mismatched identity returns
-RESPONSE_SHAPE_CHANGED with null data and no provenance; it is never retried.
+`get_job_details` selects exactly one job-like object across the validated data
+and included containers whose full `urn:li:jobPosting:<id>` or
+`urn:li:fsd_jobPosting:<id>` matches the requested numeric ID (1–20 digits).
+An earlier unrelated object cannot hide that unique match. Distinct matching
+objects are ambiguous even if their fields are identical or use the two supported
+forms; absent, unsupported, mismatched or ambiguous identities return
+RESPONSE_SHAPE_CHANGED with null data and no provenance. No whitespace trimming,
+new identifier namespace or fallback is accepted. A nonblank title is required.
+Only the selected object's facts are normalized, and the numeric identity is
+checked again before attaching its canonical job source URL. No retry is made.
 Company attribution uses only the selected job's own companyDetails.name.
 Unassociated included Company entities are not evidence; missing employer stays
 unknown rather than borrowing a name from another job.
@@ -80,3 +86,37 @@ The runtime write opt-in and experimental-route gate still apply.
 After a timeout/restart, repeat the original operation ID and inputs to retrieve a
 journaled outcome; no proof is needed for that lookup, and no action is resubmitted.
 Unsubmitted previews do not survive restart. The server cannot infer human consent.
+
+### research_jobs search-only composition (unreleased)
+
+One first-page `search_jobs` call returns source-linked title/location/listing-date
+facts, query, enforced bounds, unknown fields, per-read status, gaps, next steps,
+comparisonEvidence and Markdown. Each fact has sourceTool=search_jobs, its exact
+supported canonical job source URL, fetchedAt and truncation. Supported numeric
+job URN and canonical URL must agree; absent, unsupported or mismatched identities
+are omitted. Normalized detail identities remain rejected; no extra read is made.
+
+Inputs: keywords, optional numeric location_geo_id, count1–10 (default5),
+enrich_first=false (default). True is rejected before provider work. The ceilings
+are two explicit Voyager GET attempts including identity, one underlying tool and
+ten deduplicated entities. Navigation/assets/background traffic are excluded.
+No detail enrichment, fallback, paging, retry, storage, writes or model inference.
+The earlier unpublished draft accepted enrichment; its schema must be refreshed.
+Released3.0.0 contracts and tools are unchanged.
+
+Useful means a linked observed title plus location or listing date. Title-only,
+workplace-only, unknown or missing title cannot qualify. Each insufficient job
+forces both data.status and meta.status to partial with meta.partial=true;
+comparisonEvidence counts sum to the linked entity count. A useful partial may
+qualify when at least one entity meets all identity/provenance/freshness checks;
+it stays partial and does not establish fit, salary or availability. Both statuses
+are empty only for a coherent complete empty page; contradictory pagination stays
+partial. Provider errors are retained in a partial report, including zero entities.
+Inspect reads/gaps: successful MCP delivery does not establish provider success.
+
+Facts never borrow unrelated company or detail data. Missing fields are unknown;
+fetch time is observation time, not proof of a recent provider update. Fields are
+bounded to300 characters with explicit truncation. Source content is untrusted.
+Input errors/cancellation retain error envelopes. The GET ceiling is enforced at
+Voyager entry and preserved through queue callbacks, including identity preflight.
+Offline SDK fixtures prove contracts, not useful live behavior or native clients.

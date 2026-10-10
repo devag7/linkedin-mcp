@@ -1,3 +1,4 @@
+import { briefSchema } from './research-contract.js';
 import { z } from 'zod';
 import type { ToolName } from './capabilities.js';
 const str = z.string().optional();
@@ -95,6 +96,7 @@ const dataSchemas: Record<ToolName, z.ZodTypeAny> = {
     .array(row({ headline: str, text: str, publishedAt: num, read: z.boolean().optional() }))
     .max(50),
   search_people: z.array(person).max(25),
+  research_jobs: briefSchema,
   search_jobs: z
     .array(row({ title: str, location: str, listedAt: num, jobUrn: str, sourceUrl: str }))
     .max(25),

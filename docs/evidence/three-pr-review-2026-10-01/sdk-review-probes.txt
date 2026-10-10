@@ -1,0 +1,28 @@
+Historical reproduction only: use a disposable checkout of PR #5 at97b797a.
+The assertions below are not expected to pass on the fixed current source;
+desired behavior is tested in tests/read-consistency.test.ts and research.test.ts.
+Reproduction appendix for tests/research.test.ts at that pre-fix PR #5 head.
+Copy that test to tests/review-audit-probe.test.ts, append the tests below, run
+npx vitest run tests/review-audit-probe.test.ts -t "audit probe", then remove
+only the temporary file you created. These assertions show CURRENT DEFECTS;
+they are not desired behavior or tests to add to the permanent green suite.
+No actual page/browser/provider is used.
+
+it('audit probe: contradictory nonzero total is currently labelled complete empty', async () => {
+  searchRows = [];
+  total = 2;
+  const result = await brief({ enrich_first: false });
+  expect(result).toMatchObject({data: {status: 'empty', entities: []}, meta: {status: 'empty', partial: false}});
+  expect(result.data.reads[0].status).toBe('empty');
+  expect(fetches).toHaveBeenCalledTimes(2);
+  console.log(JSON.stringify({probe: 'nonzero-total-empty-page', rawPaging: {total: 2, start: 0, count: 2}, returnedRows: 0, dataStatus: result.data.status, metaStatus: result.meta.status, partial: result.meta.partial, attempts: result.data.bounds.readAttempts}));
+});
+
+it('audit probe: standalone detail returns a mismatched job with requested source URL', async () => {
+  detailMismatch = true;
+  const result = await client.callTool({name: 'get_job_details', arguments: {job_id: '1'}});
+  const value = result.structuredContent as any;
+  expect(value.data).toMatchObject({jobUrn: 'urn:li:fsd_jobPosting:99', sourceUrl: 'https://www.linkedin.com/jobs/view/1/'});
+  expect(value.meta.status).toBe('ok');
+  console.log(JSON.stringify({probe: 'standalone-detail-identity', requestedJobId: '1', returnedJobUrn: value.data.jobUrn, claimedSource: value.data.sourceUrl, status: value.meta.status}));
+});

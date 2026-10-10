@@ -33,6 +33,8 @@ import * as ep from '../browser/endpoints.js';
 import { ok, run, ToolError } from './result.js';
 import { registerTool } from './register.js';
 import { assertReadResponse, readRows } from './provider-shape.js';
+import { recordJobDetailCheck, recordJobIdentifiers } from './job-detail-diagnostic.js';
+import { JobDetailSelectionError } from '../browser/job-detail-selection.js';
 import { pageFields, pageStart, pageResult, firstPage } from './pagination.js';
 
 export function registerDiscoveryTools(
@@ -116,12 +118,49 @@ export function registerDiscoveryTools(
     async ({ job_id }) =>
       run(logger, 'get_job_details', async () => {
         const raw = await guard.run(ACTIONS.readGeneric, () =>
-          voyager.voyagerGet<NormalizedResponse>(ep.jobPostingGraphql(job_id)),
+          voyager.voyagerGet<NormalizedResponse>(ep.jobPosting(job_id)),
         );
-        assertReadResponse(raw);
-        const job = shapeJobDetails(raw);
-        const returnedId = /^urn:li:(?:fsd_)?jobPosting:([0-9]{1,20})$/.exec(job.jobUrn ?? '')?.[1];
-        if (!job.title || returnedId !== job_id) throw new ToolError('RESPONSE_SHAPE_CHANGED');
+        try {
+          assertReadResponse(raw);
+          recordJobDetailCheck(server, 'envelope_accepted');
+        } catch (error) {
+          recordJobDetailCheck(
+            server,
+            error instanceof ToolError && error.code === 'RESPONSE_SHAPE_CHANGED'
+              ? 'envelope_shape_rejected'
+              : error instanceof ToolError && error.code === 'PROVIDER_ERROR'
+                ? 'envelope_provider_error'
+                : 'envelope_unclassified_error',
+          );
+          throw error;
+        }
+        recordJobIdentifiers(server, raw, job_id);
+        let job: ReturnType<typeof shapeJobDetails>;
+        try {
+          job = shapeJobDetails(raw, job_id, (check) => recordJobDetailCheck(server, check));
+        } catch (error) {
+          if (!(error instanceof JobDetailSelectionError)) throw error;
+          recordJobDetailCheck(server, error.reason);
+          throw new ToolError('RESPONSE_SHAPE_CHANGED');
+        }
+        if (!job.title) {
+          recordJobDetailCheck(server, 'title_missing');
+          throw new ToolError('RESPONSE_SHAPE_CHANGED');
+        }
+        recordJobDetailCheck(server, 'title_present');
+        const returned = /^urn:li:(?:fsd_)?jobPosting:([0-9]{1,20})$/.exec(job.jobUrn ?? '');
+        const returnedId = returned?.[0] === job.jobUrn ? returned?.[1] : undefined;
+        recordJobDetailCheck(
+          server,
+          !job.jobUrn
+            ? 'identity_absent'
+            : returnedId === undefined
+              ? 'identity_unsupported'
+              : returnedId !== job_id
+                ? 'identity_mismatch'
+                : 'identity_match',
+        );
+        if (returnedId !== job_id) throw new ToolError('RESPONSE_SHAPE_CHANGED');
         return ok({ ...job, sourceUrl: `https://www.linkedin.com/jobs/view/${job_id}/` });
       }),
   );

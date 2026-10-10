@@ -55,4 +55,4 @@ identical cssesc/util-deprecate dependency requirements and the same pre-mutatio
 version, identity, integrity and directory-alias validation. The disposable audit
 lock records the actual7.1.6 bytes. No npm auth code or audit threshold changes.
 The failed original audit and subsequent actual installer result are retained in
-[dependency repair evidence](../../docs/DEPENDENCY_REPAIR_3.0.0_2026-10-06.md).
+[dependency repair evidence](https://github.com/devag7/linkedin-mcp/blob/7aacea3b85e006cd935e28ede4068b78635bdd31/docs/DEPENDENCY_REPAIR_3.0.0_2026-10-06.md).

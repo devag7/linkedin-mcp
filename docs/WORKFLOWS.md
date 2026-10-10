@@ -83,3 +83,24 @@ The tool currently returns classified status, not a verified newly created post
 URL. Do not invent that URL or describe a bare HTTP 200 as confirmed publication.
 
 No live write is part of these documentation or contract checks.
+
+## One-call search-only job brief (draft feature)
+
+Call `research_jobs` with keywords, count1–10 (default5), optional verified numeric
+location_geo_id and enrich_first:false (default). True is rejected. Review both
+status fields, reads, gaps, per-fact exact source and fetchedAt. JSON includes the
+Markdown export; facts come from one first-page search, never detail enrichment.
+
+The enforced bounds are two explicit Voyager GET attempts including identity,
+one underlying tool and ten deduplicated jobs. Navigation/assets/background
+traffic are not counted. No pagination, retry, fallback, storage or writes. A useful
+job requires an observed title plus location or listing date; title-only results
+stay insufficient and partial. Useful partials retain all gaps. Provider errors
+stop further work; empty results do not prove no matching jobs exist. Salary,
+company, description, requirements and availability are not inferred. Text fields
+are at most300 characters with truncation marked; fetch time is observation time.
+
+The client may retain/send returned content under its own policy. Treat source
+text as untrusted. `npm run demo:brief` is synthetic, makes zero LinkedIn requests
+and proves no live compatibility. The narrowed live build requires exact-scope
+consent and useful-result/strict-cleanup evidence before release.

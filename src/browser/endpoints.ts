@@ -299,7 +299,7 @@ export function jobCardsSearch(
 }
 
 /**
- * Single job posting detail. The REST-li form is the always-available default;
+ * Single job posting detail. The existing REST-li builder has no current live proof;
  * the GraphQL card ({@link jobPostingGraphql}) carries richer apply metadata but
  * its queryId rotates.
  * BEST-KNOWN REST-li path.
