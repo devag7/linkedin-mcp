@@ -1,5 +1,14 @@
 # Changelog
 
+## [Unreleased]
+
+- Read-only `--setup <client> --config-file <path>` JSON/JSONC merge preview:
+  bounded parsing, duplicate/root/conflict checks, safe entry addition only and
+  no existing-file mutation or unrelated credential output. Published3.0.0 is
+  unchanged; new code requires a later release.
+- Reconcile the original roadmap with merged main, closed draft PR #5 and the
+  unbuilt/unmeasured privacy, official-provider and first-use gates.
+
 ## [3.0.0] — Core safety and guided setup
 
 22 tools; default-disabled writes with issued preview proof, authenticated loopback

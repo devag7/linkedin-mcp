@@ -380,6 +380,10 @@ contain explicit call limits and source-link rules. [Client setup](SETUP_GUIDE.m
 separates locally exercised MCP transport from untested client applications.
 [Privacy and deletion](docs/PRIVACY.md) explains retained safety history.
 [Roadmap coverage](docs/ROADMAP_COVERAGE.md) tracks every acceptance requirement.
+An **unreleased** [read-only config merge preview](SETUP_GUIDE.md#draft-preview-an-existing-client-configuration)
+checks an explicitly selected JSON/JSONC file for missing, matching or conflicting
+entries without changing files or exposing other servers' credentials. It is not
+available in published3.0.0 and does not establish native-client or live compatibility.
 [Official-provider pilot](docs/OFFICIAL_PROVIDER_PILOT.md) describes the app/scopes
 and integration evidence still needed. Docker files are an experimental Linux
 recipe; no container build, display/login or runtime has been verified locally.
