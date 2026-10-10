@@ -13,6 +13,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.0] — release candidate
+
+Publication and consented provider validation are tracked in
+[release readiness](docs/RELEASE_READINESS_3.0.0.md).
+
+### Breaking changes
+
+- Writes default to disabled. New submissions require a server-issued, five-minute
+  preview token bound to exact action/target/content/operation ID, plus explicit
+  human approval in the client. Journal lookup survives timeout/restart.
+- HTTP is local loopback only with bearer authentication; remote unauthenticated
+  deployment is unsupported. Safety/account state fails closed and retains history.
+- Results expose native structured contracts, truthful cold-session state and
+  evidence-based partial pagination. Job detail identities must match source URLs.
+
+### Added and fixed
+
+- Guided offline setup/config exports for Claude Desktop, Cursor and VS Code.
+- Bounded source-linked job briefs with freshness, unknown fields and partial
+  recovery; maximum three explicit Voyager attempts, no retry/automatic paging.
+- Alias-safe logout, exact 15-file packaging and resume-safe release identity
+  checks; each publishing destination is independently verified.
+- Read the [migration guide](SETUP_GUIDE.md#migrating-from-203-to-300). Live jobs,
+  native desktop chat, Docker runtime, coordinated erasure and NTFS ACL enforcement
+  remain unproven/open; historical 2.x live claims below are dated history.
+
 ## [2.0.3] - 2026-06-17
 
 Stable release. The 5 write tools are promoted out of alpha — payloads captured

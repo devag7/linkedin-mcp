@@ -1,0 +1,79 @@
+{
+  "inventory": [
+    {
+      "path": "claude-desktop-config.json",
+      "size": 147,
+      "sha256": "cdb53e760dd4b070246176da2b199076f380619ec4cce6394642ccedbc05fc4a"
+    },
+    {
+      "path": "DISCLAIMER.md",
+      "size": 1678,
+      "sha256": "bcb8d38475818bb350762b5339bc6f9570f0679ae28cc605c6a7c978f69b13c0"
+    },
+    {
+      "path": "dist/index.js",
+      "size": 242571,
+      "sha256": "3ba798aeac34700c76600c04425391c97090a42d4e4794717025c72e0af32e51"
+    },
+    {
+      "path": "dist/index.js.map",
+      "size": 524225,
+      "sha256": "9590b3ab212b67f4fd26f80cd556c218d0ef42db9a567a82fc5dc5e5ede214bf"
+    },
+    {
+      "path": "docs/CAPABILITIES.md",
+      "size": 4433,
+      "sha256": "092f0cfdbea7d7403a22586ce253606a7faa751170e6d618f79d3d5e70029ad8"
+    },
+    {
+      "path": "docs/CONTRACTS.md",
+      "size": 4724,
+      "sha256": "6a51a180326d7e0d85f72ac4f987dc254c48f3d71dd0d09e3967dcdd5795e86f"
+    },
+    {
+      "path": "docs/PRIVACY.md",
+      "size": 3863,
+      "sha256": "ed9355ce891099096b8c90cba83411ef33b56303ac424fb0b1439bf50a52a827"
+    },
+    {
+      "path": "docs/WORKFLOWS.md",
+      "size": 4746,
+      "sha256": "4388b3fcd7251bae532e6a7658109e7a7a5d75c0f961c6ba00e5f6c0e196b75b"
+    },
+    {
+      "path": "LICENSE",
+      "size": 1070,
+      "sha256": "ed2235e5af2f8788ca67d86ad752187b3379cc2ada78e41d0f8748df155b80a0"
+    },
+    {
+      "path": "mcp-manifest.json",
+      "size": 9218,
+      "sha256": "9cf6644f35e2e9e8dd7b2ef070a2c8311803df347051571185287965b8a7f015"
+    },
+    {
+      "path": "package.json",
+      "size": 2880,
+      "sha256": "f3307d6ab399d567cb6d0b8c9b683ffd31218e180d1c4da07ab50bb31d63c1ad"
+    },
+    {
+      "path": "PRODUCT_TECHNICAL_ROADMAP_2026.md",
+      "size": 36830,
+      "sha256": "726b77032825ba66753785633c5dade585da9d7afe40582ac0f940d3fb283c2a"
+    },
+    {
+      "path": "README.md",
+      "size": 19800,
+      "sha256": "d5eaf64aaa9de15ff4eb9136889d0ab31ca2a93461d6dbffe0ad12a4da1c2b44"
+    },
+    {
+      "path": "SECURITY.md",
+      "size": 11724,
+      "sha256": "4e6d0b10030c6f5566bed5471351ac5880ffca2eff7a223ae32e5c41e56a9c8c"
+    },
+    {
+      "path": "SETUP_GUIDE.md",
+      "size": 5938,
+      "sha256": "5639cd0b5aacc3118fdfbb5d14a22dd1f7653b681466cb0b55d1bb6d3293824b"
+    }
+  ]
+}

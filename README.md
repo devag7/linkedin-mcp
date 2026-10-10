@@ -13,7 +13,7 @@
 
 **Structured LinkedIn reads for MCP clients — profiles, jobs, companies and inbox data, with guided offline setup and explicit safety limits.**
 
-**22 tools** · local browser reads · five explicitly confirmed writes · persisted safety limits and operation journals.
+**Published core: 22 tools. Draft 3.1.0: 23.** · local browser reads · five explicitly confirmed writes · persisted safety limits and operation journals.
 
 > This is an unofficial LinkedIn integration and accounts can be restricted.
 > Review [Account safety](#-account-safety) and [SECURITY.md](SECURITY.md) before use.
@@ -25,21 +25,23 @@
 ## Guided first run
 
 **3.0.0 is released: 22 tools, guided local setup and manual Chrome login.**
-This is a local stdio tool; Glama's generic “Deploy Server” or browser-hosting
-controls are not supported installation instructions. No hosted service is required.
-[Verified publication receipts](docs/LAUNCH_EVIDENCE_2026-10-07.md) cover npm,
-GitHub Packages, the official MCP Registry and the GitHub release.
+This is a local stdio tool; generic hosted deployment controls are not installation
+instructions. [Verified publication receipts](docs/LAUNCH_EVIDENCE_2026-10-07.md)
+cover its four release destinations. Start with the pinned published
+[quick start](#-quick-start), [setup guide](SETUP_GUIDE.md) and
+[synthetic setup demonstration](docs/RELEASE_DEMO_3.0.0.md).
 
-Start with the [quick start](#-quick-start) and [setup guide](SETUP_GUIDE.md).
-Setup reports local issues, client configuration and exact next steps without
-contacting LinkedIn. Merge the generated entry into your existing client file.
-See the [synthetic setup demonstration](docs/RELEASE_DEMO_3.0.0.md): real published
-package, disposable fixtures, no login or LinkedIn request.
+**This branch is the unpublished 23-tool 3.1.0 candidate in draft PR #5.**
+`research_jobs` is absent from published 3.0.0. The tool table below describes
+this candidate's source; its prior live brief failed the usefulness criterion.
+For offline candidate review, run `npm ci`, `npm run build`, then
+`node dist/index.js --setup cursor` (also `claude-desktop` or `vscode`). Candidate
+exports target its unpublished version; use a stable absolute source-build path
+for isolated offline inspection, never infer that `npx` can install 3.1.0.
+No new LinkedIn request is authorized by this candidate's setup instructions.
+See [candidate gates](docs/RELEASE_READINESS_3.1.0.md) and the
+[execution plan](docs/PRODUCT_EXECUTION_PLAN_2026.md).
 
-`research_jobs` is **not included**; its job-research brief remains in
-[draft PR #5](https://github.com/devag7/linkedin-mcp/pull/5). The
-[execution plan](docs/PRODUCT_EXECUTION_PLAN_2026.md) tracks first use, privacy,
-future features and measured distribution outcomes.
 
 ## What it does
 
@@ -355,12 +357,12 @@ See [write evidence](docs/PHASE0_WRITE_EVIDENCE.md) and
 
 <!-- capabilities:start -->
 
-22 registered tools. Native contract version 1 returns structuredContent and identical JSON text, with fetchedAt, source, partial and status metadata. [Full route and verification inventory](docs/CAPABILITIES.md).
+23 registered tools. Native contract version 1 returns structuredContent and identical JSON text, with fetchedAt, source, partial and status metadata. [Full route and verification inventory](docs/CAPABILITIES.md).
 
 | Group | Tools |
 | --- | --- |
 | Session | `whoami`, `health_check`, `close_session` |
-| Reads | `get_my_profile`, `get_profile`, `get_feed`, `get_notifications`, `search_people`, `search_jobs`, `get_inbox`, `get_job_details`, `search_companies`, `get_company`, `get_company_posts`, `get_company_employees`, `get_pending_invitations`, `get_conversation` |
+| Reads | `get_my_profile`, `get_profile`, `get_feed`, `get_notifications`, `search_people`, `research_jobs`, `search_jobs`, `get_inbox`, `get_job_details`, `search_companies`, `get_company`, `get_company_posts`, `get_company_employees`, `get_pending_invitations`, `get_conversation` |
 | Opt-in alpha writes | `connect_with_person`, `send_message`, `create_post`, `react_to_post`, `comment_on_post` |
 
 <!-- capabilities:end -->
@@ -406,3 +408,22 @@ MIT — see [LICENSE](LICENSE). Missing files caused by cloud synchronization we
 Made by [Dev Agarwalla](https://github.com/devag7)
 
 </div>
+
+## Source-linked job briefs in unpublished 3.1.0
+
+`research_jobs({keywords:"platform engineer",count:5,enrich_first:true})`
+returns a comparison of at most ten jobs and enriches the first source-linked
+result. Each observed field carries its exact job URL, source tool and fetch time;
+missing fields remain unknown. JSON includes a ready-to-copy Markdown brief, query,
+request counters, per-read status, gaps and next steps. It never infers salary,
+fit or current availability. One first-page search plus at most one detail read;
+at most three explicit Voyager read attempts including cold identity. Browser
+navigation/assets are outside that counter. No cursor following, retry or saving.
+
+Run `npm run demo:brief` from the reviewed source for a synthetic offline MCP demo.
+It launches no browser and accesses no LinkedIn account. Fixture URLs are
+illustrative, not observed listings. Current provider compatibility remains
+unverified until the freshly consented useful-brief protocol passes. Published
+3.0.0 does not include this tool. PR #5 stays draft; no merge or publication is
+permitted before its remaining gates pass. See the
+[candidate readiness](docs/RELEASE_READINESS_3.1.0.md) for offline and live evidence.

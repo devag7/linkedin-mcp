@@ -21,10 +21,16 @@ zero/short/oversized pages retain their bounded observations with partial status
 unknown continuation and no next cursor. A coherent short final page and a
 coherent zero-total page can establish end; no page is followed automatically.
 
-`get_job_details` verifies a numeric `urn:li:jobPosting:<id>` or
-`urn:li:fsd_jobPosting:<id>` matches the requested ID before attaching its canonical
-job source URL. An absent, unsupported or mismatched identity returns
-RESPONSE_SHAPE_CHANGED with null data and no provenance; it is never retried.
+`get_job_details` selects exactly one job-like object across the validated data
+and included containers whose full `urn:li:jobPosting:<id>` or
+`urn:li:fsd_jobPosting:<id>` matches the requested numeric ID (1–20 digits).
+An earlier unrelated object cannot hide that unique match. Distinct matching
+objects are ambiguous even if their fields are identical or use the two supported
+forms; absent, unsupported, mismatched or ambiguous identities return
+RESPONSE_SHAPE_CHANGED with null data and no provenance. No whitespace trimming,
+new identifier namespace or fallback is accepted. A nonblank title is required.
+Only the selected object's facts are normalized, and the numeric identity is
+checked again before attaching its canonical job source URL. No retry is made.
 Company attribution uses only the selected job's own companyDetails.name.
 Unassociated included Company entities are not evidence; missing employer stays
 unknown rather than borrowing a name from another job.
@@ -80,3 +86,39 @@ The runtime write opt-in and experimental-route gate still apply.
 After a timeout/restart, repeat the original operation ID and inputs to retrieve a
 journaled outcome; no proof is needed for that lookup, and no action is resubmitted.
 Unsubmitted previews do not survive restart. The server cannot infer human consent.
+
+### research_jobs composition
+
+This new draft read tool returns an engine-assembled brief with exact query,
+bounds, source-linked entities/facts, unknown fields, per-read status/codes/guidance,
+gaps, next steps, comparisonEvidence counts and Markdown. Each fact has sourceTool, sourceUrl, fetchedAt and
+truncation. `data.status` and `meta.status` agree: ok/empty/partial. A complete
+empty first page returns both statuses empty with meta.partial:false; an empty
+page without completeness evidence remains partial in both fields. Source read
+errors are retained in
+a **partial report**, even with zero entities, so consumers must inspect reads
+and gaps; a successful MCP envelope does not imply successful provider work.
+Each linked job needs an observed title plus at least one of location, company,
+description or listing date to have sufficient comparison evidence. A title alone,
+workplace type alone, or a missing title is insufficient. Any insufficient entity
+makes both statuses partial and meta.partial:true, even when the provider page is
+complete. comparisonEvidence reports sufficientEntities and insufficientEntities;
+these sum to the linked entity count. Markdown highlights an entirely insufficient
+brief and labels each insufficient job while preserving its cited observations.
+A partial brief can still meet the live validation's minimum useful-entity criterion
+when at least one linked job meets that evidence threshold; it remains partial and
+does not establish fit, salary, availability or live compatibility. No extra reads
+are made to fill missing fields. A coherent empty page retains empty status.
+With `enrich_first:false`, the brief calls only `search_jobs` (identity preflight
+still counts toward the request ceiling). Search facts are limited to the existing
+same-job title, location and listing date with a supported canonical source;
+company and description remain unknown. A title plus observed location or listing
+date can satisfy the unchanged useful-entity criterion, including in a partial
+brief. A title alone, workplace flag or unsupported normalized identity cannot.
+This search-only path is SDK fixture-tested; current live search facts and a useful
+live search-only brief are not yet verified.
+Input errors/cancellation before execution retain the existing error envelope.
+A read failure prevents subsequent composition reads. No automatic pagination,
+retry, storage or writes. The request ceiling is enforced at Voyager GET entry
+and preserved across queue callbacks; identity preflight counts toward three
+attempts. Browser navigation/assets are outside this explicit API counter.

@@ -1,3 +1,4 @@
+import { ReadLimitError } from '../safety/read-limit.js';
 /**
  * Shared MCP tool-result helpers for v2 tools.
  *
@@ -39,15 +40,18 @@ export function ok(
   data: unknown,
   source: ToolMeta['source'] = 'voyager',
   partial = false,
-  extra: Pick<ToolMeta, 'nextCursor' | 'pagination'> = {},
+  extra: Pick<ToolMeta, 'nextCursor' | 'pagination'> & Partial<Pick<ToolMeta, 'status'>> = {},
 ): McpText {
+  const { status, ...pagination } = extra;
   const meta: ToolMeta = {
     contractVersion: 1,
     fetchedAt: new Date().toISOString(),
     source,
     partial,
-    status: partial ? 'partial' : Array.isArray(data) && data.length === 0 ? 'empty' : 'ok',
-    ...extra,
+    status: partial
+      ? 'partial'
+      : (status ?? (Array.isArray(data) && data.length === 0 ? 'empty' : 'ok')),
+    ...pagination,
   };
   const structuredContent = { data, meta };
   return {
@@ -62,6 +66,8 @@ export class ToolError extends Error {
   }
 }
 const messages: Record<string, string> = {
+  READ_LIMIT_REACHED:
+    'The bounded brief stopped at its explicit read attempt ceiling. No automatic retry or further page was requested.',
   INTERNAL_ERROR:
     'The tool failed. Check local setup and safety-state storage; unreadable or invalid state must be repaired before retrying.',
   RESPONSE_SHAPE_CHANGED:
@@ -118,6 +124,7 @@ export async function run(
     return await fn();
   } catch (err) {
     const code =
+      err instanceof ReadLimitError ||
       err instanceof PreviewError ||
       err instanceof ToolError ||
       err instanceof VoyagerError ||

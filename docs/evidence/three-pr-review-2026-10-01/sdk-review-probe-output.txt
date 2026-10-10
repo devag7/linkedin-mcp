@@ -1,0 +1,15 @@
+
+ RUN  v3.2.6 /Users/devagarwalla/Documents/Coding/linkedin-mcp
+
+stdout | tests/review-audit-probe.test.ts > audit probe: contradictory nonzero total is currently labelled complete empty
+{"probe":"nonzero-total-empty-page","rawPaging":{"total":2,"start":0,"count":2},"returnedRows":0,"dataStatus":"empty","metaStatus":"empty","partial":false,"attempts":2}
+
+stdout | tests/review-audit-probe.test.ts > audit probe: standalone detail returns a mismatched job with requested source URL
+{"probe":"standalone-detail-identity","requestedJobId":"1","returnedJobUrn":"urn:li:fsd_jobPosting:99","claimedSource":"https://www.linkedin.com/jobs/view/1/","status":"ok"}
+
+ ✓ tests/review-audit-probe.test.ts (16 tests | 14 skipped) 159ms
+
+ Test Files  1 passed (1)
+      Tests  2 passed | 14 skipped (16)
+   Start at  21:24:34
+   Duration  802ms (transform 159ms, setup 0ms, collect 469ms, tests 159ms, environment 0ms, prepare 42ms)

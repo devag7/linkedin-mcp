@@ -15,8 +15,8 @@
  *    userAgent, NO extra fingerprint args, NO navigator.webdriver patching,
  *    NO stealth initScripts. patchright IS the anti-detection layer.
  *  - Singleton guarded by an in-flight launch mutex (idempotent ensureContext).
- *  - Exactly one browser process, reaped on shutdown — fixes the competitor's
- *    zombie chrome-headless leak.
+ *  - One owned persistent context. Root-browser closure alone cannot certify
+ *    that every detached or reparented native auxiliary exited.
  */
 
 import * as fs from 'fs';
@@ -179,7 +179,7 @@ export class BrowserEngine {
     this.idleTimer.unref?.();
   }
 
-  /** Close the context and guarantee the Chrome process is gone (zombie reap). */
+  /** Close context/browser; native descendant cleanup requires separate proof. */
   async shutdown(): Promise<void> {
     if (this.shutdownFailed)
       throw new SafetyStateError(
@@ -261,7 +261,10 @@ export class BrowserEngine {
     if (this.signalsWired) return;
     this.signalsWired = true;
     const close = () => {
-      void this.dispose().finally(() => process.exit(0));
+      void this.dispose().then(
+        () => process.exit(0),
+        () => process.exit(1),
+      );
     };
     process.once('SIGINT', close);
     process.once('SIGTERM', close);

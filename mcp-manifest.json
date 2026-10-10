@@ -1,6 +1,6 @@
 {
   "name": "linkedin-mcp-tools",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "mcpName": "io.github.devag7/linkedin-mcp",
   "contractVersion": 1,
   "transport": "stdio",
@@ -107,6 +107,19 @@
       "availability": "unknown_until_checked"
     },
     {
+      "name": "research_jobs",
+      "route": "bounded composition of search_jobs + one get_job_details",
+      "source": "voyager",
+      "permission": "authenticated_browser",
+      "write": false,
+      "maxResults": 10,
+      "provider": "local_browser_unofficial",
+      "verification": "offline_contract_tested",
+      "offlineCheckedAt": "2026-10-01",
+      "liveCheckedAt": null,
+      "availability": "unknown_until_checked"
+    },
+    {
       "name": "search_jobs",
       "route": "voyagerJobsDashJobCards",
       "source": "voyager",
@@ -134,7 +147,7 @@
     },
     {
       "name": "get_job_details",
-      "route": "voyagerJobsDashJobPosting",
+      "route": "/jobs/jobPostings/:id (provisional; current live validation pending)",
       "source": "voyager",
       "permission": "authenticated_browser",
       "write": false,

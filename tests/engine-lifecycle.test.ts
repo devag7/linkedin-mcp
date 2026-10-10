@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
-import { mkdtempSync, rmSync } from 'node:fs';
+import { existsSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { chromium, type BrowserContext } from 'patchright';
@@ -135,3 +136,45 @@ it('refreshes a stop persisted after runtime construction before launching', asy
   expect(launch).not.toHaveBeenCalled();
   await e.dispose();
 });
+
+it.each([
+  { signal: 'SIGTERM', failure: true },
+  { signal: 'SIGINT', failure: true },
+  { signal: 'SIGHUP', failure: true },
+  { signal: 'SIGTERM', failure: false },
+])(
+  'reports signal disposal outcome and keeps failed ownership: $signal/$failure',
+  ({ signal, failure }) => {
+    const fixture = join(dir, 'signal-fixture.mts');
+    const imports = (path: string) => JSON.stringify(new URL(path, import.meta.url).href);
+    writeFileSync(
+      fixture,
+      `
+    import {BrowserEngine} from ${imports('../src/browser/engine.ts')};
+    import {loadConfig} from ${imports('../src/config/env.ts')};
+    import {Logger} from ${imports('../src/types.ts')};
+    import {StateLock} from ${imports('../src/safety/state-lock.ts')};
+    const profile=process.argv[2];
+    const ownership=new StateLock(profile+'.owner',true);ownership.acquire();
+    const engine=new BrowserEngine({...loadConfig(),LINKEDIN_PROFILE_DIR:profile},new Logger('error'),true,null);
+    Object.assign(engine,{ownership,shutdown:async()=>{if(process.argv[4]==='failure')throw Error('SYNTHETIC_SHUTDOWN_FAILURE');}});
+    (engine as unknown as {wireSignals:()=>void}).wireSignals();
+    process.emit(process.argv[3] as NodeJS.Signals);
+  `,
+    );
+    const profile = join(dir, 'profile');
+    const result = spawnSync(
+      process.execPath,
+      ['--import', 'tsx', fixture, profile, signal, failure ? 'failure' : 'success'],
+      {
+        cwd: new URL('..', import.meta.url),
+        encoding: 'utf8',
+        timeout: 10000,
+      },
+    );
+    expect(result.error).toBeUndefined();
+    expect(result.signal).toBeNull();
+    expect(result.status).toBe(failure ? 1 : 0);
+    expect(existsSync(profile + '.owner.lock')).toBe(failure);
+  },
+);
