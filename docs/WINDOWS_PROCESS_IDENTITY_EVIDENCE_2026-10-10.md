@@ -45,8 +45,9 @@ The offline Windows lifecycle tracker uses PID plus the full birth stamp:
 - Missing relevant identity or equal parent/child timestamps fail with fixed
   `PROCESS_IDENTITY_UNCERTAIN`. Malformed/duplicate/incomplete inventories and native
   probe errors remain failures. A failed probe cannot later become a passing cleanup.
-- Exact profile arguments and uncertain profile-tree footprints share existing
-  parsing. A footprint remains counted and prevents clean certification. Only the
+- Exact profile arguments use documented Windows quote/backslash boundaries;
+  uncertain profile-tree footprints share the existing footprint recognition.
+  A footprint remains counted and prevents clean certification. Only the
   validated observer itself is excluded; its genuine profile children still count.
 
 Unrelated system rows may lack a birth stamp; they cannot supply a profile root,
@@ -59,6 +60,27 @@ Commands, PIDs, paths and birth stamps stay in memory. Native errors are replace
 fixed codes. Public lifecycle output retains aggregate counts, platform/Node/Chrome
 versions, method/deadline and cleanup status only. Parameterized malformed-inventory
 test names no longer interpolate the native observer PID or inventory JSON.
+
+## Native attempt caught a platform parsing defect
+
+The first repair at `371e43c6c704f15eb09fc194094012b32a48a1cb` passed 815 local
+tests but [CI 38062949710](https://github.com/devag7/linkedin-mcp/actions/runs/38062949710)
+failed both Windows native observation steps with `PROCESS_ARGUMENT_AMBIGUOUS`.
+Those failures are preserved. Native command lines were not retained; the exact
+triggering form is unknown. The native inventory/birth preflight succeeded.
+
+Offline regressions establish that the reused POSIX parser rejects valid Windows
+arguments when an exact unquoted profile option is followed by a positional
+argument, and cannot recognize a fully quoted whole option. The replacement
+recognizes complete decoded argument tokens using the documented
+[Windows quote/backslash rules](https://learn.microsoft.com/en-us/windows/win32/api/shellapi/nf-shellapi-commandlinetoargvw).
+This is a bounded supported subset, not a claim to implement every native parser
+quirk. Arguments are decoded before footprint filtering, including embedded quote
+fragments in the option name or path. Unsupported syntax that might reference the
+profile fails conservatively; non-exact decoded values and ambiguous profile
+footprints still prevent clean certification. Genuine tracked children remain
+counted even if their own arguments are unsupported.
+No survivor exclusion, extra inventory probe or deadline extension is introduced.
 
 ## Regression and native acceptance
 

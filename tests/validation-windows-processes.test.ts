@@ -376,3 +376,153 @@ it('bounds all tracked lifetimes, including repeated reuse of one PID, and canno
   );
   expect(() => tracker.sample(inventory())).toThrow('PROCESS_TRACKING_LIMIT');
 });
+
+it.each([
+  'chrome --user-data-dir=C:\\synthetic\\private\\profile about:blank',
+  'chrome --user-data-dir=C:\\synthetic\\private\\profile /prefetch:3',
+  'chrome "--user-data-dir=C:\\synthetic\\private\\profile" /prefetch:3',
+  '"C:\\Program Files\\Chrome\\chrome.exe" --user-data-dir="C:\\synthetic\\private\\profile" about:blank',
+  'chrome --user-data-dir=C:\\synthetic\\private\\profile ""',
+  ' \tchrome --user-data-dir=C:\\synthetic\\private\\profile about:blank',
+])('recognizes documented Windows argument boundaries case %#', (command) => {
+  const result = new WindowsValidationProcessTracker(profile).sample(
+    inventory(row(10, 1, birth(10), command)),
+  );
+  expect(result.remainingProcesses).toBe(1);
+  expect(result.processAccounting.directProfileRoots).toBe(1);
+  expect(result.processAccounting.unclassifiedProfileReferences).toBe(0);
+});
+
+it('recognizes a fully quoted profile option containing spaces', () => {
+  const result = new WindowsValidationProcessTracker('C:/synthetic/private profile').sample(
+    inventory(
+      row(10, 1, birth(10), 'chrome "--user-data-dir=C:\\synthetic\\private profile" about:blank'),
+    ),
+  );
+  expect(result.processAccounting.directProfileRoots).toBe(1);
+});
+
+it.each([
+  'chrome --user-data-dir=C:\\synthetic\\private\\profile suffix',
+  'chrome --user-data-dir="C:\\synthetic\\private\\profile" about:blank',
+])('preserves a genuine root followed by a separate positional argument case %#', (command) => {
+  const result = new WindowsValidationProcessTracker(profile).sample(
+    inventory(row(10, 1, birth(10), command)),
+  );
+  expect(result.processAccounting.directProfileRoots).toBe(1);
+});
+
+it.each([
+  'chrome "--user-data-dir=C:\\synthetic\\private\\profile suffix"',
+  'chrome --note=--user-data-dir=C:\\synthetic\\private\\profile',
+  'chrome --user-data-dir=C:\\synthetic\\private\\profile/child',
+])('retains a non-exact decoded profile footprint as uncertainty case %#', (command) => {
+  const result = new WindowsValidationProcessTracker(profile).sample(
+    inventory(row(10, 1, birth(10), command)),
+  );
+  expect(result.remainingProcesses).toBe(1);
+  expect(result.processAccounting.directProfileRoots).toBe(0);
+  expect(result.processAccounting.unclassifiedProfileReferences).toBe(1);
+});
+
+it.each([
+  'chrome --user-data-dir="C:\\synthetic\\private\\profile',
+  'chrome "--user-data-dir=C:\\synthetic\\private\\profile""suffix"',
+  'chrome --user-data-dir=C:\\synthetic\\private\\profile\n--other',
+])('rejects malformed/unsupported Windows quoting case %#', (command) => {
+  expect(() =>
+    new WindowsValidationProcessTracker(profile).sample(inventory(row(10, 1, birth(10), command))),
+  ).toThrow('PROCESS_ARGUMENT_AMBIGUOUS');
+});
+
+it('preserves escaped quotes and paired backslashes without changing the exact profile token', () => {
+  const command = String.raw`chrome --user-data-dir="C:\synthetic\private\profile" --note="escaped\"quote" --directory="C:\other\\"`;
+  const result = new WindowsValidationProcessTracker(profile).sample(
+    inventory(row(10, 1, birth(10), command)),
+  );
+  expect(result.processAccounting.directProfileRoots).toBe(1);
+});
+
+/** Frozen POSIX boundary logic formerly reused for Windows; synthetic commands only. */
+function legacyProfileArgument(command: string, expected: string): boolean {
+  for (const match of command.matchAll(/(?:^|\s)--user-data-dir=/g)) {
+    const tail = command.slice(match.index! + match[0].length);
+    if (tail.startsWith('"') || tail.startsWith("'")) {
+      const quoted = tail[0]! + expected + tail[0]!;
+      if (tail.startsWith(quoted) && /^(?:\s|$)/.test(tail.slice(quoted.length))) return true;
+      if (tail.slice(1).startsWith(expected)) throw new Error('PROCESS_ARGUMENT_AMBIGUOUS');
+    } else if (tail === expected || tail.startsWith(expected + ' ')) {
+      const rest = tail.slice(expected.length).trimStart();
+      if (!rest || rest.startsWith('--')) return true;
+      throw new Error('PROCESS_ARGUMENT_AMBIGUOUS');
+    }
+  }
+  return false;
+}
+
+it.each(['about:blank', '/prefetch:3'])(
+  'proves prior POSIX boundaries reject a valid separate Windows token case %#',
+  (following) => {
+    expect(() =>
+      legacyProfileArgument(`chrome --user-data-dir=${profile} ${following}`, profile),
+    ).toThrow('PROCESS_ARGUMENT_AMBIGUOUS');
+  },
+);
+it('proves prior POSIX boundaries miss a fully quoted whole Windows option', () => {
+  expect(legacyProfileArgument(`chrome "--user-data-dir=${profile}"`, profile)).toBe(false);
+  expect(
+    new WindowsValidationProcessTracker(profile).sample(
+      inventory(row(10, 1, birth(10), `chrome "--user-data-dir=${profile}"`)),
+    ).processAccounting.directProfileRoots,
+  ).toBe(1);
+});
+it('keeps literal backslashes at an unquoted argument boundary from swallowing the profile option', () => {
+  const command = String.raw`chrome --directory=C:\other\ --user-data-dir=C:\synthetic\private\profile`;
+  expect(
+    new WindowsValidationProcessTracker(profile).sample(inventory(row(10, 1, birth(10), command)))
+      .processAccounting.directProfileRoots,
+  ).toBe(1);
+});
+
+it.each([
+  String.raw`chrome --user-data-dir=C:\synthetic\pri"vate"\profile about:blank`,
+  String.raw`chrome --user-"data"-dir=C:\synthetic\private\profile about:blank`,
+  String.raw`chrome --user-data-dir="C:\synthetic\pri"vate\profile about:blank`,
+])('keeps a surviving profile root with embedded quote fragments case %#', async (command) => {
+  const tracker = new WindowsValidationProcessTracker(profile);
+  const rows = inventory(row(10, 1, birth(10), command));
+  expect(tracker.sample(rows).processAccounting.directProfileRoots).toBe(1);
+  const cleanup = await verifyFinalCleanup(
+    () => ({ ...tracker.sample(rows), ownershipReleased: true, contextInactive: true }),
+    { maximumMs: 0 },
+  );
+  expect(cleanup.immediate.remainingProcesses).toBe(1);
+  expect(cleanup.final.remainingProcesses).toBe(1);
+  expect(cleanup.verified).toBe(false);
+});
+
+it('keeps a decoded non-exact helper footprint with quote-fragmented path as uncertain', () => {
+  const command = String.raw`helper --database=C:\synthetic\pri"vate"\profile/Crashpad`;
+  const result = new WindowsValidationProcessTracker(profile).sample(
+    inventory(row(10, 1, birth(10), command)),
+  );
+  expect(result.remainingProcesses).toBe(1);
+  expect(result.processAccounting.directProfileRoots).toBe(0);
+  expect(result.processAccounting.unclassifiedProfileReferences).toBe(1);
+});
+
+it.each([
+  String.raw`chrome --user-"data"-dir="C:\synthetic\pri"vate\profile"`,
+  String.raw`helper --database="C:\synthetic\pri"vate\profile/Crashpad"`,
+])('fails unsupported potentially associated fragmented syntax case %#', (command) => {
+  expect(() =>
+    new WindowsValidationProcessTracker(profile).sample(inventory(row(10, 1, birth(10), command))),
+  ).toThrow('PROCESS_ARGUMENT_AMBIGUOUS');
+});
+
+it('does not let unrelated unsupported quoting hide a genuine tracked child', () => {
+  const tracker = new WindowsValidationProcessTracker(profile);
+  tracker.sample(inventory(root(), row(20, 10, birth(11))));
+  const result = tracker.sample(inventory(row(20, 1, birth(11), 'unrelated "argument')));
+  expect(result.remainingProcesses).toBe(1);
+});

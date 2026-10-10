@@ -2,10 +2,76 @@
 import { execFileSync } from 'node:child_process';
 import {
   PROCESS_ACCOUNTING_KEYS,
-  profileArgument,
   profileFootprint,
   type ProcessAccountingCounts,
 } from './validation-processes.js';
+
+/** Documented Windows quote/backslash rules; unmatched quotes fail closed.
+ * Native strings and decoded arguments remain local to this call.
+ */
+function windowsArguments(command: string): string[] {
+  if (/[\0\r\n]/.test(command)) throw new Error('PROCESS_ARGUMENT_AMBIGUOUS');
+  const args: string[] = /^[ \t]/.test(command) ? [''] : [];
+  let index = 0;
+  while (index < command.length) {
+    while (/[ \t]/.test(command[index] ?? '') && index < command.length) index++;
+    if (index === command.length) break;
+    let argument = '';
+    let quoted = false;
+    while (index < command.length && (quoted || !/[ \t]/.test(command[index]!))) {
+      let slashes = 0;
+      while (command[index] === '\\') {
+        slashes++;
+        index++;
+      }
+      if (command[index] === '"') {
+        argument += '\\'.repeat(Math.floor(slashes / 2));
+        if (slashes % 2) argument += '"';
+        else {
+          // Adjacent quotes inside quoted content have differing parser rules.
+          // They cannot establish a trustworthy profile argument in this subset.
+          if (quoted && command[index + 1] === '"' && argument)
+            throw new Error('PROCESS_ARGUMENT_AMBIGUOUS');
+          quoted = !quoted;
+        }
+        index++;
+      } else {
+        argument += '\\'.repeat(slashes);
+        if (index === command.length || (!quoted && /[ \t]/.test(command[index]!))) break;
+        argument += command[index++]!;
+      }
+    }
+    if (quoted) throw new Error('PROCESS_ARGUMENT_AMBIGUOUS');
+    args.push(argument);
+  }
+  return args;
+}
+
+function windowsProfileClassification(command: string, profile: string) {
+  const normalized = command.replace(/\\/g, '/').toLowerCase();
+  let args: string[];
+  try {
+    // Decode before testing the footprint: quotes can split the option name/path.
+    args = windowsArguments(command).slice(1);
+  } catch {
+    // Over-approximate association under unsupported syntax; never certify a
+    // quote-fragmented/escaped possible profile argument as absent.
+    const possible = normalized.replace(/"/g, '').replace(/\/+/g, '/');
+    if (
+      possible.includes('--user-data-dir') ||
+      profileFootprint(possible, profile.replace(/\/+/g, '/'))
+    )
+      throw new Error('PROCESS_ARGUMENT_AMBIGUOUS');
+    args = [];
+  }
+  const decoded = args.map((argument) => argument.replace(/\\/g, '/').toLowerCase());
+  return {
+    direct: decoded.includes(`--user-data-dir=${profile}`),
+    footprint:
+      profileFootprint(normalized, profile) ||
+      decoded.some((argument) => profileFootprint(argument, profile)),
+  };
+}
 
 export interface WindowsValidationProcess {
   ProcessId: number;
@@ -108,12 +174,13 @@ export class WindowsValidationProcessTracker {
           if (original.parent !== row.ParentProcessId) counts.reparented++;
         } else counts.reusedPids++;
       }
-      const command = (row.CommandLine ?? '').replace(/\\/g, '/').toLowerCase();
-      if (profileArgument(command, this.profile)) {
+      const command = row.CommandLine ?? '';
+      const { direct, footprint } = windowsProfileClassification(command, this.profile);
+      if (direct) {
         if (!validBirth(row.CreationDate)) throw new Error('PROCESS_IDENTITY_UNCERTAIN');
         selected.add(row.ProcessId);
         counts.directProfileRoots++;
-      } else if (profileFootprint(command, this.profile)) {
+      } else if (footprint) {
         // An auxiliary/flattened argument is uncertain, never grounds for clean zero.
         if (!validBirth(row.CreationDate)) throw new Error('PROCESS_IDENTITY_UNCERTAIN');
         selected.add(row.ProcessId);

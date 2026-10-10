@@ -20,7 +20,7 @@ export const PROCESS_ACCOUNTING_KEYS = [
 export type ProcessAccountingCounts = Record<(typeof PROCESS_ACCOUNTING_KEYS)[number], number>;
 
 /** Exact known profile flag; ambiguous flattened arguments fail rather than certify zero. */
-export function profileArgument(command: string, profile: string): boolean {
+function profileArgument(command: string, profile: string): boolean {
   const flag = /(?:^|\s)--user-data-dir=/g;
   for (const match of command.matchAll(flag)) {
     const tail = command.slice(match.index! + match[0].length);
