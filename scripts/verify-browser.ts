@@ -6,6 +6,7 @@ import { verifyFinalCleanup } from './validation-cleanup.js';
 import { readValidationProcesses, ValidationProcessTracker } from './validation-processes.js';
 import {
   readWindowsValidationProcesses,
+  WindowsValidationProcessTracker,
   offlineLifecycleFailureCode,
 } from './validation-windows-processes.js';
 import { BrowserEngine } from '../src/browser/engine.js';
@@ -23,41 +24,15 @@ const config = {
   LINKEDIN_ENABLE_EXPERIMENTAL_MESSAGES: false,
 };
 const engine = new BrowserEngine(config, new Logger('error'), false);
-// Windows retains its existing PID inventory; it is not birth-identity or ACL proof.
-function matchingWindowsProcesses(tracked: number[] = []): number[] {
-  const values = readWindowsValidationProcesses();
-  const processes = values.map((value) => ({
-    pid: value.ProcessId,
-    parent: value.ParentProcessId,
-    command: value.CommandLine ?? '',
-  }));
-  const normalized = profile.replace(/\\/g, '/').toLowerCase();
-  const selected = new Set(tracked);
-  for (const value of processes)
-    if (value.command.replace(/\\/g, '/').toLowerCase().includes(normalized))
-      selected.add(value.pid);
-  for (let changed = true; changed; ) {
-    changed = false;
-    for (const value of processes)
-      if (selected.has(value.parent) && !selected.has(value.pid)) {
-        selected.add(value.pid);
-        changed = true;
-      }
-  }
-  return processes.filter((value) => selected.has(value.pid)).map((value) => value.pid);
-}
 let cleanupVerified = false;
 const tracker = new ValidationProcessTracker(profile);
-const windowsTracked = new Set<number>();
+const windowsTracker = new WindowsValidationProcessTracker(profile);
 const processProbeDeadlineMs = process.platform === 'win32' ? 5000 : 1000;
 let processProbeFailure: string | undefined;
 function observeProcesses() {
   try {
     if (process.platform !== 'win32') return tracker.sample(readValidationProcesses());
-    const current = matchingWindowsProcesses([...windowsTracked]);
-    for (const pid of current) windowsTracked.add(pid);
-    if (windowsTracked.size > 10000) throw new Error('PROCESS_TRACKING_LIMIT');
-    return { remainingProcesses: current.length };
+    return windowsTracker.sample(readWindowsValidationProcesses());
   } catch (error) {
     // The verifier catches probe errors; retain only a fixed code, never the cause.
     processProbeFailure ??= offlineLifecycleFailureCode(error);
@@ -116,7 +91,9 @@ try {
       ownershipReleased: cleanup.final.ownershipReleased,
       linkedInRequests: 0,
       processAccountingMethod:
-        process.platform === 'win32' ? 'legacy Windows PID inventory' : 'POSIX PID and start stamp',
+        process.platform === 'win32'
+          ? 'Windows PID and UTC creation stamp'
+          : 'POSIX PID and start stamp',
       processProbeDeadlineMs,
       ...(processProbeFailure ? { processProbeFailure } : {}),
       cleanup,

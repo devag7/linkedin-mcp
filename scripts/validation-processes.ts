@@ -20,7 +20,7 @@ export const PROCESS_ACCOUNTING_KEYS = [
 export type ProcessAccountingCounts = Record<(typeof PROCESS_ACCOUNTING_KEYS)[number], number>;
 
 /** Exact known profile flag; ambiguous flattened arguments fail rather than certify zero. */
-function profileArgument(command: string, profile: string): boolean {
+export function profileArgument(command: string, profile: string): boolean {
   const flag = /(?:^|\s)--user-data-dir=/g;
   for (const match of command.matchAll(flag)) {
     const tail = command.slice(match.index! + match[0].length);
@@ -38,7 +38,7 @@ function profileArgument(command: string, profile: string): boolean {
 }
 
 /** A profile-tree footprint may be a detached helper. It is never proof of unrelatedness. */
-function profileFootprint(command: string, profile: string): boolean {
+export function profileFootprint(command: string, profile: string): boolean {
   for (let from = 0; from < command.length; ) {
     const index = command.indexOf(profile, from);
     if (index < 0) return false;
