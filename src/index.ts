@@ -30,6 +30,7 @@ import { removeSavedProfile } from './browser/logout.js';
 import { CLIENTS, clientConfiguration, setupReport, type SetupClient } from './setup.js';
 import { VERSION } from './version.js';
 import { loadConfig } from './config/env.js';
+import { dataInventory } from './data-inventory.js';
 
 /** Resolve the persistent browser-profile directory (mirrors BrowserEngine). */
 function profileDir(): string {
@@ -49,6 +50,7 @@ function parseArgs(): ServerConfig & {
     | 'writecapture'
     | 'writeprobe'
     | 'doctor'
+    | 'data-inventory'
     | 'setup'
     | 'client-config';
   client?: SetupClient;
@@ -62,6 +64,7 @@ function parseArgs(): ServerConfig & {
   let logLevel: 'debug' | 'info' | 'warn' | 'error' = 'info';
   let action:
     | 'doctor'
+    | 'data-inventory'
     | 'setup'
     | 'client-config'
     | 'login'
@@ -105,6 +108,9 @@ function parseArgs(): ServerConfig & {
           throw new Error('--config-file requires one explicit path.');
         configFile = next;
         i++;
+        break;
+      case '--data-inventory':
+        setAction('data-inventory');
         break;
       case '--live':
         live = true;
@@ -240,6 +246,7 @@ COMMANDS:
   --client-config <client> Print JSON config for claude-desktop, cursor or vscode
   --config-file <path>     With --setup: read-only JSON/JSONC merge preview
   --doctor                 Diagnose local setup without launching Chrome or network requests
+  --data-inventory         Read-only, path-free local state inventory; no deletion plan
   --doctor --live          Also open the saved session and probe authenticated identity
   --status                 Show the current login/profile status
   --logout                 Clear the saved Chrome profile; keep safety history
@@ -280,6 +287,14 @@ DOCUMENTATION:
 async function main(): Promise<void> {
   const config = parseArgs();
   const logger = new Logger(config.logLevel);
+
+  if (config.action === 'data-inventory') {
+    const report = dataInventory({ profileDir: process.env.LINKEDIN_PROFILE_DIR });
+    // eslint-disable-next-line no-console -- Offline CLI output before transport starts
+    console.log(JSON.stringify(report, null, 2));
+    process.exitCode = report.status === 'needs_attention' ? 1 : 0;
+    return;
+  }
 
   if (config.action === 'setup' || config.action === 'client-config') {
     const env = loadConfig();
