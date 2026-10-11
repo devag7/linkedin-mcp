@@ -406,3 +406,18 @@ MIT — see [LICENSE](LICENSE). Missing files caused by cloud synchronization we
 Made by [Dev Agarwalla](https://github.com/devag7)
 
 </div>
+
+### Development-only local data inventory
+
+The unreleased development command `node dist/index.js --data-inventory` reports
+which fixed local storage categories are present: the selected profile, its
+circuit and owner lock, shared budgets/write journal and transaction lock, and
+legacy credentials. It reads filesystem metadata only, prints no private paths
+or contents, and changes nothing. It does not read or validate JSON, traverse
+profile contents, prove owners have stopped, verify Windows ACLs or authorize
+deletion. Any observed alias, unexpected type, inaccessible or changed identity,
+or present lock returns `needs_attention` with exit code 1. Otherwise `observed`
+means only that the bounded presence snapshot succeeded.
+
+This command is **not available in released 3.0.0**. See the
+[inventory contract](docs/PRIVACY.md#inventory-json-contract-development-only); coordinated erasure remains open.

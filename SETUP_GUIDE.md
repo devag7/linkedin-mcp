@@ -169,3 +169,17 @@ observed rows. Contradictory zero/short pages remain partial with no next cursor
 Job details must identify the requested numeric job URN before a canonical URL is
 attached. Official OAuth remains unavailable; v1 cookie/OAuth
 environment variables do not enable it. New-thread messaging remains experimental.
+
+## Unreleased metadata inventory
+
+After building the development source, `node dist/index.js --data-inventory`
+prints a path-free, read-only snapshot of known local state categories. It honors
+`LINKEDIN_PROFILE_DIR`; shared budget/journal and legacy credentials still refer
+to the OS home store. It neither requires nor tests login or Chrome, and does not
+validate configuration, file contents or permissions. Do not interpret an
+`observed` result or an absent lock as permission to delete state or reset caps.
+Exit 1 means a category was refused or uncertain; review the fixed reason and
+stop associated runtimes manually before considering a separate operation.
+
+This is absent from published 3.0.0. The exact scope, omissions and reason codes
+are in [inventory contract](docs/PRIVACY.md#inventory-json-contract-development-only).

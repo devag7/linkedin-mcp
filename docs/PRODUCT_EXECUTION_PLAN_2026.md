@@ -526,3 +526,19 @@ regressions do not satisfy its freshly consented useful-brief requirement.
 Coordinated erasure, native Windows privacy proof and current native client
 first-read/repeat-use evidence remain open. Required maintainer cash $0;
 10,000 stars and daily Trending remain measured ambitions, not promised outcomes.
+
+## October 11: separate offline inventory milestone
+
+From main `4b9e816`, a separate draft feature adds metadata-only `--data-inventory`.
+It reports six fixed storage categories with presence/refusal/uncertainty and no
+private paths or content. Owner locks are never interpreted or stolen; absent
+locks do not prove stopped owners. Erasure preview is explicitly unsupported.
+This is a partial P8 inventory step, absent from published 3.0.0, requiring a later
+release. Coordinated erasure, retained-data completeness, native Windows ACL
+proof and the low development-only esbuild finding remain open. Maintenance is
+limited to keeping categories aligned with storage changes; mandatory cash $0.
+
+PR #14 and PR #5 remain separate; the latter's decision cycle stays closed. No
+pilot starts are inferred from offline work. After this reviewable milestone,
+prioritize the first observed participant failure or a demonstrated first-run
+convenience defect over further speculative diagnostics.
