@@ -3,7 +3,8 @@ FROM node:22-bookworm-slim AS builder
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
-COPY tsconfig.json tsup.config.ts ./
+COPY tsconfig.json ./
+COPY scripts/build.mjs ./scripts/
 COPY src/ ./src/
 RUN npm run build
 

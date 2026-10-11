@@ -21,6 +21,6 @@ export default tseslint.config(
     },
   },
   {
-    ignores: ['dist/', 'node_modules/', '*.js', '*.cjs', '*.mjs', 'tsup.config.ts', 'vitest.config.ts'],
+    ignores: ['dist/', 'node_modules/', '*.js', '*.cjs', '*.mjs', 'vitest.config.ts'],
   },
 );
