@@ -380,9 +380,13 @@ contain explicit call limits and source-link rules. [Client setup](SETUP_GUIDE.m
 separates locally exercised MCP transport from untested client applications.
 [Privacy and deletion](docs/PRIVACY.md) explains retained safety history.
 [Roadmap coverage](docs/ROADMAP_COVERAGE.md) tracks every acceptance requirement.
+The 3.1.0 source adds a [read-only config merge preview](SETUP_GUIDE.md#preview-an-existing-client-configuration)
+that checks an explicitly selected JSON/JSONC file for missing, matching or conflicting
+entries without changing files or exposing other servers' credentials. It is not
+available in published3.0.0 and does not establish native-client or live compatibility.
 [Official-provider pilot](docs/OFFICIAL_PROVIDER_PILOT.md) describes the app/scopes
-and integration evidence still needed. Docker files are an experimental Linux
-recipe; no container build, display/login or runtime has been verified locally.
+and integration evidence still needed. The experimental Docker builder stage
+passed locally on Node 22; container display/login and runtime remain unverified.
 
 ## 🛠 Development
 
@@ -406,3 +410,18 @@ MIT — see [LICENSE](LICENSE). Missing files caused by cloud synchronization we
 Made by [Dev Agarwalla](https://github.com/devag7)
 
 </div>
+
+### Version 3.1.0 local data inventory
+
+The 3.1.0 command `node dist/index.js --data-inventory` reports
+which fixed local storage categories are present: the selected profile, its
+circuit and owner lock, shared budgets/write journal and transaction lock, and
+legacy credentials. It reads filesystem metadata only, prints no private paths
+or contents, and changes nothing. It does not read or validate JSON, traverse
+profile contents, prove owners have stopped, verify Windows ACLs or authorize
+deletion. Any observed alias, unexpected type, inaccessible or changed identity,
+or present lock returns `needs_attention` with exit code 1. Otherwise `observed`
+means only that the bounded presence snapshot succeeded.
+
+This command is **not available in released 3.0.0**. See the
+[inventory contract](docs/PRIVACY.md#inventory-json-contract); coordinated erasure remains open.

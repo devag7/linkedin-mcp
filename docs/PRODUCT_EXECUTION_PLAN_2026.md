@@ -1,11 +1,38 @@
 # LinkedIn MCP: current gaps and zero-cash execution roadmap
 
-Updated October 7, 2026. This is the actionable PRD/TRD and product backlog for
+Updated October 11, 2026. This is the actionable PRD/TRD and product backlog for
 `devag7/linkedin-mcp`. Preserve the original
 [2026 roadmap](../PRODUCT_TECHNICAL_ROADMAP_2026.md) and its historical findings;
 this document adds current evidence rather than rewriting that baseline.
 
-## Current execution order — October 7
+## Current offline continuation — October 11
+
+The [current requirement-by-requirement reconciliation](ROADMAP_COVERAGE.md)
+separates verified core 3.0.0 (22 tools), blocked PR #5, incomplete privacy and
+official-provider work, and unmeasured native-client, volunteer and adoption
+outcomes. The October 7 execution order below is historical context; it does not
+reopen PR #5's closed diagnostic cycle. A specific reproducible fix and passing
+usefulness, cleanup, CI and release gates are still required for that feature.
+
+Draft PRs #14 (offline JSONC client merge preview), #15 (path-free local data
+inventory) and #16 (patched development build) are independently reviewable.
+Draft PR #17 integrates those exact heads as a 3.1.0 candidate. Local integration
+passed 598 tests, package checks and a full zero-finding audit; hosted and
+release gates are recorded in its [integration receipt](ROADMAP_INTEGRATION_GATE_2026-10-11.md).
+The inventory is a presence snapshot, not coordinated erasure or native Windows
+ACL proof. The new setup preview does not modify client files. Mandatory cash is $0.
+Published 3.0.0 remains the installation target until 3.1.0's exact archive and
+destinations are independently verified.
+
+The [public opt-in issue13](https://github.com/devag7/linkedin-mcp/issues/13) is open;
+recorded cohort starts remain zero. No volunteered result, direct contact, account
+request or measured first-read outcome is inferred from that invitation. Use the
+existing kit/scoring guide to classify the first consenting person's actual result,
+then reproduce and repair its first product problem in a separate PR. Continue
+weekly useful-first-read/repeat-use/traffic measurements when evidence exists;
+10,000 stars and daily Trending remain measured ambitions, not guarantees.
+
+## Historical execution order — October 7
 
 Core **3.0.0 is released**, 22 tools; [all four destination receipts](LAUNCH_EVIDENCE_2026-10-07.md)
 verify source/tag `2992258` and the immutable approved artifact. The GitHub README
@@ -526,3 +553,19 @@ regressions do not satisfy its freshly consented useful-brief requirement.
 Coordinated erasure, native Windows privacy proof and current native client
 first-read/repeat-use evidence remain open. Required maintainer cash $0;
 10,000 stars and daily Trending remain measured ambitions, not promised outcomes.
+
+## October 11: separate offline inventory milestone
+
+From main `4b9e816`, a separate draft feature adds metadata-only `--data-inventory`.
+It reports six fixed storage categories with presence/refusal/uncertainty and no
+private paths or content. Owner locks are never interpreted or stolen; absent
+locks do not prove stopped owners. Erasure preview is explicitly unsupported.
+This is a partial P8 inventory step, absent from published 3.0.0, requiring a later
+release. Coordinated erasure, retained-data completeness, native Windows ACL
+proof and the low development-only esbuild finding remain open. Maintenance is
+limited to keeping categories aligned with storage changes; mandatory cash $0.
+
+PR #14 and PR #5 remain separate; the latter's decision cycle stays closed. No
+pilot starts are inferred from offline work. After this reviewable milestone,
+prioritize the first observed participant failure or a demonstrated first-run
+convenience defect over further speculative diagnostics.

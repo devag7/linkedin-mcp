@@ -30,6 +30,7 @@ import { removeSavedProfile } from './browser/logout.js';
 import { CLIENTS, clientConfiguration, setupReport, type SetupClient } from './setup.js';
 import { VERSION } from './version.js';
 import { loadConfig } from './config/env.js';
+import { dataInventory } from './data-inventory.js';
 
 /** Resolve the persistent browser-profile directory (mirrors BrowserEngine). */
 function profileDir(): string {
@@ -49,9 +50,11 @@ function parseArgs(): ServerConfig & {
     | 'writecapture'
     | 'writeprobe'
     | 'doctor'
+    | 'data-inventory'
     | 'setup'
     | 'client-config';
   client?: SetupClient;
+  configFile?: string;
   live?: boolean;
   confirmProfileDeletion?: boolean;
 } {
@@ -61,6 +64,7 @@ function parseArgs(): ServerConfig & {
   let logLevel: 'debug' | 'info' | 'warn' | 'error' = 'info';
   let action:
     | 'doctor'
+    | 'data-inventory'
     | 'setup'
     | 'client-config'
     | 'login'
@@ -73,6 +77,7 @@ function parseArgs(): ServerConfig & {
     | undefined;
 
   let client: SetupClient | undefined;
+  let configFile: string | undefined;
   let live = false;
   let confirmProfileDeletion = false;
   let transportChosen = false;
@@ -97,6 +102,15 @@ function parseArgs(): ServerConfig & {
         break;
       case '--doctor':
         setAction('doctor');
+        break;
+      case '--config-file':
+        if (!next || next.startsWith('-') || configFile !== undefined)
+          throw new Error('--config-file requires one explicit path.');
+        configFile = next;
+        i++;
+        break;
+      case '--data-inventory':
+        setAction('data-inventory');
         break;
       case '--live':
         live = true;
@@ -206,9 +220,11 @@ function parseArgs(): ServerConfig & {
   }
 
   if (live && action !== 'doctor') throw new Error('--live is only supported with --doctor.');
+  if (configFile !== undefined && action !== 'setup')
+    throw new Error('--config-file is only supported with --setup.');
   if (confirmProfileDeletion && action !== 'logout')
     throw new Error('--confirm-profile-deletion is only supported with --logout.');
-  return { transport, port, logLevel, action, client, live, confirmProfileDeletion };
+  return { transport, port, logLevel, action, client, configFile, live, confirmProfileDeletion };
 }
 
 /**
@@ -228,7 +244,9 @@ COMMANDS:
                            once; the session is saved to the browser profile.
   --setup <client>         Offline diagnosis, client config and exact next steps
   --client-config <client> Print JSON config for claude-desktop, cursor or vscode
+  --config-file <path>     With --setup: read-only JSON/JSONC merge preview
   --doctor                 Diagnose local setup without launching Chrome or network requests
+  --data-inventory         Read-only, path-free local state inventory; no deletion plan
   --doctor --live          Also open the saved session and probe authenticated identity
   --status                 Show the current login/profile status
   --logout                 Clear the saved Chrome profile; keep safety history
@@ -270,15 +288,29 @@ async function main(): Promise<void> {
   const config = parseArgs();
   const logger = new Logger(config.logLevel);
 
+  if (config.action === 'data-inventory') {
+    const report = dataInventory({ profileDir: process.env.LINKEDIN_PROFILE_DIR });
+    // eslint-disable-next-line no-console -- Offline CLI output before transport starts
+    console.log(JSON.stringify(report, null, 2));
+    process.exitCode = report.status === 'needs_attention' ? 1 : 0;
+    return;
+  }
+
   if (config.action === 'setup' || config.action === 'client-config') {
     const env = loadConfig();
     const output =
       config.action === 'setup'
-        ? setupReport(config.client!, env)
+        ? setupReport(config.client!, env, config.configFile)
         : clientConfiguration(config.client!, env);
     // eslint-disable-next-line no-console -- Offline CLI output before transport starts
     console.log(JSON.stringify(output, null, 2));
     if ('status' in output && output.status === 'needs_attention') process.exitCode = 1;
+    if (
+      'configMerge' in output &&
+      output.configMerge &&
+      ['invalid', 'conflict'].includes(output.configMerge.status)
+    )
+      process.exitCode = 1;
     return;
   }
   if (config.action === 'doctor') {
@@ -391,6 +423,8 @@ void main().catch((error: unknown) => {
       message,
     ) ||
     message.startsWith('--confirm-profile-deletion is only supported') ||
+    message === '--config-file requires one explicit path.' ||
+    message === '--config-file is only supported with --setup.' ||
     message.startsWith('--live is only supported');
   console.error(
     safe

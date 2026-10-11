@@ -36,6 +36,48 @@ and profile for login and MCP. Native Windows privacy remains unverified.
 Source contributors can instead run `npm ci`, `npm run build`, then
 `node dist/index.js --setup cursor` from a stable reviewed checkout.
 
+### Preview an existing client configuration
+
+This feature is in version **3.1.0** and absent from published 3.0.0. After
+building this source, choose a client file explicitly:
+
+```sh
+node dist/index.js --setup cursor --config-file /absolute/path/to/mcp.json
+```
+
+The extra `configMerge` report distinguishes a missing file (`absent`), an entry
+ready to add (`ready_to_add`), an identical entry (`already_matches`), a conflicting
+entry (`conflict`) and invalid input (`invalid`). If profile diagnosis cannot
+generate a safe entry, it says `unavailable` and does not read the selected file.
+No existing client file is changed, server launched or provider contacted.
+
+JSON and JSONC comments/trailing commas are accepted using
+[Microsoft's JSONC parser](https://github.com/microsoft/node-jsonc-parser).
+Duplicate keys, malformed input, nonobject roots/maps and the wrong client's root
+are refused. Input is limited to1MiB,64 container levels and50,000 visited containers,
+properties and literals.
+The explicit native VS Code export expects `servers`; its newer portable
+`mcpServers` destination requires a different export and is deliberately refused
+here. See [VS Code's formats](https://code.visualstudio.com/docs/agent-customization/mcp-servers)
+and [Cursor's configuration guide](https://cursor.com/docs/mcp).
+
+Only a proposed JSON Patch addition for the generated `linkedin` entry is printed;
+unrelated names, settings, environment values, comments and raw parser/filesystem
+errors are not echoed. A conflict produces no replacement patch. Review locally
+and merge in your editor, preserving other servers and comments. This is a
+snapshot, not a transaction: rerun after changes, because applying a generic JSON
+Patch `add` to a stale document can replace an entry. No automatic patch application
+is provided. Final-component symlinks/junctions and unavailable file identity are
+refused; parent-directory aliases can resolve during this read-only operation.
+Opened-file identity/timestamp checks detect the tested replacement cases, not
+all possible concurrent changes or hostile filesystem behavior.
+
+`already_matches` proves only equality with this build's safe entry; it does not
+prove native client acceptance, runtime startup, login or provider compatibility.
+Overall exit1 can still reflect missing Chrome or a latched safety stop even when
+the merge plan is valid. Read `configMerge.status` separately from setup diagnosis.
+Keep this feature out of the published 3.0.0 volunteer protocol.
+
 The generated entry uses the absolute Node executable and this installed build,
 sets the same profile for login and MCP, forces stdio and disables writes. Merge
 only its `linkedin` entry into your existing configuration; preserve other servers.
@@ -169,3 +211,17 @@ observed rows. Contradictory zero/short pages remain partial with no next cursor
 Job details must identify the requested numeric job URN before a canonical URL is
 attached. Official OAuth remains unavailable; v1 cookie/OAuth
 environment variables do not enable it. New-thread messaging remains experimental.
+
+## Version 3.1.0 metadata inventory
+
+After building the development source, `node dist/index.js --data-inventory`
+prints a path-free, read-only snapshot of known local state categories. It honors
+`LINKEDIN_PROFILE_DIR`; shared budget/journal and legacy credentials still refer
+to the OS home store. It neither requires nor tests login or Chrome, and does not
+validate configuration, file contents or permissions. Do not interpret an
+`observed` result or an absent lock as permission to delete state or reset caps.
+Exit 1 means a category was refused or uncertain; review the fixed reason and
+stop associated runtimes manually before considering a separate operation.
+
+This is absent from published 3.0.0. The exact scope, omissions and reason codes
+are in [inventory contract](docs/PRIVACY.md#inventory-json-contract).

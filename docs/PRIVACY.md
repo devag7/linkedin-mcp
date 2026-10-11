@@ -48,3 +48,69 @@ Manual --capture/--spike/--writecapture/--writeprobe output can contain real con
 and identifiers; these are opt-in maintainer utilities, not support bundles. Review
 and redact their output yourself before sharing. Do not attach Chrome profiles,
 auth headers or unreviewed MCP result payloads to public issues.
+
+## Local data inventory is not coordinated erasure
+
+`--data-inventory` only observes fixed filesystem metadata, without reading
+credential/safety contents, acquiring or clearing locks, changing storage,
+launching Chrome or making account calls. It emits category labels and fixed
+classifications; paths, owner/process identifiers, contents and exact metadata
+are omitted. File JSON validity, exclusive/shared ownership, activity and native
+permissions remain unverified even with exit 0. Profile children, additional
+profiles, temporary files, logs, client-retained data, backups and in-memory
+state are outside this bounded snapshot. Malformed file contents remain opaque.
+Aliases (including detected Windows junctions), unexpected types, multiply-linked
+files, inaccessible ancestry, unavailable identities and observed changes fail
+closed. All present owner/transaction locks are uncertain, without inspecting or
+stealing them. This feature does not complete P8 coordinated erasure or Windows
+ACL proof and is not in immutable 3.0.0. Future deletion needs its own design and
+review; this report never supplies an executable deletion plan.
+
+### Inventory JSON contract
+
+`schemaVersion:1`, `mode:offline_metadata_inventory` and `profileSelection` (default
+or configured) identify the report. Six `entries` use only these fixed categories:
+
+| Category | Scope and preservation reason |
+| --- | --- |
+| browser_profile | Selected profile; session credentials |
+| circuit_state | Selected profile sibling; preserve safety stops |
+| profile_owner_lock | Selected profile sibling; owner-managed |
+| budgets_and_write_journal | Home store shared across profiles; preserve caps and replay protection |
+| budget_transaction_lock | Shared home store; owner-managed |
+| legacy_credentials | Legacy home store; not used by the browser runtime |
+
+Each entry includes `scope`, `retention`, `observation`, `content:not_inspected`
+and `ownership:unverified`. `reason` is omitted for successful presence/absence
+observations. `erasurePreview` always has `supported:false`,
+`deletionAuthorized:false`, `ownership:unverified` and a fixed preservation
+instruction. There is no deletion command or proposed target list.
+
+| Observation / reason | Meaning |
+| --- | --- |
+| present / absent | Two metadata observations agree; existing ancestry was checked root-to-leaf. A missing parent means its descendants are absent at that observation, not inaccessible. |
+| refused / ALIAS_REFUSED | A symbolic link, junction or canonical directory alias was detected. No contents are opened or descendants enumerated; canonical-path metadata resolution may follow aliases solely to detect and refuse them. |
+| refused / TYPE_REFUSED | An ancestor is not a directory or a leaf has an unexpected type. |
+| refused / MULTIPLE_LINKS_REFUSED | A regular file has multiple hard links. |
+| refused / SCOPE_OVERLAP_REFUSED | The selected profile contains the home, cwd or shared state locations. |
+| refused / PATH_BOUND_REFUSED | The path exceeds 96 root-to-leaf components. |
+| uncertain / IDENTITY_UNAVAILABLE | A native filesystem identity is unavailable. |
+| uncertain / ACCESS_UNCERTAIN | Metadata or canonical-path inspection failed; raw error details are omitted. |
+| uncertain / CHANGED_DURING_OBSERVATION | Presence or identity changed between observations. |
+| uncertain / LOCK_OWNERSHIP_UNVERIFIED | A known lock directory exists; its owner is not read, tested or inferred. |
+
+Exit 0 and `status:observed` apply only if all category observations are present
+or absent; otherwise exit 1 and `status:needs_attention`. Both statuses retain all
+content, activity and ownership limitations. Observations are sequential, not a
+transactional snapshot; a new owner can start immediately afterward. Ancestor
+identity/mode and leaf identity/type/link-count/size/time metadata are compared
+in memory, but their values are never emitted. This does not exclude a filesystem
+change that occurs entirely between observations, validate JSON or inspect nested
+profile aliases. No permission/ACL or comprehensive local-data proof is claimed.
+
+Disposable filesystem regressions and an installed CLI check exercise absence,
+metadata presence, opaque malformed content, symlinks/junctions, wrong types,
+hard links, ownership ambiguity, inaccessible ancestry, observed replacement and
+resource bounds. These tests establish offline behavior, not native privacy or
+provider compatibility. The command's read-only implementation performs only
+lstat/realpath metadata calls; it never opens file contents or enumerates directories.
