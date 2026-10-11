@@ -33,3 +33,13 @@ locally. A fresh exact-head Windows lifecycle run is required to determine wheth
 this verifier can establish clean teardown on hosted Windows. The historical
 failure's actual cause may remain unknown even if subsequent runs pass; do not
 claim it was fixed by a particular process identity case without evidence.
+
+An independent review found a POSIX false-clean case in the first verifier
+revision: a child first observed after its tracked parent exited could retain
+the absent parent PID and be omitted. The revised POSIX tracker now fails as
+`PROCESS_IDENTITY_UNCERTAIN` when an unseen child refers to an absent or reused
+tracked parent. Fixtures verify that this cannot produce a clean teardown receipt,
+while already observed reparented children remain counted and a reused PID without
+an ambiguous child is classified normally. The five-second cleanup setting is a
+polling budget; synchronous process probes can add wall time, so it is not a hard
+five-second elapsed-time guarantee.

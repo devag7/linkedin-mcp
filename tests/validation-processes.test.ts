@@ -115,18 +115,48 @@ it('persists a new child first seen during polling even after its parent exits',
   expect(tracker.sample([root(), row(11, 10)]).remainingProcesses).toBe(2);
   expect(tracker.sample([row(11, 1)]).remainingProcesses).toBe(1);
 });
-it('does not attribute an unrelated recycled PID or its children to the old browser', () => {
-  const tracker = new ValidationProcessTracker(profile);
-  tracker.sample([root(), row(11, 10)]);
-  const result = tracker.sample([row(10, 1, 'unrelated', 'birth-b'), row(12, 10)]);
-  expect(result.remainingProcesses).toBe(0);
-  expect(result.processAccounting.reusedPids).toBe(1);
-});
-it('still tracks a recycled PID if its new process actually owns the exact profile', () => {
+it('refuses an unseen child of an absent tracked parent', () => {
   const tracker = new ValidationProcessTracker(profile);
   tracker.sample([root()]);
-  const result = tracker.sample([{ ...root(), start: 'birth-b' }, row(11, 10)]);
-  expect(result.remainingProcesses).toBe(2);
+  expect(() => tracker.sample([row(12, 10, 'unseen-child', 'birth-b')])).toThrow(
+    'PROCESS_IDENTITY_UNCERTAIN',
+  );
+});
+it('does not turn uncertain ancestry into a clean teardown receipt', async () => {
+  const tracker = new ValidationProcessTracker(profile);
+  tracker.sample([root()]);
+  const cleanup = await verifyFinalCleanup(
+    () => ({
+      ...tracker.sample([row(12, 10, 'unseen-child', 'birth-b')]),
+      ownershipReleased: true,
+      contextInactive: true,
+    }),
+    { maximumMs: 0 },
+  );
+  expect(cleanup.verified).toBe(false);
+  expect(cleanup.immediate.probeFailed).toBe(true);
+  expect(cleanup.final.probeFailed).toBe(true);
+  expect(cleanup.final.remainingProcesses).toBeNull();
+});
+it('refuses an unseen child whose tracked parent PID was recycled', () => {
+  const tracker = new ValidationProcessTracker(profile);
+  tracker.sample([root(), row(11, 10)]);
+  expect(() =>
+    tracker.sample([row(10, 1, 'unrelated', 'birth-b'), row(12, 10)]),
+  ).toThrow('PROCESS_IDENTITY_UNCERTAIN');
+});
+it('refuses ambiguous ancestry even if a recycled parent has the exact profile', () => {
+  const tracker = new ValidationProcessTracker(profile);
+  tracker.sample([root()]);
+  expect(() => tracker.sample([{ ...root(), start: 'birth-b' }, row(11, 10)])).toThrow(
+    'PROCESS_IDENTITY_UNCERTAIN',
+  );
+});
+it('tracks a recycled PID with an exact profile when no unseen child needs binding', () => {
+  const tracker = new ValidationProcessTracker(profile);
+  tracker.sample([root()]);
+  const result = tracker.sample([{ ...root(), start: 'birth-b' }]);
+  expect(result.remainingProcesses).toBe(1);
   expect(result.processAccounting.reusedPids).toBe(1);
 });
 it('conservatively counts a same-stamp PID and zombie rather than certifying exit', () => {
