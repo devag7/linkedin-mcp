@@ -27,6 +27,9 @@ const runNpm = (args, cwd = root) =>
     maxBuffer: 2 * 1024 * 1024,
   });
 try {
+  process.stdout.write(execFileSync(process.execPath, [resolve('scripts/verify-build.mjs')], {
+    encoding: 'utf8', timeout: 30000,
+  }));
   const packed = JSON.parse(
     runNpm(['pack', '--json', '--ignore-scripts', '--pack-destination', dir]),
   )[0];
@@ -62,6 +65,8 @@ try {
     ['install', '--ignore-scripts', '--no-audit', '--no-fund', join(dir, packed.filename)],
     install,
   );
+  assert.equal(runNpm(['exec', '--offline', '--', 'linkedin-mcp', '--version'], install).trim(),
+    `linkedin-mcp v${pkg.version}`, 'The installed npm bin/shim must execute the CLI.');
   // A consumer does not inherit this repository's lockfile or npm overrides.
   // Verify the actual fresh resolution, including any nested Express copies.
   const consumerLock = JSON.parse(readFileSync(join(install, 'package-lock.json'), 'utf8'));
