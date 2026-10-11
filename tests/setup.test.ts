@@ -60,11 +60,16 @@ it('returns actionable offline JSON for a broken profile alias without changing 
     profile,
     process.platform === 'win32' ? 'junction' : 'dir',
   );
-  const report = setupReport('cursor', { ...loadConfig(), LINKEDIN_PROFILE_DIR: profile });
+  const report = setupReport(
+    'cursor',
+    { ...loadConfig(), LINKEDIN_PROFILE_DIR: profile },
+    join(dir, 'never-read.json'),
+  );
   expect(JSON.parse(JSON.stringify(report))).toMatchObject({
     status: 'needs_attention',
     configuration: null,
     commands: null,
+    configMerge: { status: 'unavailable', reason: 'SETUP_CONFIGURATION_UNAVAILABLE', patch: [] },
     diagnosis: { checks: { profile: 'invalid' }, session: 'not_checked', api: 'not_checked' },
   });
   expect(report.diagnosis.nextSteps.join(' ')).toContain('broken symlink/junction');

@@ -36,6 +36,48 @@ and profile for login and MCP. Native Windows privacy remains unverified.
 Source contributors can instead run `npm ci`, `npm run build`, then
 `node dist/index.js --setup cursor` from a stable reviewed checkout.
 
+### Draft: preview an existing client configuration
+
+This feature is **unreleased and absent from published 3.0.0**. In this reviewed
+source track, after building, choose a client file explicitly:
+
+```sh
+node dist/index.js --setup cursor --config-file /absolute/path/to/mcp.json
+```
+
+The extra `configMerge` report distinguishes a missing file (`absent`), an entry
+ready to add (`ready_to_add`), an identical entry (`already_matches`), a conflicting
+entry (`conflict`) and invalid input (`invalid`). If profile diagnosis cannot
+generate a safe entry, it says `unavailable` and does not read the selected file.
+No existing client file is changed, server launched or provider contacted.
+
+JSON and JSONC comments/trailing commas are accepted using
+[Microsoft's JSONC parser](https://github.com/microsoft/node-jsonc-parser).
+Duplicate keys, malformed input, nonobject roots/maps and the wrong client's root
+are refused. Input is limited to1MiB,64 container levels and50,000 visited containers,
+properties and literals.
+The explicit native VS Code export expects `servers`; its newer portable
+`mcpServers` destination requires a different export and is deliberately refused
+here. See [VS Code's formats](https://code.visualstudio.com/docs/agent-customization/mcp-servers)
+and [Cursor's configuration guide](https://cursor.com/docs/mcp).
+
+Only a proposed JSON Patch addition for the generated `linkedin` entry is printed;
+unrelated names, settings, environment values, comments and raw parser/filesystem
+errors are not echoed. A conflict produces no replacement patch. Review locally
+and merge in your editor, preserving other servers and comments. This is a
+snapshot, not a transaction: rerun after changes, because applying a generic JSON
+Patch `add` to a stale document can replace an entry. No automatic patch application
+is provided. Final-component symlinks/junctions and unavailable file identity are
+refused; parent-directory aliases can resolve during this read-only operation.
+Opened-file identity/timestamp checks detect the tested replacement cases, not
+all possible concurrent changes or hostile filesystem behavior.
+
+`already_matches` proves only equality with this build's safe entry; it does not
+prove native client acceptance, runtime startup, login or provider compatibility.
+Overall exit1 can still reflect missing Chrome or a latched safety stop even when
+the merge plan is valid. Read `configMerge.status` separately from setup diagnosis.
+Keep this draft out of the published3.0.0 volunteer protocol.
+
 The generated entry uses the absolute Node executable and this installed build,
 sets the same profile for login and MCP, forces stdio and disables writes. Merge
 only its `linkedin` entry into your existing configuration; preserve other servers.

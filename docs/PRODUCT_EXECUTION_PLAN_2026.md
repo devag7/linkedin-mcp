@@ -5,7 +5,35 @@ Updated October 7, 2026. This is the actionable PRD/TRD and product backlog for
 [2026 roadmap](../PRODUCT_TECHNICAL_ROADMAP_2026.md) and its historical findings;
 this document adds current evidence rather than rewriting that baseline.
 
-## Current execution order — October 7
+## Current offline continuation — October 11
+
+The [current requirement-by-requirement reconciliation](ROADMAP_COVERAGE.md)
+separates verified core3.0.0 (22 tools), draft/closed PR #5 at0aa9c280, unbuilt
+privacy/official/provider work and unmeasured native-client/volunteer/adoption
+outcomes. The October7 execution order below is historical context, not a new
+instruction to restart PR #5 diagnosis. Its current decision cycle is closed;
+only a specific reproducible fix with a clear passing test can reopen it, and
+usefulness/cleanup/CI/release gates remain mandatory before conditional release.
+
+Authorized offline work now: a separate read-only client merge preview addresses
+the documented manual configuration step. It takes an explicitly selected file,
+accepts JSONC comments/trailing commas, classifies absence/matching/conflict/errors
+and returns an add-only plan without printing unrelated credentials or changing
+files. Dependencies: supported JSONC parser and disposable CLI/package tests.
+Effort: small implementation/low recurring parser-schema upkeep. Mandatory cash:$0.
+A later erasure inventory would be a separate reviewable task; actual coordinated
+erasure/native Windows ACL proof are not claimed here. New code requires a version
+after3.0.0; no version bump/publication is part of this draft.
+
+The [public opt-in issue13](https://github.com/devag7/linkedin-mcp/issues/13) is open;
+recorded cohort starts remain zero. No volunteered result, direct contact, account
+request or measured first-read outcome is inferred from that invitation. Use the
+existing kit/scoring guide to classify the first consenting person's actual result,
+then reproduce and repair its first product problem in a separate PR. Continue
+weekly useful-first-read/repeat-use/traffic measurements when evidence exists;
+10,000 stars and daily Trending remain measured ambitions, not guarantees.
+
+## Historical execution order — October 7
 
 Core **3.0.0 is released**, 22 tools; [all four destination receipts](LAUNCH_EVIDENCE_2026-10-07.md)
 verify source/tag `2992258` and the immutable approved artifact. The GitHub README

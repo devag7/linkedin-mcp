@@ -1,5 +1,107 @@
 # Coverage against the original 2026 roadmap
 
+## Current reconciliation — October 11, 2026
+
+Baseline: merged main `4b9e81681b3d05ced9148199554b21c53c81d141` (PRs #3, #4,
+#6–#12 merged); released core **3.0.0**, 22 tools. The immutable release source is
+`299225871a3ff925984ca658974f334e90103c57`; [release receipts](LAUNCH_EVIDENCE_2026-10-07.md)
+verify its four destinations and exact artifact. This reconciliation assesses the
+[original roadmap](../PRODUCT_TECHNICAL_ROADMAP_2026.md), not a claim of completion.
+
+**State definitions:** shipped = present in verified core 3.0.0; draft = reviewable
+but unavailable in the published package; unbuilt = no implementation meeting the
+requirement; unmeasured = evidence of real user/provider outcomes is still absent.
+A requirement may have shipped code and an unmeasured acceptance gate.
+
+[PR #5](https://github.com/devag7/linkedin-mcp/pull/5) is draft, blocked and its
+**decision cycle is closed** at `0aa9c2804db40c62c6a4f48bb693c34379ca880a`.
+Its narrowed search-only brief is not in 3.0.0. At that head, 864 offline tests pass,
+CI 8/12 passes and the release dry run has 4 passes/2 failures/4 skips; actual
+cleanup failures block live validation and release. [CI](https://github.com/devag7/linkedin-mcp/actions/runs/38084932248)
+and [dry run](https://github.com/devag7/linkedin-mcp/actions/runs/38084968121) preserve the
+failed gates. Reopen only for a specific reproducible fix with a clear passing test.
+No renewed cleanup/normalized-identity investigation or account request follows from
+this checklist. Conditional merge/release authorization requires usefulness,
+cleanup, CI and release gates to pass.
+
+### Original product requirements (section 4.3)
+
+| Requirement | Current state and exact evidence | Remaining acceptance |
+| --- | --- | --- |
+| P-01 diagnosis | **Shipped:** [doctor](../src/doctor.ts), [guided setup](../src/setup.ts), [setup tests](../tests/setup.test.ts); offline status and actionable invalid-profile diagnosis, separate explicit live option | Native client/new-user first read unmeasured; no offline report promises login/provider compatibility |
+| P-02 capabilities | **Shipped:** [catalog](../src/tools/capabilities.ts), [generated inventory](CAPABILITIES.md), [metadata checks](../tests/metadata.test.ts); 22 registrations, route/permission/date/status | Current provider check dates stay unknown; no blanket live verification |
+| P-03 native read contracts | **Shipped:** [contracts](../src/tools/contracts.ts), [registration](../src/tools/register.ts), [result](../src/tools/result.ts), [SDK tests](../tests/contracts.test.ts) provide schemas and matching structuredContent/text | Native client chat and rotating provider schemas need independent evidence |
+| P-04 bounded search | **Shipped, limited:** [pagination](../src/tools/pagination.ts), [read consistency SDK tests](../tests/read-consistency.test.ts); bounds, query-bound cursors, contradictory totals are uncertain | DOM/messaging continuation, saved jobs, post/conversation search and richer filters **unbuilt** where no verified route exists; no implicit crawl |
+| P-05 reviewed writes | **Shipped, alpha/default disabled:** [write transaction](../src/safety/write-operation.ts), [SDK tests](../tests/write-transaction.test.ts); new submissions require issued operation ID/five-minute token, identical inputs, client human approval; journal lookup survives restart | Current approved live actions unverified; unknown outcomes never retried. New-thread messaging remains separately experimental |
+| P-06 hard stops | **Shipped:** [guard](../src/browser/guard.ts), [checkpoint SDK tests](../tests/checkpoint.test.ts); persisted challenge stop across same-profile calls/restarts | Additional challenge variants unverified; breaker is profile-scoped, not a same-member cross-profile broadcast |
+| P-07 HTTP containment | **Shipped:** [loopback transport](../src/transports/http.ts), [security tests](../tests/http.test.ts); token/origin/host/size/deadline checks and shared runtime | Remote/hosted HTTP deliberately unsupported; no OAuth/TLS-hosting parity claim |
+| P-08 installation proof | **Shipped artifact, partial outcome:** exact 15-file package, Node20/22 OS matrix and [published-package SDK receipts](FIRST_USE_READINESS_2026-10-07.md) | Native Claude/Cursor first use untested; VS Code runtime prerequisite observed, current native discovery unproven. Cohort has **zero started attempts** |
+| P-09 official provider | **Unbuilt:** [active config](../src/config/env.ts) refuses official selection without browser fallback; [pilot design](OFFICIAL_PROVIDER_PILOT.md) is documentation only | App approval/scopes, OAuth code, scope-aware tools and approved integration tests required; paid adapters optional and user-funded |
+
+### Original technical risks and phases (sections 5–6)
+
+| Original finding / phase | Disposition and source-linked proof | Open boundary |
+| --- | --- | --- |
+| Unauthenticated HTTP and per-request browser | Shipped shared authenticated loopback; [Phase 0 HTTP](PHASE0_HTTP_EVIDENCE.md) | Historical evidence is scoped to its head; no supported remote exposure |
+| Breaker disconnected from production | Shipped production signals/persistent refusal; [checkpoint evidence](PHASE0_CHECKPOINT_EVIDENCE.md) | No guarantee that all future challenge forms are recognized |
+| Write accounting after raw HTTP | Shipped reservation/classification/unknown accounting; [write evidence](PHASE0_WRITE_EVIDENCE.md) | No successful-status claim without a verified signal; no assumed remote dedupe |
+| Default account, unsafe concurrent state | Shipped verified-member bucket and atomic owner/budget/journal transactions; [account evidence](PHASE0_ACCOUNT_EVIDENCE.md), [shared-state tests](../tests/shared-state.test.ts) | Cooperating local processes only; rollback/deletion/power-loss and cross-profile checkpoint broadcast remain limitations |
+| Unproven new-thread route | Shipped extra experimental gate and durable outcome lookup | Current live success remains unverified; no guessed payload |
+| Cold session reported logged out | Shipped `not_checked` through [session tools](../src/tools/session.ts) | Health is a live read requiring consent, not offline setup |
+| Text-only output | Shipped native contracts; P-03 above | Client/runtime acceptance is separate |
+| Stale version/docs and hardcoded count | Shipped generated metadata and registration-derived count | Old dated documents below are historical; current listing cache still has inaccuracies |
+| Dead legacy OAuth/env path | Shipped isolation under [legacy](../src/legacy/config.ts), excluded from bundle checks | No official adapter is activated by a credential env variable |
+| Fake-account advice | Current [disclaimer](../DISCLAIMER.md) explains account/platform risk; no fake-account setup | No ban-proof or authorization claim |
+| Patchright test import failure | Clean installs, source and packaged tests resolve historical failure; [release evidence](LAUNCH_EVIDENCE_2026-10-07.md) | Preserve earlier failed logs; a prior green head never clears a later red head |
+| Phase 0 containment | Core implementation shipped; integration/security tests above | PR #5's strict lifecycle failure is still blocked; no universal cleanup proof |
+| Phase 1 truth/install | Doctor/setup/metadata/published package shipped | Exit gate includes first real new-user read, still **unmeasured** |
+| Phase 2 contract quality | Schemas, bounded pagination, errors and capability catalog shipped | Fixture/SDK success does not prove current live compatibility or native client chats |
+| Phase 3 workflows | Core [bounded recipes](WORKFLOWS.md) shipped; PR #5 brief **draft/closed** | Useful workflow completion and retry reduction unmeasured; no invented fields/routes |
+| Phase 4 official pilot | Design only; **unbuilt** | Granted products/scopes and separately authorized API evidence |
+| Phase 5 community/distribution | Pinned quick start, [synthetic demo](RELEASE_DEMO_3.0.0.md), issue templates, registry verification and [opt-in pilot](https://github.com/devag7/linkedin-mcp/issues/13) available | Directory corrections, substantive tutorials, response/repeat-use/traffic measures incomplete; no promised Trending outcome |
+
+### Privacy, quality, growth and unresolved proposals
+
+| Requirement / proposal | Actual state | Next acceptance / mandatory cash |
+| --- | --- | --- |
+| Private local state and deletion | Profile-only alias-safe logout shipped; [privacy scope](PRIVACY.md) | Coordinated profile/circuit/shared-budget/journal erasure **unbuilt**; active-owner refusal, destructive preview and restart proof needed. $0 |
+| Windows confidentiality | POSIX/private-mode and Windows fixtures exist | Native second-user NTFS ACL proof **unmeasured**; fixture/browser CI is insufficient. $0 with consenting environment |
+| Diagnostics redaction | Fixed statuses/no raw provider content; synthetic leakage tests | No universal third-party/Chrome log audit. New merge preview must exclude unrelated config secrets. $0 |
+| At least 95% schema-valid fixtures | Selected SDK/synthetic contract cases exercised | No representative live reliability rate or production SLO; sample/case definitions required. $0 |
+| At least 80% first reads within15min | [Consent kit](FIRST_USE_VOLUNTEER_KIT.md), [fixed scoring](FIRST_USE_RESULTS.md), header-only private template prepared | **Unmeasured: zero starts**. Each new person's first start counts once, including failures; later clients separate, valid useful partials qualify only under all six checks. No invitation/demo/maintainer attempt counts. $0 |
+| Repeat use / traffic / net stars | Measurement definitions prepared, no hidden telemetry | Collect opt-in aggregates and weekly traffic; no invented adoption/retention. 10,000 stars and daily Trending remain goals. $0 |
+| Glama / curated lists | Accurate local README/source and [pending awesome-MCP submission](https://github.com/punkpeye/awesome-mcp-servers/pull/15490) | [October8 observed listing errors](OFFLINE_FOLLOWUP_2026-10-08.md) remain unresolved; no platform contact/deploy/paid placement authorized here. $0 |
+| Development audit | Production/publisher/consumer audit receipts zero; source full audit retains one low esbuild finding | [October8 follow-up](OFFLINE_FOLLOWUP_2026-10-08.md) found no supported parent repair; next scheduled review October15. One-shot build has no serve/watch; contributor dev-server exposure remains documented. $0 |
+| Safe config merge preview | **New separate draft:** explicit-file, bounded JSONC classification and add-only plan; no mutation or disclosure of unrelated values | Disposable SDK/CLI/package tests and exact-head hosted review gates. Absent/conflict/invalid/matching states must be actionable. Existing 3.0.0 remains untouched. $0; low parser/schema upkeep |
+| Erasure inventory preview | **Not implemented** in this change | Separate bounded read-only inventory, shared-state scope/owner/alias uncertainty, no actual deletion. $0; medium filesystem maintenance |
+| Saved jobs / richer filters / post search | **Unbuilt** | Route/identity/parameter evidence before code; no endpoint guesses. $0; higher provider maintenance |
+| Optional official/paid provider | **Unbuilt** | User demand, scopes and verified app integration; optional user-funded costs only |
+
+### Original distribution experiments, future scope and owner decisions (sections 7–9)
+
+| Original proposal | Current classification / decision gate |
+| --- | --- |
+|90-second demo with a real useful result | Synthetic published setup demo available; real consenting login/search/read demonstration **unmeasured**, never substituted by fixtures |
+|Three problem-led tutorials | Bounded recipes available; independently reproduced company/job/post end-to-end tutorials **not completed**; promotion waits for applicable evidence |
+|Claude Code, Codex and other client install matrices | Named desktop SDK formats tested as documented; other native clients **untested**, no universal-client success claim |
+|Discussions, help-wanted and contributor response loop | Contributor/templates available; this review does not verify Discussions activation or a measured response-time SLA; track actual support outcomes |
+|Directory/referral distribution and monthly release stories | Registry receipts and existing listing/submission artifacts available; referral lift, monthly reuse and sustained release-story outcomes **unmeasured** |
+|Saved research, local export/comparison, media publishing, client installers and action-review UI | User-selected comparison has recipe only; complete local products/integrations **unbuilt**. Each needs demand, scope, privacy and review gates; no large SaaS/CRM expansion inferred |
+|Five future predictions | Hypotheses retained in the original document; native contracts shipped, endpoint rotation and official/enterprise demand are not forecasts proved by this project |
+|Primary audience / HTTP / alpha writes | Current plan prioritizes local read-heavy research; remote HTTP unsupported; writes default disabled and alpha with client approval |
+|Official app willingness / monthly capacity | Owner app/scopes and sustained maintenance capacity remain decisions to measure/confirm; no paid or enterprise commitment inferred |
+
+Priority now: finish the offline config preview in its own reviewable PR while the
+owner-led published3.0.0 pilot waits for a consenting new participant. Classify the
+first actual result using the merged scoring guide; reproduce its first product
+problem before selecting a repair. No participant/contact/account access is
+created by this reconciliation. Released3.0.0 and all protected files/receipts stay
+intact. New runtime features need a later version; this draft does not bump one.
+
+<details>
+<summary>Historical October 1 reconciliation — preserved, superseded above</summary>
+
+
 Updated 2026-10-01 (Asia/Kolkata), unreleased review branch based on upstream
 `e368b61`, package 2.0.3; [draft PR #3](https://github.com/devag7/linkedin-mcp/pull/3). Every requirement below is checked against the initial
 [PRODUCT_TECHNICAL_ROADMAP_2026.md](../PRODUCT_TECHNICAL_ROADMAP_2026.md).
@@ -151,3 +253,5 @@ The next evidence actions are human review, approved first-read/locale
 captures and workflow observations; then an app-backed official pilot if chosen.
 Remote publishing, outreach and account writes require their own explicit scope.
 See ROADMAP_PROGRESS.md for actual gate results and current local limits.
+
+</details>

@@ -4,6 +4,7 @@ import type { EnvConfig } from './config/env.js';
 import { inspectSetup } from './doctor.js';
 import { profilePath } from './safety/state-lock.js';
 import { VERSION } from './version.js';
+import { previewClientConfig, unavailableClientConfig } from './setup-config.js';
 
 export const CLIENTS = ['claude-desktop', 'cursor', 'vscode'] as const;
 export type SetupClient = (typeof CLIENTS)[number];
@@ -35,7 +36,7 @@ export function clientConfiguration(
     : { mcpServers: { linkedin: server } };
 }
 
-export function setupReport(client: SetupClient, config: EnvConfig) {
+export function setupReport(client: SetupClient, config: EnvConfig, configFile?: string) {
   // Diagnose before resolving configuration: invalid aliases must produce JSON.
   const diagnosis = inspectSetup(config, { transport: 'stdio', port: 3000, logLevel: 'error' });
   const configuration =
@@ -70,6 +71,13 @@ export function setupReport(client: SetupClient, config: EnvConfig) {
     diagnosis,
     destination,
     configuration,
+    ...(configFile
+      ? {
+          configMerge: server
+            ? previewClientConfig(client, configFile, server)
+            : unavailableClientConfig(client),
+        }
+      : {}),
     commands: server
       ? {
           doctor: { ...server, args: [...server.args, '--doctor'] },

@@ -52,6 +52,7 @@ function parseArgs(): ServerConfig & {
     | 'setup'
     | 'client-config';
   client?: SetupClient;
+  configFile?: string;
   live?: boolean;
   confirmProfileDeletion?: boolean;
 } {
@@ -73,6 +74,7 @@ function parseArgs(): ServerConfig & {
     | undefined;
 
   let client: SetupClient | undefined;
+  let configFile: string | undefined;
   let live = false;
   let confirmProfileDeletion = false;
   let transportChosen = false;
@@ -97,6 +99,12 @@ function parseArgs(): ServerConfig & {
         break;
       case '--doctor':
         setAction('doctor');
+        break;
+      case '--config-file':
+        if (!next || next.startsWith('-') || configFile !== undefined)
+          throw new Error('--config-file requires one explicit path.');
+        configFile = next;
+        i++;
         break;
       case '--live':
         live = true;
@@ -206,9 +214,11 @@ function parseArgs(): ServerConfig & {
   }
 
   if (live && action !== 'doctor') throw new Error('--live is only supported with --doctor.');
+  if (configFile !== undefined && action !== 'setup')
+    throw new Error('--config-file is only supported with --setup.');
   if (confirmProfileDeletion && action !== 'logout')
     throw new Error('--confirm-profile-deletion is only supported with --logout.');
-  return { transport, port, logLevel, action, client, live, confirmProfileDeletion };
+  return { transport, port, logLevel, action, client, configFile, live, confirmProfileDeletion };
 }
 
 /**
@@ -228,6 +238,7 @@ COMMANDS:
                            once; the session is saved to the browser profile.
   --setup <client>         Offline diagnosis, client config and exact next steps
   --client-config <client> Print JSON config for claude-desktop, cursor or vscode
+  --config-file <path>     With --setup: read-only JSON/JSONC merge preview
   --doctor                 Diagnose local setup without launching Chrome or network requests
   --doctor --live          Also open the saved session and probe authenticated identity
   --status                 Show the current login/profile status
@@ -274,11 +285,17 @@ async function main(): Promise<void> {
     const env = loadConfig();
     const output =
       config.action === 'setup'
-        ? setupReport(config.client!, env)
+        ? setupReport(config.client!, env, config.configFile)
         : clientConfiguration(config.client!, env);
     // eslint-disable-next-line no-console -- Offline CLI output before transport starts
     console.log(JSON.stringify(output, null, 2));
     if ('status' in output && output.status === 'needs_attention') process.exitCode = 1;
+    if (
+      'configMerge' in output &&
+      output.configMerge &&
+      ['invalid', 'conflict'].includes(output.configMerge.status)
+    )
+      process.exitCode = 1;
     return;
   }
   if (config.action === 'doctor') {
@@ -391,6 +408,8 @@ void main().catch((error: unknown) => {
       message,
     ) ||
     message.startsWith('--confirm-profile-deletion is only supported') ||
+    message === '--config-file requires one explicit path.' ||
+    message === '--config-file is only supported with --setup.' ||
     message.startsWith('--live is only supported');
   console.error(
     safe
