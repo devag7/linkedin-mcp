@@ -385,8 +385,8 @@ that checks an explicitly selected JSON/JSONC file for missing, matching or conf
 entries without changing files or exposing other servers' credentials. It is not
 available in published3.0.0 and does not establish native-client or live compatibility.
 [Official-provider pilot](docs/OFFICIAL_PROVIDER_PILOT.md) describes the app/scopes
-and integration evidence still needed. Docker files are an experimental Linux
-recipe; no container build, display/login or runtime has been verified locally.
+and integration evidence still needed. The experimental Docker builder stage
+passed locally on Node 22; container display/login and runtime remain unverified.
 
 ## 🛠 Development
 
