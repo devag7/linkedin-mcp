@@ -7,7 +7,26 @@ this document adds current evidence rather than rewriting that baseline.
 
 ## Current offline continuation — October 11
 
-The [current requirement-by-requirement reconciliation](ROADMAP_COVERAGE.md)
+**Release update:** [3.1.0 is published across npm, GitHub Packages, MCP
+Registry and GitHub Release](RELEASE_EVIDENCE_3.1.0.md). Its reviewed 22-tool
+artifact adds the read-only JSONC configuration preview and path-free local data
+inventory, and repairs the development build audit. See the
+[latest coverage reconciliation](ROADMAP_COVERAGE.md)
+for shipped scope and remaining acceptance. The pre-release account below is
+preserved as a historical decision record.
+
+The fastest remaining product path is one consenting new user's published-package
+first read, scored with the merged volunteer kit. It remains **0/0** until an
+attempt starts. Reproduce that participant's first failure before selecting a
+feature repair. In parallel, build coordinated erasure from the inventory and
+obtain native Windows ACL proof in separate reviewed work. PR #5's job brief
+remains blocked; a successful 3.1.0 release does not establish its usefulness or
+cleanup acceptance. Maintain zero mandatory maintainer cash cost while measuring
+repeat useful use, stars and daily Trending without promising outcomes.
+
+### Pre-release continuation record
+
+The [pre-release requirement-by-requirement reconciliation](ROADMAP_COVERAGE.md)
 separates verified core 3.0.0 (22 tools), blocked PR #5, incomplete privacy and
 official-provider work, and unmeasured native-client, volunteer and adoption
 outcomes. The October 7 execution order below is historical context; it does not

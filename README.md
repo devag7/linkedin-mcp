@@ -24,10 +24,10 @@
 
 ## Guided first run
 
-**3.0.0 is released: 22 tools, guided local setup and manual Chrome login.**
+**3.1.0 is released: 22 tools, guided local setup and manual Chrome login.**
 This is a local stdio tool; Glama's generic “Deploy Server” or browser-hosting
 controls are not supported installation instructions. No hosted service is required.
-[Verified publication receipts](docs/LAUNCH_EVIDENCE_2026-10-07.md) cover npm,
+[Verified 3.1.0 publication receipts](docs/RELEASE_EVIDENCE_3.1.0.md) cover npm,
 GitHub Packages, the official MCP Registry and the GitHub release.
 
 Start with the [quick start](#-quick-start) and [setup guide](SETUP_GUIDE.md).
@@ -54,7 +54,7 @@ return a status including `unknown` when completion cannot be established.
 
 ## Verification status
 
-3.0.0 introduces breaking safety and client requirements; read the
+3.0.0 introduced breaking safety and client requirements; read the
 [migration guide](SETUP_GUIDE.md#migrating-from-203-to-300).
 [Hosted source/package/browser checks](https://github.com/devag7/linkedin-mcp/actions/workflows/ci.yml)
 cover Node20/22 across Linux, macOS and Windows. Exact core-only candidate/head
@@ -62,7 +62,7 @@ results are recorded in [release readiness](docs/RELEASE_READINESS_3.0.0.md). On
 maintainer health/own-profile read also passed with partial metadata;
 [scope and evidence](docs/ZERO_COST_EXECUTION_EVIDENCE_2026-10-01.md#7-consented-maintainer-live-read--passed-limited-scope)
 do not establish fresh-user or broader live compatibility.
-The exact published 3.0.0 artifact is independently verified; native-client first-use cohorts
+The exact published 3.1.0 artifact is independently verified; native-client first-use cohorts
 and broad live-provider compatibility remain unverified.
 See [execution progress](docs/ROADMAP_PROGRESS.md) and the linked evidence.
 
@@ -84,14 +84,14 @@ not a guarantee of current provider compatibility or account safety.
 ## 🚀 Quick start
 
 Use Node.js 20 or later and Google Chrome. The commands below pin the published
-3.0.0 package. Setup is offline; login and subsequent reads are deliberate account
+3.1.0 package. Setup is offline; login and subsequent reads are deliberate account
 actions. For a stable installation path and Windows commands, see the
 [setup guide](SETUP_GUIDE.md).
 
 **1. Diagnose offline:**
 
 ```bash
-npm install --prefix "$HOME/.local/share/linkedin-mcp" linkedin-mcp-tools@3.0.0
+npm install --prefix "$HOME/.local/share/linkedin-mcp" linkedin-mcp-tools@3.1.0
 node "$HOME/.local/share/linkedin-mcp/node_modules/linkedin-mcp-tools/dist/index.js" --setup cursor
 ```
 
@@ -117,7 +117,7 @@ accepting `mcpServers`, this version-pinned example is an alternative:
   "mcpServers": {
     "linkedin": {
       "command": "npx",
-      "args": ["-y", "linkedin-mcp-tools@3.0.0"]
+      "args": ["-y", "linkedin-mcp-tools@3.1.0"]
     }
   }
 }
@@ -380,10 +380,10 @@ contain explicit call limits and source-link rules. [Client setup](SETUP_GUIDE.m
 separates locally exercised MCP transport from untested client applications.
 [Privacy and deletion](docs/PRIVACY.md) explains retained safety history.
 [Roadmap coverage](docs/ROADMAP_COVERAGE.md) tracks every acceptance requirement.
-The 3.1.0 source adds a [read-only config merge preview](SETUP_GUIDE.md#preview-an-existing-client-configuration)
+The 3.1.0 release adds a [read-only config merge preview](SETUP_GUIDE.md#preview-an-existing-client-configuration)
 that checks an explicitly selected JSON/JSONC file for missing, matching or conflicting
 entries without changing files or exposing other servers' credentials. It is not
-available in published3.0.0 and does not establish native-client or live compatibility.
+available in published 3.1.0 and does not establish native-client or live compatibility.
 [Official-provider pilot](docs/OFFICIAL_PROVIDER_PILOT.md) describes the app/scopes
 and integration evidence still needed. The experimental Docker builder stage
 passed locally on Node 22; container display/login and runtime remain unverified.
@@ -423,5 +423,5 @@ deletion. Any observed alias, unexpected type, inaccessible or changed identity,
 or present lock returns `needs_attention` with exit code 1. Otherwise `observed`
 means only that the bounded presence snapshot succeeded.
 
-This command is **not available in released 3.0.0**. See the
+This command is **available in released 3.1.0**, not 3.0.0. See the
 [inventory contract](docs/PRIVACY.md#inventory-json-contract); coordinated erasure remains open.

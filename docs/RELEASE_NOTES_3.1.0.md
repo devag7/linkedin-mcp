@@ -1,8 +1,9 @@
-# LinkedIn MCP 3.1.0 release candidate
+# LinkedIn MCP 3.1.0 release notes
 
 Version 3.1.0 combines offline client configuration preview, local data
-inventory and a patched development build chain. Published 3.0.0 stays the
-installation target until each 3.1.0 destination is independently verified.
+inventory and a patched development build chain. The verified 3.1.0 package is
+the version-pinned installation target. [Publication evidence](RELEASE_EVIDENCE_3.1.0.md)
+records the exact archive and every destination.
 
 ## New local commands
 
@@ -21,7 +22,7 @@ inventory. No write tool, provider route or LinkedIn account flow was added.
 
 ## Upgrade and limits
 
-After 3.1.0 is published and its archive verified, install that exact version at
+Install the verified 3.1.0 package at
 the stable path used for the MCP client. Regenerate the client entry with
 `--setup <client>` after upgrading. Existing 3.0.0 configuration continues to
 work; the new preview is optional. The inventory is a read-only diagnostic, not
