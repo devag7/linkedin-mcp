@@ -36,10 +36,10 @@ and profile for login and MCP. Native Windows privacy remains unverified.
 Source contributors can instead run `npm ci`, `npm run build`, then
 `node dist/index.js --setup cursor` from a stable reviewed checkout.
 
-### Draft: preview an existing client configuration
+### Preview an existing client configuration
 
-This feature is **unreleased and absent from published 3.0.0**. In this reviewed
-source track, after building, choose a client file explicitly:
+This feature is in version **3.1.0** and absent from published 3.0.0. After
+building this source, choose a client file explicitly:
 
 ```sh
 node dist/index.js --setup cursor --config-file /absolute/path/to/mcp.json
@@ -76,7 +76,7 @@ all possible concurrent changes or hostile filesystem behavior.
 prove native client acceptance, runtime startup, login or provider compatibility.
 Overall exit1 can still reflect missing Chrome or a latched safety stop even when
 the merge plan is valid. Read `configMerge.status` separately from setup diagnosis.
-Keep this draft out of the published3.0.0 volunteer protocol.
+Keep this feature out of the published 3.0.0 volunteer protocol.
 
 The generated entry uses the absolute Node executable and this installed build,
 sets the same profile for login and MCP, forces stdio and disables writes. Merge
@@ -212,7 +212,7 @@ Job details must identify the requested numeric job URN before a canonical URL i
 attached. Official OAuth remains unavailable; v1 cookie/OAuth
 environment variables do not enable it. New-thread messaging remains experimental.
 
-## Unreleased metadata inventory
+## Version 3.1.0 metadata inventory
 
 After building the development source, `node dist/index.js --data-inventory`
 prints a path-free, read-only snapshot of known local state categories. It honors
@@ -224,4 +224,4 @@ Exit 1 means a category was refused or uncertain; review the fixed reason and
 stop associated runtimes manually before considering a separate operation.
 
 This is absent from published 3.0.0. The exact scope, omissions and reason codes
-are in [inventory contract](docs/PRIVACY.md#inventory-json-contract-development-only).
+are in [inventory contract](docs/PRIVACY.md#inventory-json-contract).

@@ -1,19 +1,18 @@
 # Changelog
 
-## [Unreleased]
+## [3.1.0] — Offline convenience and build repair
 
 - Read-only `--setup <client> --config-file <path>` JSON/JSONC merge preview:
   bounded parsing, duplicate/root/conflict checks, safe entry addition only and
-  no existing-file mutation or unrelated credential output. Published3.0.0 is
-  unchanged; new code requires a later release.
+  no existing-file mutation or unrelated credential output.
 - Reconcile the original roadmap with merged main, closed draft PR #5 and the
   unbuilt/unmeasured privacy, official-provider and first-use gates.
 - Offline `--data-inventory` reports fixed local state categories without reading
   contents, printing paths, changing files or producing a deletion plan. Present
   locks, aliases, unexpected types and uncertain observations fail closed.
   Coordinated erasure and native Windows ACL privacy remain open.
-- This command is not part of the immutable published 3.0.0 package. A later
-  release requires a new version and its own release gates.
+- Replaced the affected development build wrapper with patched direct esbuild.
+  The CLI contract and exact 15-file package inventory remain enforced.
 
 ## [3.0.0] — Core safety and guided setup
 

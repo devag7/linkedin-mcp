@@ -25,12 +25,10 @@ Docker builder copies the direct build script.
 - The disposable build contract preserved the executable shebang, sourcemap,
   unrelated outputs and executable mode.
 
-Hosted checks and an exact-head dry run must be recorded against this combined
-head before it is considered ready for release review. The package version
-remains `3.0.0`; this branch is **not a publishable new version** and must not be
-merged into main while the push-triggered release workflow is enabled. A later
-release candidate needs a version bump, updated user-facing version references,
-fresh gates and destination verification.
+The integrated release candidate is version `3.1.0`. Hosted checks, an exact-head
+dry run, independent review and destination verification are required before it
+can be called released. The existing 3.0.0 quick-start commands remain pinned to
+the last independently verified public artifact until publication succeeds.
 
 This work does not establish native-client first-use, live LinkedIn provider
 compatibility, coordinated erasure, Windows NTFS ACL privacy, an official

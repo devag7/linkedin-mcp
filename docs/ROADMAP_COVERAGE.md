@@ -66,14 +66,14 @@ cleanup, CI and release gates to pass.
 | --- | --- | --- |
 | Private local state and deletion | Profile-only alias-safe logout shipped; [privacy scope](PRIVACY.md) | Coordinated profile/circuit/shared-budget/journal erasure **unbuilt**; active-owner refusal, destructive preview and restart proof needed. $0 |
 | Windows confidentiality | POSIX/private-mode and Windows fixtures exist | Native second-user NTFS ACL proof **unmeasured**; fixture/browser CI is insufficient. $0 with consenting environment |
-| Diagnostics redaction | Fixed statuses/no raw provider content; synthetic leakage tests | No universal third-party/Chrome log audit. New merge preview must exclude unrelated config secrets. $0 |
+| Diagnostics redaction | Fixed statuses/no raw provider content; synthetic leakage tests | No universal third-party/Chrome log audit. Draft merge preview excludes unrelated config secrets in tested cases. $0 |
 | At least 95% schema-valid fixtures | Selected SDK/synthetic contract cases exercised | No representative live reliability rate or production SLO; sample/case definitions required. $0 |
 | At least 80% first reads within15min | [Consent kit](FIRST_USE_VOLUNTEER_KIT.md), [fixed scoring](FIRST_USE_RESULTS.md), header-only private template prepared | **Unmeasured: zero starts**. Each new person's first start counts once, including failures; later clients separate, valid useful partials qualify only under all six checks. No invitation/demo/maintainer attempt counts. $0 |
 | Repeat use / traffic / net stars | Measurement definitions prepared, no hidden telemetry | Collect opt-in aggregates and weekly traffic; no invented adoption/retention. 10,000 stars and daily Trending remain goals. $0 |
 | Glama / curated lists | Accurate local README/source and [pending awesome-MCP submission](https://github.com/punkpeye/awesome-mcp-servers/pull/15490) | [October8 observed listing errors](OFFLINE_FOLLOWUP_2026-10-08.md) remain unresolved; no platform contact/deploy/paid placement authorized here. $0 |
-| Development audit | Production/publisher/consumer audit receipts zero; source full audit retains one low esbuild finding | [October8 follow-up](OFFLINE_FOLLOWUP_2026-10-08.md) found no supported parent repair; next scheduled review October15. One-shot build has no serve/watch; contributor dev-server exposure remains documented. $0 |
-| Safe config merge preview | **New separate draft:** explicit-file, bounded JSONC classification and add-only plan; no mutation or disclosure of unrelated values | Disposable SDK/CLI/package tests and exact-head hosted review gates. Absent/conflict/invalid/matching states must be actionable. Existing 3.0.0 remains untouched. $0; low parser/schema upkeep |
-| Erasure inventory preview | **Not implemented** in this change | Separate bounded read-only inventory, shared-state scope/owner/alias uncertainty, no actual deletion. $0; medium filesystem maintenance |
+| Development audit | Draft PR #16 replaces the affected wrapper with patched direct esbuild; combined candidate full audit reports zero findings | Exact-head hosted and release gates, independent build review and destination proof before release. One-shot build has no serve/watch. $0 |
+| Safe config merge preview | Draft PR #14 and integrated 3.1.0 candidate: explicit-file, bounded JSONC classification and add-only plan; no mutation or unrelated-value output in tested cases | Exact-head hosted review and real native-client acceptance remain separate. Published 3.0.0 is unchanged. $0; low parser/schema upkeep |
+| Erasure inventory preview | Draft PR #15 and integrated 3.1.0 candidate: bounded read-only metadata presence/uncertainty for six categories | No lock ownership, content, ACL, complete data scope or deletion proof; coordinated erasure remains unbuilt. $0; medium filesystem maintenance |
 | Saved jobs / richer filters / post search | **Unbuilt** | Route/identity/parameter evidence before code; no endpoint guesses. $0; higher provider maintenance |
 | Optional official/paid provider | **Unbuilt** | User demand, scopes and verified app integration; optional user-funded costs only |
 
@@ -91,12 +91,12 @@ cleanup, CI and release gates to pass.
 |Primary audience / HTTP / alpha writes | Current plan prioritizes local read-heavy research; remote HTTP unsupported; writes default disabled and alpha with client approval |
 |Official app willingness / monthly capacity | Owner app/scopes and sustained maintenance capacity remain decisions to measure/confirm; no paid or enterprise commitment inferred |
 
-Priority now: finish the offline config preview in its own reviewable PR while the
-owner-led published3.0.0 pilot waits for a consenting new participant. Classify the
-first actual result using the merged scoring guide; reproduce its first product
-problem before selecting a repair. No participant/contact/account access is
-created by this reconciliation. Released3.0.0 and all protected files/receipts stay
-intact. New runtime features need a later version; this draft does not bump one.
+Priority now: finish exact-head hosted and release validation plus independent
+review of the 3.1.0 integration candidate. Keep the owner-led published 3.0.0
+pilot separate until a consenting new participant actually starts. Classify the
+first result using the merged scoring guide; reproduce its first product problem
+before selecting a repair. No participant/contact/account access is created by
+this reconciliation. Released 3.0.0 and all protected files/receipts stay intact.
 
 <details>
 <summary>Historical October 1 reconciliation — preserved, superseded above</summary>

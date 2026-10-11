@@ -49,7 +49,7 @@ and identifiers; these are opt-in maintainer utilities, not support bundles. Rev
 and redact their output yourself before sharing. Do not attach Chrome profiles,
 auth headers or unreviewed MCP result payloads to public issues.
 
-## Unreleased inventory is not coordinated erasure
+## Local data inventory is not coordinated erasure
 
 `--data-inventory` only observes fixed filesystem metadata, without reading
 credential/safety contents, acquiring or clearing locks, changing storage,
@@ -66,7 +66,7 @@ stealing them. This feature does not complete P8 coordinated erasure or Windows
 ACL proof and is not in immutable 3.0.0. Future deletion needs its own design and
 review; this report never supplies an executable deletion plan.
 
-### Inventory JSON contract (development only)
+### Inventory JSON contract
 
 `schemaVersion:1`, `mode:offline_metadata_inventory` and `profileSelection` (default
 or configured) identify the report. Six `entries` use only these fixed categories:

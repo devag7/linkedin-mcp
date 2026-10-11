@@ -1,6 +1,6 @@
 # LinkedIn MCP: current gaps and zero-cash execution roadmap
 
-Updated October 7, 2026. This is the actionable PRD/TRD and product backlog for
+Updated October 11, 2026. This is the actionable PRD/TRD and product backlog for
 `devag7/linkedin-mcp`. Preserve the original
 [2026 roadmap](../PRODUCT_TECHNICAL_ROADMAP_2026.md) and its historical findings;
 this document adds current evidence rather than rewriting that baseline.
@@ -8,22 +8,21 @@ this document adds current evidence rather than rewriting that baseline.
 ## Current offline continuation — October 11
 
 The [current requirement-by-requirement reconciliation](ROADMAP_COVERAGE.md)
-separates verified core3.0.0 (22 tools), draft/closed PR #5 at0aa9c280, unbuilt
-privacy/official/provider work and unmeasured native-client/volunteer/adoption
-outcomes. The October7 execution order below is historical context, not a new
-instruction to restart PR #5 diagnosis. Its current decision cycle is closed;
-only a specific reproducible fix with a clear passing test can reopen it, and
-usefulness/cleanup/CI/release gates remain mandatory before conditional release.
+separates verified core 3.0.0 (22 tools), blocked PR #5, incomplete privacy and
+official-provider work, and unmeasured native-client, volunteer and adoption
+outcomes. The October 7 execution order below is historical context; it does not
+reopen PR #5's closed diagnostic cycle. A specific reproducible fix and passing
+usefulness, cleanup, CI and release gates are still required for that feature.
 
-Authorized offline work now: a separate read-only client merge preview addresses
-the documented manual configuration step. It takes an explicitly selected file,
-accepts JSONC comments/trailing commas, classifies absence/matching/conflict/errors
-and returns an add-only plan without printing unrelated credentials or changing
-files. Dependencies: supported JSONC parser and disposable CLI/package tests.
-Effort: small implementation/low recurring parser-schema upkeep. Mandatory cash:$0.
-A later erasure inventory would be a separate reviewable task; actual coordinated
-erasure/native Windows ACL proof are not claimed here. New code requires a version
-after3.0.0; no version bump/publication is part of this draft.
+Draft PRs #14 (offline JSONC client merge preview), #15 (path-free local data
+inventory) and #16 (patched development build) are independently reviewable.
+Draft PR #17 integrates those exact heads as a 3.1.0 candidate. Local integration
+passed 598 tests, package checks and a full zero-finding audit; hosted and
+release gates are recorded in its [integration receipt](ROADMAP_INTEGRATION_GATE_2026-10-11.md).
+The inventory is a presence snapshot, not coordinated erasure or native Windows
+ACL proof. The new setup preview does not modify client files. Mandatory cash is $0.
+Published 3.0.0 remains the installation target until 3.1.0's exact archive and
+destinations are independently verified.
 
 The [public opt-in issue13](https://github.com/devag7/linkedin-mcp/issues/13) is open;
 recorded cohort starts remain zero. No volunteered result, direct contact, account

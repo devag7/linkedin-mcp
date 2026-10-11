@@ -10,7 +10,7 @@ receipt after the commit; no same-version publication is eligible.
 
 Six fixed categories classify presence, absence, refusal or uncertainty without
 reading contents, exposing private paths or mutating storage. The exact contract
-is in [PRIVACY.md](PRIVACY.md#inventory-json-contract-development-only). Any
+is in [PRIVACY.md](PRIVACY.md#inventory-json-contract). Any
 observed alias/type violation, inaccessible ancestry, changed or unavailable
 identity, hard-linked regular file or present lock fails closed. Inventory never
 authorizes deletion or certifies stopped owners, valid contents or permissions.
