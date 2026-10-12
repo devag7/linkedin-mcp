@@ -34,6 +34,13 @@ online command to erase a shared journal while another profile may own it. Do no
 present state erasure as checkpoint recovery or resume automation with fresh caps.
 Full coordinated erasure tooling is still an explicit coverage gap.
 
+The unreleased source also offers `--retirement-preview`: a bounded read-only
+selected-profile manifest preview, with no paths/content and application always
+disabled. It preserves circuits and shared safety history. Its unshipped transaction
+proof accepts only fresh disposable test capabilities; it cannot accept actual user
+storage. [Scope, refusal rules and activation blockers](PROFILE_RETIREMENT_DESIGN.md)
+separate preview/fixture evidence from production erasure or Windows ACL proof.
+
 Budget schema version 1 validates existing counters and adds operation and
 warmupStartedAt fields without guessing old outcomes or LinkedIn account age.
 Missing warmup start is initialized under a state lock at first verified use;

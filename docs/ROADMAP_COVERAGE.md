@@ -21,6 +21,13 @@ Hosted browser cleanup does not change PR #5's historical failed receipts or
 prove live LinkedIn usefulness. The owner-led pilot, coordinated erasure and
 native Windows privacy proof are the next independent acceptance tracks.
 
+Unreleased [profile retirement preview/transaction proof](PROFILE_RETIREMENT_DESIGN.md)
+is partial P8 implementation: fixed bounded preview, owner/alias refusal and
+disposable serialized recovery tests. The CLI cannot apply it. Shared budgets,
+journals, circuits, legacy credentials and backups remain preserved; complete
+erasure, native process/handle authority, crash durability and Windows ACL proof
+remain open. This source feature is absent from published 3.1.0.
+
 ## Historical pre-release reconciliation — October 11, 2026
 
 Baseline: merged main `4b9e81681b3d05ced9148199554b21c53c81d141` (PRs #3, #4,

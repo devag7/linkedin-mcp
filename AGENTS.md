@@ -55,3 +55,8 @@ New submissions require preview proof; reuse an existing journal ID and identica
 inputs only to look up its outcome after timeout/restart. Never auto-retry unknown
 outcomes. `--setup <client>` and cold `whoami` are offline; live reads require
 separate authorization. Platform fixture checks do not establish provider support.
+
+Unreleased `--retirement-preview` is metadata-only and cannot authorize deletion.
+The retirement transaction fixture script accepts only disposable capabilities;
+never adapt it to real state or claim complete erasure without independent review
+and the ownership/recovery gates in docs/PROFILE_RETIREMENT_DESIGN.md.

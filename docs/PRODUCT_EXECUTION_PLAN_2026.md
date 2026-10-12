@@ -15,6 +15,13 @@ inventory, and repairs the development build audit. See the
 for shipped scope and remaining acceptance. The pre-release account below is
 preserved as a historical decision record.
 
+An unreleased [selected-profile retirement milestone](PROFILE_RETIREMENT_DESIGN.md)
+adds a bounded, non-mutating preview and an unshipped transaction proof restricted
+to disposable capabilities. Production application, complete shared-state erasure,
+native-owner/open-handle proof and Windows ACLs remain blocked. No safety history
+or real user state is deleted by this draft. Review this narrowing before enabling
+any application path; mandatory maintainer cash remains $0.
+
 The fastest remaining product path is one consenting new user's published-package
 first read, scored with the merged volunteer kit. It remains **0/0** until an
 attempt starts. Reproduce that participant's first failure before selecting a
