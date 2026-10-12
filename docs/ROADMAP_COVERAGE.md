@@ -11,6 +11,7 @@ This changes the pre-release classification below for three items:
 | Safe config merge preview | Explicit JSON/JSONC file classification, bounded read, add-only plan and no client-file mutation; released as `--setup <client> --config-file <path>` | Native Claude/Cursor/VS Code end-to-end acceptance and first-read outcomes |
 | Local data inventory | Path-free, read-only metadata snapshot of six fixed categories; released as `--data-inventory` | Complete coordinated erasure, active-owner authority, interruption/restart proof and native Windows ACL privacy |
 | Development dependency repair | Patched direct esbuild build, no full-audit findings; exact packaged behavior and hosted matrix pass | Ongoing audit maintenance; Docker runtime/login remain unverified |
+| Windows confidentiality | A [disposable second-user probe](https://github.com/devag7/linkedin-mcp/actions/runs/38213175092) denied five exact state targets under the runner user's profile but found the profile directory readable under a public custom parent | Native ACL enforcement or pre-write refusal for unsafe locations, then reviewed second-user proof; existing user ACLs remain unverified |
 
 The original P-01 through P-08 core capabilities remain as described below;
 P-09 official provider is unbuilt. PR #5's job brief remains draft and blocked,
