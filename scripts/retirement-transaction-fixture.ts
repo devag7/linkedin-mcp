@@ -31,7 +31,7 @@ import {
 } from '../src/retirement.js';
 
 type Fixture = Readonly<{ root: string; home: string; profile: string }>;
-const fixtures = new WeakMap<Fixture, { dev: bigint; ino: bigint }>();
+const fixtures = new WeakMap<Fixture, { path: string; dev: bigint; ino: bigint; mode: bigint }[]>();
 const entrySchema = z
   .object({
     name: z.string().max(8192),
@@ -63,22 +63,31 @@ export function createRetirementFixture(): Fixture {
   const profile = join(home, '.linkedin-mcp', 'profile');
   mkdirSync(profile, { recursive: true, mode: 0o700 });
   const capability = Object.freeze({ root, home, profile });
-  const stat = lstatSync(root, { bigint: true });
-  fixtures.set(capability, { dev: stat.dev, ino: stat.ino });
+  fixtures.set(
+    capability,
+    [root, home, join(home, '.linkedin-mcp')].map((path) => {
+      const stat = lstatSync(path, { bigint: true });
+      return { path, dev: stat.dev, ino: stat.ino, mode: stat.mode };
+    }),
+  );
   return capability;
 }
 function fixtureGuard(fixture: Fixture) {
   const original = fixtures.get(fixture);
   if (!original) throw new Error('DISPOSABLE_CAPABILITY_REQUIRED');
-  const current = lstatSync(fixture.root, { bigint: true });
-  if (
-    current.isSymbolicLink() ||
-    !current.isDirectory() ||
-    current.dev !== original.dev ||
-    current.ino !== original.ino
-  )
-    throw new Error('FIXTURE_IDENTITY_CHANGED');
-  retirementAncestry(join(fixture.root, 'anchor'))();
+  for (const anchor of original) {
+    const current = lstatSync(anchor.path, { bigint: true });
+    if (
+      current.isSymbolicLink() ||
+      !current.isDirectory() ||
+      current.dev !== anchor.dev ||
+      current.ino !== anchor.ino ||
+      current.mode !== anchor.mode
+    )
+      throw new Error('FIXTURE_IDENTITY_CHANGED');
+  }
+  // Refuse parent changes before reading receipts or constructing canonicalizing locks.
+  retirementAncestry(fixture.profile)();
 }
 function present(path: string) {
   try {

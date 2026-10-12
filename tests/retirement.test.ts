@@ -6,6 +6,7 @@ import {
   mkdirSync,
   readFileSync,
   readdirSync,
+  renameSync,
   rmSync,
   symlinkSync,
   writeFileSync,
@@ -285,4 +286,19 @@ it('refuses a changed saved manifest without trusting a tampered receipt', () =>
   writeFileSync(path, JSON.stringify(receipt));
   expect(() => retireFixture(f, { resume: true })).toThrow('RECEIPT_DIGEST_MISMATCH');
   expect(readFileSync(join(f.profile, 'Cookies'), 'utf8')).toBe('private');
+});
+it('refuses an aliased recovery parent before creating locks through it', () => {
+  const f = fixture();
+  expect(() => retireFixture(f, { previewDigest: digest(f), interruptAt: 'prepared' })).toThrow(
+    'FIXTURE_INTERRUPTED',
+  );
+  rmSync(`${f.profile}.owner.lock`, { recursive: true });
+  rmSync(join(f.home, '.linkedin-mcp', 'budgets.json.lock'), { recursive: true });
+  const moved = join(f.root, 'moved-home');
+  renameSync(f.home, moved);
+  symlinkSync(moved, f.home, process.platform === 'win32' ? 'junction' : 'dir');
+  expect(() => retireFixture(f, { resume: true })).toThrow('FIXTURE_IDENTITY_CHANGED');
+  expect(existsSync(join(moved, '.linkedin-mcp', 'profile.owner.lock'))).toBe(false);
+  expect(existsSync(join(moved, '.linkedin-mcp', 'budgets.json.lock'))).toBe(false);
+  expect(existsSync(join(moved, '.linkedin-mcp', 'profile'))).toBe(true);
 });

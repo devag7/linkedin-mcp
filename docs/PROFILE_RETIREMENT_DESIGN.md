@@ -83,7 +83,7 @@ remains blocked. No participant, live-provider or Trending outcome is inferred.
 
 ## Local evidence — October 12, 2026
 
-- 742 tests in 34 files pass, including 23 new disposable retirement regressions.
+- 743 tests in 34 files pass, including 24 new disposable retirement regressions.
   Entry/depth bounds use real temporary trees; the byte bound uses synthetic
   metadata on a tiny file without allocating gigabytes. An absent-to-present
   observation is refused. No account/provider request or real-state deletion is
@@ -101,6 +101,12 @@ remains blocked. No participant, live-provider or Trending outcome is inferred.
   fixture tests, type failure and unused-import lint finding were recorded
   privately before repair. They are not relabeled as passed. All current checks
   above were rerun after that repair.
+- A follow-up disposable recovery fixture reproduced lock creation through an
+  aliased home before a later refusal. The fixture capability now validates the
+  original root, home and state-directory identities before receipt reads or
+  canonicalizing lock construction. The failed reproduction is retained privately;
+  its regression checks that no alias-target lock is created. This does not remove
+  the stated hostile-race or production-activation blockers.
 
 The exact frozen head, archive hash and hosted outcomes will be recorded in the
 draft PR and private receipt. An ineligible same-version dry run establishes
