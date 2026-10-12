@@ -382,8 +382,8 @@ separates locally exercised MCP transport from untested client applications.
 [Roadmap coverage](docs/ROADMAP_COVERAGE.md) tracks every acceptance requirement.
 The 3.1.0 release adds a [read-only config merge preview](SETUP_GUIDE.md#preview-an-existing-client-configuration)
 that checks an explicitly selected JSON/JSONC file for missing, matching or conflicting
-entries without changing files or exposing other servers' credentials. It is not
-available in published 3.1.0 and does not establish native-client or live compatibility.
+entries without changing files or exposing other servers' credentials. It is
+available in published 3.1.0; native-client and live compatibility remain unverified.
 [Official-provider pilot](docs/OFFICIAL_PROVIDER_PILOT.md) describes the app/scopes
 and integration evidence still needed. The experimental Docker builder stage
 passed locally on Node 22; container display/login and runtime remain unverified.
