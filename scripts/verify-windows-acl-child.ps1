@@ -1,6 +1,6 @@
+param([string]$Root, [string]$Result)
+
 $ErrorActionPreference = 'Stop'
-$root = $env:LMCP_ACL_ROOT
-$result = $env:LMCP_ACL_RESULT
 if (-not $root -or -not $result) { exit 30 }
 
 function Finish([int]$code) {
