@@ -3,7 +3,7 @@
 ## Latest release reconciliation — October 11, 2026
 
 [3.1.0 is published and independently verified](RELEASE_EVIDENCE_3.1.0.md).
-Its 22-tool, 15-file source is main `ac8fb5b8033ffc480325469c14eb931d65b58f04`.
+Its tagged 22-tool, 15-file source is `ac8fb5b8033ffc480325469c14eb931d65b58f04`.
 This changes the pre-release classification below for three items:
 
 | Item | Shipped 3.1.0 evidence | Still open |
