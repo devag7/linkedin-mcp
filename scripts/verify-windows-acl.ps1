@@ -16,10 +16,13 @@ $credential = [PSCredential]::new("$env:COMPUTERNAME\$user", $password)
 $createdUser = $false
 $roots = @()
 $results = @()
-$child = Join-Path $env:GITHUB_WORKSPACE 'scripts\verify-windows-acl-child.ps1'
+$sourceChild = Join-Path $env:GITHUB_WORKSPACE 'scripts\verify-windows-acl-child.ps1'
+$child = Join-Path (Join-Path $env:PUBLIC 'Documents') "lmcp-acl-child-$suffix.ps1"
 $shell = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
 
 try {
+  if (Test-Path -LiteralPath $child) { throw 'PROBE_SCRIPT_PREEXISTS' }
+  Copy-Item -LiteralPath $sourceChild -Destination $child
   New-LocalUser -Name $user -Password $password -Description 'Disposable LinkedIn MCP ACL verifier' | Out-Null
   $createdUser = $true
   $member = Get-LocalGroupMember -Group 'Administrators' | Where-Object { $_.Name -eq "$env:COMPUTERNAME\$user" }
@@ -35,13 +38,12 @@ try {
     $root = $roots[$index]
     & node --import tsx scripts/verify-windows-acl-fixture.ts $root | Out-Null
     if ($LASTEXITCODE -ne 0) { throw 'DISPOSABLE_FIXTURE_FAILED' }
-    $env:LMCP_ACL_ROOT = $root
     $result = Join-Path (Join-Path $env:PUBLIC 'Documents') "lmcp-acl-result-$suffix-$index.txt"
     if (Test-Path -LiteralPath $result) { throw 'PROBE_RESULT_PREEXISTS' }
     $results += $result
-    $env:LMCP_ACL_RESULT = $result
     $process = Start-Process -FilePath $shell -Credential $credential -LoadUserProfile -WindowStyle Hidden -PassThru -WorkingDirectory $env:SystemRoot -ArgumentList @(
-      '-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', "`"$child`""
+      '-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', "`"$child`"",
+      '-Root', "`"$root`"", '-Result', "`"$result`""
     )
     if (-not $process.WaitForExit(30000)) {
       $process.Kill()
@@ -54,8 +56,7 @@ try {
   }
   Write-Output '{"nativeWindowsAcl":"passed","locations":2,"distinctUnprivilegedUser":true,"targetsPerLocation":5,"readDenied":true,"writeDenied":true}'
 } finally {
-  Remove-Item Env:\LMCP_ACL_ROOT -ErrorAction SilentlyContinue
-  Remove-Item Env:\LMCP_ACL_RESULT -ErrorAction SilentlyContinue
+  if (Test-Path -LiteralPath $child) { Remove-Item -LiteralPath $child -Force }
   foreach ($result in $results) {
     if (Test-Path -LiteralPath $result) { Remove-Item -LiteralPath $result -Force }
   }
