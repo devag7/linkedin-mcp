@@ -13,7 +13,13 @@ and macOS. Windows does not implement owner/group/other permissions through
 Windows tests exercise ownership, shared-state transactions and cleanup, but do
 not establish NTFS ACL privacy. Keep profiles and shared budgets in a directory
 private to your OS account; review its native permissions before live use. Native
-ACL enforcement/verification remains an explicit security follow-up. A hash is
+ACL enforcement/verification remains an explicit security follow-up. A
+[disposable second-user Windows probe](https://github.com/devag7/linkedin-mcp/actions/runs/38213175092)
+denied read/write of five state targets under the runner user's profile, then
+found that a different unprivileged user could list the profile directory under
+a public custom parent. Do not use `LINKEDIN_PROFILE_DIR` under Public, shared,
+or otherwise broad-access Windows locations. The user-profile result does not
+certify other machines or existing ACLs; review them before live use. A hash is
 not anonymization. Journals do not
 store target/content, cookies, raw provider bodies or response details. Browser
 requests and returned data still involve LinkedIn and the selected MCP client.

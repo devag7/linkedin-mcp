@@ -86,7 +86,9 @@ not a guarantee of current provider compatibility or account safety.
 Use Node.js 20 or later and Google Chrome. The commands below pin the published
 3.1.0 package. Setup is offline; login and subsequent reads are deliberate account
 actions. For a stable installation path and Windows commands, see the
-[setup guide](SETUP_GUIDE.md).
+[setup guide](SETUP_GUIDE.md). On Windows, avoid public or shared custom profile
+paths; a [native second-user probe](https://github.com/devag7/linkedin-mcp/actions/runs/38213175092)
+found one such profile directory readable by another local account.
 
 **1. Diagnose offline:**
 

@@ -31,7 +31,11 @@ accesses LinkedIn. Exit1 means a local issue needs attention; login remains
 `not_checked`. For only the snippet, replace `--setup cursor` with
 `--client-config cursor`. Resolve diagnosis before merging the generated entry.
 Run its exact login command yourself when ready; use the same installed bundle
-and profile for login and MCP. Native Windows privacy remains unverified.
+and profile for login and MCP. On Windows, do not select a custom profile under
+Public or another shared directory: a [native second-user probe](https://github.com/devag7/linkedin-mcp/actions/runs/38213175092)
+could list such a synthetic profile despite the requested mode bits. Use an
+account-private location and review its NTFS ACL before login; broader native
+Windows privacy remains unverified.
 
 Source contributors can instead run `npm ci`, `npm run build`, then
 `node dist/index.js --setup cursor` from a stable reviewed checkout.
