@@ -70,9 +70,9 @@ jobs:
       - name: Verify published 3.0.0 installation and client exports offline
         run: node scripts/verify-published-first-use.mjs .published-first-use
 
-      - name: Install Chrome for the offline lifecycle check
+      - name: Verify the runner's preinstalled Chrome on Windows
         if: runner.os == 'Windows'
-        run: npx patchright install --with-deps chrome
+        run: node -e 'const fs=require("node:fs"),p=require("node:path");const roots=[process.env.PROGRAMFILES,process.env["PROGRAMFILES(X86)"]].filter(Boolean);if(!roots.some(r=>fs.existsSync(p.join(r,"Google","Chrome","Application","chrome.exe"))))process.exit(1)'
       - name: Verify the runner's preinstalled Chrome on Linux
         if: runner.os == 'Linux'
         run: |
