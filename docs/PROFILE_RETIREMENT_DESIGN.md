@@ -107,6 +107,12 @@ remains blocked. No participant, live-provider or Trending outcome is inferred.
   canonicalizing lock construction. The failed reproduction is retained privately;
   its regression checks that no alias-target lock is created. This does not remove
   the stated hostile-race or production-activation blockers.
+- Dry run 38243984748 at `806033a` failed two Windows/Node20 synthetic process
+  tests when the real observer PID collided with fixed fixture IDs. It remains
+  failed (737 passed, four skipped, two failed). Fixture roots/children now use a
+  disjoint logical namespace, with actual observer edges kept explicit and legacy
+  cardinalities still asserted. Production process accounting is unchanged.
+  Length-only failure assertions avoid logging selected process IDs.
 
 The exact frozen head, archive hash and hosted outcomes will be recorded in the
 draft PR and private receipt. An ineligible same-version dry run establishes
