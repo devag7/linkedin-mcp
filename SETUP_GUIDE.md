@@ -1,7 +1,7 @@
 # Setup and client verification
 
-This guide targets the released 22-tool core **3.0.0**. Publication is independently
-verified in [launch evidence](docs/LAUNCH_EVIDENCE_2026-10-07.md). Native-client
+This guide targets the released 22-tool core **3.1.0**. Publication is independently
+verified in [release evidence](docs/RELEASE_EVIDENCE_3.1.0.md). Native-client
 first-use cohorts and broader live-provider compatibility remain unverified.
 Node 20+ and installed Google Chrome are required. Login requires a local display.
 No OAuth/cookie value copied into environment variables activates an official API
@@ -13,14 +13,14 @@ Install the published package at a stable path, then request the client report.
 On macOS/Linux:
 
 ```sh
-npm install --prefix "$HOME/.local/share/linkedin-mcp" linkedin-mcp-tools@3.0.0
+npm install --prefix "$HOME/.local/share/linkedin-mcp" linkedin-mcp-tools@3.1.0
 node "$HOME/.local/share/linkedin-mcp/node_modules/linkedin-mcp-tools/dist/index.js" --setup cursor
 ```
 
 On Windows PowerShell:
 
 ```powershell
-npm install --prefix "$env:LOCALAPPDATA\linkedin-mcp" linkedin-mcp-tools@3.0.0
+npm install --prefix "$env:LOCALAPPDATA\linkedin-mcp" linkedin-mcp-tools@3.1.0
 node "$env:LOCALAPPDATA\linkedin-mcp\node_modules\linkedin-mcp-tools\dist\index.js" --setup cursor
 ```
 
@@ -38,11 +38,11 @@ Source contributors can instead run `npm ci`, `npm run build`, then
 
 ### Preview an existing client configuration
 
-This feature is in version **3.1.0** and absent from published 3.0.0. After
-building this source, choose a client file explicitly:
+This feature is in published **3.1.0** and absent from 3.0.0. After installing
+the package at a stable path, choose a client file explicitly:
 
 ```sh
-node dist/index.js --setup cursor --config-file /absolute/path/to/mcp.json
+node "$HOME/.local/share/linkedin-mcp/node_modules/linkedin-mcp-tools/dist/index.js" --setup cursor --config-file /absolute/path/to/mcp.json
 ```
 
 The extra `configMerge` report distinguishes a missing file (`absent`), an entry
@@ -76,7 +76,7 @@ all possible concurrent changes or hostile filesystem behavior.
 prove native client acceptance, runtime startup, login or provider compatibility.
 Overall exit1 can still reflect missing Chrome or a latched safety stop even when
 the merge plan is valid. Read `configMerge.status` separately from setup diagnosis.
-Keep this feature out of the published 3.0.0 volunteer protocol.
+The published 3.0.0 volunteer protocol does not exercise this new command.
 
 The generated entry uses the absolute Node executable and this installed build,
 sets the same profile for login and MCP, forces stdio and disables writes. Merge
@@ -214,8 +214,13 @@ environment variables do not enable it. New-thread messaging remains experimenta
 
 ## Version 3.1.0 metadata inventory
 
-After building the development source, `node dist/index.js --data-inventory`
-prints a path-free, read-only snapshot of known local state categories. It honors
+In the installed 3.1.0 package, run:
+
+```sh
+node "$HOME/.local/share/linkedin-mcp/node_modules/linkedin-mcp-tools/dist/index.js" --data-inventory
+```
+
+The command prints a path-free, read-only snapshot of known local state categories. It honors
 `LINKEDIN_PROFILE_DIR`; shared budget/journal and legacy credentials still refer
 to the OS home store. It neither requires nor tests login or Chrome, and does not
 validate configuration, file contents or permissions. Do not interpret an

@@ -1,6 +1,27 @@
 # Coverage against the original 2026 roadmap
 
-## Current reconciliation — October 11, 2026
+## Latest release reconciliation — October 11, 2026
+
+[3.1.0 is published and independently verified](RELEASE_EVIDENCE_3.1.0.md).
+Its tagged 22-tool, 15-file source is `ac8fb5b8033ffc480325469c14eb931d65b58f04`.
+This changes the pre-release classification below for three items:
+
+| Item | Shipped 3.1.0 evidence | Still open |
+| --- | --- | --- |
+| Safe config merge preview | Explicit JSON/JSONC file classification, bounded read, add-only plan and no client-file mutation; released as `--setup <client> --config-file <path>` | Native Claude/Cursor/VS Code end-to-end acceptance and first-read outcomes |
+| Local data inventory | Path-free, read-only metadata snapshot of six fixed categories; released as `--data-inventory` | Complete coordinated erasure, active-owner authority, interruption/restart proof and native Windows ACL privacy |
+| Development dependency repair | Patched direct esbuild build, no full-audit findings; exact packaged behavior and hosted matrix pass | Ongoing audit maintenance; Docker runtime/login remain unverified |
+
+The original P-01 through P-08 core capabilities remain as described below;
+P-09 official provider is unbuilt. PR #5's job brief remains draft and blocked,
+with no `research_jobs` tool in 3.1.0. Saved jobs, richer filters and post search
+remain unbuilt without verified provider evidence. First-use volunteers remain
+**0/0**, and 10,000 stars and daily GitHub Trending are unmeasured goals.
+Hosted browser cleanup does not change PR #5's historical failed receipts or
+prove live LinkedIn usefulness. The owner-led pilot, coordinated erasure and
+native Windows privacy proof are the next independent acceptance tracks.
+
+## Historical pre-release reconciliation — October 11, 2026
 
 Baseline: merged main `4b9e81681b3d05ced9148199554b21c53c81d141` (PRs #3, #4,
 #6–#12 merged); released core **3.0.0**, 22 tools. The immutable release source is
