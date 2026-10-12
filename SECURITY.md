@@ -63,6 +63,11 @@ not clear separate safety-state files. A custom profile requires the additional
 `--confirm-profile-deletion` flag before its entire directory can be removed. Do not point it at a directory containing
 unrelated data. Never commit or attach a browser profile to a support request.
 Use a trusted local OS account and review tool arguments before approving writes.
+On Windows, avoid a custom profile under Public or another shared directory. A
+[disposable native probe](https://github.com/devag7/linkedin-mcp/actions/runs/38213175092)
+found second-user directory access under a public custom parent; the default-style
+user-profile fixture denied access, but that does not prove every existing ACL.
+Review native permissions before login.
 
 ## Checkpoint stops and recovery
 
