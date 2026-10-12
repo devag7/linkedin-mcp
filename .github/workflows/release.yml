@@ -53,7 +53,12 @@ jobs:
       - run: npm run build
       - run: npm run verify:package
       - run: npx patchright install --with-deps chrome
-        if: runner.os != 'macOS'
+        if: runner.os == 'Windows'
+      - name: Verify the runner's preinstalled Chrome on Linux
+        if: runner.os == 'Linux'
+        run: |
+          command -v google-chrome
+          google-chrome --version
       - name: Verify the runner's preinstalled Chrome on macOS
         if: runner.os == 'macOS'
         run: node -e 'require("node:fs").accessSync("/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", require("node:fs").constants.X_OK)'
