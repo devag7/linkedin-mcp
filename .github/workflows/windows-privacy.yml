@@ -1,0 +1,27 @@
+name: Native Windows privacy probe
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/windows-privacy.yml'
+      - 'scripts/verify-windows-acl*'
+      - 'src/safety/budgets.ts'
+      - 'src/safety/state-lock.ts'
+
+permissions:
+  contents: read
+
+jobs:
+  second-user-acl:
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Probe disposable native NTFS state as a distinct local user
+        shell: powershell
+        run: ./scripts/verify-windows-acl.ps1
