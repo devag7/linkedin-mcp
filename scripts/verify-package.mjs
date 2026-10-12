@@ -250,6 +250,11 @@ try {
     }),
   );
   process.stdout.write(
+    execFileSync(process.execPath, [resolve('scripts/verify-retirement.mjs'), bundle], {
+      encoding: 'utf8', timeout: 30000,
+    }),
+  );
+  process.stdout.write(
     JSON.stringify({
       packedArtifact: 'passed',
       name: pkg.name,
