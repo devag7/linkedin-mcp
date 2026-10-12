@@ -1,6 +1,12 @@
 $ErrorActionPreference = 'Stop'
 $root = $env:LMCP_ACL_ROOT
-if (-not $root) { exit 30 }
+$result = $env:LMCP_ACL_RESULT
+if (-not $root -or -not $result) { exit 30 }
+
+function Finish([int]$code) {
+  [System.IO.File]::WriteAllText($result, $code.ToString())
+  exit $code
+}
 
 $state = Join-Path $root '.linkedin-mcp'
 $targets = @(
@@ -19,11 +25,11 @@ foreach ($target in $targets) {
       $stream = [System.IO.File]::Open($target.Path, 'Open', 'Read', 'ReadWrite')
       $stream.Dispose()
     }
-    exit 10
+    Finish 10
   } catch [System.UnauthorizedAccessException] {
     # Expected: the distinct unprivileged account cannot read the exact target.
   } catch {
-    exit 20
+    Finish 20
   }
 
   try {
@@ -33,12 +39,12 @@ foreach ($target in $targets) {
       $stream = [System.IO.File]::Open($target.Path, 'Open', 'Write', 'ReadWrite')
       $stream.Dispose()
     }
-    exit 11
+    Finish 11
   } catch [System.UnauthorizedAccessException] {
     # Expected: the distinct unprivileged account cannot modify the target.
   } catch {
-    exit 21
+    Finish 21
   }
 }
 
-exit 0
+Finish 0
