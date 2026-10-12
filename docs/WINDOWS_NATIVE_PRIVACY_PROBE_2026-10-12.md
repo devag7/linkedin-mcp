@@ -30,5 +30,27 @@ that existing user profiles have safe ACLs, that a privileged administrator is
 blocked, or that all filesystem aliases and races are excluded. Keep the setup
 guide's Windows privacy warning until those limits are addressed explicitly.
 
+## First native result (2026-10-12)
+
+At draft head `7fed8bf`, the [native probe](https://github.com/devag7/linkedin-mcp/actions/runs/38213175092)
+failed with `SECOND_USER_ACCESS_NOT_REFUSED:public_custom:100`. The
+`user_profile` location completed all five targets first, with read and write
+refused. Code `100` means the second user could list the profile directory in
+the public custom location; later targets were not attempted. This proves the
+current mode requests do not protect that public custom path on the runner. It
+does not prove other machines' default paths safe. No production state was used.
+
+Two earlier probe runs are retained as harness evidence only: the initial run
+lost the child exit classification; the next could not obtain a child receipt.
+The third classified exposure under `RUNNER_TEMP`, which is not an account-home
+parent on this runner. The corrected fourth run above uses `USERPROFILE` for the
+default-style case and a public custom parent separately. Do not cite the
+earlier harness failures as ACL proof.
+
+Keep this PR draft/blocked. A remediation must create a private native DACL
+before any sensitive write or refuse unsafe custom locations before writing,
+then pass the same second-user probe and independent review. An after-the-fact
+ACL change would leave a creation-time exposure window.
+
 References: [Microsoft file security and default descriptor inheritance](https://learn.microsoft.com/en-us/windows/win32/fileio/file-security-and-access-rights),
 [PowerShell alternate-credential process execution](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.management/start-process?view=powershell-5.1).
