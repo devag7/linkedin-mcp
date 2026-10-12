@@ -8,7 +8,7 @@ Targets are created through the project's Node filesystem modes, real
 `StateLock` and real `BudgetTracker` persistence code. No Chrome, login,
 LinkedIn request, real profile or real journal is involved.
 
-The probe runs in two locations: an account-local temporary parent and a
+The probe runs in two locations: the runner account's user-profile parent and a
 deliberately public custom parent. Any successful second-user read/write,
 missing privilege to create the probe account, process failure or uncertain
 result fails the job. It prints only fixed status codes and counts, with no
