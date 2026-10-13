@@ -1,10 +1,25 @@
-import { afterEach, expect, it } from 'vitest';
+import { afterEach, expect, it, vi } from 'vitest';
 import {
   existsSync, linkSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, symlinkSync, writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { retirementPreview } from '../src/retirement.js';
+
+const hooks = vi.hoisted(() => ({ oversized: '', appeared: '', probes: 0 }));
+vi.mock('node:fs', async (original) => {
+  const fs = await original<typeof import('node:fs')>();
+  return {
+    ...fs,
+    lstatSync: (path: import('node:fs').PathLike, options?: unknown) => {
+      if (String(path) === hooks.appeared && ++hooks.probes === 5) fs.mkdirSync(hooks.appeared);
+      const stat = fs.lstatSync(path, options as { bigint: true });
+      return String(path) === hooks.oversized
+        ? Object.assign(Object.create(stat), { size: 2n * 1024n ** 3n + 1n })
+        : stat;
+    },
+  };
+});
 
 const roots: string[] = [];
 function fixture() {
@@ -18,6 +33,9 @@ function fixture() {
   return { root, home, workingDir, profileDir, options: { homeDir: home, workingDir } };
 }
 afterEach(() => {
+  hooks.oversized = '';
+  hooks.appeared = '';
+  hooks.probes = 0;
   for (const root of roots.splice(0)) rmSync(root, { recursive: true, force: true });
 });
 
@@ -58,12 +76,38 @@ it('refuses an owner lock without inspecting or clearing it', () => {
   expect(readFileSync(join(lock, 'owner.json'), 'utf8')).toBe('private-owner');
 });
 
+it('refuses the shared budget lock without inspecting or clearing it', () => {
+  const f = fixture();
+  const lock = join(f.home, '.linkedin-mcp', 'budgets.json.lock');
+  mkdirSync(lock);
+  writeFileSync(join(lock, 'owner.json'), 'private-budget-owner');
+  expect(retirementPreview(f.options)).toMatchObject({
+    status: 'refused', reason: 'LOCK_OWNERSHIP_UNVERIFIED',
+  });
+  expect(readFileSync(join(lock, 'owner.json'), 'utf8')).toBe('private-budget-owner');
+});
+
 it('refuses nested aliases and preserves their targets', () => {
   const f = fixture();
   const target = join(f.root, 'outside');
   mkdirSync(target);
   writeFileSync(join(target, 'sentinel'), 'private-target');
   symlinkSync(target, join(f.profileDir, 'alias'), process.platform === 'win32' ? 'junction' : 'dir');
+  expect(retirementPreview(f.options)).toMatchObject({ status: 'refused', reason: 'ALIAS_REFUSED' });
+  expect(readFileSync(join(target, 'sentinel'), 'utf8')).toBe('private-target');
+});
+
+it.each(['root', 'broken'] as const)('refuses a %s profile alias', (kind) => {
+  const f = fixture();
+  const target = join(f.root, 'outside');
+  mkdirSync(target);
+  writeFileSync(join(target, 'sentinel'), 'private-target');
+  rmSync(f.profileDir, { recursive: true });
+  symlinkSync(
+    kind === 'root' ? target : join(f.root, 'missing'),
+    f.profileDir,
+    process.platform === 'win32' ? 'junction' : 'dir',
+  );
   expect(retirementPreview(f.options)).toMatchObject({ status: 'refused', reason: 'ALIAS_REFUSED' });
   expect(readFileSync(join(target, 'sentinel'), 'utf8')).toBe('private-target');
 });
@@ -94,4 +138,31 @@ it('refuses a tree deeper than its fixed bound', () => {
   const f = fixture();
   mkdirSync(join(f.profileDir, ...Array.from({ length: 33 }, (_, i) => `d${i}`)), { recursive: true });
   expect(retirementPreview(f.options)).toMatchObject({ status: 'refused', reason: 'TREE_BOUND_REFUSED' });
+});
+
+it('refuses a 5,001-entry tree without returning a partial proposal', () => {
+  const f = fixture();
+  for (let i = 0; i < 5000; i++) writeFileSync(join(f.profileDir, `entry-${i}`), '');
+  const report = retirementPreview(f.options);
+  expect(report).toMatchObject({ status: 'refused', reason: 'TREE_BOUND_REFUSED' });
+  expect(report).not.toHaveProperty('proposed');
+}, 60000);
+
+it('refuses synthetic oversized metadata without reading or allocating file contents', () => {
+  const f = fixture();
+  const file = join(f.profileDir, 'tiny');
+  writeFileSync(file, 'private-small-content');
+  hooks.oversized = file;
+  expect(retirementPreview(f.options)).toMatchObject({ status: 'refused', reason: 'BYTE_BOUND_REFUSED' });
+  expect(readFileSync(file, 'utf8')).toBe('private-small-content');
+});
+
+it('refuses a profile that appears between inventory observations', () => {
+  const f = fixture();
+  rmSync(f.profileDir, { recursive: true });
+  hooks.appeared = f.profileDir;
+  expect(retirementPreview(f.options)).toMatchObject({
+    status: 'refused', reason: 'CHANGED_DURING_OBSERVATION',
+  });
+  expect(existsSync(f.profileDir)).toBe(true);
 });
