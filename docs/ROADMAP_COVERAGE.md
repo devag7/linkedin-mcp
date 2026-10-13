@@ -18,6 +18,9 @@ P-09 official provider is unbuilt. PR #5's job brief remains draft and blocked,
 with no `research_jobs` tool in 3.1.0. Saved jobs, richer filters and post search
 remain unbuilt without verified provider evidence. First-use volunteers remain
 **0/0**, and 10,000 stars and daily GitHub Trending are unmeasured goals.
+An unreleased, separately reviewable `--retirement-preview` adds bounded
+selected-profile counts only. It does not activate deletion or satisfy the
+coordinated-erasure and Windows ACL gates.
 Hosted browser cleanup does not change PR #5's historical failed receipts or
 prove live LinkedIn usefulness. The owner-led pilot, coordinated erasure and
 native Windows privacy proof are the next independent acceptance tracks.

@@ -31,6 +31,7 @@ import { CLIENTS, clientConfiguration, setupReport, type SetupClient } from './s
 import { VERSION } from './version.js';
 import { loadConfig } from './config/env.js';
 import { dataInventory } from './data-inventory.js';
+import { retirementPreview } from './retirement.js';
 
 /** Resolve the persistent browser-profile directory (mirrors BrowserEngine). */
 function profileDir(): string {
@@ -51,6 +52,7 @@ function parseArgs(): ServerConfig & {
     | 'writeprobe'
     | 'doctor'
     | 'data-inventory'
+    | 'retirement-preview'
     | 'setup'
     | 'client-config';
   client?: SetupClient;
@@ -65,6 +67,7 @@ function parseArgs(): ServerConfig & {
   let action:
     | 'doctor'
     | 'data-inventory'
+    | 'retirement-preview'
     | 'setup'
     | 'client-config'
     | 'login'
@@ -111,6 +114,9 @@ function parseArgs(): ServerConfig & {
         break;
       case '--data-inventory':
         setAction('data-inventory');
+        break;
+      case '--retirement-preview':
+        setAction('retirement-preview');
         break;
       case '--live':
         live = true;
@@ -247,6 +253,7 @@ COMMANDS:
   --config-file <path>     With --setup: read-only JSON/JSONC merge preview
   --doctor                 Diagnose local setup without launching Chrome or network requests
   --data-inventory         Read-only, path-free local state inventory; no deletion plan
+  --retirement-preview     Bounded profile retirement preview; application is disabled
   --doctor --live          Also open the saved session and probe authenticated identity
   --status                 Show the current login/profile status
   --logout                 Clear the saved Chrome profile; keep safety history
@@ -287,6 +294,14 @@ DOCUMENTATION:
 async function main(): Promise<void> {
   const config = parseArgs();
   const logger = new Logger(config.logLevel);
+
+  if (config.action === 'retirement-preview') {
+    const report = retirementPreview({ profileDir: process.env.LINKEDIN_PROFILE_DIR });
+    // eslint-disable-next-line no-console -- Offline CLI before runtime/transport creation
+    console.log(JSON.stringify(report, null, 2));
+    process.exitCode = report.status === 'refused' ? 1 : 0;
+    return;
+  }
 
   if (config.action === 'data-inventory') {
     const report = dataInventory({ profileDir: process.env.LINKEDIN_PROFILE_DIR });

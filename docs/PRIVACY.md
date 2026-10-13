@@ -40,6 +40,23 @@ online command to erase a shared journal while another profile may own it. Do no
 present state erasure as checkpoint recovery or resume automation with fresh caps.
 Full coordinated erasure tooling is still an explicit coverage gap.
 
+### Read-only profile retirement preview
+
+The unreleased `--retirement-preview` command inspects one selected browser
+profile and prints bounded file/directory counts with fixed refusal reasons. It
+does not print paths, names, content or manifest hashes. It does not acquire
+locks, launch Chrome, make account requests or delete anything. The output
+always sets `applicationSupported:false` and `deletionAuthorized:false`.
+
+The preview refuses observed owner locks, aliases/junctions, hard-linked files,
+unexpected types, scope overlap, changed observations, more than 5,000 entries,
+depth over 32 or aggregate regular-file size over 2 GiB. It preserves the circuit
+state, shared budgets and write journal, legacy credentials, other profiles,
+client data and backups. A successful preview is not stopped-owner proof or
+permission to delete; filesystem observations can become stale immediately.
+Complete erasure, native Windows ACL privacy and safe handling of uncooperating
+processes remain open.
+
 Budget schema version 1 validates existing counters and adds operation and
 warmupStartedAt fields without guessing old outcomes or LinkedIn account age.
 Missing warmup start is initialized under a state lock at first verified use;

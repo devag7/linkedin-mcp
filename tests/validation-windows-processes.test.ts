@@ -13,7 +13,7 @@ const birth = (second: number, fraction = '0000000') =>
   `2026-10-10T00:00:${String(second).padStart(2, '0')}.${fraction}Z`;
 const observer: WindowsValidationProcess = {
   ProcessId: process.pid,
-  ParentProcessId: 1,
+  ParentProcessId: 0,
   CommandLine: privateValue,
   CreationDate: birth(1),
 };
@@ -89,14 +89,28 @@ it('a classified probe timeout still permanently fails bounded cleanup', async (
 });
 
 const profile = 'c:/synthetic/private/profile';
+// Logical fixture PIDs live above the actual observer, including roots/children.
+// Keep malformed values and the system PID unchanged for validation fixtures.
+const syntheticPidBase = process.pid < 0xffff0000 ? Math.max(1000, process.pid + 1000) : 1000;
+const syntheticPid = (value: number) =>
+  value === 0 || !Number.isSafeInteger(value) || value < 0 || value > 0xffffffff
+    ? value
+    : syntheticPidBase + value;
 const row = (
   ProcessId: number,
   ParentProcessId = 1,
   CreationDate: string | null = birth(3),
   CommandLine: string | null = 'synthetic-child',
-): WindowsValidationProcess => ({ ProcessId, ParentProcessId, CreationDate, CommandLine });
-const root = (pid = 10, time = birth(10)) =>
-  row(pid, process.pid, time, `chrome --user-data-dir="${profile}" --headless`);
+): WindowsValidationProcess => ({
+  ProcessId: syntheticPid(ProcessId),
+  ParentProcessId: syntheticPid(ParentProcessId),
+  CreationDate,
+  CommandLine,
+});
+const root = (pid = 10, time = birth(10)) => ({
+  ...row(pid, 1, time, `chrome --user-data-dir="${profile}" --headless`),
+  ParentProcessId: process.pid,
+});
 const inventory = (...rows: WindowsValidationProcess[]) => [observer, ...rows];
 
 /** Selector copied unchanged from 0dc13dc verify-browser.ts; synthetic data only. */
@@ -123,8 +137,8 @@ it('reproduces 151 to 141 via stale ancestry without identifying the historical 
   );
   const before = inventory(...chrome, ...unrelated);
   const tracked = legacySelection(before);
-  expect(tracked).toHaveLength(151);
-  expect(legacySelection(inventory(...unrelated), tracked)).toHaveLength(141);
+  expect(tracked.length).toBe(151);
+  expect(legacySelection(inventory(...unrelated), tracked).length).toBe(141);
   const repaired = new WindowsValidationProcessTracker(profile);
   expect(repaired.sample(before).remainingProcesses).toBe(10);
   expect(repaired.sample(inventory(...unrelated)).remainingProcesses).toBe(0);
@@ -135,7 +149,7 @@ it('reproduces 141 unrelated selections from a reused tracked PID and prevents t
   const tracked = legacySelection(before);
   const reused = row(10, 1, birth(20), 'unrelated-parent');
   const unrelated = Array.from({ length: 140 }, (_, i) => row(1000 + i, 10, birth(30)));
-  expect(legacySelection(inventory(reused, ...unrelated), tracked)).toHaveLength(141);
+  expect(legacySelection(inventory(reused, ...unrelated), tracked).length).toBe(141);
   const tracker = new WindowsValidationProcessTracker(profile);
   expect(tracker.sample(before).remainingProcesses).toBe(1);
   const result = tracker.sample(inventory(reused, ...unrelated));
@@ -268,7 +282,11 @@ it.each(['duplicate', 'self-parent', 'missing-observer'] as const)(
 it('excludes only the validated observer and preserves its genuine Chrome child', () => {
   const tracker = new WindowsValidationProcessTracker(profile);
   const observing = { ...observer, CommandLine: `fixture --user-data-dir="${profile}"` };
-  const result = tracker.sample([observing, root(), row(30, process.pid, birth(12))]);
+  const result = tracker.sample([
+    observing,
+    root(),
+    { ...row(30, 1, birth(12)), ParentProcessId: process.pid },
+  ]);
   expect(result.remainingProcesses).toBe(1);
 });
 
