@@ -57,10 +57,20 @@ try {
     $item = Get-Item -LiteralPath $ancestor.FullName -Force
     if (($item.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) { throw 'ANCESTOR_REPARSE_POINT' }
     $acl = Get-Acl -LiteralPath $ancestor.FullName
-    if ($trustedOwners -cnotcontains $acl.GetOwner([Security.Principal.SecurityIdentifier]).Value) {
+    $ancestorOwner = $acl.GetOwner([Security.Principal.SecurityIdentifier]).Value
+    if ($trustedOwners -cnotcontains $ancestorOwner) {
+      if ($ancestorOwner -eq 'S-1-5-80-956008885-3418522649-1831038044-1853292631-2271478464') {
+        throw 'ANCESTOR_TRUSTED_INSTALLER_OWNER'
+      }
+      if ($ancestorOwner.StartsWith('S-1-5-80-', [StringComparison]::Ordinal)) {
+        throw 'ANCESTOR_SERVICE_OWNER'
+      }
       throw 'ANCESTOR_FOREIGN_OWNER'
     }
     foreach ($rule in $acl.GetAccessRules($true, $true, [Security.Principal.SecurityIdentifier])) {
+      if (($rule.PropagationFlags -band [Security.AccessControl.PropagationFlags]::InheritOnly) -ne 0) {
+        continue
+      }
       if ($rule.AccessControlType -eq [Security.AccessControl.AccessControlType]::Allow -and
           $allowed -cnotcontains $rule.IdentityReference.Value -and
           (([int64]$rule.FileSystemRights -band $danger) -ne 0)) {
@@ -95,9 +105,10 @@ try {
     $seen = 0
     while ($stack.Count -gt 0) {
       $parent = $stack.Pop()
-      foreach ($child in (Get-ChildItem -LiteralPath $parent -Force)) {
+      foreach ($childPath in [IO.Directory]::EnumerateFileSystemEntries($parent)) {
         $seen++
         if ($seen -gt 20000) { throw 'TREE_LIMIT' }
+        $child = Get-Item -LiteralPath $childPath -Force
         $isDirectory = $child.PSIsContainer
         Assert-Private $child.FullName $isDirectory
         if ($isDirectory) { $stack.Push($child.FullName) }
@@ -111,6 +122,7 @@ try {
   $known = @('OUTSIDE_USER_PROFILE', 'REPARSE_POINT', 'NOT_DIRECTORY', 'NOT_FILE',
     'FOREIGN_OWNER', 'UNTRUSTED_ALLOW_ACE', 'OWNER_NOT_FULL_CONTROL',
     'ANCESTOR_REPARSE_POINT', 'ANCESTOR_REPLACE_AUTHORITY', 'ANCESTOR_FOREIGN_OWNER',
+    'ANCESTOR_TRUSTED_INSTALLER_OWNER', 'ANCESTOR_SERVICE_OWNER',
     'INVALID_PATH', 'TREE_LIMIT')
   if ($known -cnotcontains $reason) { $reason = 'ACL_CHECK_FAILED_' + $stage }
   [Console]::Out.Write('PRIVATE_REFUSED:' + $reason)
@@ -121,7 +133,8 @@ try {
 const KNOWN_REFUSALS = new Set([
   'OUTSIDE_USER_PROFILE', 'REPARSE_POINT', 'NOT_DIRECTORY', 'NOT_FILE',
   'FOREIGN_OWNER', 'UNTRUSTED_ALLOW_ACE', 'OWNER_NOT_FULL_CONTROL',
-  'ANCESTOR_REPARSE_POINT', 'ANCESTOR_REPLACE_AUTHORITY', 'ANCESTOR_FOREIGN_OWNER', 'INVALID_PATH',
+  'ANCESTOR_REPARSE_POINT', 'ANCESTOR_REPLACE_AUTHORITY', 'ANCESTOR_FOREIGN_OWNER',
+  'ANCESTOR_TRUSTED_INSTALLER_OWNER', 'ANCESTOR_SERVICE_OWNER', 'INVALID_PATH',
   'TREE_LIMIT', 'ACL_CHECK_FAILED_INPUT', 'ACL_CHECK_FAILED_INPUT_HOME',
   'ACL_CHECK_FAILED_INPUT_TARGET', 'ACL_CHECK_FAILED_INPUT_COMPARE',
   'ACL_CHECK_FAILED_INPUT_IDENTITY', 'ACL_CHECK_FAILED_ANCESTOR',
