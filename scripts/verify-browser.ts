@@ -27,10 +27,10 @@ const engine = new BrowserEngine(config, new Logger('error'), false);
 const posixTracker = new ValidationProcessTracker(profile);
 const windowsTracker = new WindowsValidationProcessTracker(profile);
 let processProbeFailure: string | undefined;
-function observeProcesses() {
+function observeProcesses(phase: 'preflight' | 'runtime' = 'runtime') {
   try {
     return process.platform === 'win32'
-      ? windowsTracker.sample(readWindowsValidationProcesses())
+      ? windowsTracker.sample(readWindowsValidationProcesses(undefined, phase))
       : posixTracker.sample(readValidationProcesses());
   } catch (error) {
     processProbeFailure ??= offlineLifecycleFailureCode(error);
@@ -43,7 +43,7 @@ let contextClosed = false;
 let stage = 'process_preflight';
 let cleanup: Awaited<ReturnType<typeof verifyFinalCleanup>> | undefined;
 try {
-  if (observeProcesses().remainingProcesses) throw new Error('TEMP_PROFILE_ALREADY_ACTIVE');
+  if (observeProcesses('preflight').remainingProcesses) throw new Error('TEMP_PROFILE_ALREADY_ACTIVE');
   stage = 'browser_launch';
   const [context, sameContext] = await Promise.all([
     engine.ensureContext(),
