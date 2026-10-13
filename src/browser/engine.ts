@@ -19,7 +19,6 @@
  *    zombie chrome-headless leak.
  */
 
-import * as fs from 'fs';
 import { chromium, type BrowserContext, type Page } from 'patchright';
 import type { Logger } from '../types.js';
 import type { EnvConfig } from '../config/env.js';
@@ -27,6 +26,7 @@ import { BrowserSafety } from './safety.js';
 import { CircuitBreaker } from '../safety/circuit-breaker.js';
 import { StateLock, profilePath, canonicalPath, SafetyStateError } from '../safety/state-lock.js';
 import { CircuitFileStorage, circuitStatePath } from '../safety/circuit-storage.js';
+import { ensurePrivateStateDirectory } from '../safety/windows-private-state.js';
 
 const FEED_URL = 'https://www.linkedin.com/feed/';
 const ORIGIN = 'https://www.linkedin.com';
@@ -66,7 +66,7 @@ export class BrowserEngine {
         'STATE_INVALID',
         'Browser profile path changed. Stop automation and repair local state.',
       );
-    fs.mkdirSync(dir, { recursive: true, mode: 0o700 });
+    ensurePrivateStateDirectory(dir, true);
     return dir;
   }
 

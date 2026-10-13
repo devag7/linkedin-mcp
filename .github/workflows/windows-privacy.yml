@@ -7,6 +7,9 @@ on:
       - 'scripts/verify-windows-acl*'
       - 'src/safety/budgets.ts'
       - 'src/safety/state-lock.ts'
+      - 'src/safety/windows-private-state.ts'
+      - 'src/safety/circuit-storage.ts'
+      - 'src/browser/engine.ts'
 
 permissions:
   contents: read

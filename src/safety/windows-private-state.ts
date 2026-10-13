@@ -1,0 +1,145 @@
+/** Windows state may be created only beneath a verified private user-profile tree. */
+import { execFileSync } from 'node:child_process';
+import { mkdirSync } from 'node:fs';
+import { dirname, resolve, win32 } from 'node:path';
+import { homedir } from 'node:os';
+
+// The path is sent over stdin, never interpolated into a command line. This
+// verifier intentionally refuses every unfamiliar allow ACE, including on
+// existing directories. It cannot make previously exposed data private.
+const WINDOWS_ACL_CHECK = String.raw`
+$ErrorActionPreference = 'Stop'
+try {
+  $request = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String([Console]::In.ReadToEnd())) | ConvertFrom-Json
+  $home = [IO.Path]::GetFullPath([Environment]::GetFolderPath([Environment+SpecialFolder]::UserProfile)).TrimEnd('\')
+  $target = [IO.Path]::GetFullPath([string]$request.target).TrimEnd('\')
+  if (-not $home -or -not $home.Equals([IO.Path]::GetFullPath([string]$request.home).TrimEnd('\'), [StringComparison]::OrdinalIgnoreCase) -or -not $target.StartsWith($home + '\', [StringComparison]::OrdinalIgnoreCase)) {
+    throw 'OUTSIDE_USER_PROFILE'
+  }
+  $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
+  $sid = $identity.User.Value
+  $allowed = @($sid, 'S-1-5-18', 'S-1-5-32-544', 'S-1-3-0')
+  function Assert-Private([string]$path, [bool]$directory) {
+    $item = Get-Item -LiteralPath $path -Force
+    if (($item.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) { throw 'REPARSE_POINT' }
+    if ($directory -and -not $item.PSIsContainer) { throw 'NOT_DIRECTORY' }
+    if (-not $directory -and $item.PSIsContainer) { throw 'NOT_FILE' }
+    $acl = Get-Acl -LiteralPath $path
+    if ($acl.GetOwner([Security.Principal.SecurityIdentifier]).Value -ne $sid) {
+      throw 'FOREIGN_OWNER'
+    }
+    $rules = $acl.GetAccessRules($true, $true, [Security.Principal.SecurityIdentifier])
+    $ownerRights = [int64]0
+    foreach ($rule in $rules) {
+      if ($rule.AccessControlType -ne [Security.AccessControl.AccessControlType]::Allow) { continue }
+      $trustee = $rule.IdentityReference.Value
+      if ($allowed -cnotcontains $trustee) { throw 'UNTRUSTED_ALLOW_ACE' }
+      if ($trustee -eq $sid) {
+        $ownerRights = $ownerRights -bor [int64]$rule.FileSystemRights
+      }
+    }
+    $full = [int64][Security.AccessControl.FileSystemRights]::FullControl
+    if (($ownerRights -band $full) -ne $full) { throw 'OWNER_NOT_FULL_CONTROL' }
+  }
+  $ancestor = [IO.Directory]::GetParent($home)
+  $danger = [int64][Security.AccessControl.FileSystemRights]::DeleteSubdirectoriesAndFiles -bor
+    [int64][Security.AccessControl.FileSystemRights]::Delete -bor
+    [int64][Security.AccessControl.FileSystemRights]::ChangePermissions -bor
+    [int64][Security.AccessControl.FileSystemRights]::TakeOwnership
+  while ($null -ne $ancestor) {
+    $item = Get-Item -LiteralPath $ancestor.FullName -Force
+    if (($item.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) { throw 'ANCESTOR_REPARSE_POINT' }
+    $acl = Get-Acl -LiteralPath $ancestor.FullName
+    foreach ($rule in $acl.GetAccessRules($true, $true, [Security.Principal.SecurityIdentifier])) {
+      if ($rule.AccessControlType -eq [Security.AccessControl.AccessControlType]::Allow -and
+          $allowed -cnotcontains $rule.IdentityReference.Value -and
+          (([int64]$rule.FileSystemRights -band $danger) -ne 0)) {
+        throw 'ANCESTOR_REPLACE_AUTHORITY'
+      }
+    }
+    $ancestor = $ancestor.Parent
+  }
+  Assert-Private $home $true
+  $current = $home
+  $suffix = $target.Substring($home.Length + 1)
+  $parts = $suffix.Split([char]'\')
+  for ($i = 0; $i -lt $parts.Length; $i++) {
+    if (-not $parts[$i]) { throw 'INVALID_PATH' }
+    $current = [IO.Path]::Combine($current, $parts[$i])
+    $last = $i -eq ($parts.Length - 1)
+    if (-not [IO.Directory]::Exists($current) -and -not [IO.File]::Exists($current)) {
+      if (-not [bool]$request.create -or ([bool]$request.file -and $last)) {
+        [Console]::Out.Write('PRIVATE_ABSENT')
+        exit 0
+      }
+      [void][IO.Directory]::CreateDirectory($current)
+    }
+    Assert-Private $current (-not ([bool]$request.file -and $last))
+  }
+  if ([bool]$request.scanTree) {
+    $stack = New-Object 'System.Collections.Generic.Stack[string]'
+    $stack.Push($target)
+    $seen = 0
+    while ($stack.Count -gt 0) {
+      $parent = $stack.Pop()
+      foreach ($child in (Get-ChildItem -LiteralPath $parent -Force)) {
+        $seen++
+        if ($seen -gt 20000) { throw 'TREE_LIMIT' }
+        $isDirectory = $child.PSIsContainer
+        Assert-Private $child.FullName $isDirectory
+        if ($isDirectory) { $stack.Push($child.FullName) }
+      }
+    }
+  }
+  [Console]::Out.Write('PRIVATE_OK')
+  exit 0
+} catch {
+  [Console]::Out.Write('PRIVATE_REFUSED')
+  exit 1
+}
+`;
+
+export function windowsStatePathAllowed(target: string, home: string): boolean {
+  const resolved = win32.resolve(target);
+  const userHome = win32.resolve(home);
+  const tail = win32.relative(userHome, resolved);
+  return tail !== '' && tail !== '..' && !tail.startsWith(`..${win32.sep}`) && !win32.isAbsolute(tail);
+}
+
+function verify(target: string, create: boolean, file: boolean, scanTree = false): void {
+  if (process.platform !== 'win32') return;
+  const home = process.env.USERPROFILE || homedir();
+  if (!windowsStatePathAllowed(target, home))
+    throw new Error('WINDOWS_STATE_OUTSIDE_USER_PROFILE');
+  try {
+    const shell = `${process.env.SystemRoot || 'C:\\Windows'}\\System32\\WindowsPowerShell\\v1.0\\powershell.exe`;
+    const output = execFileSync(
+      shell,
+      ['-NoProfile', '-NonInteractive', '-EncodedCommand', Buffer.from(WINDOWS_ACL_CHECK, 'utf16le').toString('base64')],
+      {
+        input: Buffer.from(JSON.stringify({ target: resolve(target), home: resolve(home), create, file, scanTree }), 'utf8').toString('base64'),
+        encoding: 'utf8', timeout: 30_000, maxBuffer: 4096, windowsHide: true,
+      },
+    );
+    if (output !== 'PRIVATE_OK' && !(output === 'PRIVATE_ABSENT' && !create)) throw new Error('unverified');
+  } catch {
+    throw new Error('WINDOWS_STATE_PRIVACY_UNVERIFIED');
+  }
+}
+
+export function ensurePrivateStateDirectory(directory: string, scanTree = false): void {
+  if (process.platform !== 'win32') {
+    mkdirSync(directory, { recursive: true, mode: 0o700 });
+    return;
+  }
+  verify(directory, true, false, scanTree);
+}
+
+export function verifyPrivateStateFileIfPresent(filePath: string): void {
+  verify(filePath, false, true);
+}
+
+export function ensurePrivateStateFileParent(filePath: string): void {
+  ensurePrivateStateDirectory(dirname(filePath));
+  verifyPrivateStateFileIfPresent(filePath);
+}

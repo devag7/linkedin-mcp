@@ -1,10 +1,10 @@
 /** Durable, profile-scoped breaker state. No response content is stored. */
 import * as fs from 'node:fs';
-import * as path from 'node:path';
 import { profilePath } from './state-lock.js';
 import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
 import type { CircuitState, CircuitStorage } from './circuit-breaker.js';
+import { ensurePrivateStateFileParent, verifyPrivateStateFileIfPresent } from './windows-private-state.js';
 
 const nonnegative = z.number().finite().nonnegative();
 const stateSchema = z.object({
@@ -27,6 +27,7 @@ export class CircuitFileStorage implements CircuitStorage {
 
   load(): CircuitState | null {
     try {
+      verifyPrivateStateFileIfPresent(this.filePath);
       // Bound file reads as well as JSON validation; corrupted state is not a reset.
       const fd = fs.openSync(this.filePath, 'r');
       try {
@@ -46,7 +47,7 @@ export class CircuitFileStorage implements CircuitStorage {
   save(state: CircuitState): void {
     const temp = `${this.filePath}.${randomUUID()}.tmp`;
     try {
-      fs.mkdirSync(path.dirname(this.filePath), { recursive: true, mode: 0o700 });
+      ensurePrivateStateFileParent(this.filePath);
       const fd = fs.openSync(temp, 'wx', 0o600);
       try {
         fs.writeFileSync(fd, JSON.stringify(stateSchema.parse(state)), 'utf8');

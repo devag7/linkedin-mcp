@@ -32,12 +32,23 @@ try {
   # Any exposed target fails the gate; this is a probe, not an exemption.
   $roots = @(
     (Join-Path $env:USERPROFILE "lmcp-home-$suffix"),
+    (Join-Path (Join-Path $env:USERPROFILE "lmcp-custom-$suffix") 'nested'),
     (Join-Path (Join-Path $env:PUBLIC 'Documents') "lmcp-public-$suffix")
   )
   for ($index = 0; $index -lt $roots.Count; $index++) {
     $root = $roots[$index]
+    if ($index -eq 2) {
+      $marker = & node --import tsx scripts/verify-windows-acl-fixture.ts $root 'expect-public-refusal'
+      if ($LASTEXITCODE -ne 0 -or $marker -ne '{"fixture":"public_path_refused_before_creation"}' -or (Test-Path -LiteralPath $root)) {
+        throw 'PUBLIC_CUSTOM_PATH_NOT_REFUSED_BEFORE_CREATION'
+      }
+      continue
+    }
     & node --import tsx scripts/verify-windows-acl-fixture.ts $root | Out-Null
     if ($LASTEXITCODE -ne 0) { throw 'DISPOSABLE_FIXTURE_FAILED' }
+    $ownFile = Join-Path (Join-Path (Join-Path (Join-Path $root '.linkedin-mcp') 'profile') 'Default') 'synthetic-cookie.txt'
+    $stream = [IO.File]::Open($ownFile, 'Open', 'ReadWrite', 'ReadWrite')
+    $stream.Dispose()
     $result = Join-Path (Join-Path $env:PUBLIC 'Documents') "lmcp-acl-result-$suffix-$index.txt"
     if (Test-Path -LiteralPath $result) { throw 'PROBE_RESULT_PREEXISTS' }
     $results += $result
@@ -53,11 +64,11 @@ try {
     $resultCode = [System.IO.File]::ReadAllText($result)
     if ($resultCode -notmatch '^(0|1[0123][0-4])$') { throw 'PROBE_RESULT_INVALID' }
     if ($resultCode -ne '0') {
-      $scope = if ($index -eq 0) { 'user_profile' } else { 'public_custom' }
+      $scope = if ($index -eq 0) { 'user_profile' } else { 'home_custom' }
       throw "SECOND_USER_ACCESS_NOT_REFUSED:$scope`:$resultCode"
     }
   }
-  Write-Output '{"nativeWindowsAcl":"passed","locations":2,"distinctUnprivilegedUser":true,"targetsPerLocation":5,"readDenied":true,"writeDenied":true}'
+  Write-Output '{"nativeWindowsAcl":"passed","homeTargets":10,"publicCustomRefusedBeforeCreation":true,"distinctUnprivilegedUser":true,"ownerReadWrite":true,"readDenied":true,"writeDenied":true}'
 } finally {
   if (Test-Path -LiteralPath $child) { Remove-Item -LiteralPath $child -Force }
   foreach ($result in $results) {
@@ -65,6 +76,10 @@ try {
   }
   foreach ($root in $roots) {
     if (Test-Path -LiteralPath $root) { Remove-Item -LiteralPath $root -Recurse -Force }
+  }
+  if ($roots.Count -gt 1) {
+    $customParent = Split-Path $roots[1] -Parent
+    if (Test-Path -LiteralPath $customParent) { Remove-Item -LiteralPath $customParent -Recurse -Force }
   }
   if ($createdUser) { Remove-LocalUser -Name $user }
 }
