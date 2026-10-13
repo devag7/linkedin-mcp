@@ -13,11 +13,11 @@ $stage = 'INPUT'
 try {
   $request = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String([Console]::In.ReadToEnd())) | ConvertFrom-Json
   $stage = 'INPUT_HOME'
-  $home = [IO.Path]::GetFullPath([Environment]::GetFolderPath('UserProfile')).TrimEnd([char]92)
+  $stateUserProfileRoot = [IO.Path]::GetFullPath([Environment]::GetFolderPath('UserProfile')).TrimEnd([char]92)
   $stage = 'INPUT_TARGET'
   $target = [IO.Path]::GetFullPath([string]$request.target).TrimEnd([char]92)
   $stage = 'INPUT_COMPARE'
-  if (-not $home -or -not $home.Equals([IO.Path]::GetFullPath([string]$request.home).TrimEnd([char]92), [StringComparison]::OrdinalIgnoreCase) -or -not $target.StartsWith($home + [char]92, [StringComparison]::OrdinalIgnoreCase)) {
+  if (-not $stateUserProfileRoot -or -not $stateUserProfileRoot.Equals([IO.Path]::GetFullPath([string]$request.home).TrimEnd([char]92), [StringComparison]::OrdinalIgnoreCase) -or -not $target.StartsWith($stateUserProfileRoot + [char]92, [StringComparison]::OrdinalIgnoreCase)) {
     throw 'OUTSIDE_USER_PROFILE'
   }
   $stage = 'INPUT_IDENTITY'
@@ -48,7 +48,7 @@ try {
     if (($ownerRights -band $full) -ne $full) { throw 'OWNER_NOT_FULL_CONTROL' }
   }
   $stage = 'ANCESTOR'
-  $ancestor = [IO.Directory]::GetParent($home)
+  $ancestor = [IO.Directory]::GetParent($stateUserProfileRoot)
   $danger = [int64][Security.AccessControl.FileSystemRights]::DeleteSubdirectoriesAndFiles -bor
     [int64][Security.AccessControl.FileSystemRights]::Delete -bor
     [int64][Security.AccessControl.FileSystemRights]::ChangePermissions -bor
@@ -70,10 +70,10 @@ try {
     $ancestor = $ancestor.Parent
   }
   $stage = 'HOME'
-  Assert-Private $home $true
+  Assert-Private $stateUserProfileRoot $true
   $stage = 'COMPONENT'
-  $current = $home
-  $suffix = $target.Substring($home.Length + 1)
+  $current = $stateUserProfileRoot
+  $suffix = $target.Substring($stateUserProfileRoot.Length + 1)
   $parts = $suffix.Split([char]92)
   for ($i = 0; $i -lt $parts.Length; $i++) {
     if (-not $parts[$i]) { throw 'INVALID_PATH' }
