@@ -9,6 +9,7 @@ import { homedir } from 'node:os';
 // existing directories. It cannot make previously exposed data private.
 const WINDOWS_ACL_CHECK = String.raw`
 $ErrorActionPreference = 'Stop'
+$stage = 'INPUT'
 try {
   $request = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String([Console]::In.ReadToEnd())) | ConvertFrom-Json
   $home = [IO.Path]::GetFullPath([Environment]::GetFolderPath([Environment+SpecialFolder]::UserProfile)).TrimEnd('\')
@@ -41,6 +42,7 @@ try {
     $full = [int64][Security.AccessControl.FileSystemRights]::FullControl
     if (($ownerRights -band $full) -ne $full) { throw 'OWNER_NOT_FULL_CONTROL' }
   }
+  $stage = 'ANCESTOR'
   $ancestor = [IO.Directory]::GetParent($home)
   $danger = [int64][Security.AccessControl.FileSystemRights]::DeleteSubdirectoriesAndFiles -bor
     [int64][Security.AccessControl.FileSystemRights]::Delete -bor
@@ -59,7 +61,9 @@ try {
     }
     $ancestor = $ancestor.Parent
   }
+  $stage = 'HOME'
   Assert-Private $home $true
+  $stage = 'COMPONENT'
   $current = $home
   $suffix = $target.Substring($home.Length + 1)
   $parts = $suffix.Split([char]'\')
@@ -77,6 +81,7 @@ try {
     Assert-Private $current (-not ([bool]$request.file -and $last))
   }
   if ([bool]$request.scanTree) {
+    $stage = 'TREE'
     $stack = New-Object 'System.Collections.Generic.Stack[string]'
     $stack.Push($target)
     $seen = 0
@@ -98,7 +103,7 @@ try {
   $known = @('OUTSIDE_USER_PROFILE', 'REPARSE_POINT', 'NOT_DIRECTORY', 'NOT_FILE',
     'FOREIGN_OWNER', 'UNTRUSTED_ALLOW_ACE', 'OWNER_NOT_FULL_CONTROL',
     'ANCESTOR_REPARSE_POINT', 'ANCESTOR_REPLACE_AUTHORITY', 'INVALID_PATH', 'TREE_LIMIT')
-  if ($known -cnotcontains $reason) { $reason = 'ACL_CHECK_FAILED' }
+  if ($known -cnotcontains $reason) { $reason = 'ACL_CHECK_FAILED_' + $stage }
   [Console]::Out.Write('PRIVATE_REFUSED:' + $reason)
   exit 1
 }
@@ -108,7 +113,8 @@ const KNOWN_REFUSALS = new Set([
   'OUTSIDE_USER_PROFILE', 'REPARSE_POINT', 'NOT_DIRECTORY', 'NOT_FILE',
   'FOREIGN_OWNER', 'UNTRUSTED_ALLOW_ACE', 'OWNER_NOT_FULL_CONTROL',
   'ANCESTOR_REPARSE_POINT', 'ANCESTOR_REPLACE_AUTHORITY', 'INVALID_PATH',
-  'TREE_LIMIT', 'ACL_CHECK_FAILED',
+  'TREE_LIMIT', 'ACL_CHECK_FAILED_INPUT', 'ACL_CHECK_FAILED_ANCESTOR',
+  'ACL_CHECK_FAILED_HOME', 'ACL_CHECK_FAILED_COMPONENT', 'ACL_CHECK_FAILED_TREE',
 ]);
 
 export function windowsStatePathAllowed(target: string, home: string): boolean {
