@@ -12,11 +12,15 @@ $ErrorActionPreference = 'Stop'
 $stage = 'INPUT'
 try {
   $request = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String([Console]::In.ReadToEnd())) | ConvertFrom-Json
+  $stage = 'INPUT_HOME'
   $home = [IO.Path]::GetFullPath([Environment]::GetFolderPath([Environment+SpecialFolder]::UserProfile)).TrimEnd('\')
+  $stage = 'INPUT_TARGET'
   $target = [IO.Path]::GetFullPath([string]$request.target).TrimEnd('\')
+  $stage = 'INPUT_COMPARE'
   if (-not $home -or -not $home.Equals([IO.Path]::GetFullPath([string]$request.home).TrimEnd('\'), [StringComparison]::OrdinalIgnoreCase) -or -not $target.StartsWith($home + '\', [StringComparison]::OrdinalIgnoreCase)) {
     throw 'OUTSIDE_USER_PROFILE'
   }
+  $stage = 'INPUT_IDENTITY'
   $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
   $sid = $identity.User.Value
   $allowed = @($sid, 'S-1-5-18', 'S-1-5-32-544', 'S-1-3-0')
@@ -113,7 +117,9 @@ const KNOWN_REFUSALS = new Set([
   'OUTSIDE_USER_PROFILE', 'REPARSE_POINT', 'NOT_DIRECTORY', 'NOT_FILE',
   'FOREIGN_OWNER', 'UNTRUSTED_ALLOW_ACE', 'OWNER_NOT_FULL_CONTROL',
   'ANCESTOR_REPARSE_POINT', 'ANCESTOR_REPLACE_AUTHORITY', 'INVALID_PATH',
-  'TREE_LIMIT', 'ACL_CHECK_FAILED_INPUT', 'ACL_CHECK_FAILED_ANCESTOR',
+  'TREE_LIMIT', 'ACL_CHECK_FAILED_INPUT', 'ACL_CHECK_FAILED_INPUT_HOME',
+  'ACL_CHECK_FAILED_INPUT_TARGET', 'ACL_CHECK_FAILED_INPUT_COMPARE',
+  'ACL_CHECK_FAILED_INPUT_IDENTITY', 'ACL_CHECK_FAILED_ANCESTOR',
   'ACL_CHECK_FAILED_HOME', 'ACL_CHECK_FAILED_COMPONENT', 'ACL_CHECK_FAILED_TREE',
 ]);
 
