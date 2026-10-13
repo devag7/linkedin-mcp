@@ -24,7 +24,11 @@ try {
   $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
   $sid = $identity.User.Value
   $allowed = @($sid, 'S-1-5-18', 'S-1-5-32-544', 'S-1-3-0')
-  $trustedOwners = @($sid, 'S-1-5-18', 'S-1-5-32-544')
+  # TrustedInstaller owns some Windows volume ancestors; it is an OS service,
+  # never a general service-SID wildcard.
+  $trustedInstaller = 'S-1-5-80-956008885-3418522649-1831038044-1853292631-2271478464'
+  $trustedOwners = @($sid, 'S-1-5-18', 'S-1-5-32-544', $trustedInstaller)
+  $trustedAncestorAllow = @($allowed) + @($trustedInstaller)
   function Assert-Private([string]$path, [bool]$directory) {
     $item = Get-Item -LiteralPath $path -Force
     if (($item.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) { throw 'REPARSE_POINT' }
@@ -59,9 +63,6 @@ try {
     $acl = Get-Acl -LiteralPath $ancestor.FullName
     $ancestorOwner = $acl.GetOwner([Security.Principal.SecurityIdentifier]).Value
     if ($trustedOwners -cnotcontains $ancestorOwner) {
-      if ($ancestorOwner -eq 'S-1-5-80-956008885-3418522649-1831038044-1853292631-2271478464') {
-        throw 'ANCESTOR_TRUSTED_INSTALLER_OWNER'
-      }
       if ($ancestorOwner.StartsWith('S-1-5-80-', [StringComparison]::Ordinal)) {
         throw 'ANCESTOR_SERVICE_OWNER'
       }
@@ -72,7 +73,7 @@ try {
         continue
       }
       if ($rule.AccessControlType -eq [Security.AccessControl.AccessControlType]::Allow -and
-          $allowed -cnotcontains $rule.IdentityReference.Value -and
+          $trustedAncestorAllow -cnotcontains $rule.IdentityReference.Value -and
           (([int64]$rule.FileSystemRights -band $danger) -ne 0)) {
         throw 'ANCESTOR_REPLACE_AUTHORITY'
       }

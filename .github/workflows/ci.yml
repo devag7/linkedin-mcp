@@ -30,6 +30,15 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Keep Windows fixtures under the current user profile
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $privateTemp = Join-Path ([Environment]::GetFolderPath('UserProfile')) 'AppData\Local\Temp'
+          if (-not (Test-Path -LiteralPath $privateTemp)) { throw 'PRIVATE_TEMP_UNAVAILABLE' }
+          Add-Content -LiteralPath $env:GITHUB_ENV -Value "TMP=$privateTemp"
+          Add-Content -LiteralPath $env:GITHUB_ENV -Value "TEMP=$privateTemp"
+
       - name: Check generated metadata
         run: npm run metadata:check
 
@@ -63,6 +72,14 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: npm
       - run: npm ci
+      - name: Keep Windows fixtures under the current user profile
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $privateTemp = Join-Path ([Environment]::GetFolderPath('UserProfile')) 'AppData\Local\Temp'
+          if (-not (Test-Path -LiteralPath $privateTemp)) { throw 'PRIVATE_TEMP_UNAVAILABLE' }
+          Add-Content -LiteralPath $env:GITHUB_ENV -Value "TMP=$privateTemp"
+          Add-Content -LiteralPath $env:GITHUB_ENV -Value "TEMP=$privateTemp"
       - run: npm run build
       - name: Install packed package and verify offline CLI and MCP
         run: npm run verify:package
