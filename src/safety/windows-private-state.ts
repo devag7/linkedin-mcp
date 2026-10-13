@@ -13,17 +13,18 @@ $stage = 'INPUT'
 try {
   $request = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String([Console]::In.ReadToEnd())) | ConvertFrom-Json
   $stage = 'INPUT_HOME'
-  $home = [IO.Path]::GetFullPath([Environment]::GetFolderPath([Environment+SpecialFolder]::UserProfile)).TrimEnd('\')
+  $home = [IO.Path]::GetFullPath([Environment]::GetFolderPath('UserProfile')).TrimEnd([char]92)
   $stage = 'INPUT_TARGET'
-  $target = [IO.Path]::GetFullPath([string]$request.target).TrimEnd('\')
+  $target = [IO.Path]::GetFullPath([string]$request.target).TrimEnd([char]92)
   $stage = 'INPUT_COMPARE'
-  if (-not $home -or -not $home.Equals([IO.Path]::GetFullPath([string]$request.home).TrimEnd('\'), [StringComparison]::OrdinalIgnoreCase) -or -not $target.StartsWith($home + '\', [StringComparison]::OrdinalIgnoreCase)) {
+  if (-not $home -or -not $home.Equals([IO.Path]::GetFullPath([string]$request.home).TrimEnd([char]92), [StringComparison]::OrdinalIgnoreCase) -or -not $target.StartsWith($home + [char]92, [StringComparison]::OrdinalIgnoreCase)) {
     throw 'OUTSIDE_USER_PROFILE'
   }
   $stage = 'INPUT_IDENTITY'
   $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
   $sid = $identity.User.Value
   $allowed = @($sid, 'S-1-5-18', 'S-1-5-32-544', 'S-1-3-0')
+  $trustedOwners = @($sid, 'S-1-5-18', 'S-1-5-32-544')
   function Assert-Private([string]$path, [bool]$directory) {
     $item = Get-Item -LiteralPath $path -Force
     if (($item.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) { throw 'REPARSE_POINT' }
@@ -56,6 +57,9 @@ try {
     $item = Get-Item -LiteralPath $ancestor.FullName -Force
     if (($item.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) { throw 'ANCESTOR_REPARSE_POINT' }
     $acl = Get-Acl -LiteralPath $ancestor.FullName
+    if ($trustedOwners -cnotcontains $acl.GetOwner([Security.Principal.SecurityIdentifier]).Value) {
+      throw 'ANCESTOR_FOREIGN_OWNER'
+    }
     foreach ($rule in $acl.GetAccessRules($true, $true, [Security.Principal.SecurityIdentifier])) {
       if ($rule.AccessControlType -eq [Security.AccessControl.AccessControlType]::Allow -and
           $allowed -cnotcontains $rule.IdentityReference.Value -and
@@ -70,7 +74,7 @@ try {
   $stage = 'COMPONENT'
   $current = $home
   $suffix = $target.Substring($home.Length + 1)
-  $parts = $suffix.Split([char]'\')
+  $parts = $suffix.Split([char]92)
   for ($i = 0; $i -lt $parts.Length; $i++) {
     if (-not $parts[$i]) { throw 'INVALID_PATH' }
     $current = [IO.Path]::Combine($current, $parts[$i])
@@ -106,7 +110,8 @@ try {
   $reason = [string]$_.Exception.Message
   $known = @('OUTSIDE_USER_PROFILE', 'REPARSE_POINT', 'NOT_DIRECTORY', 'NOT_FILE',
     'FOREIGN_OWNER', 'UNTRUSTED_ALLOW_ACE', 'OWNER_NOT_FULL_CONTROL',
-    'ANCESTOR_REPARSE_POINT', 'ANCESTOR_REPLACE_AUTHORITY', 'INVALID_PATH', 'TREE_LIMIT')
+    'ANCESTOR_REPARSE_POINT', 'ANCESTOR_REPLACE_AUTHORITY', 'ANCESTOR_FOREIGN_OWNER',
+    'INVALID_PATH', 'TREE_LIMIT')
   if ($known -cnotcontains $reason) { $reason = 'ACL_CHECK_FAILED_' + $stage }
   [Console]::Out.Write('PRIVATE_REFUSED:' + $reason)
   exit 1
@@ -116,7 +121,7 @@ try {
 const KNOWN_REFUSALS = new Set([
   'OUTSIDE_USER_PROFILE', 'REPARSE_POINT', 'NOT_DIRECTORY', 'NOT_FILE',
   'FOREIGN_OWNER', 'UNTRUSTED_ALLOW_ACE', 'OWNER_NOT_FULL_CONTROL',
-  'ANCESTOR_REPARSE_POINT', 'ANCESTOR_REPLACE_AUTHORITY', 'INVALID_PATH',
+  'ANCESTOR_REPARSE_POINT', 'ANCESTOR_REPLACE_AUTHORITY', 'ANCESTOR_FOREIGN_OWNER', 'INVALID_PATH',
   'TREE_LIMIT', 'ACL_CHECK_FAILED_INPUT', 'ACL_CHECK_FAILED_INPUT_HOME',
   'ACL_CHECK_FAILED_INPUT_TARGET', 'ACL_CHECK_FAILED_INPUT_COMPARE',
   'ACL_CHECK_FAILED_INPUT_IDENTITY', 'ACL_CHECK_FAILED_ANCESTOR',
