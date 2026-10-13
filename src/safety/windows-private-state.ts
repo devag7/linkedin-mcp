@@ -9,6 +9,7 @@ import { homedir } from 'node:os';
 // existing directories. It cannot make previously exposed data private.
 const WINDOWS_ACL_CHECK = String.raw`
 $ErrorActionPreference = 'Stop'
+$ProgressPreference = 'SilentlyContinue'
 $stage = 'INPUT'
 try {
   $request = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String([Console]::In.ReadToEnd())) | ConvertFrom-Json
@@ -28,6 +29,7 @@ try {
   # never a general service-SID wildcard.
   $trustedInstaller = 'S-1-5-80-956008885-3418522649-1831038044-1853292631-2271478464'
   $trustedOwners = @($sid, 'S-1-5-18', 'S-1-5-32-544', $trustedInstaller)
+  $privateOwners = @($sid, 'S-1-5-18', 'S-1-5-32-544')
   $trustedAncestorAllow = @($allowed) + @($trustedInstaller)
   function Assert-Private([string]$path, [bool]$directory) {
     $item = Get-Item -LiteralPath $path -Force
@@ -35,7 +37,12 @@ try {
     if ($directory -and -not $item.PSIsContainer) { throw 'NOT_DIRECTORY' }
     if (-not $directory -and $item.PSIsContainer) { throw 'NOT_FILE' }
     $acl = Get-Acl -LiteralPath $path
-    if ($acl.GetOwner([Security.Principal.SecurityIdentifier]).Value -ne $sid) {
+    $privateOwner = $acl.GetOwner([Security.Principal.SecurityIdentifier]).Value
+    if ($privateOwners -cnotcontains $privateOwner) {
+      if ($privateOwner -eq $trustedInstaller) { throw 'PRIVATE_TRUSTED_INSTALLER_OWNER' }
+      if ($privateOwner.StartsWith('S-1-5-80-', [StringComparison]::Ordinal)) {
+        throw 'PRIVATE_SERVICE_OWNER'
+      }
       throw 'FOREIGN_OWNER'
     }
     $rules = $acl.GetAccessRules($true, $true, [Security.Principal.SecurityIdentifier])
@@ -121,7 +128,8 @@ try {
 } catch {
   $reason = [string]$_.Exception.Message
   $known = @('OUTSIDE_USER_PROFILE', 'REPARSE_POINT', 'NOT_DIRECTORY', 'NOT_FILE',
-    'FOREIGN_OWNER', 'UNTRUSTED_ALLOW_ACE', 'OWNER_NOT_FULL_CONTROL',
+    'FOREIGN_OWNER', 'PRIVATE_TRUSTED_INSTALLER_OWNER', 'PRIVATE_SERVICE_OWNER',
+    'UNTRUSTED_ALLOW_ACE', 'OWNER_NOT_FULL_CONTROL',
     'ANCESTOR_REPARSE_POINT', 'ANCESTOR_REPLACE_AUTHORITY', 'ANCESTOR_FOREIGN_OWNER',
     'ANCESTOR_TRUSTED_INSTALLER_OWNER', 'ANCESTOR_SERVICE_OWNER',
     'INVALID_PATH', 'TREE_LIMIT')
@@ -133,7 +141,8 @@ try {
 
 const KNOWN_REFUSALS = new Set([
   'OUTSIDE_USER_PROFILE', 'REPARSE_POINT', 'NOT_DIRECTORY', 'NOT_FILE',
-  'FOREIGN_OWNER', 'UNTRUSTED_ALLOW_ACE', 'OWNER_NOT_FULL_CONTROL',
+  'FOREIGN_OWNER', 'PRIVATE_TRUSTED_INSTALLER_OWNER', 'PRIVATE_SERVICE_OWNER',
+  'UNTRUSTED_ALLOW_ACE', 'OWNER_NOT_FULL_CONTROL',
   'ANCESTOR_REPARSE_POINT', 'ANCESTOR_REPLACE_AUTHORITY', 'ANCESTOR_FOREIGN_OWNER',
   'ANCESTOR_TRUSTED_INSTALLER_OWNER', 'ANCESTOR_SERVICE_OWNER', 'INVALID_PATH',
   'TREE_LIMIT', 'ACL_CHECK_FAILED_INPUT', 'ACL_CHECK_FAILED_INPUT_HOME',
