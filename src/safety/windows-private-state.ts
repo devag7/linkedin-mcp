@@ -94,10 +94,22 @@ try {
   [Console]::Out.Write('PRIVATE_OK')
   exit 0
 } catch {
-  [Console]::Out.Write('PRIVATE_REFUSED')
+  $reason = [string]$_.Exception.Message
+  $known = @('OUTSIDE_USER_PROFILE', 'REPARSE_POINT', 'NOT_DIRECTORY', 'NOT_FILE',
+    'FOREIGN_OWNER', 'UNTRUSTED_ALLOW_ACE', 'OWNER_NOT_FULL_CONTROL',
+    'ANCESTOR_REPARSE_POINT', 'ANCESTOR_REPLACE_AUTHORITY', 'INVALID_PATH', 'TREE_LIMIT')
+  if ($known -cnotcontains $reason) { $reason = 'ACL_CHECK_FAILED' }
+  [Console]::Out.Write('PRIVATE_REFUSED:' + $reason)
   exit 1
 }
 `;
+
+const KNOWN_REFUSALS = new Set([
+  'OUTSIDE_USER_PROFILE', 'REPARSE_POINT', 'NOT_DIRECTORY', 'NOT_FILE',
+  'FOREIGN_OWNER', 'UNTRUSTED_ALLOW_ACE', 'OWNER_NOT_FULL_CONTROL',
+  'ANCESTOR_REPARSE_POINT', 'ANCESTOR_REPLACE_AUTHORITY', 'INVALID_PATH',
+  'TREE_LIMIT', 'ACL_CHECK_FAILED',
+]);
 
 export function windowsStatePathAllowed(target: string, home: string): boolean {
   const resolved = win32.resolve(target);
@@ -122,8 +134,11 @@ function verify(target: string, create: boolean, file: boolean, scanTree = false
       },
     );
     if (output !== 'PRIVATE_OK' && !(output === 'PRIVATE_ABSENT' && !create)) throw new Error('unverified');
-  } catch {
-    throw new Error('WINDOWS_STATE_PRIVACY_UNVERIFIED');
+  } catch (error) {
+    const stdout = (error as { stdout?: Buffer | string }).stdout;
+    const refused = /^PRIVATE_REFUSED:([A-Z_]+)$/.exec(String(stdout || '').trim());
+    const reason = refused?.[1] && KNOWN_REFUSALS.has(refused[1]) ? refused[1] : 'ACL_CHECK_FAILED';
+    throw new Error(`WINDOWS_STATE_PRIVACY_UNVERIFIED_${reason}`);
   }
 }
 
