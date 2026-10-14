@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { windowsStatePathAllowed } from '../src/safety/windows-private-state.js';
+import { windowsStatePathAllowed, windowsVerifierEnvironment } from '../src/safety/windows-private-state.js';
 
 describe('Windows private state placement', () => {
   const home = 'C:\\Users\\Example';
@@ -15,4 +15,10 @@ describe('Windows private state placement', () => {
   ])('classifies %s as allowed=%s', (target, allowed) => {
     expect(windowsStatePathAllowed(target, home)).toBe(allowed);
   });
+});
+
+it('removes PowerShell 7 module paths only from the verifier child environment', () => {
+  const parent = { Path: 'C:\\Windows', PSModulePath: 'ps7-modules', psmodulepath: 'other-ps7-modules' };
+  expect(windowsVerifierEnvironment(parent)).toEqual({ Path: 'C:\\Windows' });
+  expect(parent.PSModulePath).toBe('ps7-modules');
 });

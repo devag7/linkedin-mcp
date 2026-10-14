@@ -198,6 +198,12 @@ export function windowsStatePathAllowed(target: string, home: string): boolean {
   return tail !== '' && tail !== '..' && !tail.startsWith(`..${win32.sep}`) && !win32.isAbsolute(tail);
 }
 
+export function windowsVerifierEnvironment(parent: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
+  return Object.fromEntries(
+    Object.entries(parent).filter(([name]) => name.toUpperCase() !== 'PSMODULEPATH'),
+  );
+}
+
 function verify(target: string, create: boolean, file: boolean, scanTree = false): void {
   if (process.platform !== 'win32') return;
   const home = process.env.USERPROFILE || homedir();
@@ -205,12 +211,16 @@ function verify(target: string, create: boolean, file: boolean, scanTree = false
     throw new Error('WINDOWS_STATE_OUTSIDE_USER_PROFILE');
   try {
     const shell = `${process.env.SystemRoot || 'C:\\Windows'}\\System32\\WindowsPowerShell\\v1.0\\powershell.exe`;
+    // PowerShell 7 -> Node -> Windows PowerShell 5.1 otherwise inherits PS7
+    // module paths, which can break security-cmdlet autoloading (Get-Acl).
+    const childEnv = windowsVerifierEnvironment(process.env);
     const output = execFileSync(
       shell,
       ['-NoProfile', '-NonInteractive', '-EncodedCommand', Buffer.from(WINDOWS_ACL_CHECK, 'utf16le').toString('base64')],
       {
         input: Buffer.from(JSON.stringify({ target: resolve(target), home: resolve(home), create, file, scanTree }), 'utf8').toString('base64'),
         encoding: 'utf8', timeout: 30_000, maxBuffer: 4096, windowsHide: true,
+        env: childEnv,
       },
     );
     if (output !== 'PRIVATE_OK' && !(output === 'PRIVATE_ABSENT' && !create)) throw new Error('unverified');
