@@ -245,7 +245,18 @@ function verify(target: string, create: boolean, file: boolean, scanTree = false
   } catch (error) {
     const stdout = (error as { stdout?: Buffer | string }).stdout;
     const refused = /^PRIVATE_REFUSED:([A-Z_]+)$/.exec(String(stdout || '').trim());
-    const reason = refused?.[1] && KNOWN_REFUSALS.has(refused[1]) ? refused[1] : 'ACL_CHECK_FAILED';
+    const processError = error as NodeJS.ErrnoException & { status?: number | null };
+    const reason = refused?.[1] && KNOWN_REFUSALS.has(refused[1])
+      ? refused[1]
+      : processError.code === 'ETIMEDOUT'
+        ? 'ACL_CHECK_FAILED_TIMEOUT'
+        : processError.code === 'ENOENT'
+          ? 'ACL_CHECK_FAILED_SPAWN'
+          : processError.code === 'ENOBUFS'
+            ? 'ACL_CHECK_FAILED_OUTPUT_LIMIT'
+            : processError.status !== undefined && processError.status !== null
+              ? 'ACL_CHECK_FAILED_EXIT'
+              : 'ACL_CHECK_FAILED';
     throw new Error(`WINDOWS_STATE_PRIVACY_UNVERIFIED_${reason}`);
   }
 }
