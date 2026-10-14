@@ -4,8 +4,9 @@ import { mkdirSync } from 'node:fs';
 import { dirname, resolve, win32 } from 'node:path';
 import { homedir } from 'node:os';
 
-// The path is sent over stdin, never interpolated into a command line. This
-// verifier intentionally refuses every unfamiliar allow ACE, including on
+// The path is sent in the verifier child's environment, never interpolated
+// into a command line or logged. This verifier refuses unfamiliar allow ACEs,
+// including on
 // existing directories. It cannot make previously exposed data private.
 const WINDOWS_ACL_CHECK = String.raw`
 $ErrorActionPreference = 'Stop'
@@ -13,7 +14,9 @@ $ProgressPreference = 'SilentlyContinue'
 $stage = 'INPUT'
 [Console]::Error.WriteLine('ACL_STAGE:' + $stage)
 try {
-  $request = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String([Console]::In.ReadLine())) | ConvertFrom-Json
+  $encodedRequest = $env:LINKEDIN_MCP_ACL_REQUEST
+  [Environment]::SetEnvironmentVariable('LINKEDIN_MCP_ACL_REQUEST', $null, 'Process')
+  $request = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($encodedRequest)) | ConvertFrom-Json
   $stage = 'INPUT_HOME'
   [Console]::Error.WriteLine('ACL_STAGE:' + $stage)
   $stateUserProfileRoot = [IO.Path]::GetFullPath([Environment]::GetFolderPath('UserProfile')).TrimEnd([char]92)
@@ -248,11 +251,14 @@ function verify(target: string, create: boolean, file: boolean, scanTree = false
     // PowerShell 7 -> Node -> Windows PowerShell 5.1 otherwise inherits PS7
     // module paths, which can break security-cmdlet autoloading (Get-Acl).
     const childEnv = windowsVerifierEnvironment(process.env, home, windowsRoot);
+    childEnv.LINKEDIN_MCP_ACL_REQUEST = Buffer.from(
+      JSON.stringify({ target: resolve(target), home: resolve(home), create, file, scanTree }),
+      'utf8',
+    ).toString('base64');
     const output = execFileSync(
       shell,
       ['-NoProfile', '-NonInteractive', '-EncodedCommand', Buffer.from(WINDOWS_ACL_CHECK, 'utf16le').toString('base64')],
       {
-        input: `${Buffer.from(JSON.stringify({ target: resolve(target), home: resolve(home), create, file, scanTree }), 'utf8').toString('base64')}\n`,
         encoding: 'utf8', timeout: 30_000, maxBuffer: 4096, windowsHide: true,
         env: childEnv,
       },
