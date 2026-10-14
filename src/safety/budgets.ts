@@ -33,7 +33,7 @@ import {
 import { join } from 'node:path';
 import { homedir } from 'node:os';
 import type { Logger } from '../types.js';
-import { ensurePrivateStateFileParent, verifyPrivateStateFileIfPresent } from './windows-private-state.js';
+import { ensurePrivateStateFileParent, fixedWindowsStateCode, verifyPrivateStateFileIfPresent } from './windows-private-state.js';
 
 /** Write actions tracked against daily + combined-write caps. */
 export type WriteActionType =
@@ -878,9 +878,12 @@ export class BudgetTracker {
     } catch (error) {
       if ((error as NodeJS.ErrnoException).code === 'ENOENT' && !this.fileSeen)
         return { version: 1, accounts: {} };
-      throw new Error(
+      const failure = new Error(
         'Budget state is unreadable or invalid. Restore safety state before restarting; counters were not reset.',
       );
+      const stateCode = fixedWindowsStateCode(error);
+      if (stateCode) Object.assign(failure, { stateCode });
+      throw failure;
     }
   }
 

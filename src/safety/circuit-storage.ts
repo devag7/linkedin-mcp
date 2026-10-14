@@ -4,7 +4,7 @@ import { profilePath } from './state-lock.js';
 import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
 import type { CircuitState, CircuitStorage } from './circuit-breaker.js';
-import { ensurePrivateStateFileParent, verifyPrivateStateFileIfPresent } from './windows-private-state.js';
+import { ensurePrivateStateFileParent, fixedWindowsStateCode, verifyPrivateStateFileIfPresent } from './windows-private-state.js';
 
 const nonnegative = z.number().finite().nonnegative();
 const stateSchema = z.object({
@@ -38,9 +38,12 @@ export class CircuitFileStorage implements CircuitStorage {
       }
     } catch (error) {
       if ((error as NodeJS.ErrnoException).code === 'ENOENT') return null;
-      throw new Error(
+      const failure = new Error(
         'Circuit state is unreadable or invalid. Stop automation and restore the safety state before restarting.',
       );
+      const stateCode = fixedWindowsStateCode(error);
+      if (stateCode) Object.assign(failure, { stateCode });
+      throw failure;
     }
   }
 

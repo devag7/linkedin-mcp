@@ -81,5 +81,19 @@ privileged administrators and hostile same-account races remain explicit
 limits. An after-the-fact ACL change would leave a creation-time exposure
 window, which is why new directory creation uses the native DACL overload.
 
+At [`42f64c7`](https://github.com/devag7/linkedin-mcp/commit/42f64c7), the
+[ordinary creator/attacker matrix](https://github.com/devag7/linkedin-mcp/actions/runs/38550152060)
+passed on Node 20 and 22: all 18 private targets denied read and write, and
+the public custom parent was refused before creation. Windows returned no
+process exit code for the alternate-credential creator after it exited; the
+test accepted only its fixed success receipt, exact registry-backed profile
+root and subsequent actual target probes. The [package matrix](https://github.com/devag7/linkedin-mcp/actions/runs/38550152012)
+still failed at installed stdio startup with `CIRCUIT_STATE_UNREADABLE`. The
+source matrix was still running when this was recorded. Both remain release
+blockers. The next draft retains only a fixed underlying Windows refusal code
+through that generic circuit error and adds four disposable negative fixtures:
+untrusted existing child ACL, junction escape, spoofed home and helper failure.
+These new checks are pending native evidence.
+
 References: [Microsoft file security and default descriptor inheritance](https://learn.microsoft.com/en-us/windows/win32/fileio/file-security-and-access-rights),
 [PowerShell alternate-credential process execution](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.management/start-process?view=powershell-5.1).

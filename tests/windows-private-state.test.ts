@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { windowsStatePathAllowed, windowsVerifierEnvironment } from '../src/safety/windows-private-state.js';
+import { fixedWindowsStateCode, windowsStatePathAllowed, windowsVerifierEnvironment } from '../src/safety/windows-private-state.js';
 
 describe('Windows private state placement', () => {
   const home = 'C:\\Users\\Example';
@@ -23,4 +23,10 @@ it('removes PowerShell 7 module paths only from the verifier child environment',
     Path: 'C:\\Windows', SystemRoot: 'C:\\Windows', USERPROFILE: 'C:\\Users\\Example',
   });
   expect(parent.PSModulePath).toBe('ps7-modules');
+});
+
+it('retains fixed refusal codes without retaining arbitrary error text', () => {
+  expect(fixedWindowsStateCode(new Error('WINDOWS_STATE_PRIVACY_UNVERIFIED_REPARSE_POINT')))
+    .toBe('WINDOWS_STATE_PRIVACY_UNVERIFIED_REPARSE_POINT');
+  expect(fixedWindowsStateCode(new Error('secret C:\\Users\\Example\\profile'))).toBeUndefined();
 });

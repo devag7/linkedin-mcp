@@ -28,6 +28,9 @@ $creatorResult = Join-Path (Join-Path $env:PUBLIC 'Documents') "lmcp-acl-created
 $fixture = Join-Path $env:GITHUB_WORKSPACE 'scripts\verify-windows-acl-fixture.ts'
 $node = (Get-Command node).Source
 $shell = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
+$unsafeRoot = Join-Path $env:USERPROFILE "lmcp-unsafe-$suffix"
+$junctionTarget = Join-Path (Join-Path $env:PUBLIC 'Documents') "lmcp-junction-target-$suffix"
+$junction = Join-Path $env:USERPROFILE "lmcp-junction-$suffix"
 
 try {
   if (Test-Path -LiteralPath $child) { throw 'PROBE_SCRIPT_PREEXISTS' }
@@ -119,7 +122,34 @@ try {
       throw "SECOND_USER_ACCESS_NOT_REFUSED:$scope`:$resultCode"
     }
   }
-  Write-Output '{"nativeWindowsAcl":"passed","homeTargets":18,"publicCustomRefusedBeforeCreation":true,"ordinaryCreator":true,"distinctUnprivilegedUser":true,"ownerReadWrite":true,"readDenied":true,"writeDenied":true}'
+
+  $negative = Join-Path $env:GITHUB_WORKSPACE 'scripts\verify-windows-acl-negative.ts'
+  & node --import tsx scripts/verify-windows-acl-fixture.ts $unsafeRoot | Out-Null
+  if ($LASTEXITCODE -ne 0) { throw 'NEGATIVE_FIXTURE_FAILED' }
+  $unsafeProfile = Join-Path (Join-Path $unsafeRoot '.linkedin-mcp') 'profile'
+  $unsafeAcl = Get-Acl -LiteralPath $unsafeProfile
+  $usersSid = [Security.Principal.SecurityIdentifier]::new('S-1-5-32-545')
+  $unsafeRule = [Security.AccessControl.FileSystemAccessRule]::new(
+    $usersSid, [Security.AccessControl.FileSystemRights]::ReadAndExecute,
+    [Security.AccessControl.AccessControlType]::Allow)
+  $unsafeAcl.AddAccessRule($unsafeRule)
+  Set-Acl -LiteralPath $unsafeProfile -AclObject $unsafeAcl
+  & node --import tsx $negative 'untrusted-child' $unsafeProfile | Out-Null
+  if ($LASTEXITCODE -ne 0) { throw 'NEGATIVE_UNTRUSTED_CHILD_FAILED' }
+
+  [void][IO.Directory]::CreateDirectory($junctionTarget)
+  New-Item -ItemType Junction -Path $junction -Target $junctionTarget | Out-Null
+  & node --import tsx $negative 'junction' $junction | Out-Null
+  if ($LASTEXITCODE -ne 0) { throw 'NEGATIVE_JUNCTION_FAILED' }
+
+  $spoof = Join-Path (Join-Path $env:PUBLIC 'Documents') "lmcp-spoof-$suffix"
+  & node --import tsx $negative 'spoofed-home' $spoof | Out-Null
+  if ($LASTEXITCODE -ne 0) { throw 'NEGATIVE_SPOOFED_HOME_FAILED' }
+
+  & node --import tsx $negative 'helper-failure' $unsafeRoot | Out-Null
+  if ($LASTEXITCODE -ne 0) { throw 'NEGATIVE_HELPER_FAILURE_FAILED' }
+
+  Write-Output '{"nativeWindowsAcl":"passed","homeTargets":18,"negativeCases":4,"publicCustomRefusedBeforeCreation":true,"ordinaryCreator":true,"distinctUnprivilegedUser":true,"ownerReadWrite":true,"readDenied":true,"writeDenied":true}'
 } finally {
   if (Test-Path -LiteralPath $child) { Remove-Item -LiteralPath $child -Force }
   if (Test-Path -LiteralPath $creatorScript) { Remove-Item -LiteralPath $creatorScript -Force }
@@ -130,6 +160,9 @@ try {
   foreach ($root in $roots) {
     if (Test-Path -LiteralPath $root) { Remove-Item -LiteralPath $root -Recurse -Force }
   }
+  if (Test-Path -LiteralPath $unsafeRoot) { Remove-Item -LiteralPath $unsafeRoot -Recurse -Force }
+  if (Test-Path -LiteralPath $junction) { Remove-Item -LiteralPath $junction -Force }
+  if (Test-Path -LiteralPath $junctionTarget) { Remove-Item -LiteralPath $junctionTarget -Recurse -Force }
   if ($roots.Count -gt 1) {
     $customParent = Split-Path $roots[1] -Parent
     if (Test-Path -LiteralPath $customParent) { Remove-Item -LiteralPath $customParent -Recurse -Force }

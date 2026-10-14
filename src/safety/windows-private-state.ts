@@ -213,6 +213,14 @@ export function windowsVerifierEnvironment(
   return child;
 }
 
+/** Preserve only the verifier's fixed, path-free code across safety-state wrappers. */
+export function fixedWindowsStateCode(error: unknown): string | undefined {
+  const message = error instanceof Error ? error.message : '';
+  return /^WINDOWS_STATE_(?:OUTSIDE_USER_PROFILE|PRIVACY_UNVERIFIED_[A-Z_]+)$/.test(message)
+    ? message
+    : undefined;
+}
+
 function verify(target: string, create: boolean, file: boolean, scanTree = false): void {
   if (process.platform !== 'win32') return;
   const home = process.env.USERPROFILE || homedir();

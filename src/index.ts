@@ -411,8 +411,13 @@ async function main(): Promise<void> {
     await startServer(config);
   } catch (error) {
     const message = error instanceof Error ? error.message : '';
-    const code = /^WINDOWS_STATE_(?:OUTSIDE_USER_PROFILE|PRIVACY_UNVERIFIED_[A-Z_]+)$/.test(message)
-      ? message
+    const wrappedCode = error instanceof Error && 'stateCode' in error && typeof error.stateCode === 'string'
+      ? error.stateCode
+      : '';
+    const safeWindowsCode = [message, wrappedCode].find((value) =>
+      /^WINDOWS_STATE_(?:OUTSIDE_USER_PROFILE|PRIVACY_UNVERIFIED_[A-Z_]+)$/.test(value));
+    const code = safeWindowsCode
+      ? safeWindowsCode
       : message.startsWith('Budget state is unreadable or invalid.')
         ? 'BUDGET_STATE_UNREADABLE'
         : message.startsWith('Circuit state is unreadable or invalid.')
