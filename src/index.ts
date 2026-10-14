@@ -409,8 +409,16 @@ async function main(): Promise<void> {
 
   try {
     await startServer(config);
-  } catch {
-    logger.error('Failed to start server. Run --doctor for redacted setup guidance.');
+  } catch (error) {
+    const message = error instanceof Error ? error.message : '';
+    const code = /^WINDOWS_STATE_(?:OUTSIDE_USER_PROFILE|PRIVACY_UNVERIFIED_[A-Z_]+)$/.test(message)
+      ? message
+      : message.startsWith('Budget state is unreadable or invalid.')
+        ? 'BUDGET_STATE_UNREADABLE'
+        : message.startsWith('Circuit state is unreadable or invalid.')
+          ? 'CIRCUIT_STATE_UNREADABLE'
+          : 'STARTUP_FAILED';
+    logger.error('Failed to start server. Run --doctor for redacted setup guidance.', { code });
     process.exit(1);
   }
 }

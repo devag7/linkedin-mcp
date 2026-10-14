@@ -101,8 +101,10 @@ try {
     let serverFailure = 'none';
     transport.stderr?.on('data', (chunk) => {
       const diagnostic = String(chunk);
-      if (diagnostic.includes('WINDOWS_STATE_PRIVACY_UNVERIFIED')) serverFailure = 'windows_privacy';
-      else if (diagnostic.includes('Failed to start server')) serverFailure = 'startup';
+      const tagged = /"code":"(WINDOWS_STATE_[A-Z_]+|BUDGET_STATE_UNREADABLE|CIRCUIT_STATE_UNREADABLE|STARTUP_FAILED)"/.exec(diagnostic);
+      if (tagged) serverFailure = tagged[1];
+      else if (serverFailure === 'none' && diagnostic.includes('Failed to start server'))
+        serverFailure = 'startup';
     });
     try {
       await client.connect(transport);

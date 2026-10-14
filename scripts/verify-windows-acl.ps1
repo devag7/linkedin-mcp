@@ -58,7 +58,10 @@ try {
   if ($creatorRoot -match '^FAILED:(INPUT|IDENTITY|PROFILE|WORKSPACE|FIXTURE|RECEIPT)$') {
     throw "CREATOR_$($creatorRoot.Substring(7))_FAILED"
   }
-  if ($creatorProcess.ExitCode -ne 0) {
+  # Start-Process -Credential can leave ExitCode unavailable after WaitForExit
+  # on this runner. A fixed success receipt is written only after the fixture
+  # succeeds, then the exact root and all target permissions are probed below.
+  if ($null -ne $creatorProcess.ExitCode -and $creatorProcess.ExitCode -ne 0) {
     if ([IO.Path]::IsPathRooted($creatorRoot)) {
       $code = if ($null -eq $creatorProcess.ExitCode) { 'UNKNOWN' } else { [string]$creatorProcess.ExitCode }
       throw "CREATOR_NONZERO_WITH_PATH_$code"
