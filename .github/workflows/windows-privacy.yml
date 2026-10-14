@@ -16,13 +16,18 @@ permissions:
 
 jobs:
   second-user-acl:
+    name: second-user-acl (Node ${{ matrix.node-version }})
     runs-on: windows-latest
     timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [20, 22]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: ${{ matrix.node-version }}
           cache: npm
       - run: npm ci --no-audit --no-fund
       - name: Probe disposable native NTFS state as a distinct local user
