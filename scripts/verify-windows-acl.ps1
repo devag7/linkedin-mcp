@@ -167,7 +167,16 @@ try {
   & node --import tsx $negative 'debug-logging' $unsafeRoot | Out-Null
   if ($LASTEXITCODE -ne 0) { throw 'NEGATIVE_DEBUG_LOGGING_FAILED' }
 
-  Write-Output '{"nativeWindowsAcl":"passed","homeTargets":18,"negativeCases":6,"publicCustomRefusedBeforeCreation":true,"ordinaryCreator":true,"distinctUnprivilegedUser":true,"ownerReadWrite":true,"readDenied":true,"writeDenied":true}'
+  $previousNodeDebug = $env:NODE_DEBUG
+  try {
+    $env:NODE_DEBUG = 'child_process'
+    & node --import tsx $negative 'debug-cached' $unsafeRoot 2>$null | Out-Null
+    if ($LASTEXITCODE -ne 0) { throw 'NEGATIVE_DEBUG_CACHED_FAILED' }
+  } finally {
+    $env:NODE_DEBUG = $previousNodeDebug
+  }
+
+  Write-Output '{"nativeWindowsAcl":"passed","homeTargets":18,"negativeCases":7,"publicCustomRefusedBeforeCreation":true,"ordinaryCreator":true,"distinctUnprivilegedUser":true,"ownerReadWrite":true,"readDenied":true,"writeDenied":true}'
 } finally {
   if (Test-Path -LiteralPath $child) { Remove-Item -LiteralPath $child -Force }
   if (Test-Path -LiteralPath $creatorScript) { Remove-Item -LiteralPath $creatorScript -Force }

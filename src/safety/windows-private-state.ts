@@ -3,6 +3,7 @@ import { execFileSync } from 'node:child_process';
 import { mkdirSync } from 'node:fs';
 import { dirname, resolve, win32 } from 'node:path';
 import { homedir } from 'node:os';
+import { debuglog } from 'node:util';
 
 // The path is sent in the verifier child's environment, never interpolated
 // into a command line or logged. This verifier refuses unfamiliar allow ACEs,
@@ -14,18 +15,27 @@ $ProgressPreference = 'SilentlyContinue'
 $stage = 'INPUT'
 [Console]::Error.WriteLine('ACL_STAGE:' + $stage)
 try {
-  $encodedRequest = $env:LINKEDIN_MCP_ACL_REQUEST
-  [Environment]::SetEnvironmentVariable('LINKEDIN_MCP_ACL_REQUEST', $null, 'Process')
-  $request = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($encodedRequest)) | ConvertFrom-Json
+  $encodedTarget = $env:LINKEDIN_MCP_ACL_TARGET
+  $encodedHome = $env:LINKEDIN_MCP_ACL_HOME
+  $flags = $env:LINKEDIN_MCP_ACL_FLAGS
+  foreach ($name in @('LINKEDIN_MCP_ACL_TARGET', 'LINKEDIN_MCP_ACL_HOME', 'LINKEDIN_MCP_ACL_FLAGS')) {
+    [Environment]::SetEnvironmentVariable($name, $null, 'Process')
+  }
+  if ($flags -cnotmatch '^[01]{3}$') { throw 'INVALID_INPUT' }
+  $requestedTarget = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($encodedTarget))
+  $requestedHome = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($encodedHome))
+  $create = $flags[0] -eq [char]49
+  $file = $flags[1] -eq [char]49
+  $scanTree = $flags[2] -eq [char]49
   $stage = 'INPUT_HOME'
   [Console]::Error.WriteLine('ACL_STAGE:' + $stage)
   $stateUserProfileRoot = [IO.Path]::GetFullPath([Environment]::GetFolderPath('UserProfile')).TrimEnd([char]92)
   $stage = 'INPUT_TARGET'
   [Console]::Error.WriteLine('ACL_STAGE:' + $stage)
-  $target = [IO.Path]::GetFullPath([string]$request.target).TrimEnd([char]92)
+  $target = [IO.Path]::GetFullPath($requestedTarget).TrimEnd([char]92)
   $stage = 'INPUT_COMPARE'
   [Console]::Error.WriteLine('ACL_STAGE:' + $stage)
-  if (-not $stateUserProfileRoot -or -not $stateUserProfileRoot.Equals([IO.Path]::GetFullPath([string]$request.home).TrimEnd([char]92), [StringComparison]::OrdinalIgnoreCase) -or -not $target.StartsWith($stateUserProfileRoot + [char]92, [StringComparison]::OrdinalIgnoreCase)) {
+  if (-not $stateUserProfileRoot -or -not $stateUserProfileRoot.Equals([IO.Path]::GetFullPath($requestedHome).TrimEnd([char]92), [StringComparison]::OrdinalIgnoreCase) -or -not $target.StartsWith($stateUserProfileRoot + [char]92, [StringComparison]::OrdinalIgnoreCase)) {
     throw 'OUTSIDE_USER_PROFILE'
   }
   $stage = 'INPUT_IDENTITY'
@@ -154,15 +164,15 @@ try {
     $current = [IO.Path]::Combine($current, $parts[$i])
     $last = $i -eq ($parts.Length - 1)
     if (-not [IO.Directory]::Exists($current) -and -not [IO.File]::Exists($current)) {
-      if (-not [bool]$request.create -or ([bool]$request.file -and $last)) {
+      if (-not $create -or ($file -and $last)) {
         [Console]::Out.Write('PRIVATE_ABSENT')
         exit 0
       }
       New-PrivateDirectory $current
     }
-    Assert-Private $current (-not ([bool]$request.file -and $last))
+    Assert-Private $current (-not ($file -and $last))
   }
-  if ([bool]$request.scanTree) {
+  if ($scanTree) {
     $stage = 'TREE'
     [Console]::Error.WriteLine('ACL_STAGE:' + $stage)
     $stack = New-Object 'System.Collections.Generic.Stack[string]'
@@ -225,7 +235,7 @@ export function windowsVerifierEnvironment(
 ): NodeJS.ProcessEnv {
   const child = Object.fromEntries(
     Object.entries(parent).filter(([name]) =>
-      !['PSMODULEPATH', 'LINKEDIN_MCP_ACL_REQUEST'].includes(name.toUpperCase()),
+      name.toUpperCase() !== 'PSMODULEPATH' && !name.toUpperCase().startsWith('LINKEDIN_MCP_ACL_'),
     ),
   );
   // Exported MCP client configurations deliberately omit the host environment.
@@ -250,7 +260,7 @@ function verify(target: string, create: boolean, file: boolean, scanTree = false
   if (process.platform !== 'win32') return;
   // Node's child_process debug logger can print the child environment before
   // PowerShell starts. Refuse this mode before constructing the request.
-  if (process.env.NODE_DEBUG)
+  if (process.env.NODE_DEBUG || debuglog('child_process').enabled)
     throw new Error('WINDOWS_STATE_PRIVACY_UNVERIFIED_DEBUG_ENV');
   const home = process.env.USERPROFILE || homedir();
   if (!windowsStatePathAllowed(target, home))
@@ -261,10 +271,9 @@ function verify(target: string, create: boolean, file: boolean, scanTree = false
     // PowerShell 7 -> Node -> Windows PowerShell 5.1 can inherit PS7 paths;
     // minimal MCP client environments may omit the system module path.
     const childEnv = windowsVerifierEnvironment(process.env, home, windowsRoot);
-    childEnv.LINKEDIN_MCP_ACL_REQUEST = Buffer.from(
-      JSON.stringify({ target: resolve(target), home: resolve(home), create, file, scanTree }),
-      'utf8',
-    ).toString('base64');
+    childEnv.LINKEDIN_MCP_ACL_TARGET = Buffer.from(resolve(target), 'utf8').toString('base64');
+    childEnv.LINKEDIN_MCP_ACL_HOME = Buffer.from(resolve(home), 'utf8').toString('base64');
+    childEnv.LINKEDIN_MCP_ACL_FLAGS = `${Number(create)}${Number(file)}${Number(scanTree)}`;
     const output = execFileSync(
       shell,
       ['-NoProfile', '-NonInteractive', '-EncodedCommand', Buffer.from(WINDOWS_ACL_CHECK, 'utf16le').toString('base64')],

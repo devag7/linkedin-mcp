@@ -21,6 +21,8 @@ it('pins Windows PowerShell system modules only in the verifier child environmen
   const parent = {
     Path: 'C:\\Windows', PSModulePath: 'ps7-modules', psmodulepath: 'other-ps7-modules',
     linkedin_mcp_acl_request: 'stale-request',
+    linkedin_mcp_acl_target: 'stale-target',
+    LINKEDIN_MCP_ACL_FLAGS: '111',
   };
   expect(windowsVerifierEnvironment(parent, 'C:\\Users\\Example', 'C:\\Windows')).toEqual({
     Path: 'C:\\Windows', SystemRoot: 'C:\\Windows', USERPROFILE: 'C:\\Users\\Example',
