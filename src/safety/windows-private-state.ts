@@ -187,7 +187,7 @@ try {
         $childAttributes = [IO.File]::GetAttributes($childPath)
         $isDirectory = ($childAttributes -band [IO.FileAttributes]::Directory) -ne 0
         Assert-Private $childPath $isDirectory
-        if ($isDirectory) { $stack.Push($child.FullName) }
+        if ($isDirectory) { $stack.Push($childPath) }
       }
     }
   }
