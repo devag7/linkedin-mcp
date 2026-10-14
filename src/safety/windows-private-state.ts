@@ -12,7 +12,7 @@ $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
 $stage = 'INPUT'
 try {
-  $request = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String([Console]::In.ReadToEnd())) | ConvertFrom-Json
+  $request = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String([Console]::In.ReadLine())) | ConvertFrom-Json
   $stage = 'INPUT_HOME'
   $stateUserProfileRoot = [IO.Path]::GetFullPath([Environment]::GetFolderPath('UserProfile')).TrimEnd([char]92)
   $stage = 'INPUT_TARGET'
@@ -80,9 +80,11 @@ try {
     $ownerRights = [int64]0
     foreach ($rule in $rules) {
       if ($rule.AccessControlType -ne [Security.AccessControl.AccessControlType]::Allow) { continue }
-      if (($rule.PropagationFlags -band [Security.AccessControl.PropagationFlags]::InheritOnly) -ne 0) { continue }
       $trustee = $rule.IdentityReference.Value
+      # An inherit-only ACE does not apply to this directory, but it *does*
+      # reach newly created secrets. Reject an untrusted trustee before that.
       if ($allowed -cnotcontains $trustee) { throw 'UNTRUSTED_ALLOW_ACE' }
+      if (($rule.PropagationFlags -band [Security.AccessControl.PropagationFlags]::InheritOnly) -ne 0) { continue }
       if ($trustee -eq $sid) {
         $ownerRights = $ownerRights -bor [int64]$rule.FileSystemRights
       }
@@ -236,7 +238,7 @@ function verify(target: string, create: boolean, file: boolean, scanTree = false
       shell,
       ['-NoProfile', '-NonInteractive', '-EncodedCommand', Buffer.from(WINDOWS_ACL_CHECK, 'utf16le').toString('base64')],
       {
-        input: Buffer.from(JSON.stringify({ target: resolve(target), home: resolve(home), create, file, scanTree }), 'utf8').toString('base64'),
+        input: `${Buffer.from(JSON.stringify({ target: resolve(target), home: resolve(home), create, file, scanTree }), 'utf8').toString('base64')}\n`,
         encoding: 'utf8', timeout: 30_000, maxBuffer: 4096, windowsHide: true,
         env: childEnv,
       },

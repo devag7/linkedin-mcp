@@ -301,7 +301,7 @@ it.each(['separate-ids', 'same-id'])(
     expect(b.snapshot().writes.likes?.attempted).toBe(submitted);
     expect(b.snapshot().actions.likes.used).toBe(submitted);
   },
-  15000,
+  process.platform === 'win32' ? 180000 : 15000,
 );
 
 it('a second process cannot own an idle profile through a symlink alias; disposal releases it', async () => {

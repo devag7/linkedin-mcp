@@ -1,9 +1,21 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtempSync, rmSync, existsSync, statSync, readFileSync } from 'node:fs';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { mkdtempSync, mkdirSync, rmSync, existsSync, statSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { setImmediate as yieldWorker } from 'node:timers/promises';
 import { BudgetTracker } from '../src/safety/budgets.js';
+
+// This suite checks counter semantics. The disposable second-user probe checks
+// the real Windows ACL guard through BudgetTracker and circuit persistence.
+vi.mock('../src/safety/windows-private-state.js', async (importOriginal) => {
+  const original = await importOriginal<typeof import('../src/safety/windows-private-state.js')>();
+  if (process.platform !== 'win32') return original;
+  return {
+    ...original,
+    ensurePrivateStateFileParent: (file: string) => { mkdirSync(dirname(file), { recursive: true }); },
+    verifyPrivateStateFileIfPresent: () => {},
+  };
+});
 
 /**
  * Deterministic, offline tests for the BudgetTracker.

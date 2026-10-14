@@ -29,6 +29,7 @@ $fixture = Join-Path $env:GITHUB_WORKSPACE 'scripts\verify-windows-acl-fixture.t
 $node = (Get-Command node).Source
 $shell = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
 $unsafeRoot = Join-Path $env:USERPROFILE "lmcp-unsafe-$suffix"
+$unsafeInheritedRoot = Join-Path $env:USERPROFILE "lmcp-inherit-$suffix"
 $junctionTarget = Join-Path (Join-Path $env:PUBLIC 'Documents') "lmcp-junction-target-$suffix"
 $junction = Join-Path $env:USERPROFILE "lmcp-junction-$suffix"
 
@@ -137,6 +138,20 @@ try {
   & node --import tsx $negative 'untrusted-child' $unsafeProfile | Out-Null
   if ($LASTEXITCODE -ne 0) { throw 'NEGATIVE_UNTRUSTED_CHILD_FAILED' }
 
+  & node --import tsx scripts/verify-windows-acl-fixture.ts $unsafeInheritedRoot | Out-Null
+  if ($LASTEXITCODE -ne 0) { throw 'NEGATIVE_INHERIT_FIXTURE_FAILED' }
+  $unsafeInheritedProfile = Join-Path (Join-Path $unsafeInheritedRoot '.linkedin-mcp') 'profile'
+  $inheritedAcl = Get-Acl -LiteralPath $unsafeInheritedProfile
+  $inheritedRule = [Security.AccessControl.FileSystemAccessRule]::new(
+    $usersSid, [Security.AccessControl.FileSystemRights]::ReadAndExecute,
+    ([Security.AccessControl.InheritanceFlags]::ContainerInherit -bor [Security.AccessControl.InheritanceFlags]::ObjectInherit),
+    [Security.AccessControl.PropagationFlags]::InheritOnly,
+    [Security.AccessControl.AccessControlType]::Allow)
+  $inheritedAcl.AddAccessRule($inheritedRule)
+  Set-Acl -LiteralPath $unsafeInheritedProfile -AclObject $inheritedAcl
+  & node --import tsx $negative 'inherited-child' $unsafeInheritedProfile | Out-Null
+  if ($LASTEXITCODE -ne 0) { throw 'NEGATIVE_INHERITED_CHILD_FAILED' }
+
   [void][IO.Directory]::CreateDirectory($junctionTarget)
   New-Item -ItemType Junction -Path $junction -Target $junctionTarget | Out-Null
   & node --import tsx $negative 'junction' $junction | Out-Null
@@ -149,7 +164,7 @@ try {
   & node --import tsx $negative 'helper-failure' $unsafeRoot | Out-Null
   if ($LASTEXITCODE -ne 0) { throw 'NEGATIVE_HELPER_FAILURE_FAILED' }
 
-  Write-Output '{"nativeWindowsAcl":"passed","homeTargets":18,"negativeCases":4,"publicCustomRefusedBeforeCreation":true,"ordinaryCreator":true,"distinctUnprivilegedUser":true,"ownerReadWrite":true,"readDenied":true,"writeDenied":true}'
+  Write-Output '{"nativeWindowsAcl":"passed","homeTargets":18,"negativeCases":5,"publicCustomRefusedBeforeCreation":true,"ordinaryCreator":true,"distinctUnprivilegedUser":true,"ownerReadWrite":true,"readDenied":true,"writeDenied":true}'
 } finally {
   if (Test-Path -LiteralPath $child) { Remove-Item -LiteralPath $child -Force }
   if (Test-Path -LiteralPath $creatorScript) { Remove-Item -LiteralPath $creatorScript -Force }
@@ -161,6 +176,7 @@ try {
     if (Test-Path -LiteralPath $root) { Remove-Item -LiteralPath $root -Recurse -Force }
   }
   if (Test-Path -LiteralPath $unsafeRoot) { Remove-Item -LiteralPath $unsafeRoot -Recurse -Force }
+  if (Test-Path -LiteralPath $unsafeInheritedRoot) { Remove-Item -LiteralPath $unsafeInheritedRoot -Recurse -Force }
   if (Test-Path -LiteralPath $junction) { Remove-Item -LiteralPath $junction -Force }
   if (Test-Path -LiteralPath $junctionTarget) { Remove-Item -LiteralPath $junctionTarget -Recurse -Force }
   if ($roots.Count -gt 1) {
