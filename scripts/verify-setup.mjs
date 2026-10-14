@@ -97,19 +97,34 @@ try {
 
     const client = new Client({ name: 'generated-config-check', version: '1' });
     const transport = new StdioClientTransport({ ...server, stderr: 'pipe' });
+    let phase = 'connect';
+    let serverFailure = 'none';
+    transport.stderr?.on('data', (chunk) => {
+      const diagnostic = String(chunk);
+      if (diagnostic.includes('WINDOWS_STATE_PRIVACY_UNVERIFIED')) serverFailure = 'windows_privacy';
+      else if (diagnostic.includes('Failed to start server')) serverFailure = 'startup';
+    });
     try {
       await client.connect(transport);
+      phase = 'list_tools';
       assert.equal((await client.listTools()).tools.length, 22);
       const call = async (name, args = {}) =>
         (await client.callTool({ name, arguments: args })).structuredContent;
+      phase = 'whoami';
       assert.equal((await call('whoami')).data.sessionState, 'not_checked');
+      phase = 'health_check';
       assert.equal((await call('health_check')).data.status, 'blocked');
+      phase = 'get_my_profile';
       assert.equal((await call('get_my_profile')).code, 'CIRCUIT_OPEN');
+      phase = 'create_post';
       const draft = await call('create_post', { text: 'Synthetic setup preview', confirm: false });
       assert.equal(draft.data.preview.writesEnabled, false);
       assert.equal(draft.data.preview.token.length, 43);
+      phase = 'close_session';
       assert.equal((await call('close_session')).data.closed, true);
       assert.equal(existsSync(`${profile}.owner.lock`), false);
+    } catch {
+      throw new Error(`PACKED_CLIENT_FLOW_FAILED:${name}:${phase}:${serverFailure}`);
     } finally {
       await client.close();
     }

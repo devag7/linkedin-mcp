@@ -54,12 +54,13 @@ try {
     throw 'CREATOR_PROBE_TIMEOUT'
   }
   if (-not (Test-Path -LiteralPath $creatorResult)) { throw 'CREATOR_RESULT_UNAVAILABLE' }
-  $creatorRoot = [IO.File]::ReadAllText($creatorResult)
-  if ($creatorProcess.ExitCode -ne 0) {
-    if ($creatorRoot -notmatch '^FAILED:(INPUT|IDENTITY|PROFILE|WORKSPACE|FIXTURE|RECEIPT)$') {
-      throw 'CREATOR_RESULT_INVALID'
-    }
+  $creatorRoot = [IO.File]::ReadAllText($creatorResult).Trim(@([char]0xFEFF, [char]13, [char]10, [char]32))
+  if ($creatorRoot -match '^FAILED:(INPUT|IDENTITY|PROFILE|WORKSPACE|FIXTURE|RECEIPT)$') {
     throw "CREATOR_$($creatorRoot.Substring(7))_FAILED"
+  }
+  if ($creatorProcess.ExitCode -ne 0) {
+    if ([IO.Path]::IsPathRooted($creatorRoot)) { throw 'CREATOR_NONZERO_WITH_PATH' }
+    throw 'CREATOR_RESULT_INVALID'
   }
   $creatorSid = (Get-LocalUser -Name $creatorUser).SID.Value
   $creatorProfile = (Get-ItemProperty -LiteralPath "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\$creatorSid").ProfileImagePath
