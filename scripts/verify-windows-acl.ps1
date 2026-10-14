@@ -59,7 +59,10 @@ try {
     throw "CREATOR_$($creatorRoot.Substring(7))_FAILED"
   }
   if ($creatorProcess.ExitCode -ne 0) {
-    if ([IO.Path]::IsPathRooted($creatorRoot)) { throw 'CREATOR_NONZERO_WITH_PATH' }
+    if ([IO.Path]::IsPathRooted($creatorRoot)) {
+      $code = if ($null -eq $creatorProcess.ExitCode) { 'UNKNOWN' } else { [string]$creatorProcess.ExitCode }
+      throw "CREATOR_NONZERO_WITH_PATH_$code"
+    }
     throw 'CREATOR_RESULT_INVALID'
   }
   $creatorSid = (Get-LocalUser -Name $creatorUser).SID.Value

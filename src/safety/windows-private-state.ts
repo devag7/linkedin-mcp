@@ -198,10 +198,19 @@ export function windowsStatePathAllowed(target: string, home: string): boolean {
   return tail !== '' && tail !== '..' && !tail.startsWith(`..${win32.sep}`) && !win32.isAbsolute(tail);
 }
 
-export function windowsVerifierEnvironment(parent: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
-  return Object.fromEntries(
+export function windowsVerifierEnvironment(
+  parent: NodeJS.ProcessEnv,
+  home: string,
+  windowsRoot: string,
+): NodeJS.ProcessEnv {
+  const child = Object.fromEntries(
     Object.entries(parent).filter(([name]) => name.toUpperCase() !== 'PSMODULEPATH'),
   );
+  // Exported MCP client configurations deliberately omit the host environment.
+  // Windows PowerShell still needs these OS paths to resolve built-in modules.
+  child.SystemRoot = windowsRoot;
+  child.USERPROFILE = home;
+  return child;
 }
 
 function verify(target: string, create: boolean, file: boolean, scanTree = false): void {
@@ -210,10 +219,11 @@ function verify(target: string, create: boolean, file: boolean, scanTree = false
   if (!windowsStatePathAllowed(target, home))
     throw new Error('WINDOWS_STATE_OUTSIDE_USER_PROFILE');
   try {
-    const shell = `${process.env.SystemRoot || 'C:\\Windows'}\\System32\\WindowsPowerShell\\v1.0\\powershell.exe`;
+    const windowsRoot = process.env.SystemRoot || 'C:\\Windows';
+    const shell = `${windowsRoot}\\System32\\WindowsPowerShell\\v1.0\\powershell.exe`;
     // PowerShell 7 -> Node -> Windows PowerShell 5.1 otherwise inherits PS7
     // module paths, which can break security-cmdlet autoloading (Get-Acl).
-    const childEnv = windowsVerifierEnvironment(process.env);
+    const childEnv = windowsVerifierEnvironment(process.env, home, windowsRoot);
     const output = execFileSync(
       shell,
       ['-NoProfile', '-NonInteractive', '-EncodedCommand', Buffer.from(WINDOWS_ACL_CHECK, 'utf16le').toString('base64')],

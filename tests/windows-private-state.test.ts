@@ -19,6 +19,8 @@ describe('Windows private state placement', () => {
 
 it('removes PowerShell 7 module paths only from the verifier child environment', () => {
   const parent = { Path: 'C:\\Windows', PSModulePath: 'ps7-modules', psmodulepath: 'other-ps7-modules' };
-  expect(windowsVerifierEnvironment(parent)).toEqual({ Path: 'C:\\Windows' });
+  expect(windowsVerifierEnvironment(parent, 'C:\\Users\\Example', 'C:\\Windows')).toEqual({
+    Path: 'C:\\Windows', SystemRoot: 'C:\\Windows', USERPROFILE: 'C:\\Users\\Example',
+  });
   expect(parent.PSModulePath).toBe('ps7-modules');
 });
