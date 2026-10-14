@@ -1,5 +1,6 @@
 /** Execute generated configuration through a real SDK stdio client, offline. */
 import assert from 'node:assert/strict';
+import { performance } from 'node:perf_hooks';
 import { spawnSync } from 'node:child_process';
 import {
   readFileSync,
@@ -40,6 +41,7 @@ const env = {
 };
 try {
   for (const name of ['claude-desktop', 'cursor', 'vscode']) {
+    const clientCaseStart = performance.now();
     const setup = spawnSync(process.execPath, [bundle, '--setup', name], {
       env,
       encoding: 'utf8',
@@ -99,6 +101,7 @@ try {
     const transport = new StdioClientTransport({ ...server, stderr: 'pipe' });
     let phase = 'connect';
     let serverFailure = 'none';
+    let connectMs = -1;
     transport.stderr?.on('data', (chunk) => {
       const diagnostic = String(chunk);
       const tagged = /"code":"(WINDOWS_STATE_[A-Z_]+|BUDGET_STATE_UNREADABLE|CIRCUIT_STATE_UNREADABLE|STARTUP_FAILED)"/.exec(diagnostic);
@@ -107,7 +110,9 @@ try {
         serverFailure = 'startup';
     });
     try {
+      const connectStart = performance.now();
       await client.connect(transport);
+      connectMs = Math.round(performance.now() - connectStart);
       phase = 'list_tools';
       assert.equal((await client.listTools()).tools.length, 22);
       const call = async (name, args = {}) =>
@@ -133,6 +138,8 @@ try {
     console.log(
       JSON.stringify({
         clientConfiguration: name,
+        connectMs,
+        caseMs: Math.round(performance.now() - clientCaseStart),
         sdkStdio: 'passed',
         scope: 'offline',
         toolCount: 22,
