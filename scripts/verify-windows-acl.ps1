@@ -164,7 +164,10 @@ try {
   & node --import tsx $negative 'helper-failure' $unsafeRoot | Out-Null
   if ($LASTEXITCODE -ne 0) { throw 'NEGATIVE_HELPER_FAILURE_FAILED' }
 
-  Write-Output '{"nativeWindowsAcl":"passed","homeTargets":18,"negativeCases":5,"publicCustomRefusedBeforeCreation":true,"ordinaryCreator":true,"distinctUnprivilegedUser":true,"ownerReadWrite":true,"readDenied":true,"writeDenied":true}'
+  & node --import tsx $negative 'debug-logging' $unsafeRoot | Out-Null
+  if ($LASTEXITCODE -ne 0) { throw 'NEGATIVE_DEBUG_LOGGING_FAILED' }
+
+  Write-Output '{"nativeWindowsAcl":"passed","homeTargets":18,"negativeCases":6,"publicCustomRefusedBeforeCreation":true,"ordinaryCreator":true,"distinctUnprivilegedUser":true,"ownerReadWrite":true,"readDenied":true,"writeDenied":true}'
 } finally {
   if (Test-Path -LiteralPath $child) { Remove-Item -LiteralPath $child -Force }
   if (Test-Path -LiteralPath $creatorScript) { Remove-Item -LiteralPath $creatorScript -Force }

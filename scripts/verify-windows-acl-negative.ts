@@ -12,11 +12,13 @@ const expected: Record<string, string> = {
   junction: 'WINDOWS_STATE_PRIVACY_UNVERIFIED_REPARSE_POINT',
   'spoofed-home': 'WINDOWS_STATE_PRIVACY_UNVERIFIED_OUTSIDE_USER_PROFILE',
   'helper-failure': 'WINDOWS_STATE_PRIVACY_UNVERIFIED_ACL_CHECK_FAILED_SPAWN',
+  'debug-logging': 'WINDOWS_STATE_PRIVACY_UNVERIFIED_DEBUG_ENV',
 };
 if (!expected[scenario]) throw new Error('NEGATIVE_SCENARIO_INVALID');
 
 if (scenario === 'spoofed-home') process.env.USERPROFILE = dirname(target);
 if (scenario === 'helper-failure') process.env.SystemRoot = 'Z:\\lmcp-missing-windows-root';
+if (scenario === 'debug-logging') process.env.NODE_DEBUG = 'child_process';
 
 try {
   ensurePrivateStateDirectory(target, scenario === 'untrusted-child');

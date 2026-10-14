@@ -17,10 +17,14 @@ describe('Windows private state placement', () => {
   });
 });
 
-it('removes PowerShell 7 module paths only from the verifier child environment', () => {
-  const parent = { Path: 'C:\\Windows', PSModulePath: 'ps7-modules', psmodulepath: 'other-ps7-modules' };
+it('pins Windows PowerShell system modules only in the verifier child environment', () => {
+  const parent = {
+    Path: 'C:\\Windows', PSModulePath: 'ps7-modules', psmodulepath: 'other-ps7-modules',
+    linkedin_mcp_acl_request: 'stale-request',
+  };
   expect(windowsVerifierEnvironment(parent, 'C:\\Users\\Example', 'C:\\Windows')).toEqual({
     Path: 'C:\\Windows', SystemRoot: 'C:\\Windows', USERPROFILE: 'C:\\Users\\Example',
+    PSModulePath: 'C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\Modules',
   });
   expect(parent.PSModulePath).toBe('ps7-modules');
 });

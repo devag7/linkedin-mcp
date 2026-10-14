@@ -42,7 +42,7 @@ try {
   function Assert-SafeParent([string]$path) {
     $item = Get-Item -LiteralPath $path -Force
     if (($item.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) { throw 'ANCESTOR_REPARSE_POINT' }
-    $acl = Get-Acl -LiteralPath $path
+    $acl = [IO.Directory]::GetAccessControl($path)
     $owner = $acl.GetOwner([Security.Principal.SecurityIdentifier]).Value
     if ($privateOwners -cnotcontains $owner) { throw 'ANCESTOR_FOREIGN_OWNER' }
     foreach ($rule in $acl.GetAccessRules($true, $true, [Security.Principal.SecurityIdentifier])) {
@@ -75,7 +75,8 @@ try {
     if (($item.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) { throw 'REPARSE_POINT' }
     if ($directory -and -not $item.PSIsContainer) { throw 'NOT_DIRECTORY' }
     if (-not $directory -and $item.PSIsContainer) { throw 'NOT_FILE' }
-    $acl = Get-Acl -LiteralPath $path
+    $acl = if ($directory) { [IO.Directory]::GetAccessControl($path) }
+      else { [IO.File]::GetAccessControl($path) }
     $privateOwner = $acl.GetOwner([Security.Principal.SecurityIdentifier]).Value
     if ($privateOwners -cnotcontains $privateOwner) {
       if ($privateOwner -eq $trustedInstaller) { throw 'PRIVATE_TRUSTED_INSTALLER_OWNER' }
@@ -114,7 +115,7 @@ try {
     if (($item.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) { throw 'ANCESTOR_REPARSE_POINT' }
     $stage = 'ANCESTOR_ACL'
     [Console]::Error.WriteLine('ACL_STAGE:' + $stage)
-    $acl = Get-Acl -LiteralPath $ancestor.FullName
+    $acl = [IO.Directory]::GetAccessControl($ancestor.FullName)
     $stage = 'ANCESTOR_OWNER'
     [Console]::Error.WriteLine('ACL_STAGE:' + $stage)
     $ancestorOwner = $acl.GetOwner([Security.Principal.SecurityIdentifier]).Value
@@ -223,12 +224,17 @@ export function windowsVerifierEnvironment(
   windowsRoot: string,
 ): NodeJS.ProcessEnv {
   const child = Object.fromEntries(
-    Object.entries(parent).filter(([name]) => name.toUpperCase() !== 'PSMODULEPATH'),
+    Object.entries(parent).filter(([name]) =>
+      !['PSMODULEPATH', 'LINKEDIN_MCP_ACL_REQUEST'].includes(name.toUpperCase()),
+    ),
   );
   // Exported MCP client configurations deliberately omit the host environment.
   // Windows PowerShell still needs these OS paths to resolve built-in modules.
   child.SystemRoot = windowsRoot;
   child.USERPROFILE = home;
+  // A minimal MCP client environment may not have a usable module search
+  // path. Pin only the Windows PowerShell system modules, never inherited PS7.
+  child.PSModulePath = `${windowsRoot}\\System32\\WindowsPowerShell\\v1.0\\Modules`;
   return child;
 }
 
@@ -242,14 +248,18 @@ export function fixedWindowsStateCode(error: unknown): string | undefined {
 
 function verify(target: string, create: boolean, file: boolean, scanTree = false): void {
   if (process.platform !== 'win32') return;
+  // Node's child_process debug logger can print the child environment before
+  // PowerShell starts. Refuse this mode before constructing the request.
+  if (process.env.NODE_DEBUG)
+    throw new Error('WINDOWS_STATE_PRIVACY_UNVERIFIED_DEBUG_ENV');
   const home = process.env.USERPROFILE || homedir();
   if (!windowsStatePathAllowed(target, home))
     throw new Error('WINDOWS_STATE_OUTSIDE_USER_PROFILE');
   try {
     const windowsRoot = process.env.SystemRoot || 'C:\\Windows';
     const shell = `${windowsRoot}\\System32\\WindowsPowerShell\\v1.0\\powershell.exe`;
-    // PowerShell 7 -> Node -> Windows PowerShell 5.1 otherwise inherits PS7
-    // module paths, which can break security-cmdlet autoloading (Get-Acl).
+    // PowerShell 7 -> Node -> Windows PowerShell 5.1 can inherit PS7 paths;
+    // minimal MCP client environments may omit the system module path.
     const childEnv = windowsVerifierEnvironment(process.env, home, windowsRoot);
     childEnv.LINKEDIN_MCP_ACL_REQUEST = Buffer.from(
       JSON.stringify({ target: resolve(target), home: resolve(home), create, file, scanTree }),
@@ -260,7 +270,7 @@ function verify(target: string, create: boolean, file: boolean, scanTree = false
       ['-NoProfile', '-NonInteractive', '-EncodedCommand', Buffer.from(WINDOWS_ACL_CHECK, 'utf16le').toString('base64')],
       {
         encoding: 'utf8', timeout: 30_000, maxBuffer: 4096, windowsHide: true,
-        env: childEnv,
+        env: childEnv, stdio: 'pipe',
       },
     );
     if (output !== 'PRIVATE_OK' && !(output === 'PRIVATE_ABSENT' && !create)) throw new Error('unverified');
