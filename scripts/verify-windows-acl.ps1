@@ -53,8 +53,14 @@ try {
     $creatorProcess.Kill()
     throw 'CREATOR_PROBE_TIMEOUT'
   }
-  if ($creatorProcess.ExitCode -ne 0 -or -not (Test-Path -LiteralPath $creatorResult)) { throw 'CREATOR_FIXTURE_FAILED' }
+  if (-not (Test-Path -LiteralPath $creatorResult)) { throw 'CREATOR_RESULT_UNAVAILABLE' }
   $creatorRoot = [IO.File]::ReadAllText($creatorResult)
+  if ($creatorProcess.ExitCode -ne 0) {
+    if ($creatorRoot -notmatch '^FAILED:(INPUT|IDENTITY|PROFILE|WORKSPACE|FIXTURE|RECEIPT)$') {
+      throw 'CREATOR_RESULT_INVALID'
+    }
+    throw "CREATOR_$($creatorRoot.Substring(7))_FAILED"
+  }
   $creatorSid = (Get-LocalUser -Name $creatorUser).SID.Value
   $creatorProfile = (Get-ItemProperty -LiteralPath "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\$creatorSid").ProfileImagePath
   $expectedCreatorRoot = Join-Path ([Environment]::ExpandEnvironmentVariables($creatorProfile)) "lmcp-owner-$suffix"
