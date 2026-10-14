@@ -50,8 +50,8 @@ try {
   $privateOwners = @($sid, 'S-1-5-18', 'S-1-5-32-544')
   $trustedAncestorAllow = @($allowed) + @($trustedInstaller)
   function Assert-SafeParent([string]$path) {
-    $item = Get-Item -LiteralPath $path -Force
-    if (($item.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) { throw 'ANCESTOR_REPARSE_POINT' }
+    $attributes = [IO.File]::GetAttributes($path)
+    if (($attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) { throw 'ANCESTOR_REPARSE_POINT' }
     $acl = [IO.Directory]::GetAccessControl($path)
     $owner = $acl.GetOwner([Security.Principal.SecurityIdentifier]).Value
     if ($privateOwners -cnotcontains $owner) { throw 'ANCESTOR_FOREIGN_OWNER' }
@@ -65,7 +65,7 @@ try {
     }
   }
   function New-PrivateDirectory([string]$path) {
-    $security = New-Object Security.AccessControl.DirectorySecurity
+    $security = [Security.AccessControl.DirectorySecurity]::new()
     $security.SetAccessRuleProtection($true, $false)
     $security.SetOwner($identity.User)
     foreach ($trustee in @($sid, 'S-1-5-18', 'S-1-5-32-544')) {
@@ -81,10 +81,11 @@ try {
     [void][IO.Directory]::CreateDirectory($path, $security)
   }
   function Assert-Private([string]$path, [bool]$directory) {
-    $item = Get-Item -LiteralPath $path -Force
-    if (($item.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) { throw 'REPARSE_POINT' }
-    if ($directory -and -not $item.PSIsContainer) { throw 'NOT_DIRECTORY' }
-    if (-not $directory -and $item.PSIsContainer) { throw 'NOT_FILE' }
+    $attributes = [IO.File]::GetAttributes($path)
+    if (($attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) { throw 'REPARSE_POINT' }
+    $isDirectory = ($attributes -band [IO.FileAttributes]::Directory) -ne 0
+    if ($directory -and -not $isDirectory) { throw 'NOT_DIRECTORY' }
+    if (-not $directory -and $isDirectory) { throw 'NOT_FILE' }
     $acl = if ($directory) { [IO.Directory]::GetAccessControl($path) }
       else { [IO.File]::GetAccessControl($path) }
     $privateOwner = $acl.GetOwner([Security.Principal.SecurityIdentifier]).Value
@@ -121,8 +122,8 @@ try {
   while ($null -ne $ancestor) {
     $stage = 'ANCESTOR_ITEM'
     [Console]::Error.WriteLine('ACL_STAGE:' + $stage)
-    $item = Get-Item -LiteralPath $ancestor.FullName -Force
-    if (($item.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) { throw 'ANCESTOR_REPARSE_POINT' }
+    $attributes = [IO.File]::GetAttributes($ancestor.FullName)
+    if (($attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) { throw 'ANCESTOR_REPARSE_POINT' }
     $stage = 'ANCESTOR_ACL'
     [Console]::Error.WriteLine('ACL_STAGE:' + $stage)
     $acl = [IO.Directory]::GetAccessControl($ancestor.FullName)
@@ -175,7 +176,7 @@ try {
   if ($scanTree) {
     $stage = 'TREE'
     [Console]::Error.WriteLine('ACL_STAGE:' + $stage)
-    $stack = New-Object 'System.Collections.Generic.Stack[string]'
+    $stack = [System.Collections.Generic.Stack[string]]::new()
     $stack.Push($target)
     $seen = 0
     while ($stack.Count -gt 0) {
@@ -183,9 +184,9 @@ try {
       foreach ($childPath in [IO.Directory]::EnumerateFileSystemEntries($parent)) {
         $seen++
         if ($seen -gt 20000) { throw 'TREE_LIMIT' }
-        $child = Get-Item -LiteralPath $childPath -Force
-        $isDirectory = $child.PSIsContainer
-        Assert-Private $child.FullName $isDirectory
+        $childAttributes = [IO.File]::GetAttributes($childPath)
+        $isDirectory = ($childAttributes -band [IO.FileAttributes]::Directory) -ne 0
+        Assert-Private $childPath $isDirectory
         if ($isDirectory) { $stack.Push($child.FullName) }
       }
     }
