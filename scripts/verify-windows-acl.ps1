@@ -62,13 +62,13 @@ try {
     }
     if (-not (Test-Path -LiteralPath $result)) { throw 'PROBE_RESULT_UNAVAILABLE' }
     $resultCode = [System.IO.File]::ReadAllText($result)
-    if ($resultCode -notmatch '^(0|1[0123][0-4])$') { throw 'PROBE_RESULT_INVALID' }
+    if ($resultCode -notmatch '^(0|1[0123][0-5])$') { throw 'PROBE_RESULT_INVALID' }
     if ($resultCode -ne '0') {
       $scope = if ($index -eq 0) { 'user_profile' } else { 'home_custom' }
       throw "SECOND_USER_ACCESS_NOT_REFUSED:$scope`:$resultCode"
     }
   }
-  Write-Output '{"nativeWindowsAcl":"passed","homeTargets":10,"publicCustomRefusedBeforeCreation":true,"distinctUnprivilegedUser":true,"ownerReadWrite":true,"readDenied":true,"writeDenied":true}'
+  Write-Output '{"nativeWindowsAcl":"passed","homeTargets":12,"publicCustomRefusedBeforeCreation":true,"distinctUnprivilegedUser":true,"ownerReadWrite":true,"readDenied":true,"writeDenied":true}'
 } finally {
   if (Test-Path -LiteralPath $child) { Remove-Item -LiteralPath $child -Force }
   foreach ($result in $results) {

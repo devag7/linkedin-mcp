@@ -31,6 +31,37 @@ try {
   $trustedOwners = @($sid, 'S-1-5-18', 'S-1-5-32-544', $trustedInstaller)
   $privateOwners = @($sid, 'S-1-5-18', 'S-1-5-32-544')
   $trustedAncestorAllow = @($allowed) + @($trustedInstaller)
+  function Assert-SafeParent([string]$path) {
+    $item = Get-Item -LiteralPath $path -Force
+    if (($item.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) { throw 'ANCESTOR_REPARSE_POINT' }
+    $acl = Get-Acl -LiteralPath $path
+    $owner = $acl.GetOwner([Security.Principal.SecurityIdentifier]).Value
+    if ($privateOwners -cnotcontains $owner) { throw 'ANCESTOR_FOREIGN_OWNER' }
+    foreach ($rule in $acl.GetAccessRules($true, $true, [Security.Principal.SecurityIdentifier])) {
+      if (($rule.PropagationFlags -band [Security.AccessControl.PropagationFlags]::InheritOnly) -ne 0) { continue }
+      if ($rule.AccessControlType -eq [Security.AccessControl.AccessControlType]::Allow -and
+          $allowed -cnotcontains $rule.IdentityReference.Value -and
+          (([int64]$rule.FileSystemRights -band $danger) -ne 0)) {
+        throw 'ANCESTOR_REPLACE_AUTHORITY'
+      }
+    }
+  }
+  function New-PrivateDirectory([string]$path) {
+    $security = New-Object Security.AccessControl.DirectorySecurity
+    $security.SetAccessRuleProtection($true, $false)
+    $security.SetOwner($identity.User)
+    foreach ($trustee in @($sid, 'S-1-5-18', 'S-1-5-32-544')) {
+      $principal = [Security.Principal.SecurityIdentifier]::new($trustee)
+      $rule = [Security.AccessControl.FileSystemAccessRule]::new(
+        $principal,
+        [Security.AccessControl.FileSystemRights]::FullControl,
+        ([Security.AccessControl.InheritanceFlags]::ContainerInherit -bor [Security.AccessControl.InheritanceFlags]::ObjectInherit),
+        [Security.AccessControl.PropagationFlags]::None,
+        [Security.AccessControl.AccessControlType]::Allow)
+      $security.AddAccessRule($rule)
+    }
+    [void][IO.Directory]::CreateDirectory($path, $security)
+  }
   function Assert-Private([string]$path, [bool]$directory) {
     $item = Get-Item -LiteralPath $path -Force
     if (($item.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) { throw 'REPARSE_POINT' }
@@ -88,7 +119,7 @@ try {
     $ancestor = $ancestor.Parent
   }
   $stage = 'HOME'
-  Assert-Private $stateUserProfileRoot $true
+  Assert-SafeParent $stateUserProfileRoot
   $stage = 'COMPONENT'
   $current = $stateUserProfileRoot
   $suffix = $target.Substring($stateUserProfileRoot.Length + 1)
@@ -102,7 +133,7 @@ try {
         [Console]::Out.Write('PRIVATE_ABSENT')
         exit 0
       }
-      [void][IO.Directory]::CreateDirectory($current)
+      New-PrivateDirectory $current
     }
     Assert-Private $current (-not ([bool]$request.file -and $last))
   }

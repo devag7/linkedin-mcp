@@ -12,8 +12,9 @@ $state = Join-Path $root '.linkedin-mcp'
 $targets = @(
   @{ Kind = 'directory'; Path = (Join-Path $state 'profile') },
   @{ Kind = 'file'; Path = (Join-Path (Join-Path (Join-Path $state 'profile') 'Default') 'synthetic-cookie.txt') },
+  @{ Kind = 'file'; Path = (Join-Path $state 'profile.circuit.json') },
   @{ Kind = 'file'; Path = (Join-Path $state 'budgets.json') },
-  @{ Kind = 'file'; Path = (Join-Path (Join-Path $state 'profile.lock') 'owner.json') },
+  @{ Kind = 'file'; Path = (Join-Path (Join-Path $state 'profile.owner.lock') 'owner.json') },
   @{ Kind = 'file'; Path = (Join-Path (Join-Path $state 'budgets.json.lock') 'owner.json') }
 )
 

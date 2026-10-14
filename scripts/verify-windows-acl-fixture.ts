@@ -3,6 +3,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { BudgetTracker } from '../src/safety/budgets.js';
 import { StateLock } from '../src/safety/state-lock.js';
+import { CircuitFileStorage } from '../src/safety/circuit-storage.js';
 import { ensurePrivateStateDirectory } from '../src/safety/windows-private-state.js';
 
 const root = process.argv[2];
@@ -34,7 +35,14 @@ fs.writeFileSync(path.join(nested, 'synthetic-cookie.txt'), 'synthetic only', {
 ensurePrivateStateDirectory(profile, true);
 
 // Exercise the production lock and budget persistence paths with synthetic data.
-new StateLock(profile, true).acquire();
+new StateLock(`${profile}.owner`, true).acquire();
+new CircuitFileStorage(`${profile}.circuit.json`).save({
+  globalOpen: false,
+  globalTrippedAt: 0,
+  globalReason: '',
+  actions: {},
+  rate429Count: 0,
+});
 new BudgetTracker(null, { storagePath: path.join(state, 'budgets.json') }).bindAccount(
   `acct_${'0'.repeat(64)}`,
 );
