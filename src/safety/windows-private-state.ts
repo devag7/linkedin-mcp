@@ -80,6 +80,7 @@ try {
     $ownerRights = [int64]0
     foreach ($rule in $rules) {
       if ($rule.AccessControlType -ne [Security.AccessControl.AccessControlType]::Allow) { continue }
+      if (($rule.PropagationFlags -band [Security.AccessControl.PropagationFlags]::InheritOnly) -ne 0) { continue }
       $trustee = $rule.IdentityReference.Value
       if ($allowed -cnotcontains $trustee) { throw 'UNTRUSTED_ALLOW_ACE' }
       if ($trustee -eq $sid) {
@@ -96,9 +97,12 @@ try {
     [int64][Security.AccessControl.FileSystemRights]::ChangePermissions -bor
     [int64][Security.AccessControl.FileSystemRights]::TakeOwnership
   while ($null -ne $ancestor) {
+    $stage = 'ANCESTOR_ITEM'
     $item = Get-Item -LiteralPath $ancestor.FullName -Force
     if (($item.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) { throw 'ANCESTOR_REPARSE_POINT' }
+    $stage = 'ANCESTOR_ACL'
     $acl = Get-Acl -LiteralPath $ancestor.FullName
+    $stage = 'ANCESTOR_OWNER'
     $ancestorOwner = $acl.GetOwner([Security.Principal.SecurityIdentifier]).Value
     if ($trustedOwners -cnotcontains $ancestorOwner) {
       if ($ancestorOwner.StartsWith('S-1-5-80-', [StringComparison]::Ordinal)) {
@@ -106,6 +110,7 @@ try {
       }
       throw 'ANCESTOR_FOREIGN_OWNER'
     }
+    $stage = 'ANCESTOR_RULES'
     foreach ($rule in $acl.GetAccessRules($true, $true, [Security.Principal.SecurityIdentifier])) {
       if (($rule.PropagationFlags -band [Security.AccessControl.PropagationFlags]::InheritOnly) -ne 0) {
         continue
@@ -116,6 +121,7 @@ try {
         throw 'ANCESTOR_REPLACE_AUTHORITY'
       }
     }
+    $stage = 'ANCESTOR_PARENT'
     $ancestor = $ancestor.Parent
   }
   $stage = 'HOME'
@@ -179,6 +185,9 @@ const KNOWN_REFUSALS = new Set([
   'TREE_LIMIT', 'ACL_CHECK_FAILED_INPUT', 'ACL_CHECK_FAILED_INPUT_HOME',
   'ACL_CHECK_FAILED_INPUT_TARGET', 'ACL_CHECK_FAILED_INPUT_COMPARE',
   'ACL_CHECK_FAILED_INPUT_IDENTITY', 'ACL_CHECK_FAILED_ANCESTOR',
+  'ACL_CHECK_FAILED_ANCESTOR_ITEM', 'ACL_CHECK_FAILED_ANCESTOR_ACL',
+  'ACL_CHECK_FAILED_ANCESTOR_OWNER', 'ACL_CHECK_FAILED_ANCESTOR_RULES',
+  'ACL_CHECK_FAILED_ANCESTOR_PARENT',
   'ACL_CHECK_FAILED_HOME', 'ACL_CHECK_FAILED_COMPONENT', 'ACL_CHECK_FAILED_TREE',
 ]);
 
