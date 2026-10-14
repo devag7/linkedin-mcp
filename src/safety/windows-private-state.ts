@@ -11,17 +11,22 @@ const WINDOWS_ACL_CHECK = String.raw`
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
 $stage = 'INPUT'
+[Console]::Error.WriteLine('ACL_STAGE:' + $stage)
 try {
   $request = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String([Console]::In.ReadLine())) | ConvertFrom-Json
   $stage = 'INPUT_HOME'
+  [Console]::Error.WriteLine('ACL_STAGE:' + $stage)
   $stateUserProfileRoot = [IO.Path]::GetFullPath([Environment]::GetFolderPath('UserProfile')).TrimEnd([char]92)
   $stage = 'INPUT_TARGET'
+  [Console]::Error.WriteLine('ACL_STAGE:' + $stage)
   $target = [IO.Path]::GetFullPath([string]$request.target).TrimEnd([char]92)
   $stage = 'INPUT_COMPARE'
+  [Console]::Error.WriteLine('ACL_STAGE:' + $stage)
   if (-not $stateUserProfileRoot -or -not $stateUserProfileRoot.Equals([IO.Path]::GetFullPath([string]$request.home).TrimEnd([char]92), [StringComparison]::OrdinalIgnoreCase) -or -not $target.StartsWith($stateUserProfileRoot + [char]92, [StringComparison]::OrdinalIgnoreCase)) {
     throw 'OUTSIDE_USER_PROFILE'
   }
   $stage = 'INPUT_IDENTITY'
+  [Console]::Error.WriteLine('ACL_STAGE:' + $stage)
   $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
   $sid = $identity.User.Value
   $allowed = @($sid, 'S-1-5-18', 'S-1-5-32-544', 'S-1-3-0')
@@ -93,6 +98,7 @@ try {
     if (($ownerRights -band $full) -ne $full) { throw 'OWNER_NOT_FULL_CONTROL' }
   }
   $stage = 'ANCESTOR'
+  [Console]::Error.WriteLine('ACL_STAGE:' + $stage)
   $ancestor = [IO.Directory]::GetParent($stateUserProfileRoot)
   $danger = [int64][Security.AccessControl.FileSystemRights]::DeleteSubdirectoriesAndFiles -bor
     [int64][Security.AccessControl.FileSystemRights]::Delete -bor
@@ -100,11 +106,14 @@ try {
     [int64][Security.AccessControl.FileSystemRights]::TakeOwnership
   while ($null -ne $ancestor) {
     $stage = 'ANCESTOR_ITEM'
+    [Console]::Error.WriteLine('ACL_STAGE:' + $stage)
     $item = Get-Item -LiteralPath $ancestor.FullName -Force
     if (($item.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) { throw 'ANCESTOR_REPARSE_POINT' }
     $stage = 'ANCESTOR_ACL'
+    [Console]::Error.WriteLine('ACL_STAGE:' + $stage)
     $acl = Get-Acl -LiteralPath $ancestor.FullName
     $stage = 'ANCESTOR_OWNER'
+    [Console]::Error.WriteLine('ACL_STAGE:' + $stage)
     $ancestorOwner = $acl.GetOwner([Security.Principal.SecurityIdentifier]).Value
     if ($trustedOwners -cnotcontains $ancestorOwner) {
       if ($ancestorOwner.StartsWith('S-1-5-80-', [StringComparison]::Ordinal)) {
@@ -113,6 +122,7 @@ try {
       throw 'ANCESTOR_FOREIGN_OWNER'
     }
     $stage = 'ANCESTOR_RULES'
+    [Console]::Error.WriteLine('ACL_STAGE:' + $stage)
     foreach ($rule in $acl.GetAccessRules($true, $true, [Security.Principal.SecurityIdentifier])) {
       if (($rule.PropagationFlags -band [Security.AccessControl.PropagationFlags]::InheritOnly) -ne 0) {
         continue
@@ -124,11 +134,14 @@ try {
       }
     }
     $stage = 'ANCESTOR_PARENT'
+    [Console]::Error.WriteLine('ACL_STAGE:' + $stage)
     $ancestor = $ancestor.Parent
   }
   $stage = 'HOME'
+  [Console]::Error.WriteLine('ACL_STAGE:' + $stage)
   Assert-SafeParent $stateUserProfileRoot
   $stage = 'COMPONENT'
+  [Console]::Error.WriteLine('ACL_STAGE:' + $stage)
   $current = $stateUserProfileRoot
   $suffix = $target.Substring($stateUserProfileRoot.Length + 1)
   $parts = $suffix.Split([char]92)
@@ -147,6 +160,7 @@ try {
   }
   if ([bool]$request.scanTree) {
     $stage = 'TREE'
+    [Console]::Error.WriteLine('ACL_STAGE:' + $stage)
     $stack = New-Object 'System.Collections.Generic.Stack[string]'
     $stack.Push($target)
     $seen = 0
@@ -246,12 +260,18 @@ function verify(target: string, create: boolean, file: boolean, scanTree = false
     if (output !== 'PRIVATE_OK' && !(output === 'PRIVATE_ABSENT' && !create)) throw new Error('unverified');
   } catch (error) {
     const stdout = (error as { stdout?: Buffer | string }).stdout;
+    const stderr = String((error as { stderr?: Buffer | string }).stderr || '');
+    const stages = [...stderr.matchAll(/ACL_STAGE:([A-Z_]+)/g)];
+    const lastStage = stages.at(-1)?.[1];
+    const safeStage = lastStage && KNOWN_REFUSALS.has(`ACL_CHECK_FAILED_${lastStage}`)
+      ? lastStage
+      : undefined;
     const refused = /^PRIVATE_REFUSED:([A-Z_]+)$/.exec(String(stdout || '').trim());
     const processError = error as NodeJS.ErrnoException & { status?: number | null };
     const reason = refused?.[1] && KNOWN_REFUSALS.has(refused[1])
       ? refused[1]
       : processError.code === 'ETIMEDOUT'
-        ? 'ACL_CHECK_FAILED_TIMEOUT'
+        ? `ACL_CHECK_FAILED_TIMEOUT${safeStage ? `_${safeStage}` : ''}`
         : processError.code === 'ENOENT'
           ? 'ACL_CHECK_FAILED_SPAWN'
           : processError.code === 'ENOBUFS'
