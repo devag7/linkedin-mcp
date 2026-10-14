@@ -8,8 +8,10 @@ if (process.platform !== 'win32' || !scenario || !target) throw new Error('NEGAT
 
 const expected: Record<string, string> = {
   'untrusted-child': 'WINDOWS_STATE_PRIVACY_UNVERIFIED_UNTRUSTED_ALLOW_ACE',
+  'unsafe-leaf': 'WINDOWS_STATE_PRIVACY_UNVERIFIED_UNTRUSTED_ALLOW_ACE',
   'inherited-child': 'WINDOWS_STATE_PRIVACY_UNVERIFIED_UNTRUSTED_ALLOW_ACE',
   junction: 'WINDOWS_STATE_PRIVACY_UNVERIFIED_REPARSE_POINT',
+  'nested-junction': 'WINDOWS_STATE_PRIVACY_UNVERIFIED_REPARSE_POINT',
   'spoofed-home': 'WINDOWS_STATE_PRIVACY_UNVERIFIED_OUTSIDE_USER_PROFILE',
   'helper-failure': 'WINDOWS_STATE_PRIVACY_UNVERIFIED_ACL_CHECK_FAILED_SPAWN',
   'debug-logging': 'WINDOWS_STATE_PRIVACY_UNVERIFIED_DEBUG_ENV',
@@ -23,7 +25,7 @@ if (scenario === 'debug-logging') process.env.NODE_DEBUG = 'child_process';
 if (scenario === 'debug-cached') delete process.env.NODE_DEBUG;
 
 try {
-  ensurePrivateStateDirectory(target, scenario === 'untrusted-child');
+  ensurePrivateStateDirectory(target, ['untrusted-child', 'unsafe-leaf', 'nested-junction'].includes(scenario));
   if (scenario === 'inherited-child')
     writeFileSync(join(target, 'would-be-secret.txt'), 'synthetic only');
   throw new Error('NEGATIVE_WAS_ACCEPTED');

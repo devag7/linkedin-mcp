@@ -32,6 +32,8 @@ $unsafeRoot = Join-Path $env:USERPROFILE "lmcp-unsafe-$suffix"
 $unsafeInheritedRoot = Join-Path $env:USERPROFILE "lmcp-inherit-$suffix"
 $junctionTarget = Join-Path (Join-Path $env:PUBLIC 'Documents') "lmcp-junction-target-$suffix"
 $junction = Join-Path $env:USERPROFILE "lmcp-junction-$suffix"
+$nestedJunctionTarget = Join-Path (Join-Path $env:PUBLIC 'Documents') "lmcp-nested-target-$suffix"
+$nestedJunction = $null
 
 try {
   if (Test-Path -LiteralPath $child) { throw 'PROBE_SCRIPT_PREEXISTS' }
@@ -138,6 +140,21 @@ try {
   & node --import tsx $negative 'untrusted-child' $unsafeProfile | Out-Null
   if ($LASTEXITCODE -ne 0) { throw 'NEGATIVE_UNTRUSTED_CHILD_FAILED' }
 
+  $firstProfile = Join-Path (Join-Path $roots[0] '.linkedin-mcp') 'profile'
+  $unsafeLeaf = Join-Path (Join-Path $firstProfile 'Default') 'synthetic-cookie.txt'
+  $leafAcl = Get-Acl -LiteralPath $unsafeLeaf
+  $leafAcl.AddAccessRule($unsafeRule)
+  Set-Acl -LiteralPath $unsafeLeaf -AclObject $leafAcl
+  & node --import tsx $negative 'unsafe-leaf' $firstProfile | Out-Null
+  if ($LASTEXITCODE -ne 0) { throw 'NEGATIVE_UNSAFE_LEAF_FAILED' }
+
+  $nestedProfile = Join-Path (Join-Path $roots[1] '.linkedin-mcp') 'profile'
+  [void][IO.Directory]::CreateDirectory($nestedJunctionTarget)
+  $nestedJunction = Join-Path (Join-Path $nestedProfile 'Default') 'synthetic-junction'
+  New-Item -ItemType Junction -Path $nestedJunction -Target $nestedJunctionTarget | Out-Null
+  & node --import tsx $negative 'nested-junction' $nestedProfile | Out-Null
+  if ($LASTEXITCODE -ne 0) { throw 'NEGATIVE_NESTED_JUNCTION_FAILED' }
+
   & node --import tsx scripts/verify-windows-acl-fixture.ts $unsafeInheritedRoot | Out-Null
   if ($LASTEXITCODE -ne 0) { throw 'NEGATIVE_INHERIT_FIXTURE_FAILED' }
   $unsafeInheritedProfile = Join-Path (Join-Path $unsafeInheritedRoot '.linkedin-mcp') 'profile'
@@ -176,13 +193,16 @@ try {
     $env:NODE_DEBUG = $previousNodeDebug
   }
 
-  Write-Output '{"nativeWindowsAcl":"passed","homeTargets":18,"negativeCases":7,"publicCustomRefusedBeforeCreation":true,"ordinaryCreator":true,"distinctUnprivilegedUser":true,"ownerReadWrite":true,"readDenied":true,"writeDenied":true}'
+  Write-Output '{"nativeWindowsAcl":"passed","homeTargets":18,"negativeCases":9,"publicCustomRefusedBeforeCreation":true,"ordinaryCreator":true,"distinctUnprivilegedUser":true,"ownerReadWrite":true,"readDenied":true,"writeDenied":true}'
 } finally {
   if (Test-Path -LiteralPath $child) { Remove-Item -LiteralPath $child -Force }
   if (Test-Path -LiteralPath $creatorScript) { Remove-Item -LiteralPath $creatorScript -Force }
   if (Test-Path -LiteralPath $creatorResult) { Remove-Item -LiteralPath $creatorResult -Force }
   foreach ($result in $results) {
     if (Test-Path -LiteralPath $result) { Remove-Item -LiteralPath $result -Force }
+  }
+  if ($nestedJunction -and (Test-Path -LiteralPath $nestedJunction)) {
+    Remove-Item -LiteralPath $nestedJunction -Force
   }
   foreach ($root in $roots) {
     if (Test-Path -LiteralPath $root) { Remove-Item -LiteralPath $root -Recurse -Force }
@@ -191,6 +211,7 @@ try {
   if (Test-Path -LiteralPath $unsafeInheritedRoot) { Remove-Item -LiteralPath $unsafeInheritedRoot -Recurse -Force }
   if (Test-Path -LiteralPath $junction) { Remove-Item -LiteralPath $junction -Force }
   if (Test-Path -LiteralPath $junctionTarget) { Remove-Item -LiteralPath $junctionTarget -Recurse -Force }
+  if (Test-Path -LiteralPath $nestedJunctionTarget) { Remove-Item -LiteralPath $nestedJunctionTarget -Recurse -Force }
   if ($roots.Count -gt 1) {
     $customParent = Split-Path $roots[1] -Parent
     if (Test-Path -LiteralPath $customParent) { Remove-Item -LiteralPath $customParent -Recurse -Force }
