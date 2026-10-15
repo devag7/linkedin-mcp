@@ -97,3 +97,30 @@ These new checks are pending native evidence.
 
 References: [Microsoft file security and default descriptor inheritance](https://learn.microsoft.com/en-us/windows/win32/fileio/file-security-and-access-rights),
 [PowerShell alternate-credential process execution](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.management/start-process?view=powershell-5.1).
+
+## Current draft evidence (2026-10-15)
+
+At `fff0622`, the [native Windows probe](https://github.com/devag7/linkedin-mcp/actions/runs/38631379199)
+passed on Node 20 and 22: an ordinary creator's 18 synthetic targets denied
+second-user reading and modification, public custom creation was refused, and
+nine negative cases passed. These include a deep unsafe file, a nested junction,
+an inherit-only untrusted grant and failed verifier startup. The
+[packed artifact matrix](https://github.com/devag7/linkedin-mcp/actions/runs/38631379412)
+passed on both Windows Node versions. Installed offline Claude Desktop, Cursor
+and VS Code SDK connections took about 1.2–1.7 seconds each; real temporary
+Chrome cleanup observed ten processes and ended at zero on each runner.
+
+That CI run still failed its two Windows source jobs: three high-volume budget
+tests each exceeded Vitest's 60-second limit. The tests' Windows counter
+fixture had mocked file verification but not the directory guard used by each
+state lock. The follow-up mocks that guard only inside the counter unit suite;
+native probe and packed-package flows still invoke the production guard.
+Local 742 tests, metadata, lint, types and installed-package checks pass with
+this change. The restored 180-second Windows package verifier limit is also
+pending exact-head hosted verification. Do not count the earlier failed CI as
+passing or merge the draft until the new head's source and package jobs pass.
+
+These results demonstrate behavior on the hosted runner's tested ACLs. They
+do not establish privacy for previously exposed state, every Windows policy,
+privileged administrators or hostile same-account races. Live LinkedIn and
+native client application compatibility were not tested.

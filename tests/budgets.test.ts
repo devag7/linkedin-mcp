@@ -12,6 +12,7 @@ vi.mock('../src/safety/windows-private-state.js', async (importOriginal) => {
   if (process.platform !== 'win32') return original;
   return {
     ...original,
+    ensurePrivateStateDirectory: (directory: string) => { mkdirSync(directory, { recursive: true }); },
     ensurePrivateStateFileParent: (file: string) => { mkdirSync(dirname(file), { recursive: true }); },
     verifyPrivateStateFileIfPresent: () => {},
   };
