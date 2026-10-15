@@ -46,6 +46,9 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: npm
       - run: npm ci
+      - name: Keep Windows fixtures under the current user profile
+        if: runner.os == 'Windows'
+        run: node --import tsx scripts/prepare-windows-ci-temp.ts
       - run: npm run metadata:check
       - run: npm run lint
       - run: npm run typecheck
