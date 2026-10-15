@@ -1,6 +1,24 @@
 # Coverage against the original 2026 roadmap
 
-## Latest release reconciliation — October 11, 2026
+## Source update — October 15, 2026
+
+[PR #24](https://github.com/devag7/linkedin-mcp/pull/24) merged native Windows
+ACL creation, existing-state checks and refusal of unsafe custom parents. Its
+[final-head CI](https://github.com/devag7/linkedin-mcp/actions/runs/38685192990)
+passed 12/12, and the [second-user probe](https://github.com/devag7/linkedin-mcp/actions/runs/38685192976)
+passed on Windows Node 20/22 with 18 synthetic read/modify denials and nine
+negative cases. [PR #25](https://github.com/devag7/linkedin-mcp/pull/25) repaired
+the release workflow's Windows fixture location after the first main release
+run [failed](https://github.com/devag7/linkedin-mcp/actions/runs/38689268529);
+[repaired main CI](https://github.com/devag7/linkedin-mcp/actions/runs/38691086776)
+passed 12/12 and the [release workflow](https://github.com/devag7/linkedin-mcp/actions/runs/38691086668)
+passed all six compatibility jobs plus validation. Publication was skipped.
+The failed run remains failed evidence. The published 3.1.0 tag and archive
+still predate the Windows guard. Existing exposed state, other Windows policies,
+privileged administrators and hostile same-account races remain unproven.
+Coordinated erasure and first-use outcomes remain open.
+
+## Published 3.1.0 reconciliation — October 11, 2026
 
 [3.1.0 is published and independently verified](RELEASE_EVIDENCE_3.1.0.md).
 Its tagged 22-tool, 15-file source is `ac8fb5b8033ffc480325469c14eb931d65b58f04`.

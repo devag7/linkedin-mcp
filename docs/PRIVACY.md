@@ -10,19 +10,21 @@
 New profile directories and safety files request POSIX modes 0700/0600 on Linux
 and macOS. Windows does not implement owner/group/other permissions through
 [Node file modes](https://nodejs.org/docs/latest-v22.x/api/fs.html#fschmodpath-mode-callback).
-Windows tests exercise ownership, shared-state transactions and cleanup, but do
-not establish NTFS ACL privacy. Keep profiles and shared budgets in a directory
-private to your OS account; review its native permissions before live use. Native
-ACL enforcement/verification remains an explicit security follow-up. A
-[disposable second-user Windows probe](https://github.com/devag7/linkedin-mcp/actions/runs/38213175092)
-denied read/write of five state targets under the runner user's profile, then
-found that a different unprivileged user could list the profile directory under
-a public custom parent. Do not use `LINKEDIN_PROFILE_DIR` under Public, shared,
-or otherwise broad-access Windows locations. The user-profile result does not
-certify other machines or existing ACLs; review them before live use. A hash is
-not anonymization. Journals do not
-store target/content, cookies, raw provider bodies or response details. Browser
-requests and returned data still involve LinkedIn and the selected MCP client.
+The [merged Windows guard](https://github.com/devag7/linkedin-mcp/pull/24)
+creates private native ACLs beneath the actual user profile, verifies existing
+state and refuses unsafe custom parents before sensitive creation. A
+[hosted second-user probe](https://github.com/devag7/linkedin-mcp/actions/runs/38685192976)
+denied read and modification of 18 synthetic targets on Node 20 and 22 and
+passed nine negative cases. The earlier
+[public-parent exposure](https://github.com/devag7/linkedin-mcp/actions/runs/38213175092)
+remains failed historical evidence. **Published 3.1.0 predates the guard**: do
+not use `LINKEDIN_PROFILE_DIR` under Public, shared or other broad-access Windows
+locations with that package. The new source proof covers the hosted runners and
+synthetic state, not previously exposed files, every Windows policy, privileged
+administrators or hostile same-account races. A hash is not anonymization.
+Journals do not store target/content, cookies, raw provider bodies or response
+details. Browser requests and returned data still involve LinkedIn and the
+selected MCP client.
 The server does not add cloud storage, analytics uploads or background telemetry.
 
 `linkedin-mcp --logout` removes only an unaliased profile directory. Symlinks, Windows junctions and aliased ancestors are refused; nested links are unlinked without deleting their targets. For a custom
@@ -54,8 +56,8 @@ depth over 32 or aggregate regular-file size over 2 GiB. It preserves the circui
 state, shared budgets and write journal, legacy credentials, other profiles,
 client data and backups. A successful preview is not stopped-owner proof or
 permission to delete; filesystem observations can become stale immediately.
-Complete erasure, native Windows ACL privacy and safe handling of uncooperating
-processes remain open.
+Complete erasure and safe handling of uncooperating processes remain open. The
+merged Windows guard does not authorize retirement or change published 3.1.0.
 
 Budget schema version 1 validates existing counters and adds operation and
 warmupStartedAt fields without guessing old outcomes or LinkedIn account age.
