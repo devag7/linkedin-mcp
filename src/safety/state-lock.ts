@@ -4,6 +4,7 @@ import * as path from 'node:path';
 import * as os from 'node:os';
 import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
+import { ensurePrivateStateDirectory } from './windows-private-state.js';
 
 export type SafetyStateCode =
   | 'PROFILE_IN_USE'
@@ -81,7 +82,7 @@ export class StateLock {
       return;
     }
     try {
-      fs.mkdirSync(path.dirname(this.directory), { recursive: true, mode: 0o700 });
+      ensurePrivateStateDirectory(path.dirname(this.directory));
       fs.mkdirSync(this.directory, { mode: 0o700 });
     } catch (error) {
       if ((error as NodeJS.ErrnoException).code === 'EEXIST')

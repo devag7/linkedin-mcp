@@ -235,7 +235,8 @@ try {
   process.stdout.write(
     execFileSync(process.execPath, [resolve('scripts/verify-setup.mjs'), bundle], {
       encoding: 'utf8',
-      timeout: 30000,
+      // Three full client cases run sequentially; record timing separately.
+      timeout: process.platform === 'win32' ? 180000 : 30000,
     }),
   );
   const smoke = execFileSync(

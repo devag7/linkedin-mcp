@@ -1,4 +1,5 @@
 /** Offline onboarding and client configuration. Never launches Chrome or edits client files. */
+import { homedir } from 'node:os';
 import { resolve } from 'node:path';
 import type { EnvConfig } from './config/env.js';
 import { inspectSetup } from './doctor.js';
@@ -26,6 +27,9 @@ export function clientConfiguration(
     LINKEDIN_HEADLESS: String(config.LINKEDIN_HEADLESS),
     LINKEDIN_ENABLE_WRITES: 'false',
     LINKEDIN_ENABLE_EXPERIMENTAL_MESSAGES: 'false',
+    ...(process.platform === 'win32'
+      ? { SystemRoot: process.env.SystemRoot || 'C:\\Windows', USERPROFILE: homedir() }
+      : {}),
     ...(config.LINKEDIN_CHROME_PATH
       ? { LINKEDIN_CHROME_PATH: resolve(config.LINKEDIN_CHROME_PATH) }
       : {}),

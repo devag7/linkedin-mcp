@@ -1,5 +1,6 @@
 /** Execute generated configuration through a real SDK stdio client, offline. */
 import assert from 'node:assert/strict';
+import { performance } from 'node:perf_hooks';
 import { spawnSync } from 'node:child_process';
 import {
   readFileSync,
@@ -40,6 +41,7 @@ const env = {
 };
 try {
   for (const name of ['claude-desktop', 'cursor', 'vscode']) {
+    const clientCaseStart = performance.now();
     const setup = spawnSync(process.execPath, [bundle, '--setup', name], {
       env,
       encoding: 'utf8',
@@ -97,25 +99,47 @@ try {
 
     const client = new Client({ name: 'generated-config-check', version: '1' });
     const transport = new StdioClientTransport({ ...server, stderr: 'pipe' });
+    let phase = 'connect';
+    let serverFailure = 'none';
+    let connectMs = -1;
+    transport.stderr?.on('data', (chunk) => {
+      const diagnostic = String(chunk);
+      const tagged = /"code":"(WINDOWS_STATE_[A-Z_]+|BUDGET_STATE_UNREADABLE|CIRCUIT_STATE_UNREADABLE|STARTUP_FAILED)"/.exec(diagnostic);
+      if (tagged) serverFailure = tagged[1];
+      else if (serverFailure === 'none' && diagnostic.includes('Failed to start server'))
+        serverFailure = 'startup';
+    });
     try {
+      const connectStart = performance.now();
       await client.connect(transport);
+      connectMs = Math.round(performance.now() - connectStart);
+      phase = 'list_tools';
       assert.equal((await client.listTools()).tools.length, 22);
       const call = async (name, args = {}) =>
         (await client.callTool({ name, arguments: args })).structuredContent;
+      phase = 'whoami';
       assert.equal((await call('whoami')).data.sessionState, 'not_checked');
+      phase = 'health_check';
       assert.equal((await call('health_check')).data.status, 'blocked');
+      phase = 'get_my_profile';
       assert.equal((await call('get_my_profile')).code, 'CIRCUIT_OPEN');
+      phase = 'create_post';
       const draft = await call('create_post', { text: 'Synthetic setup preview', confirm: false });
       assert.equal(draft.data.preview.writesEnabled, false);
       assert.equal(draft.data.preview.token.length, 43);
+      phase = 'close_session';
       assert.equal((await call('close_session')).data.closed, true);
       assert.equal(existsSync(`${profile}.owner.lock`), false);
+    } catch {
+      throw new Error(`PACKED_CLIENT_FLOW_FAILED:${name}:${phase}:${serverFailure}`);
     } finally {
       await client.close();
     }
     console.log(
       JSON.stringify({
         clientConfiguration: name,
+        connectMs,
+        caseMs: Math.round(performance.now() - clientCaseStart),
         sdkStdio: 'passed',
         scope: 'offline',
         toolCount: 22,

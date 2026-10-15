@@ -30,6 +30,10 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Keep Windows fixtures under the current user profile
+        if: runner.os == 'Windows'
+        run: node --import tsx scripts/prepare-windows-ci-temp.ts
+
       - name: Check generated metadata
         run: npm run metadata:check
 
@@ -63,6 +67,9 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: npm
       - run: npm ci
+      - name: Keep Windows fixtures under the current user profile
+        if: runner.os == 'Windows'
+        run: node --import tsx scripts/prepare-windows-ci-temp.ts
       - run: npm run build
       - name: Install packed package and verify offline CLI and MCP
         run: npm run verify:package
