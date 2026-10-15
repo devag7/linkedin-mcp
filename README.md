@@ -25,8 +25,9 @@
 ## Guided first run
 
 **4.0.0 adds offline retirement preview and native Windows privacy checks to
-the 22-tool local server.** Verify 4.0.0 is public on npm before installing; if
-publication is still underway, use the verified 3.1.0 package.
+the 22-tool local server.** Its [published archive and destinations](docs/RELEASE_EVIDENCE_4.0.0.md)
+have been independently verified. Read the breaking Windows upgrade notes before
+changing an existing installation.
 This is a local stdio tool; Glama's generic “Deploy Server” or browser-hosting
 controls are not supported installation instructions. No hosted service is required.
 [4.0.0 release notes](docs/RELEASE_NOTES_4.0.0.md) describe the upgrade and its
@@ -65,8 +66,8 @@ results are recorded in [release readiness](docs/RELEASE_READINESS_3.0.0.md). On
 maintainer health/own-profile read also passed with partial metadata;
 [scope and evidence](docs/ZERO_COST_EXECUTION_EVIDENCE_2026-10-01.md#7-consented-maintainer-live-read--passed-limited-scope)
 do not establish fresh-user or broader live compatibility.
-The exact published 3.1.0 artifact is independently verified; 4.0.0 destination
-verification must follow publication. Native-client first-use cohorts
+The exact published 4.0.0 artifact and all four destinations are
+[independently verified](docs/RELEASE_EVIDENCE_4.0.0.md). Native-client first-use cohorts
 and broad live-provider compatibility remain unverified.
 See [execution progress](docs/ROADMAP_PROGRESS.md) and the linked evidence.
 
