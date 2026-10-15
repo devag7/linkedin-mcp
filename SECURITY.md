@@ -121,8 +121,10 @@ counters. No target content, raw response detail, cookies, or authentication tok
 are stored in journal entries. Input hashes are fingerprints, not anonymization.
 State is validated, bounded to 8 MiB, and replaced using a synced temporary file
 and atomic rename requesting POSIX mode `0600`. Node mode bits do not establish
-Windows ACL privacy; use an account-private directory and see
-[platform permission limits](docs/PRIVACY.md). Corruption/read failures block startup; save
+Windows ACL privacy by themselves. The merged source adds native ACL creation and
+verification; published 3.1.0 predates that change. Use an account-private
+directory and see [platform permission limits](docs/PRIVACY.md).
+Corruption/read failures block startup; save
 failures latch a stop in the running tracker. Preserve reservations when repairing
 storage. Unknown invitations remain conservative inputs to safety gates across days.
 
@@ -169,6 +171,9 @@ stdio processes. The [hosted Node20/22 matrix](https://github.com/devag7/linkedi
 passed all 12 source/package jobs on Linux, macOS and Windows, including actual
 Chrome launch, ownership and cleanup with empty temporary profiles. This does not
 prove live LinkedIn behavior, Windows native ACL privacy or release authentication.
+Later [native second-user checks](https://github.com/devag7/linkedin-mcp/actions/runs/38685192976)
+passed for synthetic state on the merged source; they do not revise this earlier
+matrix or the published 3.1.0 archive.
 LICENSE was recovered from the committed revision after cloud-sync deletion;
 packed-package checks require it. No publishing was performed.
 
@@ -190,5 +195,7 @@ entry before deletion, checking that the moved entry is still that directory. Ne
 links are unlinked without traversing targets. This protects ordinary accidental
 aliases and entry replacement; Node filesystem APIs do not provide an atomic
 open-relative deletion primitive against an adversarial local process replacing
-ancestor directories. Keep state directories private. Windows ACL verification is
-still an explicit open item. Safety journals and checkpoints survive logout.
+ancestor directories. Keep state directories private. Native Windows ACL creation
+and verification are merged into source, with the hosted-runner and published
+version limits described in [PRIVACY.md](docs/PRIVACY.md). Safety journals and
+checkpoints survive logout.

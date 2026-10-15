@@ -32,10 +32,12 @@ accesses LinkedIn. Exit1 means a local issue needs attention; login remains
 `--client-config cursor`. Resolve diagnosis before merging the generated entry.
 Run its exact login command yourself when ready; use the same installed bundle
 and profile for login and MCP. On Windows, do not select a custom profile under
-Public or another shared directory: a [native second-user probe](https://github.com/devag7/linkedin-mcp/actions/runs/38213175092)
+Public or another shared directory with published 3.1.0: a
+[native second-user probe](https://github.com/devag7/linkedin-mcp/actions/runs/38213175092)
 could list such a synthetic profile despite the requested mode bits. Use an
-account-private location and review its NTFS ACL before login; broader native
-Windows privacy remains unverified.
+account-private location and review its NTFS ACL before login. The
+[merged source guard](https://github.com/devag7/linkedin-mcp/pull/24) now refuses
+unsafe parents and passed hosted second-user tests, but is not in 3.1.0.
 
 Source contributors can instead run `npm ci`, `npm run build`, then
 `node dist/index.js --setup cursor` from a stable reviewed checkout.
@@ -207,8 +209,9 @@ partial/empty/error states instead of assuming successful arrays are complete.
    stopped runtime and separately preserved compatible state, not cap deletion.
 8. Logout refuses symlink/junction/ancestor aliases. A custom profile requires
    explicit deletion confirmation; external safety files remain. Coordinated
-   erasure tooling and NTFS ACL enforcement are still open: verify Windows
-   native directory privacy before any account use and do not infer it from CI.
+   erasure tooling remains open. Native Windows ACL enforcement is merged in
+   source, but not published in 3.1.0; verify the installed version and Windows
+   directory privacy before account use. Hosted tests cover synthetic state.
 
 Pagination emits a continuation only when returned start/count/total agree with
 observed rows. Contradictory zero/short pages remain partial with no next cursor.
