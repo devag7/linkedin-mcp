@@ -24,12 +24,12 @@
 
 ## Guided first run
 
-**3.2.0 adds offline retirement preview and native Windows privacy checks to
-the 22-tool local server.** Verify 3.2.0 is public on npm before installing; if
+**4.0.0 adds offline retirement preview and native Windows privacy checks to
+the 22-tool local server.** Verify 4.0.0 is public on npm before installing; if
 publication is still underway, use the verified 3.1.0 package.
 This is a local stdio tool; Glama's generic “Deploy Server” or browser-hosting
 controls are not supported installation instructions. No hosted service is required.
-[3.2.0 release notes](docs/RELEASE_NOTES_3.2.0.md) describe the upgrade and its
+[4.0.0 release notes](docs/RELEASE_NOTES_4.0.0.md) describe the upgrade and its
 limits. [Verified 3.1.0 publication receipts](docs/RELEASE_EVIDENCE_3.1.0.md)
 remain available for the preceding release.
 
@@ -65,7 +65,7 @@ results are recorded in [release readiness](docs/RELEASE_READINESS_3.0.0.md). On
 maintainer health/own-profile read also passed with partial metadata;
 [scope and evidence](docs/ZERO_COST_EXECUTION_EVIDENCE_2026-10-01.md#7-consented-maintainer-live-read--passed-limited-scope)
 do not establish fresh-user or broader live compatibility.
-The exact published 3.1.0 artifact is independently verified; 3.2.0 destination
+The exact published 3.1.0 artifact is independently verified; 4.0.0 destination
 verification must follow publication. Native-client first-use cohorts
 and broad live-provider compatibility remain unverified.
 See [execution progress](docs/ROADMAP_PROGRESS.md) and the linked evidence.
@@ -87,17 +87,18 @@ not a guarantee of current provider compatibility or account safety.
 
 ## 🚀 Quick start
 
-Use Node.js 20 or later and Google Chrome. The commands below pin 3.2.0; run
-them after npm lists that version. Setup is offline; login and subsequent reads are deliberate account
-actions. For a stable installation path and Windows commands, see the
-[setup guide](SETUP_GUIDE.md). On Windows, avoid public or shared custom profile
-paths; a [native second-user probe](https://github.com/devag7/linkedin-mcp/actions/runs/38213175092)
-found one such profile directory readable by another local account.
+Use Node.js 20 or later and Google Chrome. The commands below pin 4.0.0; run
+them after npm lists that version. Setup is offline; login and subsequent reads
+are deliberate account actions. For a stable installation path and Windows
+commands, see the [setup guide](SETUP_GUIDE.md). On Windows, 4.0.0 requires
+state paths beneath the actual `%USERPROFILE%` tree. A custom path outside it
+will be refused even when an older version accepted it. See the
+[migration notes](docs/RELEASE_NOTES_4.0.0.md#upgrade-notes-and-limits).
 
 **1. Diagnose offline:**
 
 ```bash
-npm install --prefix "$HOME/.local/share/linkedin-mcp" linkedin-mcp-tools@3.2.0
+npm install --prefix "$HOME/.local/share/linkedin-mcp" linkedin-mcp-tools@4.0.0
 node "$HOME/.local/share/linkedin-mcp/node_modules/linkedin-mcp-tools/dist/index.js" --setup cursor
 ```
 
@@ -123,7 +124,7 @@ accepting `mcpServers`, this version-pinned example is an alternative:
   "mcpServers": {
     "linkedin": {
       "command": "npx",
-      "args": ["-y", "linkedin-mcp-tools@3.2.0"]
+      "args": ["-y", "linkedin-mcp-tools@4.0.0"]
     }
   }
 }

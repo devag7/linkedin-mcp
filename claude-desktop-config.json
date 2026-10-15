@@ -4,7 +4,7 @@
       "command": "npx",
       "args": [
         "-y",
-        "linkedin-mcp-tools@3.2.0"
+        "linkedin-mcp-tools@4.0.0"
       ]
     }
   }
