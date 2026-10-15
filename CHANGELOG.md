@@ -1,5 +1,17 @@
 # Changelog
 
+## [3.2.0] — Offline retirement preview and Windows privacy
+
+- Added `--retirement-preview` for bounded, path-free counts of one selected
+  browser profile. It never deletes state or authorizes coordinated erasure.
+- Added native Windows ACL creation and verification for profile, circuit,
+  budget and lock state under the account profile. Unsafe custom parents and
+  unverified existing state fail closed before sensitive writes. A hosted
+  second-user probe passed on synthetic state; existing exposed files and other
+  Windows policies are not certified.
+- Aligned Windows release fixtures with the private-state rules. The server
+  still exposes 22 tools; no LinkedIn route or write policy changed.
+
 ## [3.1.0] — Offline convenience and build repair
 
 - Read-only `--setup <client> --config-file <path>` JSON/JSONC merge preview:

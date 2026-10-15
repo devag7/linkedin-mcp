@@ -1,6 +1,7 @@
 # Setup and client verification
 
-This guide targets the released 22-tool core **3.1.0**. Publication is independently
+This guide targets the 22-tool **3.2.0** build. Verify that version is public
+on npm before installing; the preceding 3.1.0 package is independently
 verified in [release evidence](docs/RELEASE_EVIDENCE_3.1.0.md). Native-client
 first-use cohorts and broader live-provider compatibility remain unverified.
 Node 20+ and installed Google Chrome are required. Login requires a local display.
@@ -13,14 +14,14 @@ Install the published package at a stable path, then request the client report.
 On macOS/Linux:
 
 ```sh
-npm install --prefix "$HOME/.local/share/linkedin-mcp" linkedin-mcp-tools@3.1.0
+npm install --prefix "$HOME/.local/share/linkedin-mcp" linkedin-mcp-tools@3.2.0
 node "$HOME/.local/share/linkedin-mcp/node_modules/linkedin-mcp-tools/dist/index.js" --setup cursor
 ```
 
 On Windows PowerShell:
 
 ```powershell
-npm install --prefix "$env:LOCALAPPDATA\linkedin-mcp" linkedin-mcp-tools@3.1.0
+npm install --prefix "$env:LOCALAPPDATA\linkedin-mcp" linkedin-mcp-tools@3.2.0
 node "$env:LOCALAPPDATA\linkedin-mcp\node_modules\linkedin-mcp-tools\dist\index.js" --setup cursor
 ```
 
