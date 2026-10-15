@@ -1,6 +1,22 @@
 # Coverage against the original 2026 roadmap
 
-## Source update — October 15, 2026
+## Published 4.0.0 reconciliation — October 15, 2026
+
+[4.0.0 is published and independently verified](RELEASE_EVIDENCE_4.0.0.md)
+at tag/source `29d165fac748c79e1a8ba40ae3f030ca051eb5f9`. It ships the
+read-only retirement inventory preview and native Windows private-state guard.
+The latter refuses state outside the actual `%USERPROFILE%` tree, a breaking
+configuration change. A hosted second-user probe passed on synthetic state;
+existing machines and complete coordinated erasure remain outside that proof.
+The earlier 3.1.0 release and failed 4.0.0 workflow attempts remain preserved.
+
+The 22-tool package does not include draft PR #5's job brief. First-use
+participants remain 0/0, so the 80% goal, broad live compatibility, 10,000
+stars and daily Trending are unmeasured outcomes. Continue the owner-led
+consented pilot, resolve observed first-use failures, and keep real erasure and
+official-provider work as separate acceptance gates.
+
+## Historical source update before 4.0.0 publication — October 15, 2026
 
 [PR #24](https://github.com/devag7/linkedin-mcp/pull/24) merged native Windows
 ACL creation, existing-state checks and refusal of unsafe custom parents. Its
@@ -36,9 +52,10 @@ P-09 official provider is unbuilt. PR #5's job brief remains draft and blocked,
 with no `research_jobs` tool in 3.1.0. Saved jobs, richer filters and post search
 remain unbuilt without verified provider evidence. First-use volunteers remain
 **0/0**, and 10,000 stars and daily GitHub Trending are unmeasured goals.
-An unreleased, separately reviewable `--retirement-preview` adds bounded
-selected-profile counts only. It does not activate deletion or satisfy the
-coordinated-erasure and Windows ACL gates.
+At this October 11 snapshot, `--retirement-preview` was unreleased; it is now
+published in 4.0.0 with bounded selected-profile counts only. The preview does
+not authorize deletion or satisfy coordinated erasure. Windows ACL work is
+tracked separately above.
 Hosted browser cleanup does not change PR #5's historical failed receipts or
 prove live LinkedIn usefulness. The owner-led pilot, coordinated erasure and
 native Windows privacy proof are the next independent acceptance tracks.
@@ -108,15 +125,15 @@ cleanup, CI and release gates to pass.
 | Requirement / proposal | Actual state | Next acceptance / mandatory cash |
 | --- | --- | --- |
 | Private local state and deletion | Profile-only alias-safe logout shipped; [privacy scope](PRIVACY.md) | Coordinated profile/circuit/shared-budget/journal erasure **unbuilt**; active-owner refusal, destructive preview and restart proof needed. $0 |
-| Windows confidentiality | POSIX/private-mode and Windows fixtures exist | Native second-user NTFS ACL proof **unmeasured**; fixture/browser CI is insufficient. $0 with consenting environment |
+| Windows confidentiality | [4.0.0 native guard](RELEASE_EVIDENCE_4.0.0.md) and hosted second-user synthetic proof ship; paths outside `%USERPROFILE%` refuse | Existing state, other machines and hostile same-account races remain unproven. $0 |
 | Diagnostics redaction | Fixed statuses/no raw provider content; synthetic leakage tests | No universal third-party/Chrome log audit. Draft merge preview excludes unrelated config secrets in tested cases. $0 |
 | At least 95% schema-valid fixtures | Selected SDK/synthetic contract cases exercised | No representative live reliability rate or production SLO; sample/case definitions required. $0 |
 | At least 80% first reads within15min | [Consent kit](FIRST_USE_VOLUNTEER_KIT.md), [fixed scoring](FIRST_USE_RESULTS.md), header-only private template prepared | **Unmeasured: zero starts**. Each new person's first start counts once, including failures; later clients separate, valid useful partials qualify only under all six checks. No invitation/demo/maintainer attempt counts. $0 |
 | Repeat use / traffic / net stars | Measurement definitions prepared, no hidden telemetry | Collect opt-in aggregates and weekly traffic; no invented adoption/retention. 10,000 stars and daily Trending remain goals. $0 |
 | Glama / curated lists | Accurate local README/source and [pending awesome-MCP submission](https://github.com/punkpeye/awesome-mcp-servers/pull/15490) | [October8 observed listing errors](OFFLINE_FOLLOWUP_2026-10-08.md) remain unresolved; no platform contact/deploy/paid placement authorized here. $0 |
-| Development audit | Draft PR #16 replaces the affected wrapper with patched direct esbuild; combined candidate full audit reports zero findings | Exact-head hosted and release gates, independent build review and destination proof before release. One-shot build has no serve/watch. $0 |
-| Safe config merge preview | Draft PR #14 and integrated 3.1.0 candidate: explicit-file, bounded JSONC classification and add-only plan; no mutation or unrelated-value output in tested cases | Exact-head hosted review and real native-client acceptance remain separate. Published 3.0.0 is unchanged. $0; low parser/schema upkeep |
-| Erasure inventory preview | Draft PR #15 and integrated 3.1.0 candidate: bounded read-only metadata presence/uncertainty for six categories | No lock ownership, content, ACL, complete data scope or deletion proof; coordinated erasure remains unbuilt. $0; medium filesystem maintenance |
+| Development audit | Patched direct esbuild builder shipped; 4.0.0 full and production audits reported zero findings | Continue advisory monitoring; one-shot build has no serve/watch. $0 |
+| Safe config merge preview | Shipped in 3.1.0 and retained in 4.0.0: explicit-file, bounded JSONC classification and add-only plan; no mutation or unrelated-value output in tested cases | Real native-client first use remains separate. $0; low parser/schema upkeep |
+| Erasure inventory preview | Read-only metadata presence/uncertainty shipped in 3.1.0; 4.0.0 adds a bounded read-only selected-profile retirement preview | No lock ownership, content, ACL, complete data scope or deletion proof; coordinated erasure remains unbuilt. $0; medium filesystem maintenance |
 | Saved jobs / richer filters / post search | **Unbuilt** | Route/identity/parameter evidence before code; no endpoint guesses. $0; higher provider maintenance |
 | Optional official/paid provider | **Unbuilt** | User demand, scopes and verified app integration; optional user-funded costs only |
 
@@ -134,12 +151,11 @@ cleanup, CI and release gates to pass.
 |Primary audience / HTTP / alpha writes | Current plan prioritizes local read-heavy research; remote HTTP unsupported; writes default disabled and alpha with client approval |
 |Official app willingness / monthly capacity | Owner app/scopes and sustained maintenance capacity remain decisions to measure/confirm; no paid or enterprise commitment inferred |
 
-Priority now: finish exact-head hosted and release validation plus independent
-review of the 3.1.0 integration candidate. Keep the owner-led published 3.0.0
-pilot separate until a consenting new participant actually starts. Classify the
-first result using the merged scoring guide; reproduce its first product problem
-before selecting a repair. No participant/contact/account access is created by
-this reconciliation. Released 3.0.0 and all protected files/receipts stay intact.
+Priority now: obtain a consenting new participant's published-package first-use
+result, count every started failure, and fix the first reproducible product
+problem. Complete coordinated erasure and real native-client proof separately.
+No participant/contact/account access was created by this document update.
+Released 3.0.0/3.1.0, failed receipts and protected files remain preserved.
 
 <details>
 <summary>Historical October 1 reconciliation — preserved, superseded above</summary>

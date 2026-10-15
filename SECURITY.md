@@ -2,8 +2,9 @@
 
 ## Supported versions
 
-The current code line is 2.x. This document describes the source checkout;
-installing an older published version does not include unreleased fixes.
+The current published major version is 4.x. The
+[4.0.0 release evidence](docs/RELEASE_EVIDENCE_4.0.0.md) identifies its exact
+tag and archive; older packages do not inherit later source changes.
 
 ## Reporting a vulnerability
 
@@ -121,9 +122,9 @@ counters. No target content, raw response detail, cookies, or authentication tok
 are stored in journal entries. Input hashes are fingerprints, not anonymization.
 State is validated, bounded to 8 MiB, and replaced using a synced temporary file
 and atomic rename requesting POSIX mode `0600`. Node mode bits do not establish
-Windows ACL privacy by themselves. The merged source adds native ACL creation and
-verification; published 3.1.0 predates that change. Use an account-private
-directory and see [platform permission limits](docs/PRIVACY.md).
+Windows ACL privacy by themselves. Published 4.0.0 adds native ACL creation and
+verification within the actual `%USERPROFILE%` tree; 3.1.0 predates that change.
+Use an account-private directory and see [platform permission limits](docs/PRIVACY.md).
 Corruption/read failures block startup; save
 failures latch a stop in the running tracker. Preserve reservations when repairing
 storage. Unknown invitations remain conservative inputs to safety gates across days.
@@ -172,10 +173,12 @@ passed all 12 source/package jobs on Linux, macOS and Windows, including actual
 Chrome launch, ownership and cleanup with empty temporary profiles. This does not
 prove live LinkedIn behavior, Windows native ACL privacy or release authentication.
 Later [native second-user checks](https://github.com/devag7/linkedin-mcp/actions/runs/38685192976)
-passed for synthetic state on the merged source; they do not revise this earlier
-matrix or the published 3.1.0 archive.
+passed for synthetic state on the merged source and are included in
+[published 4.0.0](docs/RELEASE_EVIDENCE_4.0.0.md); they do not revise the
+earlier matrix or the published 3.1.0 archive.
 LICENSE was recovered from the committed revision after cloud-sync deletion;
-packed-package checks require it. No publishing was performed.
+packed-package checks require it. No publishing was performed in that earlier
+implementation pass.
 
 ### PR #3 preview and erasure corrections (2026-10-01)
 

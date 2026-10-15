@@ -1,7 +1,8 @@
 # LinkedIn MCP 4.0.0 release notes
 
-Version 4.0.0 adds two offline safety improvements. Verify its publication and
-destination integrity before installing; 3.1.0 is the preceding verified release.
+Version 4.0.0 adds two offline safety improvements. Its
+[publication and destination integrity are verified](RELEASE_EVIDENCE_4.0.0.md);
+3.1.0 is the preceding release.
 
 ## Changes
 

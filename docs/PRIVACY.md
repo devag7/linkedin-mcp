@@ -17,9 +17,10 @@ state and refuses unsafe custom parents before sensitive creation. A
 denied read and modification of 18 synthetic targets on Node 20 and 22 and
 passed nine negative cases. The earlier
 [public-parent exposure](https://github.com/devag7/linkedin-mcp/actions/runs/38213175092)
-remains failed historical evidence. **Published 3.1.0 predates the guard**: do
-not use `LINKEDIN_PROFILE_DIR` under Public, shared or other broad-access Windows
-locations with that package. The new source proof covers the hosted runners and
+remains failed historical evidence. The guard is
+[published in 4.0.0](RELEASE_EVIDENCE_4.0.0.md). **Published 3.1.0 predates it**:
+do not use `LINKEDIN_PROFILE_DIR` under Public, shared or other broad-access
+Windows locations with that package. The source proof covers the hosted runners and
 synthetic state, not previously exposed files, every Windows policy, privileged
 administrators or hostile same-account races. A hash is not anonymization.
 Journals do not store target/content, cookies, raw provider bodies or response
@@ -44,7 +45,7 @@ Full coordinated erasure tooling is still an explicit coverage gap.
 
 ### Read-only profile retirement preview
 
-The unreleased `--retirement-preview` command inspects one selected browser
+The 4.0.0 `--retirement-preview` command inspects one selected browser
 profile and prints bounded file/directory counts with fixed refusal reasons. It
 does not print paths, names, content or manifest hashes. It does not acquire
 locks, launch Chrome, make account requests or delete anything. The output
@@ -57,7 +58,8 @@ state, shared budgets and write journal, legacy credentials, other profiles,
 client data and backups. A successful preview is not stopped-owner proof or
 permission to delete; filesystem observations can become stale immediately.
 Complete erasure and safe handling of uncooperating processes remain open. The
-merged Windows guard does not authorize retirement or change published 3.1.0.
+published 4.0.0 Windows guard does not authorize retirement or change the
+preceding 3.1.0 archive.
 
 Budget schema version 1 validates existing counters and adds operation and
 warmupStartedAt fields without guessing old outcomes or LinkedIn account age.
