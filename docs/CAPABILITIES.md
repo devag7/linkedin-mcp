@@ -1,6 +1,6 @@
 # Capabilities and compatibility
 
-Generated from src/tools/capabilities.ts for linkedin-mcp-tools v3.1.0.
+Generated from src/tools/capabilities.ts for linkedin-mcp-tools v4.0.0.
 
 | Tool | Route | Source | Permission | Max rows | Evidence | Current live check |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -31,6 +31,6 @@ These are synthetic contract and registration checks, not current LinkedIn obser
 
 Search/feed/notification offsets use existing endpoint builders, one page per call. nextCursor appears only for matching provider start/count/total metadata. DOM discovery, inbox, conversation and invitation reads expose bounded first pages and mark completeness partial. Profiles make at most six requests (seven for own profile), plus bounded identity verification; optional hidden sections may be unavailable.
 
-For the 3.0.0 safety/client changes, read [migration](../SETUP_GUIDE.md#migrating-from-203-to-300). Preview tokens are mandatory for new writes; human approval remains a client workflow requirement. Offline platform/config checks do not certify current provider behavior, native chat or Windows NTFS privacy.
+For the 3.0.0 safety/client changes, read [migration](../SETUP_GUIDE.md#migrating-from-203-to-300). Preview tokens are mandatory for new writes; human approval remains a client workflow requirement. Offline platform/config checks do not certify current provider behavior or native chat. The Windows ACL probe covers synthetic state on hosted runners, not every account or machine; see [privacy limits](PRIVACY.md).
 
 The official provider is unavailable in the active runtime. Token/cookie settings from v1 do not activate it. All alpha writes are disabled by default; new-thread messaging has a second experimental opt-in.

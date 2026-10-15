@@ -1,5 +1,18 @@
 # Changelog
 
+## [4.0.0] — Windows privacy boundary and offline retirement preview
+
+- Added `--retirement-preview` for bounded, path-free counts of one selected
+  browser profile. It never deletes state or authorizes coordinated erasure.
+- Added native Windows ACL creation and verification for profile, circuit,
+  budget and lock state under the actual `%USERPROFILE%` tree. Every state path
+  outside that tree now refuses, including previously accepted private custom
+  paths. Unverified existing state fails closed before sensitive writes. A hosted
+  second-user probe passed on synthetic state; existing exposed files and other
+  Windows policies are not certified.
+- Aligned Windows release fixtures with the private-state rules. The server
+  still exposes 22 tools; no LinkedIn route or write policy changed.
+
 ## [3.1.0] — Offline convenience and build repair
 
 - Read-only `--setup <client> --config-file <path>` JSON/JSONC merge preview:
