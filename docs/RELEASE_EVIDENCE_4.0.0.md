@@ -5,7 +5,7 @@ Verified 2026-10-15 against merged source commit
 
 ## Publication and recovery
 
-The [first production run](https://github.com/devag7/linkedin-mcp/actions/runs/38702297882) passed all six OS/Node compatibility jobs. npm accepted the OIDC upload and signed its provenance, but its archive was still processing when the workflow's bounded readback ended with `PACKAGE_NOT_VISIBLE`. That run remains failed evidence. No tag, GitHub Packages version, Registry version or final release was created by it.
+The [first production run](https://github.com/devag7/linkedin-mcp/actions/runs/38702297882) passed all six OS/Node compatibility jobs. npm accepted the OIDC upload and signed its provenance, but its archive was not yet visible when the workflow's bounded readback ended with `PACKAGE_NOT_VISIBLE`. The exact server-side cause of the visibility delay is unproven. That run remains failed evidence. No tag, GitHub Packages version, Registry version or final release was created by it.
 
 The npm archive subsequently returned HTTP 200 with the approved bytes. The [same-source resume run](https://github.com/devag7/linkedin-mcp/actions/runs/38728759860) initially failed on Windows/Node 22 with `PROCESS_SNAPSHOT_TIMEOUT` at browser preflight before Chrome launch. Its failed-job-only retry passed that gate. The timeout's cause is unproven and the failed attempt remains in the run history. The final attempt passed all **10 jobs**. It skipped a second npm upload, verified the public npm artifact, then published and verified GitHub Packages and the MCP Registry before finalizing the GitHub Release.
 

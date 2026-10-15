@@ -45,7 +45,7 @@ Full coordinated erasure tooling is still an explicit coverage gap.
 
 ### Read-only profile retirement preview
 
-The unreleased `--retirement-preview` command inspects one selected browser
+The 4.0.0 `--retirement-preview` command inspects one selected browser
 profile and prints bounded file/directory counts with fixed refusal reasons. It
 does not print paths, names, content or manifest hashes. It does not acquire
 locks, launch Chrome, make account requests or delete anything. The output

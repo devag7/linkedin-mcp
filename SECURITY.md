@@ -2,8 +2,9 @@
 
 ## Supported versions
 
-The current code line is 2.x. This document describes the source checkout;
-installing an older published version does not include unreleased fixes.
+The current published major version is 4.x. The
+[4.0.0 release evidence](docs/RELEASE_EVIDENCE_4.0.0.md) identifies its exact
+tag and archive; older packages do not inherit later source changes.
 
 ## Reporting a vulnerability
 
