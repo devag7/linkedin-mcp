@@ -13,7 +13,11 @@ import {
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
-import { retirementPreview, retireSelectedProfile } from '../src/retirement.js';
+import {
+  retirementPreview,
+  retirementRecoveryPreview,
+  retireSelectedProfile,
+} from '../src/retirement.js';
 
 const hooks = vi.hoisted(() => ({
   oversized: '',
@@ -23,17 +27,24 @@ const hooks = vi.hoisted(() => ({
   injectProfileMember: false,
   replaceKnownMemberWith: '',
   relocateAncestorTo: '',
+  recordPaths: false,
+  seenPaths: [] as string[],
 }));
 vi.mock('node:fs', async (original) => {
   const fs = await original<typeof import('node:fs')>();
   return {
     ...fs,
     lstatSync: (path: import('node:fs').PathLike, options?: unknown) => {
+      if (hooks.recordPaths) hooks.seenPaths.push(String(path));
       if (String(path) === hooks.appeared && ++hooks.probes === 5) fs.mkdirSync(hooks.appeared);
       const stat = fs.lstatSync(path, options as { bigint: true });
       return String(path) === hooks.oversized
         ? Object.assign(Object.create(stat), { size: 2n * 1024n ** 3n + 1n })
         : stat;
+    },
+    realpathSync: (path: import('node:fs').PathLike) => {
+      if (hooks.recordPaths) hooks.seenPaths.push(String(path));
+      return fs.realpathSync(path);
     },
     unlinkSync: (path: import('node:fs').PathLike) => {
       if (hooks.failQuarantineRemove && String(path).includes('.retirement-'))
@@ -84,6 +95,8 @@ afterEach(() => {
   hooks.injectProfileMember = false;
   hooks.replaceKnownMemberWith = '';
   hooks.relocateAncestorTo = '';
+  hooks.recordPaths = false;
+  hooks.seenPaths = [];
   for (const root of roots.splice(0)) rmSync(root, { recursive: true, force: true });
 });
 
@@ -237,6 +250,151 @@ it('retains an interruption marker and quarantined credentials on deletion failu
   expect(existsSync(`${f.profileDir}.owner.lock`)).toBe(true);
   const names = readdirSync(join(f.home, '.linkedin-mcp'));
   expect(names.some((name) => name.startsWith('profile.retirement-'))).toBe(true);
+});
+
+it('reports an interrupted quarantine without clearing it or exposing private values', () => {
+  const f = fixture();
+  const cookie = join(f.profileDir, 'private-cookie-name');
+  const budget = join(f.home, '.linkedin-mcp', 'budgets.json');
+  writeFileSync(cookie, 'PRIVATE-COOKIE-CONTENT');
+  writeFileSync(budget, 'PRIVATE-JOURNAL');
+  hooks.failQuarantineRemove = true;
+  expect(() => retireSelectedProfile({ ...f.options, confirmed: true })).toThrow();
+  hooks.failQuarantineRemove = false;
+  const before = readFileSync(budget);
+  const report = retirementRecoveryPreview(f.options);
+  expect(report).toMatchObject({
+    status: 'needs_operator_review',
+    deletionAuthorized: false,
+    ownership: 'unverified',
+    observed: {
+      originalProfile: false,
+      plannedProfileQuarantine: true,
+      ownerLock: true,
+      quarantinedFiles: 1,
+      quarantinedDirectories: 1,
+    },
+  });
+  expect(JSON.stringify(report)).not.toMatch(/private-cookie-name|PRIVATE-COOKIE-CONTENT|PRIVATE-JOURNAL|home|retirement-[0-9a-f]/);
+  expect(readFileSync(budget)).toEqual(before);
+  expect(existsSync(`${f.profileDir}.retirement.json`)).toBe(true);
+  expect(existsSync(`${f.profileDir}.owner.lock`)).toBe(true);
+});
+
+it('treats an absent marker as no interrupted retirement without changing state', () => {
+  const f = fixture();
+  const cookie = join(f.profileDir, 'Cookies');
+  writeFileSync(cookie, 'PRIVATE-COOKIE');
+  hooks.recordPaths = true;
+  expect(retirementRecoveryPreview(f.options)).toMatchObject({
+    status: 'no_interruption_marker',
+    deletionAuthorized: false,
+  });
+  hooks.recordPaths = false;
+  expect(hooks.seenPaths.some((path) =>
+    /budgets\.json|credentials\.json|\.circuit\.json|\.owner\.lock/.test(path),
+  )).toBe(false);
+  expect(readFileSync(cookie, 'utf8')).toBe('PRIVATE-COOKIE');
+});
+
+it.skipIf(process.platform !== 'win32')('accepts the stored marker family casing on Windows', () => {
+  const f = fixture();
+  const selected = join(f.home, '.linkedin-mcp', 'Profile');
+  const aliasCasing = join(f.home, '.linkedin-mcp', 'profile');
+  const name = 'Profile.retirement-00000000-0000-4000-8000-000000000000';
+  const circuitName = 'Profile.circuit.json.retirement-00000000-0000-4000-8000-000000000001';
+  rmSync(f.profileDir, { recursive: true });
+  mkdirSync(selected);
+  mkdirSync(join(dirname(selected), name));
+  writeFileSync(join(dirname(selected), name, 'Cookies'), 'PRIVATE-COOKIE');
+  writeFileSync(join(dirname(selected), circuitName), 'PRIVATE-CIRCUIT');
+  writeFileSync(`${selected}.retirement.json`, JSON.stringify({
+    schemaVersion: 1,
+    phase: 'started',
+    scope: 'selected_profile',
+    quarantine: name,
+    circuitQuarantine: circuitName,
+  }));
+  const report = retirementRecoveryPreview({ ...f.options, profileDir: aliasCasing });
+  expect(report, 'fixed refusal reason: ' + ('reason' in report ? report.reason : 'none')).toMatchObject({
+    status: 'needs_operator_review',
+    observed: {
+      plannedProfileQuarantine: true,
+      plannedCircuitQuarantine: true,
+      quarantinedFiles: 1,
+    },
+  });
+});
+
+it('reports no marker when the selected state parent has never been created', () => {
+  const f = fixture();
+  rmSync(join(f.home, '.linkedin-mcp'), { recursive: true });
+  expect(retirementRecoveryPreview(f.options)).toMatchObject({
+    status: 'no_interruption_marker',
+    deletionAuthorized: false,
+  });
+  expect(existsSync(join(f.home, '.linkedin-mcp'))).toBe(false);
+});
+
+it('refuses a forged marker and does not inspect a path outside the selected parent', () => {
+  const f = fixture();
+  const marker = `${f.profileDir}.retirement.json`;
+  const outside = join(f.root, 'outside');
+  mkdirSync(outside);
+  writeFileSync(join(outside, 'sentinel'), 'KEEP');
+  writeFileSync(
+    marker,
+    JSON.stringify({
+      schemaVersion: 1,
+      phase: 'started',
+      scope: 'selected_profile',
+      quarantine: '../outside',
+      circuitQuarantine: null,
+    }),
+  );
+  expect(retirementRecoveryPreview(f.options)).toMatchObject({
+    status: 'refused',
+    reason: 'RECOVERY_MARKER_INVALID',
+  });
+  expect(readFileSync(join(outside, 'sentinel'), 'utf8')).toBe('KEEP');
+  expect(readFileSync(marker, 'utf8')).toContain('../outside');
+});
+
+it('refuses an oversized interruption marker without returning its contents', () => {
+  const f = fixture();
+  const marker = `${f.profileDir}.retirement.json`;
+  writeFileSync(marker, 'PRIVATE-MARKER-CONTENT'.repeat(120));
+  const report = retirementRecoveryPreview(f.options);
+  expect(report).toMatchObject({
+    status: 'refused',
+    reason: 'RECOVERY_MARKER_INVALID',
+  });
+  expect(JSON.stringify(report)).not.toContain('PRIVATE-MARKER-CONTENT');
+  expect(readFileSync(marker, 'utf8')).toContain('PRIVATE-MARKER-CONTENT');
+});
+
+it('refuses an aliased planned quarantine and leaves its target untouched', () => {
+  const f = fixture();
+  const outside = join(f.root, 'outside');
+  mkdirSync(outside);
+  writeFileSync(join(outside, 'sentinel'), 'KEEP');
+  const name = `profile.retirement-00000000-0000-4000-8000-000000000000`;
+  writeFileSync(
+    `${f.profileDir}.retirement.json`,
+    JSON.stringify({
+      schemaVersion: 1,
+      phase: 'started',
+      scope: 'selected_profile',
+      quarantine: name,
+      circuitQuarantine: null,
+    }),
+  );
+  symlinkSync(outside, join(dirname(f.profileDir), name), process.platform === 'win32' ? 'junction' : 'dir');
+  expect(retirementRecoveryPreview(f.options)).toMatchObject({
+    status: 'refused',
+    reason: 'ALIAS_REFUSED',
+  });
+  expect(readFileSync(join(outside, 'sentinel'), 'utf8')).toBe('KEEP');
 });
 
 it('retains the lock and marker after interrupted circuit quarantine removal', () => {

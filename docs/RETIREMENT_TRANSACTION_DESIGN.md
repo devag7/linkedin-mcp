@@ -42,6 +42,21 @@ inspection. Do not delete the marker or quarantine just to make the command
 pass; determine which objects remain and retain a private recovery record.
 There is no automatic rollback or retry of a failed retirement.
 
+The unreleased `--retirement-recovery-preview` reads only the fixed, bounded
+interruption marker and filesystem metadata for its selected profile, planned
+quarantines, circuit and owner lock. It reports fixed presence fields and bounded
+remaining quarantine counts without printing paths, filenames, identifiers or
+contents. An absent marker is reported as `no_interruption_marker`; a valid marker
+always reports `needs_operator_review`. Invalid or aliased state is refused. It
+checks one alternate marker spelling on Windows using metadata only to establish
+whether the selected marker family is case-insensitive; a distinct file at that
+spelling is refused. It does not inspect shared safety-state paths.
+It does not clear the marker or lock, restore a profile, continue deletion or decide
+that secure erasure completed. The marker is not an authority to remove whatever
+currently occupies a quarantine name. Use the report for private operator
+inspection, then retain a recovery record before any manual action. The CLI exits
+nonzero whenever a marker remains or inspection is refused.
+
 An fsynced file without a proven parent-directory sync is not a power-loss
 recovery guarantee. The lock coordinates this project's compliant runtimes. It does not prove
 that an unrelated process has closed handles or that a hostile same-account
@@ -54,7 +69,8 @@ protocol and explicit acknowledgement of replay-protection loss.
 
 Disposable fixtures must demonstrate confirmation refusal, active-lock and
 alias refusal, exact selected-state removal, byte-identical shared journal and
-legacy credentials, and a retained marker on interrupted removal. The built
+legacy credentials, a retained marker on interrupted removal, and a path-free
+read-only recovery report. The built
 installed CLI must pass the same offline scope without browser or account
 access. Source tests, lint, types, metadata, build, exact package checks and
 hosted platform checks are required before merge. The installed Windows check

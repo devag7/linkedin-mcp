@@ -2,10 +2,13 @@
 import { createHash, randomUUID } from 'node:crypto';
 import {
   closeSync,
+  constants,
+  fstatSync,
   fsyncSync,
   lstatSync,
   openSync,
   opendirSync,
+  readSync,
   realpathSync,
   renameSync,
   rmdirSync,
@@ -15,7 +18,7 @@ import {
 } from 'node:fs';
 import { homedir } from 'node:os';
 import { basename, dirname, isAbsolute, join, parse, relative, resolve } from 'node:path';
-import { dataInventory } from './data-inventory.js';
+import { dataInventory, selectedProfileObservation } from './data-inventory.js';
 import { StateLock } from './safety/state-lock.js';
 
 export const RETIREMENT_LIMITS = { entries: 5000, depth: 32, bytes: 2 * 1024 ** 3 } as const;
@@ -86,6 +89,117 @@ function retirementCircuitSnapshot(path: string): BigIntStats | undefined {
     if ((error as NodeJS.ErrnoException).code === 'ENOENT') return undefined;
     throw error;
   }
+}
+
+function retirementObjectSnapshot(path: string, directory: boolean): BigIntStats | undefined {
+  let observed = false;
+  try {
+    const before = lstatSync(path, { bigint: true });
+    observed = true;
+    if (before.isSymbolicLink()) reject('ALIAS_REFUSED');
+    if (directory ? !before.isDirectory() : !before.isFile()) reject('TYPE_REFUSED');
+    if (!directory && before.nlink !== 1n) reject('MULTIPLE_LINKS_REFUSED');
+    if (before.ino === 0n) reject('IDENTITY_UNAVAILABLE');
+    const actual = realpathSync(path);
+    if (
+      process.platform === 'win32' ? actual.toLowerCase() !== path.toLowerCase() : actual !== path
+    )
+      reject('ALIAS_REFUSED');
+    if (!identical(before, lstatSync(path, { bigint: true }))) reject('CHANGED_DURING_OBSERVATION');
+    return before;
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+      if (observed) reject('CHANGED_DURING_OBSERVATION');
+      return undefined;
+    }
+    throw error;
+  }
+}
+
+const retirementUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+function expectedQuarantine(
+  name: unknown,
+  prefix: string,
+  caseInsensitive = false,
+): name is string {
+  const head = `${prefix}.retirement-`;
+  return (
+    typeof name === 'string' &&
+    basename(name) === name &&
+    (caseInsensitive
+      ? name.slice(0, head.length).toLowerCase() === head.toLowerCase()
+      : name.startsWith(head)) &&
+    retirementUuid.test(name.slice(head.length))
+  );
+}
+
+function markerCaseInsensitive(path: string, expected: BigIntStats) {
+  if (process.platform !== 'win32') return false;
+  const name = basename(path);
+  const index = name.search(/[a-zA-Z]/);
+  if (index < 0) reject('RECOVERY_MARKER_INVALID');
+  const character = name[index]!;
+  const swapped =
+    character === character.toLowerCase() ? character.toUpperCase() : character.toLowerCase();
+  const alternateName = `${name.slice(0, index)}${swapped}${name.slice(index + 1)}`;
+  const alternate = retirementObjectSnapshot(join(dirname(path), alternateName), false);
+  if (!alternate) return false;
+  if (alternate.dev !== expected.dev || alternate.ino !== expected.ino)
+    reject('RECOVERY_MARKER_INVALID');
+  return true;
+}
+
+function readRetirementMarker(path: string, expected: BigIntStats, profile: string) {
+  if (expected.size < 1n || expected.size > 2048n) reject('RECOVERY_MARKER_INVALID');
+  const fd = openSync(path, constants.O_RDONLY);
+  let raw: string;
+  try {
+    if (!identical(expected, fstatSync(fd, { bigint: true })))
+      reject('CHANGED_DURING_OBSERVATION');
+    const buffer = Buffer.alloc(Number(expected.size));
+    if (readSync(fd, buffer, 0, buffer.length, 0) !== buffer.length)
+      reject('CHANGED_DURING_OBSERVATION');
+    if (!identical(expected, fstatSync(fd, { bigint: true })))
+      reject('CHANGED_DURING_OBSERVATION');
+    raw = buffer.toString('utf8');
+  } finally {
+    closeSync(fd);
+  }
+  let value: unknown;
+  try {
+    value = JSON.parse(raw);
+  } catch {
+    reject('RECOVERY_MARKER_INVALID');
+  }
+  if (!value || typeof value !== 'object' || Array.isArray(value))
+    reject('RECOVERY_MARKER_INVALID');
+  const record = value as Record<string, unknown>;
+  const caseInsensitive = markerCaseInsensitive(path, expected);
+  const final = retirementObjectSnapshot(path, false);
+  if (!final || !identical(expected, final))
+    reject('CHANGED_DURING_OBSERVATION');
+  const profileName = basename(profile);
+  if (
+    Object.keys(record).sort().join(',') !==
+      'circuitQuarantine,phase,quarantine,schemaVersion,scope' ||
+    record.schemaVersion !== 1 ||
+    record.phase !== 'started' ||
+    record.scope !== 'selected_profile' ||
+    (record.quarantine !== null &&
+      !expectedQuarantine(record.quarantine, profileName, caseInsensitive)) ||
+    (record.circuitQuarantine !== null &&
+      !expectedQuarantine(
+        record.circuitQuarantine,
+        `${profileName}.circuit.json`,
+        caseInsensitive,
+      )) ||
+    (record.quarantine === null && record.circuitQuarantine === null)
+  )
+    reject('RECOVERY_MARKER_INVALID');
+  return {
+    quarantine: record.quarantine as string | null,
+    circuitQuarantine: record.circuitQuarantine as string | null,
+  };
 }
 function contains(parent: string, child: string) {
   const tail = relative(parent, child);
@@ -315,6 +429,84 @@ export function retirementPreview(
         circuitPresent: plan.inventory.entries[1]?.observation === 'present',
         files: plan.entries.filter((entry) => !entry.directory).length,
         directories: plan.entries.filter((entry) => entry.directory).length,
+      },
+    };
+  } catch (error) {
+    return {
+      ...base,
+      status: 'refused',
+      reason: error instanceof RetirementError ? error.code : 'ACCESS_UNCERTAIN',
+    };
+  }
+}
+
+/** Observe an interrupted retirement without resuming deletion or trusting its marker as authority. */
+export function retirementRecoveryPreview(
+  options: { profileDir?: string; homeDir?: string; workingDir?: string } = {},
+) {
+  const base = {
+    schemaVersion: 1,
+    mode: 'offline_retirement_recovery_preview',
+    scope: 'selected_profile_and_circuit_only',
+    deletionAuthorized: false,
+    ownership: 'unverified',
+    limitations: [
+      'This report never clears a marker or lock, resumes deletion, or authorizes a retry.',
+      'The marker names only this command’s planned quarantines; unrelated profiles, unknown siblings, shared history and client data are not inventoried.',
+      'Open handles, other processes, native permissions, power-loss durability and same-account races are unverified.',
+      'An operator must inspect any remaining private state before recovery; a missing path does not prove secure erasure.',
+    ],
+  };
+  try {
+    const home = resolve(options.homeDir ?? homedir());
+    const cwd = resolve(options.workingDir ?? process.cwd());
+    const profile = resolve(cwd, options.profileDir || join(home, '.linkedin-mcp', 'profile'));
+    if (
+      contains(profile, home) ||
+      contains(profile, cwd) ||
+      contains(profile, join(home, '.linkedin-mcp'))
+    )
+      reject('SCOPE_OVERLAP_REFUSED');
+    const markerPath = `${profile}.retirement.json`;
+    const marker = retirementObjectSnapshot(markerPath, false);
+    if (!marker) {
+      const selected = selectedProfileObservation({
+        ...options,
+        homeDir: home,
+        workingDir: cwd,
+      });
+      if (selected.observation === 'refused' || selected.observation === 'uncertain')
+        reject(selected.reason);
+      if (retirementObjectSnapshot(markerPath, false)) reject('CHANGED_DURING_OBSERVATION');
+      return { ...base, status: 'no_interruption_marker' };
+    }
+    const checkAncestors = retirementAncestry(profile);
+    const names = readRetirementMarker(markerPath, marker, profile);
+    const quarantine = names.quarantine && join(dirname(profile), names.quarantine);
+    const circuitQuarantine =
+      names.circuitQuarantine && join(dirname(profile), names.circuitQuarantine);
+    checkAncestors();
+    const original = retirementObjectSnapshot(profile, true);
+    const moved = quarantine && retirementObjectSnapshot(quarantine, true);
+    const circuit = retirementCircuitSnapshot(`${profile}.circuit.json`);
+    const movedCircuit = circuitQuarantine && retirementCircuitSnapshot(circuitQuarantine);
+    const lock = retirementObjectSnapshot(`${profile}.owner.lock`, true);
+    const remaining = moved ? scanRetirementProfile(quarantine!) : [];
+    checkAncestors();
+    const finalMarker = retirementObjectSnapshot(markerPath, false);
+    if (!finalMarker || !identical(marker, finalMarker))
+      reject('CHANGED_DURING_OBSERVATION');
+    return {
+      ...base,
+      status: 'needs_operator_review',
+      observed: {
+        originalProfile: !!original,
+        plannedProfileQuarantine: !!moved,
+        originalCircuit: !!circuit,
+        plannedCircuitQuarantine: !!movedCircuit,
+        ownerLock: !!lock,
+        quarantinedFiles: remaining.filter((entry) => !entry.directory).length,
+        quarantinedDirectories: remaining.filter((entry) => entry.directory).length,
       },
     };
   } catch (error) {

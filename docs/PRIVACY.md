@@ -74,6 +74,13 @@ erasure and safe handling of uncooperating processes remain open. The
 published 4.0.0 Windows guard does not authorize retirement or change the
 preceding 3.1.0 archive.
 
+Unreleased `--retirement-recovery-preview` gives a path-free, read-only report
+for an interrupted selected-profile retirement: fixed presence fields and bounded
+remaining quarantine counts. It never resumes removal or clears an owner lock or
+marker. A valid marker always requires private operator review, even when its
+planned quarantine is absent. The report does not inspect unrelated profiles,
+shared history, client data or backups and cannot certify complete erasure.
+
 Budget schema version 1 validates existing counters and adds operation and
 warmupStartedAt fields without guessing old outcomes or LinkedIn account age.
 Missing warmup start is initialized under a state lock at first verified use;
