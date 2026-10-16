@@ -12,7 +12,7 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { retirementPreview, retireSelectedProfile } from '../src/retirement.js';
 
 const hooks = vi.hoisted(() => ({
@@ -22,6 +22,7 @@ const hooks = vi.hoisted(() => ({
   failQuarantineRemove: false,
   injectProfileMember: false,
   replaceKnownMemberWith: '',
+  relocateAncestorTo: '',
 }));
 vi.mock('node:fs', async (original) => {
   const fs = await original<typeof import('node:fs')>();
@@ -37,7 +38,20 @@ vi.mock('node:fs', async (original) => {
     unlinkSync: (path: import('node:fs').PathLike) => {
       if (hooks.failQuarantineRemove && String(path).includes('.retirement-'))
         throw new Error('simulated removal interruption');
-      return fs.unlinkSync(path);
+      fs.unlinkSync(path);
+      if (
+        hooks.relocateAncestorTo &&
+        String(path).includes('.retirement-') &&
+        String(path).endsWith(join('Z', 'file'))
+      ) {
+        const quarantine = dirname(dirname(String(path)));
+        fs.renameSync(join(quarantine, 'A'), hooks.relocateAncestorTo);
+        fs.symlinkSync(
+          hooks.relocateAncestorTo,
+          join(quarantine, 'A'),
+          process.platform === 'win32' ? 'junction' : 'dir',
+        );
+      }
     },
     renameSync: (oldPath: import('node:fs').PathLike, newPath: import('node:fs').PathLike) => {
       fs.renameSync(oldPath, newPath);
@@ -69,6 +83,7 @@ afterEach(() => {
   hooks.failQuarantineRemove = false;
   hooks.injectProfileMember = false;
   hooks.replaceKnownMemberWith = '';
+  hooks.relocateAncestorTo = '';
   for (const root of roots.splice(0)) rmSync(root, { recursive: true, force: true });
 });
 
@@ -151,6 +166,23 @@ it('refuses a known member replaced by an alias after quarantine', () => {
   expect(() => retireSelectedProfile({ ...f.options, confirmed: true })).toThrow('ALIAS_REFUSED');
   hooks.replaceKnownMemberWith = '';
   expect(readFileSync(outside, 'utf8')).toBe('KEEP');
+  expect(existsSync(`${f.profileDir}.retirement.json`)).toBe(true);
+  expect(existsSync(`${f.profileDir}.owner.lock`)).toBe(true);
+});
+
+it('does not follow a relocated ancestor after deletion has started', () => {
+  const f = fixture();
+  mkdirSync(join(f.profileDir, 'A'));
+  mkdirSync(join(f.profileDir, 'Z'));
+  writeFileSync(join(f.profileDir, 'A', 'file'), 'KEEP');
+  writeFileSync(join(f.profileDir, 'Z', 'file'), 'DELETE');
+  const moved = join(f.root, 'moved-A');
+  hooks.relocateAncestorTo = moved;
+  expect(() => retireSelectedProfile({ ...f.options, confirmed: true })).toThrow(
+    'CHANGED_DURING_OBSERVATION',
+  );
+  hooks.relocateAncestorTo = '';
+  expect(readFileSync(join(moved, 'file'), 'utf8')).toBe('KEEP');
   expect(existsSync(`${f.profileDir}.retirement.json`)).toBe(true);
   expect(existsSync(`${f.profileDir}.owner.lock`)).toBe(true);
 });

@@ -57,5 +57,9 @@ alias refusal, exact selected-state removal, byte-identical shared journal and
 legacy credentials, and a retained marker on interrupted removal. The built
 installed CLI must pass the same offline scope without browser or account
 access. Source tests, lint, types, metadata, build, exact package checks and
-hosted platform checks are required before merge. This document alone does
+hosted platform checks are required before merge. The installed Windows check
+keeps a fake-home negative case and runs a separate successful custom-profile
+case only on a disposable GitHub runner, beneath its real private user profile.
+The latter is not evidence for arbitrary Windows homes or external processes.
+This document alone does
 not authorize running the command against a user's real profile.

@@ -212,6 +212,26 @@ function assertMemberIdentity(path: string, expected: RetirementEntry) {
   )
     reject('CHANGED_DURING_OBSERVATION');
 }
+function assertApprovedAncestors(
+  root: string,
+  name: string,
+  approved: Map<string, RetirementEntry>,
+) {
+  const check = (member: string) => {
+    const expected = approved.get(member);
+    if (!expected?.directory) reject('CHANGED_DURING_OBSERVATION');
+    const path = member ? join(root, member) : root;
+    assertMemberIdentity(path, expected);
+    const actual = realpathSync(path);
+    if (
+      process.platform === 'win32' ? actual.toLowerCase() !== path.toLowerCase() : actual !== path
+    )
+      reject('ALIAS_REFUSED');
+  };
+  check('');
+  for (let parent = name ? dirname(name) : '.'; parent !== '.'; parent = dirname(parent))
+    check(parent);
+}
 
 export function assertNoRetirementMarker(profile: string): void {
   try {
@@ -405,8 +425,12 @@ export function retireSelectedProfile(
           b.name.split(/[/\\]/).length - a.name.split(/[/\\]/).length ||
           b.name.localeCompare(a.name),
       );
+      const approved = new Map(plan.entries.map((entry) => [entry.name, entry]));
+      const checkOuter = retirementAncestry(quarantined);
       for (const entry of bottomUp) {
         owner.assertOwned();
+        checkOuter();
+        assertApprovedAncestors(quarantined, entry.name, approved);
         const path = entry.name ? join(quarantined, entry.name) : quarantined;
         assertMemberIdentity(path, entry);
         if (entry.directory) rmdirSync(path);

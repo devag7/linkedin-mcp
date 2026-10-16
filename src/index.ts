@@ -349,11 +349,19 @@ async function main(): Promise<void> {
       // eslint-disable-next-line no-console -- Offline CLI before runtime/transport creation
       console.log(JSON.stringify(report));
     } catch (error) {
+      const stateCode =
+        error instanceof Error &&
+        'stateCode' in error &&
+        typeof error.stateCode === 'string' &&
+        /^WINDOWS_STATE_(?:OUTSIDE_USER_PROFILE|PRIVACY_UNVERIFIED_[A-Z_]+)$/.test(error.stateCode)
+          ? error.stateCode
+          : undefined;
       // eslint-disable-next-line no-console -- Fixed error codes only; never expose state paths
       console.log(
         JSON.stringify({
           status: 'refused',
-          reason: error instanceof RetirementError ? error.code : 'RETIREMENT_UNCERTAIN',
+          reason:
+            error instanceof RetirementError ? error.code : (stateCode ?? 'RETIREMENT_UNCERTAIN'),
         }),
       );
       process.exitCode = 1;

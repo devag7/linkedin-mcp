@@ -11,7 +11,7 @@ import {
   rmSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { join, resolve, sep } from 'node:path';
 
 const bundle = resolve(process.argv[2] ?? 'dist/index.js');
 const root = realpathSync(mkdtempSync(join(tmpdir(), 'linkedin-retirement-cli-')));
@@ -36,7 +36,7 @@ const run = (args, overrides = {}) =>
     cwd: root,
     env: { ...env, ...overrides },
     encoding: 'utf8',
-    timeout: 10000,
+    timeout: process.platform === 'win32' ? 45000 : 10000,
   });
 try {
   const original = readdirSync(join(home, '.linkedin-mcp')).sort();
@@ -85,7 +85,10 @@ try {
     // The fake USERPROFILE deliberately differs from the real Windows account.
     // Native privacy enforcement must refuse before any selected-state mutation.
     assert.equal(applied.status, 1);
-    assert.equal(JSON.parse(applied.stdout).status, 'refused');
+    assert.deepEqual(JSON.parse(applied.stdout), {
+      status: 'refused',
+      reason: 'WINDOWS_STATE_PRIVACY_UNVERIFIED_OUTSIDE_USER_PROFILE',
+    });
     assert.equal(readFileSync(join(profile, 'Cookies'), 'utf8'), 'PRIVATE-CREDENTIAL-CONTENT');
     assert.equal(readFileSync(`${profile}.circuit.json`, 'utf8'), 'PRIVATE-CIRCUIT-CONTENT');
   } else {
@@ -96,10 +99,33 @@ try {
   }
   assert.ok(!applied.stdout.includes(root) && !applied.stdout.includes('PRIVATE'));
   assert.equal(readFileSync(budget, 'utf8'), 'PRIVATE-SAFETY-CONTENT');
+  let nativeWindowsApply = 'not_applicable';
+  if (process.platform === 'win32' && process.env.GITHUB_ACTIONS === 'true') {
+    assert.ok(process.env.USERPROFILE, 'Native fixture needs the real Windows user profile.');
+    const actualHome = resolve(process.env.USERPROFILE);
+    assert.ok(root.toLowerCase().startsWith(`${actualHome.toLowerCase()}${sep}`),
+      'Native apply fixture must stay beneath the real Windows user profile.');
+    const nativeProfile = join(root, 'native', 'profile');
+    mkdirSync(nativeProfile, { recursive: true });
+    writeFileSync(join(nativeProfile, 'Cookies'), 'PRIVATE-NATIVE-FIXTURE');
+    writeFileSync(`${nativeProfile}.circuit.json`, 'PRIVATE-NATIVE-CIRCUIT');
+    const native = run(
+      ['--retire-profile', '--confirm-retirement', '--confirm-profile-deletion'],
+      { HOME: process.env.HOME, USERPROFILE: process.env.USERPROFILE,
+        LINKEDIN_PROFILE_DIR: nativeProfile },
+    );
+    assert.equal(native.status, 0, native.stderr);
+    assert.equal(JSON.parse(native.stdout).status, 'retired');
+    assert.ok(!native.stdout.includes(root) && !native.stdout.includes('PRIVATE'));
+    assert.ok(!readdirSync(join(root, 'native')).includes('profile'));
+    assert.ok(!readdirSync(join(root, 'native')).includes('profile.circuit.json'));
+    nativeWindowsApply = 'passed_disposable_ci_user';
+  }
   console.log(
     JSON.stringify({
       installedRetirementFlow: process.platform === 'win32' ? 'native_guard_refused' : 'passed',
       applicationSupported: true,
+      nativeWindowsApply,
       accountRequests: 0,
       scope: 'disposable offline CLI and refusal fixtures',
     }),
