@@ -246,7 +246,10 @@ function parseArgs(): ServerConfig & {
     throw new Error('--confirm-retirement is only supported with --retire-profile.');
   if (
     action === 'retire-profile' &&
-    (!confirmRetirement || (process.env.LINKEDIN_PROFILE_DIR?.trim() && !confirmProfileDeletion))
+    (!confirmRetirement ||
+      (process.env.LINKEDIN_PROFILE_DIR !== undefined &&
+        process.env.LINKEDIN_PROFILE_DIR !== '' &&
+        !confirmProfileDeletion))
   )
     throw new Error(
       'Retirement requires --confirm-retirement and --confirm-profile-deletion for a custom profile.',
@@ -507,6 +510,7 @@ void main().catch((error: unknown) => {
     ['PROFILE_ALIAS_REFUSED', 'PROFILE_DELETION_ROOT_REFUSED', 'PROFILE_DELETION_CHANGED'].includes(
       message,
     ) ||
+    message === 'RETIREMENT_INCOMPLETE' ||
     message.startsWith('--confirm-profile-deletion is only supported') ||
     message === '--config-file requires one explicit path.' ||
     message === '--config-file is only supported with --setup.' ||

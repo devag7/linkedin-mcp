@@ -76,16 +76,29 @@ try {
   });
   assert.equal(customWithoutConfirmation.status, 1);
   assert.equal(readFileSync(join(profile, 'Cookies'), 'utf8'), 'PRIVATE-CREDENTIAL-CONTENT');
+  const blankCustomWithoutConfirmation = run(['--retire-profile', '--confirm-retirement'], {
+    LINKEDIN_PROFILE_DIR: '   ',
+  });
+  assert.equal(blankCustomWithoutConfirmation.status, 1);
   const applied = run(['--retire-profile', '--confirm-retirement']);
-  assert.equal(applied.status, 0, applied.stderr);
-  assert.equal(JSON.parse(applied.stdout).status, 'retired');
+  if (process.platform === 'win32') {
+    // The fake USERPROFILE deliberately differs from the real Windows account.
+    // Native privacy enforcement must refuse before any selected-state mutation.
+    assert.equal(applied.status, 1);
+    assert.equal(JSON.parse(applied.stdout).status, 'refused');
+    assert.equal(readFileSync(join(profile, 'Cookies'), 'utf8'), 'PRIVATE-CREDENTIAL-CONTENT');
+    assert.equal(readFileSync(`${profile}.circuit.json`, 'utf8'), 'PRIVATE-CIRCUIT-CONTENT');
+  } else {
+    assert.equal(applied.status, 0, applied.stderr);
+    assert.equal(JSON.parse(applied.stdout).status, 'retired');
+    assert.ok(!readdirSync(join(home, '.linkedin-mcp')).includes('profile'));
+    assert.ok(!readdirSync(join(home, '.linkedin-mcp')).includes('profile.circuit.json'));
+  }
   assert.ok(!applied.stdout.includes(root) && !applied.stdout.includes('PRIVATE'));
   assert.equal(readFileSync(budget, 'utf8'), 'PRIVATE-SAFETY-CONTENT');
-  assert.ok(!readdirSync(join(home, '.linkedin-mcp')).includes('profile'));
-  assert.ok(!readdirSync(join(home, '.linkedin-mcp')).includes('profile.circuit.json'));
   console.log(
     JSON.stringify({
-      installedRetirementFlow: 'passed',
+      installedRetirementFlow: process.platform === 'win32' ? 'native_guard_refused' : 'passed',
       applicationSupported: true,
       accountRequests: 0,
       scope: 'disposable offline CLI and refusal fixtures',

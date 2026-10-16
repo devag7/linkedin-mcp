@@ -8,7 +8,7 @@ import {
   opendirSync,
   realpathSync,
   renameSync,
-  rmSync,
+  rmdirSync,
   unlinkSync,
   writeSync,
   type BigIntStats,
@@ -180,6 +180,47 @@ export function scanRetirementProfile(profile: string): RetirementEntry[] {
 export function retirementDigest(entries: RetirementEntry[]) {
   return createHash('sha256').update(JSON.stringify(entries)).digest('hex');
 }
+function sameRetirementMember(expected: RetirementEntry, current: RetirementEntry) {
+  return (
+    expected.name === current.name &&
+    expected.directory === current.directory &&
+    expected.dev === current.dev &&
+    expected.ino === current.ino &&
+    expected.mode === current.mode &&
+    expected.size === current.size &&
+    expected.links === current.links &&
+    expected.modified === current.modified &&
+    expected.changed === current.changed
+  );
+}
+function assertMemberIdentity(path: string, expected: RetirementEntry) {
+  const current = lstatSync(path, { bigint: true });
+  if (
+    current.isSymbolicLink() ||
+    current.isDirectory() !== expected.directory ||
+    String(current.dev) !== expected.dev ||
+    String(current.ino) !== expected.ino ||
+    String(current.mode) !== expected.mode
+  )
+    reject('CHANGED_DURING_OBSERVATION');
+  if (
+    !expected.directory &&
+    (String(current.nlink) !== expected.links ||
+      String(current.size) !== expected.size ||
+      String(current.mtimeNs) !== expected.modified ||
+      String(current.ctimeNs) !== expected.changed)
+  )
+    reject('CHANGED_DURING_OBSERVATION');
+}
+
+export function assertNoRetirementMarker(profile: string): void {
+  try {
+    lstatSync(`${profile}.retirement.json`);
+    reject('RETIREMENT_INCOMPLETE');
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
+  }
+}
 
 /** Input anchors support disposable tests; the CLI passes only the profile override. */
 export function prepareRetirement(
@@ -194,18 +235,13 @@ export function prepareRetirement(
     contains(profile, join(home, '.linkedin-mcp'))
   )
     reject('SCOPE_OVERLAP_REFUSED');
+  // An interrupted retirement takes precedence over incidental lock observations.
+  assertNoRetirementMarker(profile);
   const inventory = dataInventory({ ...options, homeDir: home, workingDir: cwd });
   const problem = inventory.entries.find(
     (entry) => entry.observation === 'refused' || entry.observation === 'uncertain',
   );
   if (problem) reject(problem.reason ?? 'OWNERSHIP_UNCERTAIN');
-  // A pending retirement receipt never grants authority to continue another operation.
-  try {
-    lstatSync(`${profile}.retirement.json`);
-    reject('RETIREMENT_INCOMPLETE');
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
-  }
   const entries =
     inventory.entries[0]?.observation === 'absent' ? [] : scanRetirementProfile(profile);
   if (
@@ -320,7 +356,7 @@ export function retireSelectedProfile(
     }
     if (!sameCircuit(beforeCircuit, retirementCircuitSnapshot(circuit)))
       reject('CHANGED_DURING_OBSERVATION');
-    // A durable marker blocks subsequent previews or applications after an interrupted operation.
+    // The fsynced marker blocks subsequent use after an interrupted operation.
     const quarantine = plan.entries.length ? `${plan.profile}.retirement-${randomUUID()}` : null;
     const circuitQuarantine = beforeCircuit ? `${circuit}.retirement-${randomUUID()}` : null;
     const fd = openSync(receipt, 'wx', 0o600);
@@ -355,7 +391,27 @@ export function retireSelectedProfile(
         String(moved.ino) !== original.ino
       )
         reject('CHANGED_DURING_OBSERVATION');
-      rmSync(quarantined, { recursive: true });
+      const movedEntries = scanRetirementProfile(quarantined);
+      if (
+        movedEntries.length !== plan.entries.length ||
+        movedEntries.some(
+          (entry, index) => entry.name !== '' && !sameRetirementMember(plan.entries[index]!, entry),
+        )
+      )
+        reject('CHANGED_DURING_OBSERVATION');
+      // Unlink only approved files; rmdir refuses any new/unapproved child.
+      const bottomUp = [...plan.entries].sort(
+        (a, b) =>
+          b.name.split(/[/\\]/).length - a.name.split(/[/\\]/).length ||
+          b.name.localeCompare(a.name),
+      );
+      for (const entry of bottomUp) {
+        owner.assertOwned();
+        const path = entry.name ? join(quarantined, entry.name) : quarantined;
+        assertMemberIdentity(path, entry);
+        if (entry.directory) rmdirSync(path);
+        else unlinkSync(path);
+      }
     }
     if (beforeCircuit) {
       owner.assertOwned();
@@ -377,7 +433,7 @@ export function retireSelectedProfile(
     };
   } finally {
     // Keep the marker on every partial/uncertain outcome, including a failed lock release.
-    owner.release();
+    if (!markerCreated || completed) owner.release();
     if (completed && markerCreated) unlinkSync(receipt);
   }
 }

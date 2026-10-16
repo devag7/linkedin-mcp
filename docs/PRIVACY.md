@@ -45,12 +45,13 @@ Full coordinated erasure tooling is still an explicit coverage gap.
 
 ### Selected-profile retirement
 
-The 4.0.0 `--retirement-preview` command inspects one selected browser
-profile and its circuit, printing bounded file/directory counts, circuit
-presence and fixed refusal reasons. It
-does not print paths, names, content or manifest hashes. It does not acquire
-locks, launch Chrome, make account requests or delete anything. The output
-sets `deletionAuthorized:false`. In the next source release, a separate
+Published 4.0.0 `--retirement-preview` inspects one selected browser profile
+and prints bounded file/directory counts with fixed refusal reasons. It has
+`applicationSupported:false` and no circuit-presence field. The unreleased
+source extends the preview with circuit presence and an explicit apply command.
+Neither preview prints paths, names, content or manifest hashes, acquires
+locks, launches Chrome, makes account requests or deletes anything. Both set
+`deletionAuthorized:false`. The separate
 `--retire-profile --confirm-retirement` command will remove that selected
 profile and its circuit file after fresh checks under the profile owner lock.
 For a configured custom profile it also requires `--confirm-profile-deletion`.
@@ -65,8 +66,9 @@ the write journal, legacy credentials, other profiles, client data and backups.
 A successful preview is not stopped-owner proof or permission to delete;
 filesystem observations can become stale immediately. An interrupted apply
 leaves a private `.retirement.json` marker and possibly a quarantine directory;
-subsequent previews and applies refuse until an operator inspects the local
-state. Do not delete the marker or quarantine blindly. A noncooperating process
+subsequent previews, applies, normal browser startup and logout refuse until
+an operator inspects the local state. An interrupted apply also retains its
+owner lock. Do not delete the marker, lock or quarantine blindly. A noncooperating process
 can still mutate files outside the ownership protocol. Complete coordinated
 erasure and safe handling of uncooperating processes remain open. The
 published 4.0.0 Windows guard does not authorize retirement or change the

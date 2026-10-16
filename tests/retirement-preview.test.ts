@@ -20,6 +20,8 @@ const hooks = vi.hoisted(() => ({
   appeared: '',
   probes: 0,
   failQuarantineRemove: false,
+  injectProfileMember: false,
+  replaceKnownMemberWith: '',
 }));
 vi.mock('node:fs', async (original) => {
   const fs = await original<typeof import('node:fs')>();
@@ -32,10 +34,19 @@ vi.mock('node:fs', async (original) => {
         ? Object.assign(Object.create(stat), { size: 2n * 1024n ** 3n + 1n })
         : stat;
     },
-    rmSync: (path: import('node:fs').PathLike, options?: unknown) => {
+    unlinkSync: (path: import('node:fs').PathLike) => {
       if (hooks.failQuarantineRemove && String(path).includes('.retirement-'))
         throw new Error('simulated removal interruption');
-      return fs.rmSync(path, options as import('node:fs').RmOptions);
+      return fs.unlinkSync(path);
+    },
+    renameSync: (oldPath: import('node:fs').PathLike, newPath: import('node:fs').PathLike) => {
+      fs.renameSync(oldPath, newPath);
+      if (hooks.injectProfileMember && String(newPath).includes('profile.retirement-'))
+        fs.writeFileSync(join(String(newPath), 'unapproved'), 'KEEP');
+      if (hooks.replaceKnownMemberWith && String(newPath).includes('profile.retirement-')) {
+        fs.unlinkSync(join(String(newPath), 'Cookies'));
+        fs.symlinkSync(hooks.replaceKnownMemberWith, join(String(newPath), 'Cookies'));
+      }
     },
   };
 });
@@ -56,6 +67,8 @@ afterEach(() => {
   hooks.appeared = '';
   hooks.probes = 0;
   hooks.failQuarantineRemove = false;
+  hooks.injectProfileMember = false;
+  hooks.replaceKnownMemberWith = '';
   for (const root of roots.splice(0)) rmSync(root, { recursive: true, force: true });
 });
 
@@ -111,6 +124,37 @@ it('requires confirmation and removes only the selected profile and circuit', ()
   expect(readFileSync(credentials, 'utf8')).toBe('PRIVATE-LEGACY');
 });
 
+it('preserves a new unapproved member inserted after quarantine', () => {
+  const f = fixture();
+  writeFileSync(join(f.profileDir, 'Cookies'), 'PRIVATE-COOKIE');
+  hooks.injectProfileMember = true;
+  expect(() => retireSelectedProfile({ ...f.options, confirmed: true })).toThrow(
+    'CHANGED_DURING_OBSERVATION',
+  );
+  hooks.injectProfileMember = false;
+  const names = readdirSync(join(f.home, '.linkedin-mcp'));
+  const quarantine = names.find((name) => name.startsWith('profile.retirement-'));
+  expect(quarantine).toBeDefined();
+  expect(readFileSync(join(f.home, '.linkedin-mcp', quarantine!, 'unapproved'), 'utf8')).toBe(
+    'KEEP',
+  );
+  expect(existsSync(`${f.profileDir}.retirement.json`)).toBe(true);
+  expect(existsSync(`${f.profileDir}.owner.lock`)).toBe(true);
+});
+
+it('refuses a known member replaced by an alias after quarantine', () => {
+  const f = fixture();
+  const outside = join(f.root, 'outside');
+  writeFileSync(outside, 'KEEP');
+  writeFileSync(join(f.profileDir, 'Cookies'), 'PRIVATE-COOKIE');
+  hooks.replaceKnownMemberWith = outside;
+  expect(() => retireSelectedProfile({ ...f.options, confirmed: true })).toThrow('ALIAS_REFUSED');
+  hooks.replaceKnownMemberWith = '';
+  expect(readFileSync(outside, 'utf8')).toBe('KEEP');
+  expect(existsSync(`${f.profileDir}.retirement.json`)).toBe(true);
+  expect(existsSync(`${f.profileDir}.owner.lock`)).toBe(true);
+});
+
 it('does not create a lock or receipt when selected state is absent', () => {
   const f = fixture();
   rmSync(f.profileDir, { recursive: true });
@@ -158,9 +202,28 @@ it('retains an interruption marker and quarantined credentials on deletion failu
     status: 'refused',
     reason: 'RETIREMENT_INCOMPLETE',
   });
-  expect(existsSync(`${f.profileDir}.owner.lock`)).toBe(false);
+  expect(existsSync(`${f.profileDir}.owner.lock`)).toBe(true);
   const names = readdirSync(join(f.home, '.linkedin-mcp'));
   expect(names.some((name) => name.startsWith('profile.retirement-'))).toBe(true);
+});
+
+it('retains the lock and marker after interrupted circuit quarantine removal', () => {
+  const f = fixture();
+  rmSync(f.profileDir, { recursive: true });
+  writeFileSync(`${f.profileDir}.circuit.json`, 'PRIVATE-CIRCUIT');
+  hooks.failQuarantineRemove = true;
+  expect(() => retireSelectedProfile({ ...f.options, confirmed: true })).toThrow(
+    'simulated removal interruption',
+  );
+  hooks.failQuarantineRemove = false;
+  expect(existsSync(`${f.profileDir}.circuit.json`)).toBe(false);
+  expect(existsSync(`${f.profileDir}.retirement.json`)).toBe(true);
+  expect(existsSync(`${f.profileDir}.owner.lock`)).toBe(true);
+  const quarantine = readdirSync(join(f.home, '.linkedin-mcp')).find((name) =>
+    name.startsWith('profile.circuit.json.retirement-'),
+  );
+  expect(quarantine).toBeDefined();
+  expect(readFileSync(join(f.home, '.linkedin-mcp', quarantine!), 'utf8')).toBe('PRIVATE-CIRCUIT');
 });
 
 it('reports an absent selected profile without creating state', () => {

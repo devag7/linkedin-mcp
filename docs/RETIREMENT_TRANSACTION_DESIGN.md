@@ -23,27 +23,31 @@ to recover from a LinkedIn checkpoint or to reset write limits.
    aliases, hard links, unexpected types, overlap with home or cwd, active
    owner/transaction locks, changed metadata, and tree limits.
 3. It acquires the same profile owner lock as Chrome, verifies it owns the lock,
-   rescans the profile and circuit, and writes a private durable interruption
+   rescans the profile and circuit, and writes a private fsynced interruption
    marker. It renames the profile to a random sibling quarantine, verifies the
-   moved root identity, removes the quarantine, then rechecks and removes the
-   circuit. It releases the owner lock before removing the marker.
+   moved manifest, and removes only individually checked members. A new child
+   makes directory removal fail while leaving that child untouched. It then
+   rechecks, quarantines and removes the circuit. On success it releases the
+   owner lock before removing the marker.
 4. Success returns only fixed scope, boolean removal results and preserved
    categories. Failure returns a fixed reason and exit 1; no path, filename,
    identifier, content or raw exception is printed.
 
 ## Interruption and limits
 
-The marker blocks another preview or apply after a partial failure. The
+The marker blocks another preview, apply, normal browser startup or logout
+after a partial failure. The owner lock is also retained. The
 quarantine may still contain credentials. Stop all processes before local
 inspection. Do not delete the marker or quarantine just to make the command
 pass; determine which objects remain and retain a private recovery record.
 There is no automatic rollback or retry of a failed retirement.
 
-The lock coordinates this project's compliant runtimes. It does not prove
+An fsynced file without a proven parent-directory sync is not a power-loss
+recovery guarantee. The lock coordinates this project's compliant runtimes. It does not prove
 that an unrelated process has closed handles or that a hostile same-account
 process cannot race the filesystem. Directory and file observations are
-rechecked, but Node's recursive deletion is not a transactional filesystem
-primitive. Complete shared-state erasure requires a separate all-profile
+rechecked, but Node's path-based unlink and rmdir calls are not transactional
+filesystem primitives against hostile same-account races. Complete shared-state erasure requires a separate all-profile
 protocol and explicit acknowledgement of replay-protection loss.
 
 ## Verification gate
