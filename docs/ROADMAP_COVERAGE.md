@@ -1,5 +1,24 @@
 # Coverage against the original 2026 roadmap
 
+## Selected-profile retirement follow-up — October 16, 2026
+
+[PR #30](https://github.com/devag7/linkedin-mcp/pull/30) merged the explicit,
+bounded selected-profile-and-circuit removal command at main `dea4642`. Its
+reviewed head passed 12 CI jobs and two native Windows privacy jobs. The
+[post-merge CI](https://github.com/devag7/linkedin-mcp/actions/runs/38856669300)
+passed all 12 jobs; the [release workflow](https://github.com/devag7/linkedin-mcp/actions/runs/38856669255)
+passed compatibility and marked this unchanged 4.0.0 source ineligible because
+the existing v4.0.0 tag points to the prior release commit. No new artifact was
+published. The command remains source-only. Its selected scope retains shared
+budgets/write journal, legacy credentials, other profiles, client data and
+backups; it does not complete coordinated erasure.
+
+The next source candidate adds a read-only recovery preview for an interrupted
+selected-profile retirement. It inspects only the bounded marker and its planned
+quarantines, reports fixed presence/count fields, and never resumes deletion.
+Complete shared-state erasure, power-loss recovery, hostile same-account races,
+and previously exposed Windows data remain open. First-use attempts remain 0/0.
+
 ## Published 4.0.0 reconciliation — October 15, 2026
 
 [4.0.0 is published and independently verified](RELEASE_EVIDENCE_4.0.0.md)

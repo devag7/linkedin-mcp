@@ -52,6 +52,10 @@ try {
   assert.equal(report.proposed.files, 1);
   assert.equal(report.proposed.circuitPresent, true);
   assert.deepEqual(readdirSync(join(home, '.linkedin-mcp')).sort(), original);
+  const cleanRecovery = run(['--retirement-recovery-preview']);
+  assert.equal(cleanRecovery.status, 0);
+  assert.equal(JSON.parse(cleanRecovery.stdout).status, 'no_interruption_marker');
+  assert.ok(!cleanRecovery.stdout.includes(root) && !cleanRecovery.stdout.includes('PRIVATE'));
   for (const args of [
     ['--retirement-preview', '--live'],
     ['--retirement-preview', '--logout'],
@@ -98,6 +102,33 @@ try {
     assert.ok(!readdirSync(join(home, '.linkedin-mcp')).includes('profile.circuit.json'));
   }
   assert.ok(!applied.stdout.includes(root) && !applied.stdout.includes('PRIVATE'));
+  assert.equal(readFileSync(budget, 'utf8'), 'PRIVATE-SAFETY-CONTENT');
+  const recoveryProfile = join(home, '.linkedin-mcp', 'recovery-profile');
+  const recoveryName = 'recovery-profile.retirement-00000000-0000-4000-8000-000000000000';
+  mkdirSync(join(home, '.linkedin-mcp', recoveryName));
+  writeFileSync(join(home, '.linkedin-mcp', recoveryName, 'Cookies'), 'PRIVATE-RECOVERY');
+  mkdirSync(`${recoveryProfile}.owner.lock`);
+  writeFileSync(`${recoveryProfile}.retirement.json`, JSON.stringify({
+    schemaVersion: 1,
+    phase: 'started',
+    scope: 'selected_profile',
+    quarantine: recoveryName,
+    circuitQuarantine: null,
+  }));
+  const recovery = run(['--retirement-recovery-preview'], {
+    LINKEDIN_PROFILE_DIR: recoveryProfile,
+  });
+  assert.equal(recovery.status, 1, recovery.stderr);
+  assert.deepEqual(JSON.parse(recovery.stdout).observed, {
+    originalProfile: false,
+    plannedProfileQuarantine: true,
+    originalCircuit: false,
+    plannedCircuitQuarantine: false,
+    ownerLock: true,
+    quarantinedFiles: 1,
+    quarantinedDirectories: 1,
+  });
+  assert.ok(!recovery.stdout.includes(root) && !recovery.stdout.includes('PRIVATE'));
   assert.equal(readFileSync(budget, 'utf8'), 'PRIVATE-SAFETY-CONTENT');
   let nativeWindowsApply = 'not_applicable';
   if (process.platform === 'win32' && process.env.GITHUB_ACTIONS === 'true') {

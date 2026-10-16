@@ -31,7 +31,12 @@ import { CLIENTS, clientConfiguration, setupReport, type SetupClient } from './s
 import { VERSION } from './version.js';
 import { loadConfig } from './config/env.js';
 import { dataInventory } from './data-inventory.js';
-import { retirementPreview, retireSelectedProfile, RetirementError } from './retirement.js';
+import {
+  retirementPreview,
+  retirementRecoveryPreview,
+  retireSelectedProfile,
+  RetirementError,
+} from './retirement.js';
 
 /** Resolve the persistent browser-profile directory (mirrors BrowserEngine). */
 function profileDir(): string {
@@ -53,6 +58,7 @@ function parseArgs(): ServerConfig & {
     | 'doctor'
     | 'data-inventory'
     | 'retirement-preview'
+    | 'retirement-recovery-preview'
     | 'retire-profile'
     | 'setup'
     | 'client-config';
@@ -70,6 +76,7 @@ function parseArgs(): ServerConfig & {
     | 'doctor'
     | 'data-inventory'
     | 'retirement-preview'
+    | 'retirement-recovery-preview'
     | 'retire-profile'
     | 'setup'
     | 'client-config'
@@ -121,6 +128,9 @@ function parseArgs(): ServerConfig & {
         break;
       case '--retirement-preview':
         setAction('retirement-preview');
+        break;
+      case '--retirement-recovery-preview':
+        setAction('retirement-recovery-preview');
         break;
       case '--retire-profile':
         setAction('retire-profile');
@@ -288,6 +298,7 @@ COMMANDS:
   --doctor                 Diagnose local setup without launching Chrome or network requests
   --data-inventory         Read-only, path-free local state inventory; no deletion plan
   --retirement-preview     Bounded, read-only profile retirement preview
+  --retirement-recovery-preview  Read-only status for an interrupted retirement
   --retire-profile         Remove selected profile and circuit after explicit confirmation;
                            shared budgets and write journal remain intact
   --confirm-retirement     Required with --retire-profile; review --retirement-preview first
@@ -337,6 +348,14 @@ async function main(): Promise<void> {
     // eslint-disable-next-line no-console -- Offline CLI before runtime/transport creation
     console.log(JSON.stringify(report, null, 2));
     process.exitCode = report.status === 'refused' ? 1 : 0;
+    return;
+  }
+
+  if (config.action === 'retirement-recovery-preview') {
+    const report = retirementRecoveryPreview({ profileDir: process.env.LINKEDIN_PROFILE_DIR });
+    // eslint-disable-next-line no-console -- Offline CLI before runtime/transport creation
+    console.log(JSON.stringify(report, null, 2));
+    process.exitCode = report.status === 'no_interruption_marker' ? 0 : 1;
     return;
   }
 
