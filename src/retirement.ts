@@ -18,7 +18,7 @@ import {
 } from 'node:fs';
 import { homedir } from 'node:os';
 import { basename, dirname, isAbsolute, join, parse, relative, resolve } from 'node:path';
-import { dataInventory } from './data-inventory.js';
+import { dataInventory, selectedProfileObservation } from './data-inventory.js';
 import { StateLock } from './safety/state-lock.js';
 
 export const RETIREMENT_LIMITS = { entries: 5000, depth: 32, bytes: 2 * 1024 ** 3 } as const;
@@ -127,7 +127,7 @@ function expectedQuarantine(name: unknown, prefix: string): name is string {
   );
 }
 
-function readRetirementMarker(path: string, expected: BigIntStats, profile: string) {
+function readRetirementMarker(path: string, expected: BigIntStats) {
   if (expected.size < 1n || expected.size > 2048n) reject('RECOVERY_MARKER_INVALID');
   const fd = openSync(path, constants.O_RDONLY);
   let raw: string;
@@ -143,9 +143,6 @@ function readRetirementMarker(path: string, expected: BigIntStats, profile: stri
   } finally {
     closeSync(fd);
   }
-  const final = retirementObjectSnapshot(path, false);
-  if (!final || !identical(expected, final))
-    reject('CHANGED_DURING_OBSERVATION');
   let value: unknown;
   try {
     value = JSON.parse(raw);
@@ -155,6 +152,14 @@ function readRetirementMarker(path: string, expected: BigIntStats, profile: stri
   if (!value || typeof value !== 'object' || Array.isArray(value))
     reject('RECOVERY_MARKER_INVALID');
   const record = value as Record<string, unknown>;
+  const markerName = basename(realpathSync(path));
+  const suffix = '.retirement.json';
+  if (!markerName.endsWith(suffix)) reject('RECOVERY_MARKER_INVALID');
+  const final = retirementObjectSnapshot(path, false);
+  if (!final || !identical(expected, final))
+    reject('CHANGED_DURING_OBSERVATION');
+  // The existing marker supplies the original family casing on Windows.
+  const profileName = markerName.slice(0, -suffix.length);
   if (
     Object.keys(record).sort().join(',') !==
       'circuitQuarantine,phase,quarantine,schemaVersion,scope' ||
@@ -162,9 +167,9 @@ function readRetirementMarker(path: string, expected: BigIntStats, profile: stri
     record.phase !== 'started' ||
     record.scope !== 'selected_profile' ||
     (record.quarantine !== null &&
-      !expectedQuarantine(record.quarantine, basename(profile))) ||
+      !expectedQuarantine(record.quarantine, profileName)) ||
     (record.circuitQuarantine !== null &&
-      !expectedQuarantine(record.circuitQuarantine, `${basename(profile)}.circuit.json`)) ||
+      !expectedQuarantine(record.circuitQuarantine, `${profileName}.circuit.json`)) ||
     (record.quarantine === null && record.circuitQuarantine === null)
   )
     reject('RECOVERY_MARKER_INVALID');
@@ -442,14 +447,18 @@ export function retirementRecoveryPreview(
     const markerPath = `${profile}.retirement.json`;
     const marker = retirementObjectSnapshot(markerPath, false);
     if (!marker) {
-      const selected = dataInventory({ ...options, homeDir: home, workingDir: cwd }).entries[0];
-      if (selected?.observation === 'refused' || selected?.observation === 'uncertain')
-        reject(selected.reason ?? 'ACCESS_UNCERTAIN');
+      const selected = selectedProfileObservation({
+        ...options,
+        homeDir: home,
+        workingDir: cwd,
+      });
+      if (selected.observation === 'refused' || selected.observation === 'uncertain')
+        reject(selected.reason);
       if (retirementObjectSnapshot(markerPath, false)) reject('CHANGED_DURING_OBSERVATION');
       return { ...base, status: 'no_interruption_marker' };
     }
     const checkAncestors = retirementAncestry(profile);
-    const names = readRetirementMarker(markerPath, marker, profile);
+    const names = readRetirementMarker(markerPath, marker);
     const quarantine = names.quarantine && join(dirname(profile), names.quarantine);
     const circuitQuarantine =
       names.circuitQuarantine && join(dirname(profile), names.circuitQuarantine);

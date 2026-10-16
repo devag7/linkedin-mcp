@@ -27,17 +27,24 @@ const hooks = vi.hoisted(() => ({
   injectProfileMember: false,
   replaceKnownMemberWith: '',
   relocateAncestorTo: '',
+  recordPaths: false,
+  seenPaths: [] as string[],
 }));
 vi.mock('node:fs', async (original) => {
   const fs = await original<typeof import('node:fs')>();
   return {
     ...fs,
     lstatSync: (path: import('node:fs').PathLike, options?: unknown) => {
+      if (hooks.recordPaths) hooks.seenPaths.push(String(path));
       if (String(path) === hooks.appeared && ++hooks.probes === 5) fs.mkdirSync(hooks.appeared);
       const stat = fs.lstatSync(path, options as { bigint: true });
       return String(path) === hooks.oversized
         ? Object.assign(Object.create(stat), { size: 2n * 1024n ** 3n + 1n })
         : stat;
+    },
+    realpathSync: (path: import('node:fs').PathLike) => {
+      if (hooks.recordPaths) hooks.seenPaths.push(String(path));
+      return fs.realpathSync(path);
     },
     unlinkSync: (path: import('node:fs').PathLike) => {
       if (hooks.failQuarantineRemove && String(path).includes('.retirement-'))
@@ -88,6 +95,8 @@ afterEach(() => {
   hooks.injectProfileMember = false;
   hooks.replaceKnownMemberWith = '';
   hooks.relocateAncestorTo = '';
+  hooks.recordPaths = false;
+  hooks.seenPaths = [];
   for (const root of roots.splice(0)) rmSync(root, { recursive: true, force: true });
 });
 
@@ -276,11 +285,44 @@ it('treats an absent marker as no interrupted retirement without changing state'
   const f = fixture();
   const cookie = join(f.profileDir, 'Cookies');
   writeFileSync(cookie, 'PRIVATE-COOKIE');
+  hooks.recordPaths = true;
   expect(retirementRecoveryPreview(f.options)).toMatchObject({
     status: 'no_interruption_marker',
     deletionAuthorized: false,
   });
+  hooks.recordPaths = false;
+  expect(hooks.seenPaths.some((path) =>
+    /budgets\.json|credentials\.json|\.circuit\.json|\.owner\.lock/.test(path),
+  )).toBe(false);
   expect(readFileSync(cookie, 'utf8')).toBe('PRIVATE-COOKIE');
+});
+
+it.skipIf(process.platform !== 'win32')('accepts the stored marker family casing on Windows', () => {
+  const f = fixture();
+  const selected = join(f.home, '.linkedin-mcp', 'Profile');
+  const aliasCasing = join(f.home, '.linkedin-mcp', 'profile');
+  const name = 'Profile.retirement-00000000-0000-4000-8000-000000000000';
+  const circuitName = 'Profile.circuit.json.retirement-00000000-0000-4000-8000-000000000001';
+  rmSync(f.profileDir, { recursive: true });
+  mkdirSync(selected);
+  mkdirSync(join(dirname(selected), name));
+  writeFileSync(join(dirname(selected), name, 'Cookies'), 'PRIVATE-COOKIE');
+  writeFileSync(join(dirname(selected), circuitName), 'PRIVATE-CIRCUIT');
+  writeFileSync(`${selected}.retirement.json`, JSON.stringify({
+    schemaVersion: 1,
+    phase: 'started',
+    scope: 'selected_profile',
+    quarantine: name,
+    circuitQuarantine: circuitName,
+  }));
+  expect(retirementRecoveryPreview({ ...f.options, profileDir: aliasCasing })).toMatchObject({
+    status: 'needs_operator_review',
+    observed: {
+      plannedProfileQuarantine: true,
+      plannedCircuitQuarantine: true,
+      quarantinedFiles: 1,
+    },
+  });
 });
 
 it('reports no marker when the selected state parent has never been created', () => {

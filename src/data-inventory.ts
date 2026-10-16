@@ -238,3 +238,29 @@ export function dataInventory(
     ],
   };
 }
+
+/** Inspect only the selected profile and its ancestors, including a missing parent. */
+export function selectedProfileObservation(
+  options: { profileDir?: string; homeDir?: string; workingDir?: string } = {},
+) {
+  const home = resolve(options.homeDir ?? homedir());
+  const cwd = resolve(options.workingDir ?? process.cwd());
+  const profile = resolve(cwd, options.profileDir || join(home, '.linkedin-mcp', 'profile'));
+  if (
+    contains(profile, home) ||
+    contains(profile, cwd) ||
+    contains(profile, join(home, '.linkedin-mcp'))
+  )
+    return { observation: 'refused' as const, reason: 'SCOPE_OVERLAP_REFUSED' as const };
+  try {
+    const first = snapshot(profile, true);
+    const last = snapshot(profile, true);
+    if (!unchanged(first, last, profile))
+      throw new InventoryError('uncertain', 'CHANGED_DURING_OBSERVATION');
+    return { observation: last.get(profile) ? ('present' as const) : ('absent' as const) };
+  } catch (error) {
+    return error instanceof InventoryError
+      ? { observation: error.state, reason: error.reason }
+      : { observation: 'uncertain' as const, reason: 'ACCESS_UNCERTAIN' as const };
+  }
+}
