@@ -1,6 +1,25 @@
 # Coverage against the original 2026 roadmap
 
+## Job seeker and Claude distribution update — October 16, 2026
+
+The [current-source product plan](JOB_SEEKER_AND_CLAUDE_DISTRIBUTION_2026-10-16.md)
+confirms no job-application fill/submit or Easy Apply tool in released 4.0.0.
+It prioritizes a local, source-linked application worksheet, private tracking,
+native Claude Desktop proof and manual final submission. Claude's remote
+directory connector path requires public HTTPS, per-user authentication and
+legitimate API access that this local browser runtime does not have. Source-only
+tool title and close-session annotation repairs are prepared; no listing,
+application, provider call or new package release is claimed.
+
 ## Selected-profile retirement follow-up — October 16, 2026
+
+[PR #31](https://github.com/devag7/linkedin-mcp/pull/31) merged the read-only
+interrupted-retirement recovery preview at main `787e5bf`.
+[Post-merge CI](https://github.com/devag7/linkedin-mcp/actions/runs/38921586829)
+passed 12/12 jobs. The
+[release workflow](https://github.com/devag7/linkedin-mcp/actions/runs/38921586792)
+passed compatibility and skipped publishing because the existing v4.0.0 tag
+belongs to the previous release commit. The recovery preview remains source-only.
 
 [PR #30](https://github.com/devag7/linkedin-mcp/pull/30) merged the explicit,
 bounded selected-profile-and-circuit removal command at main `dea4642`. Its
@@ -13,8 +32,7 @@ published. The command remains source-only. Its selected scope retains shared
 budgets/write journal, legacy credentials, other profiles, client data and
 backups; it does not complete coordinated erasure.
 
-The next source candidate adds a read-only recovery preview for an interrupted
-selected-profile retirement. It inspects only the bounded marker and its planned
+The merged recovery preview inspects only the bounded marker and its planned
 quarantines, reports fixed presence/count fields, and never resumes deletion.
 Complete shared-state erasure, power-loss recovery, hostile same-account races,
 and previously exposed Windows data remain open. First-use attempts remain 0/0.
