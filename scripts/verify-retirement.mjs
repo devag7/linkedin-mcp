@@ -1,4 +1,4 @@
-/** Installed preview only, with disposable HOME and profile. No transaction application. */
+/** Installed offline retirement flow against a disposable HOME and profile. */
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import {
@@ -19,6 +19,7 @@ const home = join(root, 'home');
 const profile = join(home, '.linkedin-mcp', 'profile');
 mkdirSync(profile, { recursive: true });
 writeFileSync(join(profile, 'Cookies'), 'PRIVATE-CREDENTIAL-CONTENT');
+writeFileSync(`${profile}.circuit.json`, 'PRIVATE-CIRCUIT-CONTENT');
 const budget = join(home, '.linkedin-mcp', 'budgets.json');
 writeFileSync(budget, 'PRIVATE-SAFETY-CONTENT');
 const env = {
@@ -30,10 +31,10 @@ const env = {
   LINKEDIN_CHROME_PATH: 'DO-NOT-OPEN',
   LINKEDIN_HTTP_TOKEN: 'PRIVATE',
 };
-const run = (args) =>
+const run = (args, overrides = {}) =>
   spawnSync(process.execPath, [bundle, ...args], {
     cwd: root,
-    env,
+    env: { ...env, ...overrides },
     encoding: 'utf8',
     timeout: 10000,
   });
@@ -46,15 +47,17 @@ try {
   const report = JSON.parse(result.stdout);
   assert.equal(report.mode, 'offline_retirement_preview');
   assert.equal(report.status, 'preview_only');
-  assert.equal(report.applicationSupported, false);
+  assert.equal(report.applicationSupported, true);
   assert.equal(report.deletionAuthorized, false);
   assert.equal(report.proposed.files, 1);
+  assert.equal(report.proposed.circuitPresent, true);
   assert.deepEqual(readdirSync(join(home, '.linkedin-mcp')).sort(), original);
   for (const args of [
     ['--retirement-preview', '--live'],
     ['--retirement-preview', '--logout'],
     ['--retirement-preview', '--confirm-profile-deletion'],
     ['--erase-profile'],
+    ['--retire-profile'],
   ]) {
     const rejected = run(args);
     assert.equal(rejected.status, 1);
@@ -67,10 +70,23 @@ try {
   assert.equal(JSON.parse(locked.stdout).reason, 'LOCK_OWNERSHIP_UNVERIFIED');
   assert.equal(readFileSync(join(profile, 'Cookies'), 'utf8'), 'PRIVATE-CREDENTIAL-CONTENT');
   assert.equal(readFileSync(budget, 'utf8'), 'PRIVATE-SAFETY-CONTENT');
+  rmSync(`${profile}.owner.lock`, { recursive: true });
+  const customWithoutConfirmation = run(['--retire-profile', '--confirm-retirement'], {
+    LINKEDIN_PROFILE_DIR: profile,
+  });
+  assert.equal(customWithoutConfirmation.status, 1);
+  assert.equal(readFileSync(join(profile, 'Cookies'), 'utf8'), 'PRIVATE-CREDENTIAL-CONTENT');
+  const applied = run(['--retire-profile', '--confirm-retirement']);
+  assert.equal(applied.status, 0, applied.stderr);
+  assert.equal(JSON.parse(applied.stdout).status, 'retired');
+  assert.ok(!applied.stdout.includes(root) && !applied.stdout.includes('PRIVATE'));
+  assert.equal(readFileSync(budget, 'utf8'), 'PRIVATE-SAFETY-CONTENT');
+  assert.ok(!readdirSync(join(home, '.linkedin-mcp')).includes('profile'));
+  assert.ok(!readdirSync(join(home, '.linkedin-mcp')).includes('profile.circuit.json'));
   console.log(
     JSON.stringify({
-      installedRetirementPreview: 'passed',
-      applicationSupported: false,
+      installedRetirementFlow: 'passed',
+      applicationSupported: true,
       accountRequests: 0,
       scope: 'disposable offline CLI and refusal fixtures',
     }),
