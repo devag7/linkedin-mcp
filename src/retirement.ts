@@ -117,17 +117,39 @@ function retirementObjectSnapshot(path: string, directory: boolean): BigIntStats
 }
 
 const retirementUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-function expectedQuarantine(name: unknown, prefix: string): name is string {
+function expectedQuarantine(
+  name: unknown,
+  prefix: string,
+  caseInsensitive = false,
+): name is string {
   const head = `${prefix}.retirement-`;
   return (
     typeof name === 'string' &&
     basename(name) === name &&
-    name.startsWith(head) &&
+    (caseInsensitive
+      ? name.slice(0, head.length).toLowerCase() === head.toLowerCase()
+      : name.startsWith(head)) &&
     retirementUuid.test(name.slice(head.length))
   );
 }
 
-function readRetirementMarker(path: string, expected: BigIntStats) {
+function markerCaseInsensitive(path: string, expected: BigIntStats) {
+  if (process.platform !== 'win32') return false;
+  const name = basename(path);
+  const index = name.search(/[a-zA-Z]/);
+  if (index < 0) reject('RECOVERY_MARKER_INVALID');
+  const character = name[index]!;
+  const swapped =
+    character === character.toLowerCase() ? character.toUpperCase() : character.toLowerCase();
+  const alternateName = `${name.slice(0, index)}${swapped}${name.slice(index + 1)}`;
+  const alternate = retirementObjectSnapshot(join(dirname(path), alternateName), false);
+  if (!alternate) return false;
+  if (alternate.dev !== expected.dev || alternate.ino !== expected.ino)
+    reject('RECOVERY_MARKER_INVALID');
+  return true;
+}
+
+function readRetirementMarker(path: string, expected: BigIntStats, profile: string) {
   if (expected.size < 1n || expected.size > 2048n) reject('RECOVERY_MARKER_INVALID');
   const fd = openSync(path, constants.O_RDONLY);
   let raw: string;
@@ -152,14 +174,11 @@ function readRetirementMarker(path: string, expected: BigIntStats) {
   if (!value || typeof value !== 'object' || Array.isArray(value))
     reject('RECOVERY_MARKER_INVALID');
   const record = value as Record<string, unknown>;
-  const markerName = basename(realpathSync(path));
-  const suffix = '.retirement.json';
-  if (!markerName.endsWith(suffix)) reject('RECOVERY_MARKER_INVALID');
+  const caseInsensitive = markerCaseInsensitive(path, expected);
   const final = retirementObjectSnapshot(path, false);
   if (!final || !identical(expected, final))
     reject('CHANGED_DURING_OBSERVATION');
-  // The existing marker supplies the original family casing on Windows.
-  const profileName = markerName.slice(0, -suffix.length);
+  const profileName = basename(profile);
   if (
     Object.keys(record).sort().join(',') !==
       'circuitQuarantine,phase,quarantine,schemaVersion,scope' ||
@@ -167,9 +186,13 @@ function readRetirementMarker(path: string, expected: BigIntStats) {
     record.phase !== 'started' ||
     record.scope !== 'selected_profile' ||
     (record.quarantine !== null &&
-      !expectedQuarantine(record.quarantine, profileName)) ||
+      !expectedQuarantine(record.quarantine, profileName, caseInsensitive)) ||
     (record.circuitQuarantine !== null &&
-      !expectedQuarantine(record.circuitQuarantine, `${profileName}.circuit.json`)) ||
+      !expectedQuarantine(
+        record.circuitQuarantine,
+        `${profileName}.circuit.json`,
+        caseInsensitive,
+      )) ||
     (record.quarantine === null && record.circuitQuarantine === null)
   )
     reject('RECOVERY_MARKER_INVALID');
@@ -458,7 +481,7 @@ export function retirementRecoveryPreview(
       return { ...base, status: 'no_interruption_marker' };
     }
     const checkAncestors = retirementAncestry(profile);
-    const names = readRetirementMarker(markerPath, marker);
+    const names = readRetirementMarker(markerPath, marker, profile);
     const quarantine = names.quarantine && join(dirname(profile), names.quarantine);
     const circuitQuarantine =
       names.circuitQuarantine && join(dirname(profile), names.circuitQuarantine);

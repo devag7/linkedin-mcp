@@ -48,7 +48,10 @@ quarantines, circuit and owner lock. It reports fixed presence fields and bounde
 remaining quarantine counts without printing paths, filenames, identifiers or
 contents. An absent marker is reported as `no_interruption_marker`; a valid marker
 always reports `needs_operator_review`. Invalid or aliased state is refused. It
-does not clear the marker or lock, restore a profile, continue deletion or decide
+checks one alternate marker spelling on Windows using metadata only to establish
+whether the selected marker family is case-insensitive; a distinct file at that
+spelling is refused. It does not inspect shared safety-state paths.
+It does not clear the marker or lock, restore a profile, continue deletion or decide
 that secure erasure completed. The marker is not an authority to remove whatever
 currently occupies a quarantine name. Use the report for private operator
 inspection, then retain a recovery record before any manual action. The CLI exits

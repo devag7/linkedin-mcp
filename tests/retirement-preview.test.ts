@@ -315,7 +315,8 @@ it.skipIf(process.platform !== 'win32')('accepts the stored marker family casing
     quarantine: name,
     circuitQuarantine: circuitName,
   }));
-  expect(retirementRecoveryPreview({ ...f.options, profileDir: aliasCasing })).toMatchObject({
+  const report = retirementRecoveryPreview({ ...f.options, profileDir: aliasCasing });
+  expect(report, 'fixed refusal reason: ' + ('reason' in report ? report.reason : 'none')).toMatchObject({
     status: 'needs_operator_review',
     observed: {
       plannedProfileQuarantine: true,
