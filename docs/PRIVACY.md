@@ -2,8 +2,8 @@
 
 | Location | Contents | Retention / supported removal |
 | --- | --- | --- |
-| ~/.linkedin-mcp/profile or configured profile | Chrome cookies, local storage, cache and browsing/session data | Retained until logout; treat as credentials |
-| <canonical-profile>.circuit.json | Fixed checkpoint reason, timestamps and cooldowns | Retained across logout/restart; manual login clears a verified hard stop |
+| ~/.linkedin-mcp/profile or configured profile | Chrome cookies, local storage, cache and browsing/session data | Retained until logout or explicit selected-profile retirement; treat as credentials |
+| <canonical-profile>.circuit.json | Fixed checkpoint reason, timestamps and cooldowns | Retained across logout/restart; explicit selected-profile retirement removes it; manual login clears a verified hard stop |
 | ~/.linkedin-mcp/budgets.json | Hashed account keys, counters, warmup start, operation/input hashes, status and HTTP codes | No automatic expiry/eviction of journal IDs; new writes stop at 10,000 entries / 8 MiB |
 | <profile>.owner.lock / <budget-file>.lock | Local owner identity, process/host/time/token | Released by the owning process; orphan repair after all owners/Chrome stop |
 
@@ -43,21 +43,34 @@ online command to erase a shared journal while another profile may own it. Do no
 present state erasure as checkpoint recovery or resume automation with fresh caps.
 Full coordinated erasure tooling is still an explicit coverage gap.
 
-### Read-only profile retirement preview
+### Selected-profile retirement
 
-The 4.0.0 `--retirement-preview` command inspects one selected browser
-profile and prints bounded file/directory counts with fixed refusal reasons. It
-does not print paths, names, content or manifest hashes. It does not acquire
-locks, launch Chrome, make account requests or delete anything. The output
-always sets `applicationSupported:false` and `deletionAuthorized:false`.
+Published 4.0.0 `--retirement-preview` inspects one selected browser profile
+and prints bounded file/directory counts with fixed refusal reasons. It has
+`applicationSupported:false` and no circuit-presence field. The unreleased
+source extends the preview with circuit presence and an explicit apply command.
+Neither preview prints paths, names, content or manifest hashes, acquires
+locks, launches Chrome, makes account requests or deletes anything. Both set
+`deletionAuthorized:false`. The separate
+`--retire-profile --confirm-retirement` command will remove that selected
+profile and its circuit file after fresh checks under the profile owner lock.
+For a configured custom profile it also requires `--confirm-profile-deletion`.
+Run the read-only preview first. The apply command makes no LinkedIn request.
 
-The preview refuses observed owner locks, aliases/junctions, hard-linked files,
+The preview and apply preflight refuse observed owner locks, aliases/junctions, hard-linked files,
 unexpected types, scope overlap, changed observations, more than 5,000 entries,
-depth over 32 or aggregate regular-file size over 2 GiB. It preserves the circuit
-state, shared budgets and write journal, legacy credentials, other profiles,
-client data and backups. A successful preview is not stopped-owner proof or
-permission to delete; filesystem observations can become stale immediately.
-Complete erasure and safe handling of uncooperating processes remain open. The
+depth over 32 or aggregate regular-file size over 2 GiB. The apply command
+removes the selected circuit state, which can contain a checkpoint stop. This is
+an explicit safety-state reset for that profile. It retains shared budgets and
+the write journal, legacy credentials, other profiles, client data and backups.
+A successful preview is not stopped-owner proof or permission to delete;
+filesystem observations can become stale immediately. An interrupted apply
+leaves a private `.retirement.json` marker and possibly a quarantine directory;
+subsequent previews, applies, normal browser startup and logout refuse until
+an operator inspects the local state. An interrupted apply also retains its
+owner lock. Do not delete the marker, lock or quarantine blindly. A noncooperating process
+can still mutate files outside the ownership protocol. Complete coordinated
+erasure and safe handling of uncooperating processes remain open. The
 published 4.0.0 Windows guard does not authorize retirement or change the
 preceding 3.1.0 archive.
 

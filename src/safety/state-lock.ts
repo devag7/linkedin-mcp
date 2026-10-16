@@ -4,7 +4,7 @@ import * as path from 'node:path';
 import * as os from 'node:os';
 import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
-import { ensurePrivateStateDirectory } from './windows-private-state.js';
+import { ensurePrivateStateDirectory, fixedWindowsStateCode } from './windows-private-state.js';
 
 export type SafetyStateCode =
   | 'PROFILE_IN_USE'
@@ -92,10 +92,13 @@ export class StateLock {
             ? 'Browser profile is owned by another process. Stop that process before using the profile.'
             : 'Safety state is locked by another transaction. No action was submitted; retry this operation ID later.',
         );
-      throw new SafetyStateError(
+      const wrapped = new SafetyStateError(
         'STATE_WRITE_FAILED',
         'Safety lock could not be created. Repair local storage before continuing.',
       );
+      const stateCode = fixedWindowsStateCode(error);
+      if (stateCode) Object.assign(wrapped, { stateCode });
+      throw wrapped;
     }
     const token = randomUUID();
     try {

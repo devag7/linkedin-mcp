@@ -31,7 +31,7 @@ import { CLIENTS, clientConfiguration, setupReport, type SetupClient } from './s
 import { VERSION } from './version.js';
 import { loadConfig } from './config/env.js';
 import { dataInventory } from './data-inventory.js';
-import { retirementPreview } from './retirement.js';
+import { retirementPreview, retireSelectedProfile, RetirementError } from './retirement.js';
 
 /** Resolve the persistent browser-profile directory (mirrors BrowserEngine). */
 function profileDir(): string {
@@ -53,12 +53,14 @@ function parseArgs(): ServerConfig & {
     | 'doctor'
     | 'data-inventory'
     | 'retirement-preview'
+    | 'retire-profile'
     | 'setup'
     | 'client-config';
   client?: SetupClient;
   configFile?: string;
   live?: boolean;
   confirmProfileDeletion?: boolean;
+  confirmRetirement?: boolean;
 } {
   const args = process.argv.slice(2);
   let transport: TransportType = 'stdio';
@@ -68,6 +70,7 @@ function parseArgs(): ServerConfig & {
     | 'doctor'
     | 'data-inventory'
     | 'retirement-preview'
+    | 'retire-profile'
     | 'setup'
     | 'client-config'
     | 'login'
@@ -83,6 +86,7 @@ function parseArgs(): ServerConfig & {
   let configFile: string | undefined;
   let live = false;
   let confirmProfileDeletion = false;
+  let confirmRetirement = false;
   let transportChosen = false;
   let portChosen = false;
   let logLevelChosen = false;
@@ -117,6 +121,12 @@ function parseArgs(): ServerConfig & {
         break;
       case '--retirement-preview':
         setAction('retirement-preview');
+        break;
+      case '--retire-profile':
+        setAction('retire-profile');
+        break;
+      case '--confirm-retirement':
+        confirmRetirement = true;
         break;
       case '--live':
         live = true;
@@ -228,9 +238,33 @@ function parseArgs(): ServerConfig & {
   if (live && action !== 'doctor') throw new Error('--live is only supported with --doctor.');
   if (configFile !== undefined && action !== 'setup')
     throw new Error('--config-file is only supported with --setup.');
-  if (confirmProfileDeletion && action !== 'logout')
-    throw new Error('--confirm-profile-deletion is only supported with --logout.');
-  return { transport, port, logLevel, action, client, configFile, live, confirmProfileDeletion };
+  if (confirmProfileDeletion && action !== 'logout' && action !== 'retire-profile')
+    throw new Error(
+      '--confirm-profile-deletion is only supported with --logout or --retire-profile.',
+    );
+  if (confirmRetirement && action !== 'retire-profile')
+    throw new Error('--confirm-retirement is only supported with --retire-profile.');
+  if (
+    action === 'retire-profile' &&
+    (!confirmRetirement ||
+      (process.env.LINKEDIN_PROFILE_DIR !== undefined &&
+        process.env.LINKEDIN_PROFILE_DIR !== '' &&
+        !confirmProfileDeletion))
+  )
+    throw new Error(
+      'Retirement requires --confirm-retirement and --confirm-profile-deletion for a custom profile.',
+    );
+  return {
+    transport,
+    port,
+    logLevel,
+    action,
+    client,
+    configFile,
+    live,
+    confirmProfileDeletion,
+    confirmRetirement,
+  };
 }
 
 /**
@@ -253,11 +287,14 @@ COMMANDS:
   --config-file <path>     With --setup: read-only JSON/JSONC merge preview
   --doctor                 Diagnose local setup without launching Chrome or network requests
   --data-inventory         Read-only, path-free local state inventory; no deletion plan
-  --retirement-preview     Bounded profile retirement preview; application is disabled
+  --retirement-preview     Bounded, read-only profile retirement preview
+  --retire-profile         Remove selected profile and circuit after explicit confirmation;
+                           shared budgets and write journal remain intact
+  --confirm-retirement     Required with --retire-profile; review --retirement-preview first
   --doctor --live          Also open the saved session and probe authenticated identity
   --status                 Show the current login/profile status
   --logout                 Clear the saved Chrome profile; keep safety history
-  --confirm-profile-deletion  Required with --logout for a custom profile path
+  --confirm-profile-deletion  Required for a custom profile with --logout or --retire-profile
   --spike                  Verify the live data path (fetches your profile)
 
 OPTIONS:
@@ -300,6 +337,35 @@ async function main(): Promise<void> {
     // eslint-disable-next-line no-console -- Offline CLI before runtime/transport creation
     console.log(JSON.stringify(report, null, 2));
     process.exitCode = report.status === 'refused' ? 1 : 0;
+    return;
+  }
+
+  if (config.action === 'retire-profile') {
+    try {
+      const report = retireSelectedProfile({
+        profileDir: process.env.LINKEDIN_PROFILE_DIR,
+        confirmed: config.confirmRetirement,
+      });
+      // eslint-disable-next-line no-console -- Offline CLI before runtime/transport creation
+      console.log(JSON.stringify(report));
+    } catch (error) {
+      const stateCode =
+        error instanceof Error &&
+        'stateCode' in error &&
+        typeof error.stateCode === 'string' &&
+        /^WINDOWS_STATE_(?:OUTSIDE_USER_PROFILE|PRIVACY_UNVERIFIED_[A-Z_]+)$/.test(error.stateCode)
+          ? error.stateCode
+          : undefined;
+      // eslint-disable-next-line no-console -- Fixed error codes only; never expose state paths
+      console.log(
+        JSON.stringify({
+          status: 'refused',
+          reason:
+            error instanceof RetirementError ? error.code : (stateCode ?? 'RETIREMENT_UNCERTAIN'),
+        }),
+      );
+      process.exitCode = 1;
+    }
     return;
   }
 
@@ -411,11 +477,13 @@ async function main(): Promise<void> {
     await startServer(config);
   } catch (error) {
     const message = error instanceof Error ? error.message : '';
-    const wrappedCode = error instanceof Error && 'stateCode' in error && typeof error.stateCode === 'string'
-      ? error.stateCode
-      : '';
+    const wrappedCode =
+      error instanceof Error && 'stateCode' in error && typeof error.stateCode === 'string'
+        ? error.stateCode
+        : '';
     const safeWindowsCode = [message, wrappedCode].find((value) =>
-      /^WINDOWS_STATE_(?:OUTSIDE_USER_PROFILE|PRIVACY_UNVERIFIED_[A-Z_]+)$/.test(value));
+      /^WINDOWS_STATE_(?:OUTSIDE_USER_PROFILE|PRIVACY_UNVERIFIED_[A-Z_]+)$/.test(value),
+    );
     const code = safeWindowsCode
       ? safeWindowsCode
       : message.startsWith('Budget state is unreadable or invalid.')
@@ -450,6 +518,7 @@ void main().catch((error: unknown) => {
     ['PROFILE_ALIAS_REFUSED', 'PROFILE_DELETION_ROOT_REFUSED', 'PROFILE_DELETION_CHANGED'].includes(
       message,
     ) ||
+    message === 'RETIREMENT_INCOMPLETE' ||
     message.startsWith('--confirm-profile-deletion is only supported') ||
     message === '--config-file requires one explicit path.' ||
     message === '--config-file is only supported with --setup.' ||

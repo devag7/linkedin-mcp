@@ -27,6 +27,7 @@ import { CircuitBreaker } from '../safety/circuit-breaker.js';
 import { StateLock, profilePath, canonicalPath, SafetyStateError } from '../safety/state-lock.js';
 import { CircuitFileStorage, circuitStatePath } from '../safety/circuit-storage.js';
 import { ensurePrivateStateDirectory } from '../safety/windows-private-state.js';
+import { assertNoRetirementMarker } from '../retirement.js';
 
 const FEED_URL = 'https://www.linkedin.com/feed/';
 const ORIGIN = 'https://www.linkedin.com';
@@ -66,6 +67,14 @@ export class BrowserEngine {
         'STATE_INVALID',
         'Browser profile path changed. Stop automation and repair local state.',
       );
+    try {
+      assertNoRetirementMarker(dir);
+    } catch {
+      throw new SafetyStateError(
+        'STATE_INVALID',
+        'Selected profile retirement is incomplete. Stop automation and inspect local state.',
+      );
+    }
     ensurePrivateStateDirectory(dir, true);
     return dir;
   }

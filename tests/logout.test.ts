@@ -88,4 +88,15 @@ it('does nothing when the default profile is absent and still requires custom co
   expect(() => removeSavedProfile({ ...options(), profileDir: join(dir, 'custom') })).toThrow(
     'confirm-profile-deletion',
   );
+  expect(() => removeSavedProfile({ ...options(), profileDir: '   ' })).toThrow(
+    'confirm-profile-deletion',
+  );
+});
+it('blocks logout while an interrupted retirement marker remains', () => {
+  const profile = join(dir, 'home', '.linkedin-mcp', 'profile');
+  mkdirSync(profile, { recursive: true });
+  writeFileSync(join(profile, 'Cookies'), 'private fixture');
+  writeFileSync(`${profile}.retirement.json`, 'synthetic interrupted retirement');
+  expect(() => removeSavedProfile(options())).toThrow('RETIREMENT_INCOMPLETE');
+  expect(readFileSync(join(profile, 'Cookies'), 'utf8')).toBe('private fixture');
 });

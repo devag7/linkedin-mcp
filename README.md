@@ -387,6 +387,10 @@ synthetic; a real first-read recording remains a consented validation step.
 contain explicit call limits and source-link rules. [Client setup](SETUP_GUIDE.md)
 separates locally exercised MCP transport from untested client applications.
 [Privacy and deletion](docs/PRIVACY.md) explains retained safety history.
+[Selected-profile retirement design](https://github.com/devag7/linkedin-mcp/blob/main/docs/RETIREMENT_TRANSACTION_DESIGN.md)
+documents the new unreleased source command, its confirmation and interruption
+behavior, and the shared state it deliberately preserves. Published 4.0.0
+still provides only the read-only retirement preview.
 [Roadmap coverage](docs/ROADMAP_COVERAGE.md) tracks every acceptance requirement.
 The 3.1.0 release adds a [read-only config merge preview](SETUP_GUIDE.md#preview-an-existing-client-configuration)
 that checks an explicitly selected JSON/JSONC file for missing, matching or conflicting

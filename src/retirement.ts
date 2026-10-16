@@ -1,9 +1,22 @@
-/** Bounded offline retirement preview. No deletion, locks, content reads or provider calls. */
-import { createHash } from 'node:crypto';
-import { lstatSync, opendirSync, realpathSync, type BigIntStats } from 'node:fs';
+/** Bounded offline retirement preview and explicit selected-profile cleanup. */
+import { createHash, randomUUID } from 'node:crypto';
+import {
+  closeSync,
+  fsyncSync,
+  lstatSync,
+  openSync,
+  opendirSync,
+  realpathSync,
+  renameSync,
+  rmdirSync,
+  unlinkSync,
+  writeSync,
+  type BigIntStats,
+} from 'node:fs';
 import { homedir } from 'node:os';
-import { dirname, isAbsolute, join, parse, relative, resolve } from 'node:path';
+import { basename, dirname, isAbsolute, join, parse, relative, resolve } from 'node:path';
 import { dataInventory } from './data-inventory.js';
+import { StateLock } from './safety/state-lock.js';
 
 export const RETIREMENT_LIMITS = { entries: 5000, depth: 32, bytes: 2 * 1024 ** 3 } as const;
 export interface RetirementEntry {
@@ -41,6 +54,38 @@ function identical(a: BigIntStats, b: BigIntStats) {
     a.mtimeNs === b.mtimeNs &&
     a.ctimeNs === b.ctimeNs
   );
+}
+function sameCircuit(a: BigIntStats | undefined, b: BigIntStats | undefined) {
+  return a && b ? identical(a, b) : a === b;
+}
+function sameMovedCircuit(a: BigIntStats, b: BigIntStats | undefined) {
+  return (
+    !!b &&
+    a.dev === b.dev &&
+    a.ino === b.ino &&
+    a.mode === b.mode &&
+    a.nlink === b.nlink &&
+    a.size === b.size &&
+    a.mtimeNs === b.mtimeNs
+  );
+}
+function retirementCircuitSnapshot(path: string): BigIntStats | undefined {
+  try {
+    const before = lstatSync(path, { bigint: true });
+    if (!before.isFile() || before.isSymbolicLink()) reject('TYPE_REFUSED');
+    if (before.nlink !== 1n) reject('MULTIPLE_LINKS_REFUSED');
+    if (before.ino === 0n) reject('IDENTITY_UNAVAILABLE');
+    const actual = realpathSync(path);
+    if (
+      process.platform === 'win32' ? actual.toLowerCase() !== path.toLowerCase() : actual !== path
+    )
+      reject('ALIAS_REFUSED');
+    if (!identical(before, lstatSync(path, { bigint: true }))) reject('CHANGED_DURING_OBSERVATION');
+    return before;
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return undefined;
+    throw error;
+  }
 }
 function contains(parent: string, child: string) {
   const tail = relative(parent, child);
@@ -135,6 +180,67 @@ export function scanRetirementProfile(profile: string): RetirementEntry[] {
 export function retirementDigest(entries: RetirementEntry[]) {
   return createHash('sha256').update(JSON.stringify(entries)).digest('hex');
 }
+function sameRetirementMember(expected: RetirementEntry, current: RetirementEntry) {
+  return (
+    expected.name === current.name &&
+    expected.directory === current.directory &&
+    expected.dev === current.dev &&
+    expected.ino === current.ino &&
+    expected.mode === current.mode &&
+    expected.size === current.size &&
+    expected.links === current.links &&
+    expected.modified === current.modified &&
+    expected.changed === current.changed
+  );
+}
+function assertMemberIdentity(path: string, expected: RetirementEntry) {
+  const current = lstatSync(path, { bigint: true });
+  if (
+    current.isSymbolicLink() ||
+    current.isDirectory() !== expected.directory ||
+    String(current.dev) !== expected.dev ||
+    String(current.ino) !== expected.ino ||
+    String(current.mode) !== expected.mode
+  )
+    reject('CHANGED_DURING_OBSERVATION');
+  if (
+    !expected.directory &&
+    (String(current.nlink) !== expected.links ||
+      String(current.size) !== expected.size ||
+      String(current.mtimeNs) !== expected.modified ||
+      String(current.ctimeNs) !== expected.changed)
+  )
+    reject('CHANGED_DURING_OBSERVATION');
+}
+function assertApprovedAncestors(
+  root: string,
+  name: string,
+  approved: Map<string, RetirementEntry>,
+) {
+  const check = (member: string) => {
+    const expected = approved.get(member);
+    if (!expected?.directory) reject('CHANGED_DURING_OBSERVATION');
+    const path = member ? join(root, member) : root;
+    assertMemberIdentity(path, expected);
+    const actual = realpathSync(path);
+    if (
+      process.platform === 'win32' ? actual.toLowerCase() !== path.toLowerCase() : actual !== path
+    )
+      reject('ALIAS_REFUSED');
+  };
+  check('');
+  for (let parent = name ? dirname(name) : '.'; parent !== '.'; parent = dirname(parent))
+    check(parent);
+}
+
+export function assertNoRetirementMarker(profile: string): void {
+  try {
+    lstatSync(`${profile}.retirement.json`);
+    reject('RETIREMENT_INCOMPLETE');
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
+  }
+}
 
 /** Input anchors support disposable tests; the CLI passes only the profile override. */
 export function prepareRetirement(
@@ -149,18 +255,13 @@ export function prepareRetirement(
     contains(profile, join(home, '.linkedin-mcp'))
   )
     reject('SCOPE_OVERLAP_REFUSED');
+  // An interrupted retirement takes precedence over incidental lock observations.
+  assertNoRetirementMarker(profile);
   const inventory = dataInventory({ ...options, homeDir: home, workingDir: cwd });
   const problem = inventory.entries.find(
     (entry) => entry.observation === 'refused' || entry.observation === 'uncertain',
   );
   if (problem) reject(problem.reason ?? 'OWNERSHIP_UNCERTAIN');
-  // A pending retirement receipt never grants authority to continue another operation.
-  try {
-    lstatSync(`${profile}.retirement.json`);
-    reject('RETIREMENT_INCOMPLETE');
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
-  }
   const entries =
     inventory.entries[0]?.observation === 'absent' ? [] : scanRetirementProfile(profile);
   if (
@@ -185,12 +286,11 @@ export function retirementPreview(
   const base = {
     schemaVersion: 1,
     mode: 'offline_retirement_preview',
-    scope: 'selected_browser_profile_only',
-    applicationSupported: false,
+    scope: 'selected_profile_and_circuit_only',
+    applicationSupported: true,
     deletionAuthorized: false,
     bounds: RETIREMENT_LIMITS,
     preserved: [
-      'circuit_state',
       'shared_budgets_and_write_journal',
       'legacy_credentials',
       'other_profiles',
@@ -198,11 +298,11 @@ export function retirementPreview(
       'backups_and_evidence',
     ],
     limitations: [
-      'No deletion command is enabled. This preview is not approval or stopped-owner proof.',
+      'This preview is not approval or stopped-owner proof. Apply requires --retire-profile --confirm-retirement.',
       'Cooperating owner locks are observed, not acquired; another owner can start afterward.',
       'External Chrome processes, open handles, permissions and native Windows ACLs are unverified.',
       'Counts are filesystem metadata; content is not read. Paths, names and manifest hashes are omitted.',
-      'Complete coordinated erasure and shared safety-history removal remain unsupported.',
+      'The apply command removes only the selected profile and its circuit; complete coordinated erasure and shared safety-history removal remain unsupported.',
     ],
   };
   try {
@@ -212,6 +312,7 @@ export function retirementPreview(
       status: 'preview_only',
       proposed: {
         profilePresent: plan.entries.length > 0,
+        circuitPresent: plan.inventory.entries[1]?.observation === 'present',
         files: plan.entries.filter((entry) => !entry.directory).length,
         directories: plan.entries.filter((entry) => entry.directory).length,
       },
@@ -222,5 +323,141 @@ export function retirementPreview(
       status: 'refused',
       reason: error instanceof RetirementError ? error.code : 'ACCESS_UNCERTAIN',
     };
+  }
+}
+
+/** A deliberately scoped privacy operation. Shared budgets and write history are never removed. */
+export function retireSelectedProfile(
+  options: { profileDir?: string; homeDir?: string; workingDir?: string; confirmed?: boolean } = {},
+) {
+  const scope = 'selected_profile_and_circuit_only';
+  const preserved = [
+    'shared_budgets_and_write_journal',
+    'legacy_credentials',
+    'other_profiles',
+    'client_data',
+    'backups_and_evidence',
+  ];
+  if (!options.confirmed) reject('CONFIRMATION_REQUIRED');
+  const plan = prepareRetirement(options);
+  const circuit = `${plan.profile}.circuit.json`;
+  const receipt = `${plan.profile}.retirement.json`;
+  const beforeCircuit = retirementCircuitSnapshot(circuit);
+  if (!plan.entries.length && !beforeCircuit)
+    return {
+      status: 'nothing_to_retire',
+      scope,
+      profileRemoved: false,
+      circuitRemoved: false,
+      preserved,
+    };
+  // The profile lock is also used by Chrome. It is never stolen, including after a crash.
+  const owner = new StateLock(`${plan.profile}.owner`, true);
+  if (
+    process.platform === 'win32'
+      ? owner.directory.toLowerCase() !== `${plan.profile}.owner.lock`.toLowerCase()
+      : owner.directory !== `${plan.profile}.owner.lock`
+  )
+    reject('ALIAS_REFUSED');
+  owner.acquire();
+  let markerCreated = false;
+  let completed = false;
+  try {
+    owner.assertOwned();
+    const current = plan.entries.length ? scanRetirementProfile(plan.profile) : [];
+    if (retirementDigest(current) !== plan.digest) reject('CHANGED_DURING_OBSERVATION');
+    if (plan.entries.length === 0) {
+      try {
+        lstatSync(plan.profile);
+        reject('CHANGED_DURING_OBSERVATION');
+      } catch (error) {
+        if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
+      }
+    }
+    if (!sameCircuit(beforeCircuit, retirementCircuitSnapshot(circuit)))
+      reject('CHANGED_DURING_OBSERVATION');
+    // The fsynced marker blocks subsequent use after an interrupted operation.
+    const quarantine = plan.entries.length ? `${plan.profile}.retirement-${randomUUID()}` : null;
+    const circuitQuarantine = beforeCircuit ? `${circuit}.retirement-${randomUUID()}` : null;
+    const fd = openSync(receipt, 'wx', 0o600);
+    try {
+      writeSync(
+        fd,
+        JSON.stringify({
+          schemaVersion: 1,
+          phase: 'started',
+          scope: 'selected_profile',
+          quarantine: quarantine ? basename(quarantine) : null,
+          circuitQuarantine: circuitQuarantine ? basename(circuitQuarantine) : null,
+        }),
+      );
+      fsyncSync(fd);
+      markerCreated = true;
+    } finally {
+      closeSync(fd);
+    }
+    if (plan.entries.length) {
+      owner.assertOwned();
+      if (retirementDigest(scanRetirementProfile(plan.profile)) !== plan.digest)
+        reject('CHANGED_DURING_OBSERVATION');
+      const quarantined = quarantine!;
+      renameSync(plan.profile, quarantined);
+      const moved = lstatSync(quarantined, { bigint: true });
+      const original = plan.entries.find((entry) => entry.name === '')!;
+      if (
+        !moved.isDirectory() ||
+        moved.isSymbolicLink() ||
+        String(moved.dev) !== original.dev ||
+        String(moved.ino) !== original.ino
+      )
+        reject('CHANGED_DURING_OBSERVATION');
+      const movedEntries = scanRetirementProfile(quarantined);
+      if (
+        movedEntries.length !== plan.entries.length ||
+        movedEntries.some(
+          (entry, index) => entry.name !== '' && !sameRetirementMember(plan.entries[index]!, entry),
+        )
+      )
+        reject('CHANGED_DURING_OBSERVATION');
+      // Unlink only approved files; rmdir refuses any new/unapproved child.
+      const bottomUp = [...plan.entries].sort(
+        (a, b) =>
+          b.name.split(/[/\\]/).length - a.name.split(/[/\\]/).length ||
+          b.name.localeCompare(a.name),
+      );
+      const approved = new Map(plan.entries.map((entry) => [entry.name, entry]));
+      const checkOuter = retirementAncestry(quarantined);
+      for (const entry of bottomUp) {
+        owner.assertOwned();
+        checkOuter();
+        assertApprovedAncestors(quarantined, entry.name, approved);
+        const path = entry.name ? join(quarantined, entry.name) : quarantined;
+        assertMemberIdentity(path, entry);
+        if (entry.directory) rmdirSync(path);
+        else unlinkSync(path);
+      }
+    }
+    if (beforeCircuit) {
+      owner.assertOwned();
+      retirementAncestry(plan.profile)();
+      if (!sameCircuit(beforeCircuit, retirementCircuitSnapshot(circuit)))
+        reject('CHANGED_DURING_OBSERVATION');
+      renameSync(circuit, circuitQuarantine!);
+      if (!sameMovedCircuit(beforeCircuit, retirementCircuitSnapshot(circuitQuarantine!)))
+        reject('CHANGED_DURING_OBSERVATION');
+      unlinkSync(circuitQuarantine!);
+    }
+    completed = true;
+    return {
+      status: 'retired',
+      scope,
+      profileRemoved: plan.entries.length > 0,
+      circuitRemoved: !!beforeCircuit,
+      preserved,
+    };
+  } finally {
+    // Keep the marker on every partial/uncertain outcome, including a failed lock release.
+    if (!markerCreated || completed) owner.release();
+    if (completed && markerCreated) unlinkSync(receipt);
   }
 }

@@ -252,7 +252,7 @@ try {
   );
   process.stdout.write(
     execFileSync(process.execPath, [resolve('scripts/verify-retirement.mjs'), bundle], {
-      encoding: 'utf8', timeout: 30000,
+      encoding: 'utf8', timeout: process.platform === 'win32' ? 120000 : 30000,
     }),
   );
   process.stdout.write(
