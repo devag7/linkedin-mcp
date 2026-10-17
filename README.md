@@ -49,6 +49,9 @@ This release does not fill or submit job applications, including Easy Apply.
 Use the [job seeker and Claude distribution plan](docs/JOB_SEEKER_AND_CLAUDE_DISTRIBUTION_2026-10-16.md)
 for the application handoff workflow, proposed next features and the separate
 requirements for listing a connector in Claude.
+For a local Claude Desktop extension, see the
+[pinned MCPB build and native-test status](docs/CLAUDE_DESKTOP_BUNDLE_2026-10-17.md).
+It is a packaging candidate, not a listed Claude connector.
 
 ## What it does
 

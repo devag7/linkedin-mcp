@@ -29,6 +29,7 @@
     "metadata:sync": "tsx scripts/sync-metadata.ts",
     "metadata:check": "tsx scripts/sync-metadata.ts --check",
     "demo:offline": "node scripts/demo-offline.mjs",
+    "build:claude-mcpb": "node scripts/build-claude-mcpb.mjs",
     "verify:browser": "tsx scripts/verify-browser.ts",
     "verify:setup": "node scripts/verify-setup.mjs",
     "verify:inventory": "node scripts/verify-data-inventory.mjs",
