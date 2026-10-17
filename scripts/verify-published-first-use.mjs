@@ -1,9 +1,9 @@
 /** Version-pinned published installation/configuration proof; no browser or account reads. */
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { createHash } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, realpathSync, writeFileSync } from 'node:fs';
-import { homedir } from 'node:os';
+import { homedir, tmpdir } from 'node:os';
 import { delimiter, dirname, join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { assertInventory, verifyTarball } from './package-policy.mjs';
@@ -22,8 +22,12 @@ const cohortVersion = process.argv[3] ?? '3.0.0';
 const cohort = cohorts[cohortVersion];
 assert.ok(cohort, `Unsupported published cohort version: ${cohortVersion}`);
 
-const output = resolve(process.argv[2] ?? '');
 assert.ok(process.argv[2], 'Supply a new private disposable output directory.');
+const output = resolve(
+  process.argv[2] === '--temporary'
+    ? join(tmpdir(), `linkedin-mcp-published-${randomUUID()}`)
+    : process.argv[2],
+);
 assert.equal(existsSync(output), false, 'Refuse to overwrite previous evidence.');
 mkdirSync(output, { recursive: true, mode: 0o700 });
 const root = realpathSync(output);
