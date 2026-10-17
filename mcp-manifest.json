@@ -145,6 +145,18 @@
       "availability": "unknown_until_checked"
     },
     {
+      "name": "prepare_job_application",
+      "route": "local application worksheet; no submit or storage",
+      "source": "engine",
+      "permission": "local",
+      "write": false,
+      "provider": "local_browser_unofficial",
+      "verification": "offline_contract_tested",
+      "offlineCheckedAt": "2026-10-01",
+      "liveCheckedAt": null,
+      "availability": "available"
+    },
+    {
       "name": "search_companies",
       "route": "/search/results/companies/",
       "source": "dom",

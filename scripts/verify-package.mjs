@@ -117,7 +117,7 @@ try {
   const shipped = readFileSync(bundle, 'utf8');
   if (pkg.version === '3.0.0') {
     const metadata = JSON.parse(readFileSync(join(install, 'node_modules', pkg.name, 'mcp-manifest.json'), 'utf8'));
-    assert.equal(metadata.tools.length, 22, '3.0.0 is the approved 22-tool core release.');
+    assert.equal(metadata.tools.length, 23, 'Current source registers the offline worksheet.');
     assert.ok(!metadata.tools.some((tool) => tool.name === 'research_jobs'));
     assert.ok(!shipped.includes('research_jobs'), 'The deferred research tool must not enter the core bundle.');
   }
