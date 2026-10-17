@@ -14,7 +14,8 @@ disposable home. Cold discovery must return 22 tools and `whoami` must report
 `not_checked` without creating a Chrome profile. It then emits the bundle and
 its SHA-256. The builder unpacks the resulting `.mcpb` and repeats the cold
 startup/discovery check against the unpacked bytes. No LinkedIn request is part
-of the build.
+of the build. CI also runs that exact build on macOS and Windows with Node 22;
+the local result alone is not cross-platform proof.
 
 The bundle includes the npm package and its dependencies; it does not include
 Chrome, a session, profile, credentials or private application data. The user

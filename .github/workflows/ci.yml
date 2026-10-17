@@ -90,3 +90,20 @@ jobs:
         run: node -e 'require("node:fs").accessSync("/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", require("node:fs").constants.X_OK)'
       - name: Verify actual Chrome launch, ownership and cleanup without LinkedIn
         run: npm run verify:browser
+
+  claude-bundle:
+    name: Claude bundle (${{ matrix.os }}, Node 22)
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Build, unpack and start pinned 4.0.0 Claude bundle offline
+        run: npm run build:claude-mcpb
