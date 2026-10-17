@@ -105,5 +105,8 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - name: Keep Windows bundle fixtures under the current user profile
+        if: runner.os == 'Windows'
+        run: node --import tsx scripts/prepare-windows-ci-temp.ts
       - name: Build, unpack and start pinned 4.0.0 Claude bundle offline
         run: npm run build:claude-mcpb
