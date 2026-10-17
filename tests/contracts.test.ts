@@ -295,6 +295,8 @@ it('exports private statuses without inferring submission or executing CSV formu
             title: ' =HYPERLINK("bad")',
             status: 'submitted_unverified',
             updated_at: '2026-10-17T00:00:00.000Z',
+            next_action: '=HYPERLINK("bad")',
+            follow_up_at: '2026-10-24T00:00:00.000Z',
           },
           {
             job_id: '456',
@@ -303,13 +305,22 @@ it('exports private statuses without inferring submission or executing CSV formu
             receipt_confirmed: true,
             updated_at: '2026-10-17T01:00:00.000Z',
           },
+          {
+            job_id: '789',
+            title: 'Synthetic three',
+            status: 'rejected',
+            receipt_confirmed: true,
+            updated_at: '2026-10-17T02:00:00.000Z',
+          },
         ],
       },
     }),
   ).data;
   expect(result).toMatchObject({ status: 'export_only', stored: false, submittedByTool: false });
   expect(result.records[0].status).toBe('submitted_unverified');
-  expect(result.csv).toContain('"\'=HYPERLINK(""bad"")"');
+  expect(result.csv.match(/"'=HYPERLINK\(""bad""\)"/g)).toHaveLength(2);
+  expect(result.csv).toContain('"2026-10-24T00:00:00.000Z"');
+  expect(result.records[2]).toMatchObject({ status: 'rejected', receiptConfirmed: true });
   expect(runtime.voyager.voyagerGet).not.toHaveBeenCalled();
   expect(runtime.engine.hasActiveContext).toBe(false);
 });
@@ -320,7 +331,11 @@ it('rejects duplicate jobs and unsupported receipt claims in tracker exports', a
     status: 'interested',
     updated_at: '2026-10-17T00:00:00.000Z',
   };
-  for (const records of [[row, row], [{ ...row, status: 'receipt_verified' }]]) {
+  for (const records of [
+    [row, row],
+    [{ ...row, status: 'receipt_verified' }],
+    [{ ...row, status: 'submitted_unverified', receipt_confirmed: true }],
+  ]) {
     const result = decode(
       await client.callTool({ name: 'export_application_tracker', arguments: { records } }),
     );

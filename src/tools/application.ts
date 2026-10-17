@@ -81,6 +81,8 @@ export function registerApplicationTools(server: McpServer): void {
             ]),
             updated_at: z.string().datetime(),
             receipt_confirmed: z.boolean().default(false),
+            next_action: boundedText.optional(),
+            follow_up_at: z.string().datetime().optional(),
           }),
         )
         .min(1)
@@ -96,13 +98,16 @@ export function registerApplicationTools(server: McpServer): void {
         );
       if (
         records.some(
-          (record) => (record.status === 'receipt_verified') !== record.receipt_confirmed,
+          (record) =>
+            (record.status === 'receipt_verified' && !record.receipt_confirmed) ||
+            (record.receipt_confirmed &&
+              ['interested', 'drafting', 'submitted_unverified'].includes(record.status)),
         )
       )
         return failure(
           'export_application_tracker',
           'INVALID_TRACKER_RECORD',
-          'Receipt confirmation must match receipt-verified status.',
+          'Receipt confirmation is required for receipt-verified status and may remain recorded after rejection or withdrawal.',
         );
       const rows = records.map((record) => ({
         jobId: record.job_id,
@@ -111,6 +116,8 @@ export function registerApplicationTools(server: McpServer): void {
         status: record.status,
         updatedAt: record.updated_at,
         receiptConfirmed: record.receipt_confirmed,
+        nextAction: record.next_action ?? null,
+        followUpAt: record.follow_up_at ?? null,
         sourceUrl: `https://www.linkedin.com/jobs/view/${record.job_id}/`,
       }));
       const cell = (value: string) => {
@@ -119,7 +126,7 @@ export function registerApplicationTools(server: McpServer): void {
         return `"${safe.replace(/"/g, '""')}"`;
       };
       const csv = [
-        'job_id,title,company,status,updated_at,receipt_confirmed,source_url',
+        'job_id,title,company,status,updated_at,receipt_confirmed,next_action,follow_up_at,source_url',
         ...rows.map((row) =>
           [
             row.jobId,
@@ -128,6 +135,8 @@ export function registerApplicationTools(server: McpServer): void {
             row.status,
             row.updatedAt,
             String(row.receiptConfirmed),
+            row.nextAction ?? '',
+            row.followUpAt ?? '',
             row.sourceUrl,
           ]
             .map(cell)

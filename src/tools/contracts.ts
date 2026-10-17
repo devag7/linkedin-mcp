@@ -163,6 +163,8 @@ const dataSchemas: Record<ToolName, z.ZodTypeAny> = {
           ]),
           updatedAt: z.string().datetime(),
           receiptConfirmed: z.boolean(),
+          nextAction: z.string().nullable(),
+          followUpAt: z.string().datetime().nullable(),
           sourceUrl: z.string().url(),
         }),
       )

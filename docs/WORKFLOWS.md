@@ -46,7 +46,10 @@ For private status tracking, pass only jobs you choose to
 `export_application_tracker`. It formats at most 50 user-entered records as CSV
 and does not read LinkedIn or save the file. `submitted_unverified` means you
 reported an attempt without a verified receipt. `receipt_verified` requires
-your explicit receipt confirmation, still labelled user supplied. Save the CSV
+your explicit receipt confirmation, still labelled user supplied. You can retain
+that confirmation if the status later becomes `rejected` or `withdrawn`.
+Optional `next_action` and `follow_up_at` fields help you plan a follow-up.
+Save the CSV
 yourself in a private location if you want it to persist; do not attach it to a
 public issue or repository. A later call needs you to supply the records again.
 
