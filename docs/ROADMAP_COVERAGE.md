@@ -2,6 +2,15 @@
 
 ## Job seeker and Claude distribution update — October 17, 2026
 
+**October 18 publication update:** [4.1.0 is independently verified](RELEASE_EVIDENCE_4.1.0.md)
+at npm, GitHub Packages, MCP Registry and GitHub Release. It ships 24 tools,
+including the offline worksheet and user-entered tracker CSV. The selected
+retirement and interrupted-retirement preview commands are also in this
+release. The native 4.1.0 Claude Desktop extension remains a separate
+packaging/installation gate in [PR #37](https://github.com/devag7/linkedin-mcp/pull/37).
+The first-use cohort is still 0/0; no application submission or LinkedIn
+compatibility is established by publication.
+
 [PR #32](https://github.com/devag7/linkedin-mcp/pull/32) merged the
 tool-title/annotation and product-plan update. [PR #33](https://github.com/devag7/linkedin-mcp/pull/33)
 merged the local `prepare_job_application` worksheet with unverified user inputs,
@@ -9,7 +18,7 @@ missing-evidence flags and an invariant `submitted:false`. It stores nothing.
 [PR #35](https://github.com/devag7/linkedin-mcp/pull/35) merged the
 `export_application_tracker` formatter: user-entered statuses become CSV with
 spreadsheet-formula protection and no server storage. Published 4.0.0 still
-has 22 tools; 4.1.0 is a release candidate with 24.
+has 22 tools; this was the pre-publication source state. Published 4.1.0 has 24.
 
 One temporary Claude Desktop 2.42304.0 Mac install of the pinned 4.0.0 `.mcpb`
 candidate discovered 22 tools, completed only cold `whoami`, then was removed.
@@ -21,11 +30,11 @@ retirement.
 
 The [current-source product plan](JOB_SEEKER_AND_CLAUDE_DISTRIBUTION_2026-10-16.md)
 confirms no job-application fill/submit or Easy Apply tool in released 4.0.0.
-The worksheet and export are merged source work; publication and real-user
-value remain to be verified. Claude's remote
+The worksheet and export are now published in 4.1.0; real-user value remains
+to be verified. Claude's remote
 directory connector path requires public HTTPS, per-user authentication and
 legitimate API access that this local browser runtime does not have. No Claude
-listing, application submission, provider call or new package release is claimed.
+listing, application submission or provider call is claimed.
 
 ## Selected-profile retirement follow-up — October 16, 2026
 
