@@ -8,8 +8,8 @@ import { join, resolve } from 'node:path';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 
-const version = '4.0.0';
-const expectedSha256 = '4f08eb94eb97cdb2c2baf1a3643651397c83251f017d9bb4331cd511fd885e28';
+const version = '4.1.0';
+const expectedSha256 = '477c0cbfffe1901c9dea926dd8b9b4be6c9ff223154ff111854be949e798d8f9';
 const toolchain = '@anthropic-ai/mcpb@2.1.2';
 const output = resolve(process.argv[2] || join(tmpdir(), `linkedin-mcp-tools-${version}.mcpb`));
 const npmCli = process.env.npm_execpath;
@@ -43,7 +43,7 @@ async function verifyCold(folder) {
   try {
     await client.connect(transport);
     const tools = (await client.listTools()).tools;
-    assert.equal(tools.length, 22, 'Pinned published package must expose 22 tools.');
+    assert.equal(tools.length, 24, 'Pinned published package must expose 24 tools.');
     const who = await client.callTool({ name: 'whoami', arguments: {} });
     assert.equal(who.structuredContent?.data?.sessionState, 'not_checked');
     assert.equal(who.structuredContent?.data?.loggedIn, null);
