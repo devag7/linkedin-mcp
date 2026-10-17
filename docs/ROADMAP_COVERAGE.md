@@ -1,13 +1,18 @@
 # Coverage against the original 2026 roadmap
 
+For the current 4.1.0 release and outstanding gates, use the
+[October 18 completion index](CURRENT_COMPLETION_STATUS_2026-10-18.md).
+The dated sections below preserve the evidence available at each milestone.
+
 ## Job seeker and Claude distribution update — October 17, 2026
 
 **October 18 publication update:** [4.1.0 is independently verified](RELEASE_EVIDENCE_4.1.0.md)
 at npm, GitHub Packages, MCP Registry and GitHub Release. It ships 24 tools,
 including the offline worksheet and user-entered tracker CSV. The selected
 retirement and interrupted-retirement preview commands are also in this
-release. The native 4.1.0 Claude Desktop extension remains a separate
-packaging/installation gate in [PR #37](https://github.com/devag7/linkedin-mcp/pull/37).
+release. The 4.1.0 Claude Desktop bundle source merged through
+[PR #37](https://github.com/devag7/linkedin-mcp/pull/37), but native
+installation/removal and release-asset distribution remain separate gates.
 The first-use cohort is still 0/0; no application submission or LinkedIn
 compatibility is established by publication.
 

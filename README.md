@@ -47,6 +47,8 @@ package, disposable fixtures, no login or LinkedIn request.
 [draft PR #5](https://github.com/devag7/linkedin-mcp/pull/5). The
 [execution plan](docs/PRODUCT_EXECUTION_PLAN_2026.md) tracks first use, privacy,
 future features and measured distribution outcomes.
+The [current completion status](docs/CURRENT_COMPLETION_STATUS_2026-10-18.md)
+separates released features from remaining native, live and distribution gates.
 
 This release does not fill or submit job applications, including Easy Apply.
 Use the [job seeker and Claude distribution plan](docs/JOB_SEEKER_AND_CLAUDE_DISTRIBUTION_2026-10-16.md)

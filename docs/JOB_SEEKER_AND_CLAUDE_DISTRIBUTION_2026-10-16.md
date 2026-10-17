@@ -9,8 +9,8 @@ the linked primary sources before release or submission.
 **October 18 release update:** [4.1.0 is published](RELEASE_EVIDENCE_4.1.0.md)
 with 24 tools, including the offline application worksheet and user-entered
 tracker CSV. This updates the source-only classification below. The local
-Claude Desktop bundle has passed Mac/Windows offline checks in
-[PR #37](https://github.com/devag7/linkedin-mcp/pull/37), but native 4.1.0
+Claude Desktop bundle has passed Mac/Windows offline checks and its source
+merged through [PR #37](https://github.com/devag7/linkedin-mcp/pull/37), but native 4.1.0
 installation and directory listing are separate gates. Current
 [directory policy](https://support.claude.com/en/articles/13145358-anthropic-software-directory-policy)
 appears to require ownership/control of the connected LinkedIn interface,
@@ -157,7 +157,11 @@ worksheet; PR #35 added the tracker export. Both shipped in 4.1.0. These
 changes do **not** make this server a remote Claude connector or prove
 directory acceptance.
 
-## Immediate release gates and owner decisions
+## Original release gates and owner decisions
+
+These were written before 4.1.0 publication. The worksheet and tracker now
+ship; use the [current completion index](CURRENT_COMPLETION_STATUS_2026-10-18.md)
+for remaining native, first-use and distribution work.
 
 - Run local tests, lint, types, metadata and build; verify published-package
   installation separately from this source branch.
