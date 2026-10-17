@@ -144,6 +144,35 @@ const dataSchemas: Record<ToolName, z.ZodTypeAny> = {
     submitted: z.literal(false),
     stored: z.literal(false),
   }),
+  export_application_tracker: z.object({
+    status: z.literal('export_only'),
+    sourceVerification: z.literal('user_supplied_not_fetched'),
+    records: z
+      .array(
+        z.object({
+          jobId: z.string(),
+          title: z.string(),
+          company: z.string().nullable(),
+          status: z.enum([
+            'interested',
+            'drafting',
+            'submitted_unverified',
+            'receipt_verified',
+            'rejected',
+            'withdrawn',
+          ]),
+          updatedAt: z.string().datetime(),
+          receiptConfirmed: z.boolean(),
+          nextAction: z.string().nullable(),
+          followUpAt: z.string().datetime().nullable(),
+          sourceUrl: z.string().url(),
+        }),
+      )
+      .max(50),
+    csv: z.string(),
+    stored: z.literal(false),
+    submittedByTool: z.literal(false),
+  }),
   search_companies: z.array(company).max(25),
   get_company: row({
     universalName: z.string(),

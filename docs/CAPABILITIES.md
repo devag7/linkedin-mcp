@@ -16,6 +16,7 @@ Generated from src/tools/capabilities.ts for linkedin-mcp-tools v4.0.0.
 | get_inbox | /me + messengerConversations | voyager | authenticated_browser | 50 | offline_contract_tested (2026-10-01) | Unchecked |
 | get_job_details | voyagerJobsDashJobPosting | voyager | authenticated_browser | — | offline_contract_tested (2026-10-01) | Unchecked |
 | prepare_job_application | local application worksheet; no submit or storage | engine | local | — | offline_contract_tested (2026-10-01) | Unchecked |
+| export_application_tracker | local application status export; no storage | engine | local | — | offline_contract_tested (2026-10-01) | Unchecked |
 | search_companies | /search/results/companies/ | dom | authenticated_browser | 25 | offline_contract_tested (2026-10-01) | Unchecked |
 | get_company | /company/:slug/about/ | dom | authenticated_browser | — | offline_contract_tested (2026-10-01) | Unchecked |
 | get_company_posts | /company/:slug/posts/ | dom | authenticated_browser | 25 | offline_contract_tested (2026-10-01) | Unchecked |

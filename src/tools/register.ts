@@ -20,6 +20,7 @@ const TOOL_TITLES: Record<ToolName, string> = {
   get_inbox: 'Get inbox',
   get_job_details: 'Get job details',
   prepare_job_application: 'Prepare job application worksheet',
+  export_application_tracker: 'Export application tracker',
   search_companies: 'Search companies',
   get_company: 'Get company',
   get_company_posts: 'Get company posts',

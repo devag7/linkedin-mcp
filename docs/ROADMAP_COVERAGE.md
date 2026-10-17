@@ -9,6 +9,12 @@ missing-evidence flags and an invariant `submitted:false`. It stores nothing;
 published 4.0.0 still has 22 tools. Private tracking, native Claude proof,
 permitted submission and Claude directory eligibility remain open.
 
+A stacked source candidate adds `export_application_tracker`: user-entered
+statuses become CSV with spreadsheet-formula protection and no server storage.
+Server-owned persistence, native-client proof and application submission remain
+open. Export results can be retained by the user's client or manually saved;
+they are not covered by selected-profile retirement.
+
 The [current-source product plan](JOB_SEEKER_AND_CLAUDE_DISTRIBUTION_2026-10-16.md)
 confirms no job-application fill/submit or Easy Apply tool in released 4.0.0.
 It prioritizes a local, source-linked application worksheet, private tracking,
