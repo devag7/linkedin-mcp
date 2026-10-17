@@ -188,7 +188,13 @@ it('lists matching capabilities, output schemas and read/write annotations witho
   expect(tools.map((tool) => tool.name).sort()).toEqual(Object.keys(args).sort());
   for (const tool of tools) {
     expect(tool.outputSchema).toBeDefined();
-    expect(tool.annotations?.destructiveHint).toBe(CAPABILITIES[tool.name as ToolName].write);
+    expect(tool.title).toMatch(/^[A-Z][a-zA-Z ]+$/);
+    expect(tool.annotations?.readOnlyHint).toBe(
+      !CAPABILITIES[tool.name as ToolName].write && tool.name !== 'close_session',
+    );
+    expect(tool.annotations?.destructiveHint).toBe(
+      CAPABILITIES[tool.name as ToolName].write || tool.name === 'close_session',
+    );
   }
   const who = decode(await client.callTool({ name: 'whoami', arguments: {} })).data;
   expect(who.tools).toBe(tools.length);

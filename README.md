@@ -45,6 +45,11 @@ package, disposable fixtures, no login or LinkedIn request.
 [execution plan](docs/PRODUCT_EXECUTION_PLAN_2026.md) tracks first use, privacy,
 future features and measured distribution outcomes.
 
+This release does not fill or submit job applications, including Easy Apply.
+Use the [job seeker and Claude distribution plan](docs/JOB_SEEKER_AND_CLAUDE_DISTRIBUTION_2026-10-16.md)
+for the application handoff workflow, proposed next features and the separate
+requirements for listing a connector in Claude.
+
 ## What it does
 
 The server uses Patchright to open a persistent Google Chrome profile and makes
