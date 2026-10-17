@@ -13,7 +13,7 @@
 
 **Structured LinkedIn reads for MCP clients — profiles, jobs, companies and inbox data, with guided offline setup and explicit safety limits.**
 
-**24 tools in the 4.1.0 source candidate** · local browser reads · five explicitly confirmed writes · persisted safety limits and operation journals. Published 4.0.0 has 22 tools.
+**24 tools in published 4.1.0** · local browser reads · five explicitly confirmed writes · persisted safety limits and operation journals.
 
 > This is an unofficial LinkedIn integration and accounts can be restricted.
 > Review [Account safety](#-account-safety) and [SECURITY.md](SECURITY.md) before use.
@@ -24,19 +24,17 @@
 
 ## Guided first run
 
-The [4.1.0 release candidate](docs/RELEASE_NOTES_4.1.0.md) adds an offline
-application worksheet and user-entered tracker CSV. These do not fill or submit
-applications. Install the published 4.0.0 instructions below until 4.1.0 is
-independently verified at the public destinations.
+Published [4.1.0](docs/RELEASE_NOTES_4.1.0.md) adds an offline application
+worksheet and user-entered tracker CSV. These do not fill or submit
+applications. Its [public archive and destinations](docs/RELEASE_EVIDENCE_4.1.0.md)
+have been independently verified.
 
-**4.0.0 adds offline retirement preview and native Windows privacy checks to
-the 22-tool local server.** Its [published archive and destinations](docs/RELEASE_EVIDENCE_4.0.0.md)
-have been independently verified. Read the breaking Windows upgrade notes before
-changing an existing installation.
+**4.0.0 added offline retirement preview and native Windows privacy checks.**
+Read its breaking Windows upgrade notes before changing an existing installation.
 This is a local stdio tool; Glama's generic “Deploy Server” or browser-hosting
 controls are not supported installation instructions. No hosted service is required.
-[4.0.0 release notes](docs/RELEASE_NOTES_4.0.0.md) describe the upgrade and its
-limits. [Verified 3.1.0 publication receipts](docs/RELEASE_EVIDENCE_3.1.0.md)
+[4.0.0 release notes](docs/RELEASE_NOTES_4.0.0.md) describe those changes and limits.
+[Verified 3.1.0 publication receipts](docs/RELEASE_EVIDENCE_3.1.0.md)
 remain available for the preceding release.
 
 Start with the [quick start](#-quick-start) and [setup guide](SETUP_GUIDE.md).
@@ -79,8 +77,8 @@ results are recorded in [release readiness](docs/RELEASE_READINESS_3.0.0.md). On
 maintainer health/own-profile read also passed with partial metadata;
 [scope and evidence](docs/ZERO_COST_EXECUTION_EVIDENCE_2026-10-01.md#7-consented-maintainer-live-read--passed-limited-scope)
 do not establish fresh-user or broader live compatibility.
-The exact published 4.0.0 artifact and all four destinations are
-[independently verified](docs/RELEASE_EVIDENCE_4.0.0.md). Native-client first-use cohorts
+The exact published 4.1.0 artifact and all four destinations are
+[independently verified](docs/RELEASE_EVIDENCE_4.1.0.md). Native-client first-use cohorts
 and broad live-provider compatibility remain unverified.
 See [execution progress](docs/ROADMAP_PROGRESS.md) and the linked evidence.
 
@@ -101,18 +99,18 @@ not a guarantee of current provider compatibility or account safety.
 
 ## 🚀 Quick start
 
-Use Node.js 20 or later and Google Chrome. The commands below pin 4.0.0; run
-them after npm lists that version. Setup is offline; login and subsequent reads
+Use Node.js 20 or later and Google Chrome. The commands below pin 4.1.0.
+Setup is offline; login and subsequent reads
 are deliberate account actions. For a stable installation path and Windows
-commands, see the [setup guide](SETUP_GUIDE.md). On Windows, 4.0.0 requires
-state paths beneath the actual `%USERPROFILE%` tree. A custom path outside it
+commands, see the [setup guide](SETUP_GUIDE.md). On Windows, 4.1.0 retains the
+requirement that state paths stay beneath the actual `%USERPROFILE%` tree. A custom path outside it
 will be refused even when an older version accepted it. See the
 [migration notes](docs/RELEASE_NOTES_4.0.0.md#upgrade-notes-and-limits).
 
 **1. Diagnose offline:**
 
 ```bash
-npm install --prefix "$HOME/.local/share/linkedin-mcp" linkedin-mcp-tools@4.0.0
+npm install --prefix "$HOME/.local/share/linkedin-mcp" linkedin-mcp-tools@4.1.0
 node "$HOME/.local/share/linkedin-mcp/node_modules/linkedin-mcp-tools/dist/index.js" --setup cursor
 ```
 
@@ -138,7 +136,7 @@ accepting `mcpServers`, this version-pinned example is an alternative:
   "mcpServers": {
     "linkedin": {
       "command": "npx",
-      "args": ["-y", "linkedin-mcp-tools@4.0.0"]
+      "args": ["-y", "linkedin-mcp-tools@4.1.0"]
     }
   }
 }
@@ -401,10 +399,10 @@ contain explicit call limits and source-link rules. [Client setup](SETUP_GUIDE.m
 separates locally exercised MCP transport from untested client applications.
 [Privacy and deletion](docs/PRIVACY.md) explains retained safety history.
 [Selected-profile retirement design](docs/RETIREMENT_TRANSACTION_DESIGN.md)
-documents the new unreleased source command, its confirmation and interruption
-behavior, the read-only recovery preview for an interrupted attempt, and the
-shared state it deliberately preserves. Published 4.0.0 still provides only
-the read-only retirement preview.
+documents the selected-profile retirement command, its confirmation and
+interruption behavior, the read-only recovery preview for an interrupted
+attempt, and the shared state it deliberately preserves. Both commands are in
+published 4.1.0.
 [Roadmap coverage](docs/ROADMAP_COVERAGE.md) tracks every acceptance requirement.
 The 3.1.0 release adds a [read-only config merge preview](SETUP_GUIDE.md#preview-an-existing-client-configuration)
 that checks an explicitly selected JSON/JSONC file for missing, matching or conflicting

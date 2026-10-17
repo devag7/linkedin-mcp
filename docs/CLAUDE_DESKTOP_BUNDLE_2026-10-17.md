@@ -1,7 +1,7 @@
 # Claude Desktop local bundle: build and evidence
 
-**Scope:** local `.mcpb` distribution of `linkedin-mcp-tools@4.1.0` after
-independent public archive verification. This is a packaging candidate, not a
+**Scope:** local `.mcpb` distribution of published `linkedin-mcp-tools@4.1.0`.
+This is a packaging candidate, not a
 directory listing. It includes the offline worksheet and CSV tracker, but no
 job application fill or submit action.
 
@@ -34,8 +34,9 @@ It returned cold `whoami` without a browser profile or LinkedIn request. After
 correcting the manifest author URL to the maintainer's GitHub profile, its
 bundle SHA-256 is
 `225fcefd270ffb96a1d23b3eff40e100c809ab958d168554d1d3982e331c4428`.
-Hosted Mac/Windows bundle checks and native 4.1.0 Claude Desktop behavior
-remain separate gates.
+The reviewed [PR #37 CI](https://github.com/devag7/linkedin-mcp/actions/runs/39039351970)
+passed all 14 jobs, including actual bundle builds and cold checks on macOS
+and Windows. Native 4.1.0 Claude Desktop behavior remains a separate gate.
 
 ## Historical native 4.0.0 result
 
