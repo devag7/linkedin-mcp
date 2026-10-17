@@ -26,7 +26,13 @@ hosted check does not establish live LinkedIn behavior.
 | Full privacy retirement | Selected-profile tools are scoped and released. | Design, review and test complete coordinated erasure with active-owner, interruption, same-account race and Windows evidence. Never use it to reset safety caps. |
 | Official provider and Claude directory | Official LinkedIn app grants/scopes are unavailable. The local browser server is not a remote HTTPS connector. [Anthropic's directory policy](https://support.claude.com/en/articles/13145358-anthropic-software-directory-policy) appears to require control of connected interfaces. | Obtain permitted provider access and written directory eligibility/route clarification before implementing or submitting a remote connector. Do not claim listing eligibility from a local `.mcpb`. |
 | Application submission | LinkedIn Easy Apply and external ATS submission are absent. | Require a permitted integration, exact per-job field/attachment mapping, human final approval and receipt proof. Keep unsupported auto-apply claims out of release copy. |
-| Distribution and adoption | [Awesome MCP PR #15490](https://github.com/punkpeye/awesome-mcp-servers/pull/15490) is open with checks passing. [Glama](https://glama.ai/mcp/servers/devag7/linkedin-mcp) still shows stale version/tool/hosting copy. GitHub currently shows 10 stars. | Correct editable listing fields, seek platform correction for generated hosted copy, publish a truthful demo and measured first-use results. Track visits, installs, successful first reads, repeat use and net stars; 10,000 stars and GitHub Trending daily are targets, not guaranteed milestones. |
+| Distribution and adoption | [Awesome MCP PR #15490](https://github.com/punkpeye/awesome-mcp-servers/pull/15490) now edits the existing listing with verified 24-tool 4.1.0 facts; upstream acceptance remains pending. [Glama](https://glama.ai/mcp/servers/devag7/linkedin-mcp) still shows stale version/tool/hosting copy. Its [Admin page](https://glama.ai/mcp/servers/devag7/linkedin-mcp/admin) offers free GitHub-account claiming and a repository re-sync, but this has not been authorized or performed. GitHub currently shows 10 stars. | Owner signs into Glama with the repository's GitHub account and requests re-sync, then corrects editable fields and seeks platform correction for generated hosted copy. Track visits, installs, successful first reads, repeat use and net stars; 10,000 stars and GitHub Trending daily are targets, not guaranteed milestones. |
+
+An older external [Dockerfile PR #2](https://github.com/devag7/linkedin-mcp/pull/2)
+also remains open. Its submitted diff removes the `builder` stage while still
+copying from it, and predates the current experimental Docker recipe. It is
+not a 4.1.0 release gate or a verified hosted deployment path; review any
+container work against current source as a separate change.
 
 ## Next sequence
 
