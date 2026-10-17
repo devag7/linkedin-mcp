@@ -6,6 +6,12 @@ implementation plan, not evidence of LinkedIn application or Claude directory
 acceptance. Provider rules and Claude submission requirements can change; recheck
 the linked primary sources before release or submission.
 
+**Source progress, October 17:** PR #32 merged tool titles and the Claude
+distribution assessment. The next source branch adds an offline
+`prepare_job_application` worksheet; it accepts only user-provided listing and
+resume evidence, fetches nothing, stores nothing and always reports
+`submitted:false`. This is not part of published 4.0.0 until a later release.
+
 ## Executive decision
 
 The product does **not** fill or submit job applications, including LinkedIn
@@ -55,7 +61,7 @@ consent. No recruiter bulk-contact or application-farm positioning.
 | --- | --- | --- | --- |
 | P0 | Know exactly what a listing says, when it was fetched, and what is unknown | `search_jobs`, strict `get_job_details`, source links; live availability may be partial | Offline contracts plus consented current provider/first-use evidence; no fabricated pay, remote status or deadline |
 | P0 | Compare two selected roles and open the original listing to apply manually | Bounded recipe in `WORKFLOWS.md` | A new user completes the flow in a native client and can distinguish Easy Apply from external Apply at the original site |
-| P1 | Create a truthful application worksheet from user-provided resume facts and a selected source-linked job | Not built | Local-only draft; explicit evidence/missing-field columns; no invented credentials; no default persistence or resume telemetry; exact job identity and prompt-injection tests |
+| P1 | Create a truthful application worksheet from user-provided resume facts and a selected source-linked job | Source implementation prepared; no live or native-client proof | Local-only draft; explicit evidence/missing-field columns; no invented credentials; no default persistence or resume telemetry; exact job identity and prompt-injection tests |
 | P1 | Track saved, applied and follow-up states without losing provenance | Not built | Start with user-entered local records/export; separate `interested`, `drafting`, `submitted_unverified`, `receipt_verified`, `rejected`, `withdrawn`; no inferred submission; private storage/erasure tests |
 | P1 | Reuse a tailored resume and cover-letter draft safely | Not built | User-supplied inputs only, reviewable text, no automatic upload, clear retention and deletion behavior |
 | P2 | Job alerts, richer filters, saved jobs and application history | Not built | Verified route/shape and permission for each provider read; bounded paging, duplicate/empty/partial handling and current live evidence; no endpoint guesses |

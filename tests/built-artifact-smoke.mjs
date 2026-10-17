@@ -37,7 +37,7 @@ try {
     try {
       await client.connect(transport);
       const tools = (await client.listTools()).tools;
-      assert.equal(tools.length, 22);
+      assert.equal(tools.length, 23);
       assert.equal(
         payload(await client.callTool({ name: 'whoami', arguments: {} })).data.sessionState,
         'not_checked',
@@ -77,7 +77,7 @@ try {
     }
   }
   console.log(
-    'PASS: two fresh built stdio processes, 22 tools, write IDs, confirmation refusal, persisted stop, blocked health, clean close.',
+    'PASS: two fresh built stdio processes, 23 tools, write IDs, confirmation refusal, persisted stop, blocked health, clean close.',
   );
 } finally {
   rmSync(dir, { recursive: true, force: true });

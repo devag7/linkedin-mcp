@@ -30,6 +30,7 @@ export const CAPABILITIES = {
   search_jobs: read('voyagerJobsDashJobCards', 'voyager', 25),
   get_inbox: read('/me + messengerConversations', 'voyager', 50),
   get_job_details: read('voyagerJobsDashJobPosting'),
+  prepare_job_application: local('local application worksheet; no submit or storage'),
   search_companies: read('/search/results/companies/', 'dom', 25),
   get_company: read('/company/:slug/about/', 'dom'),
   get_company_posts: read('/company/:slug/posts/', 'dom', 25),
