@@ -17,6 +17,10 @@ startup/discovery check against the unpacked bytes. No LinkedIn request is part
 of the build. CI also runs that exact build on macOS and Windows with Node 22;
 the local result alone is not cross-platform proof.
 
+On Windows, CI creates its disposable state under the actual user profile with
+the repository's private ACL helper. The verifier preserves the operating
+system's real `USERPROFILE` so the server's native privacy guard can check it.
+
 The bundle includes the npm package and its dependencies; it does not include
 Chrome, a session, profile, credentials or private application data. The user
 still needs Chrome and one manual `--login` using the published CLI before live

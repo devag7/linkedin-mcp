@@ -15,6 +15,8 @@ const output = resolve(process.argv[2] || join(tmpdir(), `linkedin-mcp-tools-${v
 const npmCli = process.env.npm_execpath;
 assert.ok(npmCli, 'Run through npm run build:claude-mcpb.');
 const scratch = realpathSync(mkdtempSync(join(tmpdir(), 'linkedin-mcpb-')));
+if (process.platform === 'win32')
+  assert.ok(process.env.USERPROFILE, 'Windows must expose its actual user profile.');
 const run = (file, args, cwd = scratch) => execFileSync(file, args, {
   cwd, encoding: 'utf8', timeout: 180000, maxBuffer: 3 * 1024 * 1024,
 });
@@ -32,7 +34,7 @@ async function verifyCold(folder) {
     env: {
       PATH: process.env.PATH ?? '',
       HOME: scratch,
-      USERPROFILE: scratch,
+      USERPROFILE: process.platform === 'win32' ? process.env.USERPROFILE : scratch,
       LINKEDIN_PROFILE_DIR: isolatedProfile,
       LINKEDIN_ENABLE_WRITES: 'false',
       LOG_LEVEL: 'error',
