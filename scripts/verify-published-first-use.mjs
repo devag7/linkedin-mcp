@@ -1,15 +1,33 @@
-/** Published 3.0.0 installation/configuration proof; no browser or account reads. */
+/** Version-pinned published installation/configuration proof; no browser or account reads. */
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { createHash } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, realpathSync, writeFileSync } from 'node:fs';
-import { homedir } from 'node:os';
+import { homedir, tmpdir } from 'node:os';
 import { delimiter, dirname, join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { assertInventory, verifyTarball } from './package-policy.mjs';
 
-const output = resolve(process.argv[2] ?? '');
+const cohorts = {
+  '3.0.0': {
+    sha256: 'c79f78e5e77814febb3f68ab9a391ef860515bcfd2d6f97001eadd6e00f58fe5',
+    tools: 22,
+  },
+  '4.1.0': {
+    sha256: '477c0cbfffe1901c9dea926dd8b9b4be6c9ff223154ff111854be949e798d8f9',
+    tools: 24,
+  },
+};
+const cohortVersion = process.argv[3] ?? '3.0.0';
+const cohort = cohorts[cohortVersion];
+assert.ok(cohort, `Unsupported published cohort version: ${cohortVersion}`);
+
 assert.ok(process.argv[2], 'Supply a new private disposable output directory.');
+const output = resolve(
+  process.argv[2] === '--temporary'
+    ? join(tmpdir(), `linkedin-mcp-published-${randomUUID()}`)
+    : process.argv[2],
+);
 assert.equal(existsSync(output), false, 'Refuse to overwrite previous evidence.');
 mkdirSync(output, { recursive: true, mode: 0o700 });
 const root = realpathSync(output);
@@ -78,14 +96,14 @@ assert.ok(npmCli, 'Cannot locate npm CLI; invoke this script from npm exec -- no
 const runNpm = (args, name) => run(process.execPath, [npmCli, ...args], name);
 const prefix = join(root, 'installation');
 const install = runNpm(
-  ['install', '--prefix', prefix, 'linkedin-mcp-tools@3.0.0', '--no-fund'],
+  ['install', '--prefix', prefix, `linkedin-mcp-tools@${cohortVersion}`, '--no-fund'],
   'install',
 );
 const packageRoot = join(prefix, 'node_modules', 'linkedin-mcp-tools');
 const pkg = JSON.parse(readFileSync(join(packageRoot, 'package.json'), 'utf8'));
-assert.equal(pkg.version, '3.0.0');
+assert.equal(pkg.version, cohortVersion);
 const packed = JSON.parse(
-  runNpm(['pack', 'linkedin-mcp-tools@3.0.0', '--json', '--pack-destination', root], 'download')
+  runNpm(['pack', `linkedin-mcp-tools@${cohortVersion}`, '--json', '--pack-destination', root], 'download')
     .value,
 )[0];
 assertInventory(
@@ -94,7 +112,7 @@ assertInventory(
 );
 const archive = join(root, packed.filename);
 const archiveHash = hash(readFileSync(archive));
-assert.equal(archiveHash, 'c79f78e5e77814febb3f68ab9a391ef860515bcfd2d6f97001eadd6e00f58fe5');
+assert.equal(archiveHash, cohort.sha256);
 assert.equal(
   packed.integrity,
   `sha512-${createHash('sha512').update(readFileSync(archive)).digest('base64')}`,
@@ -135,7 +153,7 @@ for (const name of ['claude-desktop', 'cursor', 'vscode']) {
   try {
     await client.connect(transport);
     const tools = (await client.listTools()).tools;
-    assert.equal(tools.length, 22);
+    assert.equal(tools.length, cohort.tools);
     assert.ok(!tools.some((tool) => tool.name === 'research_jobs'));
     const identity = (await client.callTool({ name: 'whoami', arguments: {} })).structuredContent;
     assert.equal(identity.data.sessionState, 'not_checked');
