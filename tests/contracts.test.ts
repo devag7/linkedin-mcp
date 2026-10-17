@@ -44,6 +44,16 @@ const args: Record<ToolName, Record<string, unknown>> = {
     job_title: 'Synthetic engineer',
     requirements: [{ requirement: 'TypeScript', evidence: 'Built a project' }],
   },
+  export_application_tracker: {
+    records: [
+      {
+        job_id: '123',
+        title: 'Synthetic engineer',
+        status: 'interested',
+        updated_at: '2026-10-17T00:00:00.000Z',
+      },
+    ],
+  },
   search_companies: { keywords: 'synthetic' },
   get_company: { universal_name: 'synthetic' },
   get_company_posts: { universal_name: 'synthetic' },
@@ -272,6 +282,51 @@ it('keeps untrusted listing instructions as labelled data', async () => {
   expect(result.requirements[0].requirement).toBe(injected);
   expect(result.requirements[0].evidenceStatus).toBe('missing');
   expect(result).toMatchObject({ submitted: false, stored: false, status: 'draft_only' });
+});
+it('exports private statuses without inferring submission or executing CSV formulas', async () => {
+  vi.mocked(runtime.voyager.voyagerGet).mockClear();
+  const result = decode(
+    await client.callTool({
+      name: 'export_application_tracker',
+      arguments: {
+        records: [
+          {
+            job_id: '123',
+        title: ' =HYPERLINK("bad")',
+            status: 'submitted_unverified',
+            updated_at: '2026-10-17T00:00:00.000Z',
+          },
+          {
+            job_id: '456',
+            title: 'Synthetic two',
+            status: 'receipt_verified',
+            receipt_confirmed: true,
+            updated_at: '2026-10-17T01:00:00.000Z',
+          },
+        ],
+      },
+    }),
+  ).data;
+  expect(result).toMatchObject({ status: 'export_only', stored: false, submittedByTool: false });
+  expect(result.records[0].status).toBe('submitted_unverified');
+  expect(result.csv).toContain('"\'=HYPERLINK(""bad"")"');
+  expect(runtime.voyager.voyagerGet).not.toHaveBeenCalled();
+  expect(runtime.engine.hasActiveContext).toBe(false);
+});
+it('rejects duplicate jobs and unsupported receipt claims in tracker exports', async () => {
+  const row = {
+    job_id: '123',
+    title: 'Synthetic',
+    status: 'interested',
+    updated_at: '2026-10-17T00:00:00.000Z',
+  };
+  for (const records of [[row, row], [{ ...row, status: 'receipt_verified' }]]) {
+    const result = decode(
+      await client.callTool({ name: 'export_application_tracker', arguments: { records } }),
+    );
+    expect(result.code).toBe('INVALID_TRACKER_RECORD');
+    expect(result.data).toBeNull();
+  }
 });
 describe('protocol errors on every read registration', () => {
   it.each(reads)(

@@ -10,7 +10,9 @@ the linked primary sources before release or submission.
 distribution assessment. The next source branch adds an offline
 `prepare_job_application` worksheet; it accepts only user-provided listing and
 resume evidence, fetches nothing, stores nothing and always reports
-`submitted:false`. This is not part of published 4.0.0 until a later release.
+`submitted:false`. A follow-up source candidate formats up to 50 user-entered
+application statuses as a private CSV, without server persistence or inferred
+submission. Neither tool is part of published 4.0.0 until a later release.
 
 ## Executive decision
 
@@ -62,7 +64,7 @@ consent. No recruiter bulk-contact or application-farm positioning.
 | P0 | Know exactly what a listing says, when it was fetched, and what is unknown | `search_jobs`, strict `get_job_details`, source links; live availability may be partial | Offline contracts plus consented current provider/first-use evidence; no fabricated pay, remote status or deadline |
 | P0 | Compare two selected roles and open the original listing to apply manually | Bounded recipe in `WORKFLOWS.md` | A new user completes the flow in a native client and can distinguish Easy Apply from external Apply at the original site |
 | P1 | Create a truthful application worksheet from user-provided resume facts and a selected source-linked job | Source implementation prepared; no live or native-client proof | Local-only draft; explicit evidence/missing-field columns; no invented credentials; no default persistence or resume telemetry; exact job identity and prompt-injection tests |
-| P1 | Track saved, applied and follow-up states without losing provenance | Not built | Start with user-entered local records/export; separate `interested`, `drafting`, `submitted_unverified`, `receipt_verified`, `rejected`, `withdrawn`; no inferred submission; private storage/erasure tests |
+| P1 | Track saved, applied and follow-up states without losing provenance | Source-only export candidate; no server persistence | User-entered local records/export; separate `interested`, `drafting`, `submitted_unverified`, `receipt_verified`, `rejected`, `withdrawn`; no inferred submission. Persistent storage remains deferred until privacy, concurrency, inventory and erasure are designed and tested. |
 | P1 | Reuse a tailored resume and cover-letter draft safely | Not built | User-supplied inputs only, reviewable text, no automatic upload, clear retention and deletion behavior |
 | P2 | Job alerts, richer filters, saved jobs and application history | Not built | Verified route/shape and permission for each provider read; bounded paging, duplicate/empty/partial handling and current live evidence; no endpoint guesses |
 | P2 | Interview and follow-up preparation | Only general company/profile reads | User-selected sources, citations and dates; no fabricated recruiter contact or automatic messages |
@@ -88,7 +90,9 @@ promises. Publish honest demos rather than claim automatic applications.
    `known`, `needs_user_answer`, `unsupported_or_unverified` and draft fields,
    each with provenance. Reject source/job mismatch. Treat listing text as data,
    never instructions. Do not store raw resumes or send them to the provider.
-3. **Local application tracker.** Use a versioned private on-disk schema under
+3. **Local application tracker.** Start with an export-only formatter so the
+   user controls retention and private storage. A later server-owned tracker
+   would use a versioned private on-disk schema under
    the existing state guard, exact selected-profile isolation and atomic writes.
    Record only user-chosen job ID/URL, status timestamps and optional notes.
    No hidden analytics, cloud account, auto-discovery or inferred success.

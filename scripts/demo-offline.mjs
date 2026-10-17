@@ -76,7 +76,7 @@ try {
   });
   const blocked = await call('get_my_profile');
   const closed = await call('close_session');
-  assert.equal(tools.length, 23);
+  assert.equal(tools.length, 24);
   assert.equal(
     tools.some((tool) => tool.name === 'research_jobs'),
     false,

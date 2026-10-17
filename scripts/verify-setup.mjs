@@ -114,7 +114,7 @@ try {
       await client.connect(transport);
       connectMs = Math.round(performance.now() - connectStart);
       phase = 'list_tools';
-      assert.equal((await client.listTools()).tools.length, 23);
+      assert.equal((await client.listTools()).tools.length, 24);
       const call = async (name, args = {}) =>
         (await client.callTool({ name, arguments: args })).structuredContent;
       phase = 'whoami';
@@ -142,7 +142,7 @@ try {
         caseMs: Math.round(performance.now() - clientCaseStart),
         sdkStdio: 'passed',
         scope: 'offline',
-        toolCount: 23,
+        toolCount: 24,
         linkedInRequests: 0,
         browserLaunches: 0,
         configMergePreview: 'passed',

@@ -28,6 +28,12 @@ details. Browser requests and returned data still involve LinkedIn and the
 selected MCP client.
 The server does not add cloud storage, analytics uploads or background telemetry.
 
+The source-only `prepare_job_application` and `export_application_tracker`
+tools use only their call inputs and return their outputs to the MCP client.
+They create no application database or CSV file. The client or user may retain
+those inputs and results independently; any exported CSV should be kept private.
+The source server does not claim to erase client-retained data.
+
 `linkedin-mcp --logout` removes only an unaliased profile directory. Symlinks, Windows junctions and aliased ancestors are refused; nested links are unlinked without deleting their targets. For a custom
 LINKEDIN_PROFILE_DIR, it refuses deletion unless the user also explicitly supplies
 `--confirm-profile-deletion`. Review that exact path first: the whole directory is
