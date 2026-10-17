@@ -1,28 +1,31 @@
 # Coverage against the original 2026 roadmap
 
-## Job seeker and Claude distribution update — October 16, 2026
+## Job seeker and Claude distribution update — October 17, 2026
 
 [PR #32](https://github.com/devag7/linkedin-mcp/pull/32) merged the
-tool-title/annotation and product-plan update. A subsequent source candidate
-adds a local `prepare_job_application` worksheet with unverified user inputs,
-missing-evidence flags and an invariant `submitted:false`. It stores nothing;
-published 4.0.0 still has 22 tools. Private tracking, native Claude proof,
-permitted submission and Claude directory eligibility remain open.
+tool-title/annotation and product-plan update. [PR #33](https://github.com/devag7/linkedin-mcp/pull/33)
+merged the local `prepare_job_application` worksheet with unverified user inputs,
+missing-evidence flags and an invariant `submitted:false`. It stores nothing.
+[PR #35](https://github.com/devag7/linkedin-mcp/pull/35) merged the
+`export_application_tracker` formatter: user-entered statuses become CSV with
+spreadsheet-formula protection and no server storage. Published 4.0.0 still
+has 22 tools; 4.1.0 is a release candidate with 24.
 
-A stacked source candidate adds `export_application_tracker`: user-entered
-statuses become CSV with spreadsheet-formula protection and no server storage.
-Server-owned persistence, native-client proof and application submission remain
-open. Export results can be retained by the user's client or manually saved;
-they are not covered by selected-profile retirement.
+One temporary Claude Desktop 2.42304.0 Mac install of the pinned 4.0.0 `.mcpb`
+candidate discovered 22 tools, completed only cold `whoami`, then was removed.
+See [native evidence](CLAUDE_DESKTOP_BUNDLE_2026-10-17.md). Server-owned
+persistence, live Claude/provider behavior, permitted application submission
+and directory eligibility remain open. Export results can be retained by the
+user's client or manually saved; they are not covered by selected-profile
+retirement.
 
 The [current-source product plan](JOB_SEEKER_AND_CLAUDE_DISTRIBUTION_2026-10-16.md)
 confirms no job-application fill/submit or Easy Apply tool in released 4.0.0.
-It prioritizes a local, source-linked application worksheet, private tracking,
-native Claude Desktop proof and manual final submission. Claude's remote
+The worksheet and export are merged source work; publication and real-user
+value remain to be verified. Claude's remote
 directory connector path requires public HTTPS, per-user authentication and
-legitimate API access that this local browser runtime does not have. Source-only
-tool title and close-session annotation repairs are prepared; no listing,
-application, provider call or new package release is claimed.
+legitimate API access that this local browser runtime does not have. No Claude
+listing, application submission, provider call or new package release is claimed.
 
 ## Selected-profile retirement follow-up — October 16, 2026
 
