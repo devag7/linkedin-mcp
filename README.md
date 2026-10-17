@@ -13,7 +13,7 @@
 
 **Structured LinkedIn reads for MCP clients — profiles, jobs, companies and inbox data, with guided offline setup and explicit safety limits.**
 
-**24 tools** · local browser reads · five explicitly confirmed writes · persisted safety limits and operation journals.
+**24 tools in the 4.1.0 source candidate** · local browser reads · five explicitly confirmed writes · persisted safety limits and operation journals. Published 4.0.0 has 22 tools.
 
 > This is an unofficial LinkedIn integration and accounts can be restricted.
 > Review [Account safety](#-account-safety) and [SECURITY.md](SECURITY.md) before use.
@@ -23,6 +23,11 @@
 ---
 
 ## Guided first run
+
+The [4.1.0 release candidate](docs/RELEASE_NOTES_4.1.0.md) adds an offline
+application worksheet and user-entered tracker CSV. These do not fill or submit
+applications. Install the published 4.0.0 instructions below until 4.1.0 is
+independently verified at the public destinations.
 
 **4.0.0 adds offline retirement preview and native Windows privacy checks to
 the 22-tool local server.** Its [published archive and destinations](docs/RELEASE_EVIDENCE_4.0.0.md)
