@@ -81,6 +81,8 @@ const messages: Record<string, string> = {
     'Browser writes are disabled. Review the preview and enable LINKEDIN_ENABLE_WRITES only for deliberately approved alpha actions.',
   UNVERIFIED_ROUTE:
     'Starting new message threads has no current successful integration evidence. It requires the separate experimental opt-in.',
+  INVALID_TRACKER_RECORD:
+    'Application tracker input is inconsistent. Correct duplicate IDs or receipt confirmation before exporting.',
 };
 export function failure(tool: string, code: string, hint?: string): McpText {
   const structuredContent = {

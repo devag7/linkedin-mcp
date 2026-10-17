@@ -1,8 +1,8 @@
 # Claude Desktop local bundle: build and evidence
 
 **Scope:** local `.mcpb` distribution of published `linkedin-mcp-tools@4.0.0`.
-This is a packaging candidate, not a directory listing or a native-client
-acceptance result. It does not contain PR #32 or the draft application worksheet.
+This is a packaging candidate, not a directory listing. It contains the
+published 4.0.0 runtime, not the later source-only job seeker tools.
 
 Run `npm run build:claude-mcpb -- /absolute/output/linkedin-mcp-tools-4.0.0.mcpb`.
 The build pins the public npm archive SHA-256
@@ -26,13 +26,27 @@ Chrome, a session, profile, credentials or private application data. The user
 still needs Chrome and one manual `--login` using the published CLI before live
 reads. The bundle is unsigned and is not posted as a GitHub Release asset.
 
-To check native behavior, use an isolated Claude Desktop environment rather
-than changing an existing account's settings. Install the `.mcpb` through
-Settings → Extensions → Advanced settings → Install Extension, inspect its
-manifest and permissions, then verify connection, tool discovery, cold
-`whoami`, and clean removal. Record client version, OS and outcome without
-profile content. A successful SDK stdio test does not establish this native
-flow. Any live LinkedIn read needs its own scope and consent.
+## Native Claude Desktop result
+
+On October 17, the owner explicitly authorized a temporary installation into
+their existing Claude Desktop 2.42304.0 on macOS, including the installer's
+broad local-code access warning. The locally built unsigned bundle was pinned
+to the public 4.0.0 archive above; the installed candidate's SHA-256 was
+`667b46bdb4de0471cf566e11bfdf4ffa1178b1d0ad81fc9bb90450777c0e8e82`.
+Claude recognized the extension as **LinkedIn MCP (local)**, showed all
+requirements met and discovered 22 tools with default per-tool approval.
+In a fresh chat, Claude called only this extension's `whoami` and returned
+`sessionState: not_checked`, `loggedIn: null`. The extension was then
+uninstalled; the pre-existing, separately named LinkedIn MCP Server extension
+remained. No LinkedIn request or manual login occurred. This is native cold
+startup evidence for one Mac and one client version, not live-provider or
+cross-platform native proof.
+
+For another native check, install the `.mcpb` through Settings → Extensions →
+Advanced settings → Install Extension, inspect its manifest and permissions,
+then verify connection, tool discovery, cold `whoami`, and clean removal.
+Record client version, OS and outcome without profile content. Any live
+LinkedIn read needs its own scope and consent.
 
 ## Directory paths
 
