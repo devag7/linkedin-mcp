@@ -1,8 +1,8 @@
 # Setup and client verification
 
-This guide targets the 22-tool **4.0.0** build, independently verified across
-[all publication destinations](docs/RELEASE_EVIDENCE_4.0.0.md). The preceding
-[3.1.0 evidence](docs/RELEASE_EVIDENCE_3.1.0.md) remains available. Native-client
+This guide targets the 24-tool **4.1.0** build, independently verified across
+[all publication destinations](docs/RELEASE_EVIDENCE_4.1.0.md). The preceding
+[4.0.0 evidence](docs/RELEASE_EVIDENCE_4.0.0.md) remains available. Native-client
 first-use cohorts and broader live-provider compatibility remain unverified.
 Node 20+ and installed Google Chrome are required. Login requires a local display.
 No OAuth/cookie value copied into environment variables activates an official API
@@ -14,14 +14,14 @@ Install the published package at a stable path, then request the client report.
 On macOS/Linux:
 
 ```sh
-npm install --prefix "$HOME/.local/share/linkedin-mcp" linkedin-mcp-tools@4.0.0
+npm install --prefix "$HOME/.local/share/linkedin-mcp" linkedin-mcp-tools@4.1.0
 node "$HOME/.local/share/linkedin-mcp/node_modules/linkedin-mcp-tools/dist/index.js" --setup cursor
 ```
 
 On Windows PowerShell:
 
 ```powershell
-npm install --prefix "$env:LOCALAPPDATA\linkedin-mcp" linkedin-mcp-tools@4.0.0
+npm install --prefix "$env:LOCALAPPDATA\linkedin-mcp" linkedin-mcp-tools@4.1.0
 node "$env:LOCALAPPDATA\linkedin-mcp\node_modules\linkedin-mcp-tools\dist\index.js" --setup cursor
 ```
 
@@ -32,7 +32,7 @@ accesses LinkedIn. Exit1 means a local issue needs attention; login remains
 `not_checked`. For only the snippet, replace `--setup cursor` with
 `--client-config cursor`. Resolve diagnosis before merging the generated entry.
 Run its exact login command yourself when ready; use the same installed bundle
-and profile for login and MCP. On Windows, 4.0.0 refuses every state path outside
+and profile for login and MCP. On Windows, 4.1.0 refuses every state path outside
 the actual `%USERPROFILE%` tree. A custom profile under Public or another shared
 directory was unsafe with 3.1.0: a
 [native second-user probe](https://github.com/devag7/linkedin-mcp/actions/runs/38213175092)
@@ -40,7 +40,7 @@ could list such a synthetic profile despite the requested mode bits. Use an
 account-private location and review its NTFS ACL before login. The
 [merged source guard](https://github.com/devag7/linkedin-mcp/pull/24) now refuses
 every state path outside the actual `%USERPROFILE%` tree and passed hosted
-second-user tests and is published in 4.0.0; see the
+second-user tests and remains in 4.1.0; see the
 [4.0.0 migration notes](docs/RELEASE_NOTES_4.0.0.md#upgrade-notes-and-limits).
 
 Source contributors can instead run `npm ci`, `npm run build`, then
@@ -214,8 +214,8 @@ partial/empty/error states instead of assuming successful arrays are complete.
 8. Logout refuses symlink/junction/ancestor aliases. A custom profile requires
    explicit deletion confirmation; external safety files remain. Coordinated
    erasure tooling remains open. Native Windows ACL enforcement is published in
-   4.0.0; verify the installed version and Windows directory privacy before
-   account use. Hosted tests cover synthetic state.
+   4.0.0 and remains in 4.1.0; verify the installed version and Windows
+   directory privacy before account use. Hosted tests cover synthetic state.
 
 Pagination emits a continuation only when returned start/count/total agree with
 observed rows. Contradictory zero/short pages remain partial with no next cursor.

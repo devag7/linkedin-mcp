@@ -6,19 +6,28 @@ implementation plan, not evidence of LinkedIn application or Claude directory
 acceptance. Provider rules and Claude submission requirements can change; recheck
 the linked primary sources before release or submission.
 
+**October 18 release update:** [4.1.0 is published](RELEASE_EVIDENCE_4.1.0.md)
+with 24 tools, including the offline application worksheet and user-entered
+tracker CSV. This updates the source-only classification below. The local
+Claude Desktop bundle has passed Mac/Windows offline checks in
+[PR #37](https://github.com/devag7/linkedin-mcp/pull/37), but native 4.1.0
+installation and directory listing are separate gates. Current
+[directory policy](https://support.claude.com/en/articles/13145358-anthropic-software-directory-policy)
+appears to require ownership/control of the connected LinkedIn interface,
+which this project cannot claim.
+
 **Source progress, October 17:** PR #32 merged tool titles and the Claude
 distribution assessment. PR #33 merged the offline
 `prepare_job_application` worksheet; it accepts only user-provided listing and
 resume evidence, fetches nothing, stores nothing and always reports
 `submitted:false`. PR #35 merged `export_application_tracker`, which formats up
 to 50 user-entered application statuses as a CSV without server persistence or
-inferred submission. Neither tool is part of published 4.0.0 until a later
-release.
+inferred submission. Both tools were subsequently published in 4.1.0.
 
 ## Executive decision
 
 The product does **not** fill or submit job applications, including LinkedIn
-Easy Apply. Its released job tools are `search_jobs` and `get_job_details`;
+Easy Apply. Its released live job-read tools are `search_jobs` and `get_job_details`;
 `research_jobs` is still outside the release. No saved-job, application-history,
 resume-upload, question-answering, form-fill or submit tool is registered. The
 current job contracts return job facts and a source URL, not a verified Apply
@@ -64,8 +73,8 @@ consent. No recruiter bulk-contact or application-farm positioning.
 | --- | --- | --- | --- |
 | P0 | Know exactly what a listing says, when it was fetched, and what is unknown | `search_jobs`, strict `get_job_details`, source links; live availability may be partial | Offline contracts plus consented current provider/first-use evidence; no fabricated pay, remote status or deadline |
 | P0 | Compare two selected roles and open the original listing to apply manually | Bounded recipe in `WORKFLOWS.md` | A new user completes the flow in a native client and can distinguish Easy Apply from external Apply at the original site |
-| P1 | Create a truthful application worksheet from user-provided resume facts and a selected source-linked job | Merged as source-only `prepare_job_application`; no live or native-client proof | Local-only draft; explicit evidence/missing-field columns; no invented credentials; no default persistence or resume telemetry; exact job identity and prompt-injection tests |
-| P1 | Track saved, applied and follow-up states without losing provenance | Merged as source-only `export_application_tracker`; no server persistence | User-entered local records/export; separate `interested`, `drafting`, `submitted_unverified`, `receipt_verified`, `rejected`, `withdrawn`; no inferred submission. Persistent storage remains deferred until privacy, concurrency, inventory and erasure are designed and tested. |
+| P1 | Create a truthful application worksheet from user-provided resume facts and a selected source-linked job | Published 4.1.0 `prepare_job_application`; no live or native-client proof | Local-only draft; explicit evidence/missing-field columns; no invented credentials; no default persistence or resume telemetry; exact job identity and prompt-injection tests |
+| P1 | Track saved, applied and follow-up states without losing provenance | Published 4.1.0 `export_application_tracker`; no server persistence | User-entered local records/export; separate `interested`, `drafting`, `submitted_unverified`, `receipt_verified`, `rejected`, `withdrawn`; no inferred submission. Persistent storage remains deferred until privacy, concurrency, inventory and erasure are designed and tested. |
 | P1 | Reuse a tailored resume and cover-letter draft safely | Not built | User-supplied inputs only, reviewable text, no automatic upload, clear retention and deletion behavior |
 | P2 | Job alerts, richer filters, saved jobs and application history | Not built | Verified route/shape and permission for each provider read; bounded paging, duplicate/empty/partial handling and current live evidence; no endpoint guesses |
 | P2 | Interview and follow-up preparation | Only general company/profile reads | User-selected sources, citations and dates; no fabricated recruiter contact or automatic messages |
@@ -122,7 +131,7 @@ operational cost even when a free tier exists.
 | Route | Works where | Current status | Cost/constraint |
 | --- | --- | --- | --- |
 | Existing local stdio config | Claude Desktop on the user's machine | `--setup claude-desktop` exports it; native import/use unverified | No project hosting bill; each user supplies Node/Chrome and their Claude access. [Claude local/remote distinctions](https://support.claude.com/en/articles/11725091-when-to-use-desktop-and-web-connectors) |
-| Local desktop extension (`.mcpb`) | Claude Desktop | Published 4.0.0 packaging candidate built; temporary native install, 22-tool discovery, cold `whoami` and removal verified on one Mac | Could simplify installation. See [bundle evidence](CLAUDE_DESKTOP_BUNDLE_2026-10-17.md); current [connector guidance](https://claude.com/docs/connectors/building/submission) excludes standalone local MCPB from its portal while [Desktop help](https://support.claude.com/en/articles/10949351-getting-started-with-local-mcp-servers-on-claude-desktop) links a separate submission form. |
+| Local desktop extension (`.mcpb`) | Claude Desktop | Published 4.1.0 is pinned in a 24-tool bundle candidate with hosted Mac/Windows offline checks; the earlier 4.0.0 candidate passed a temporary native install, 22-tool discovery, cold `whoami` and removal on one Mac. Native 4.1.0 check remains open. | Could simplify installation. See [bundle evidence](CLAUDE_DESKTOP_BUNDLE_2026-10-17.md); current [connector guidance](https://claude.com/docs/connectors/building/submission) excludes standalone local MCPB from its portal while [Desktop help](https://support.claude.com/en/articles/10949351-getting-started-with-local-mcp-servers-on-claude-desktop) links a separate submission form. Current directory policy is an apparent additional blocker. |
 | Local plugin bundle | Claude Code and Cowork local runtime, not ordinary Claude chat | Not built; Chrome/profile behavior in each runtime unverified | [Claude surface support](https://support.claude.com/en/articles/13837440-use-plugins-in-claude); paid Claude plan required to submit a directory plugin. |
 | Remote custom connector | Claude web, Desktop, mobile and other hosted surfaces | Not supported by this local-only architecture | Public HTTPS server reachable from Anthropic, secure per-user auth, user-specific data isolation, verified operation and ongoing hosting. [Claude custom connectors](https://support.claude.com/en/articles/11175166-get-started-with-custom-connectors-using-remote-mcp) |
 | Remote directory connector | Same hosted surfaces, listed in Claude | **Blocked**, not ready to submit | [Official checklist](https://claude.com/docs/connectors/building/submission): HTTPS, OAuth for account actions, title/hints, docs/privacy/support, populated reviewer account, real Claude tests. [Review criteria](https://claude.com/docs/connectors/building/review-criteria) require own or legitimately proxied APIs. |
@@ -142,12 +151,11 @@ The existing unofficial LinkedIn browser path does **not** clear step 1; a
 public proxy and synthetic reviewer account must not be represented as
 authorized LinkedIn access.
 
-PR #32 added human-readable `title` metadata to all 22 released tools and
+PR #32 added human-readable `title` metadata to the original 22 tools and
 marked local `close_session` as a state-changing action. PR #33 added the
-source-only worksheet. PR #35 added a source-only application tracker export.
-These changes do **not** make this server a remote Claude
-connector or prove acceptance. The 4.0.0 npm artifact is unchanged until a
-separately reviewed versioned release.
+worksheet; PR #35 added the tracker export. Both shipped in 4.1.0. These
+changes do **not** make this server a remote Claude connector or prove
+directory acceptance.
 
 ## Immediate release gates and owner decisions
 
