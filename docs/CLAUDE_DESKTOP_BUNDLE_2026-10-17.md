@@ -12,7 +12,9 @@ dependencies only, requires a zero-finding production audit, validates the
 manifest, and starts the bundled MCP server through its actual entry point in a
 disposable home. Cold discovery must return 22 tools and `whoami` must report
 `not_checked` without creating a Chrome profile. It then emits the bundle and
-its SHA-256. No LinkedIn request is part of the build.
+its SHA-256. The builder unpacks the resulting `.mcpb` and repeats the cold
+startup/discovery check against the unpacked bytes. No LinkedIn request is part
+of the build.
 
 The bundle includes the npm package and its dependencies; it does not include
 Chrome, a session, profile, credentials or private application data. The user

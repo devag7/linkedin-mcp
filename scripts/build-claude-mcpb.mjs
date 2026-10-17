@@ -19,6 +19,37 @@ const run = (file, args, cwd = scratch) => execFileSync(file, args, {
   cwd, encoding: 'utf8', timeout: 180000, maxBuffer: 3 * 1024 * 1024,
 });
 const npm = (args, cwd = scratch) => run(process.execPath, [npmCli, ...args], cwd);
+async function verifyCold(folder) {
+  const manifest = JSON.parse(readFileSync(join(folder, 'manifest.json'), 'utf8'));
+  assert.equal(manifest.version, version);
+  const entry = join(folder, manifest.server.entry_point);
+  assert.equal(run(process.execPath, [entry, '--version']).trim(), `linkedin-mcp v${version}`);
+  const isolatedProfile = join(scratch, 'offline-profile');
+  const client = new Client({ name: 'mcpb-offline-verifier', version: '1' });
+  const transport = new StdioClientTransport({
+    command: process.execPath,
+    args: [entry],
+    env: {
+      PATH: process.env.PATH ?? '',
+      HOME: scratch,
+      USERPROFILE: scratch,
+      LINKEDIN_PROFILE_DIR: isolatedProfile,
+      LINKEDIN_ENABLE_WRITES: 'false',
+      LOG_LEVEL: 'error',
+    },
+  });
+  try {
+    await client.connect(transport);
+    const tools = (await client.listTools()).tools;
+    assert.equal(tools.length, 22, 'Pinned published package must expose 22 tools.');
+    const who = await client.callTool({ name: 'whoami', arguments: {} });
+    assert.equal(who.structuredContent?.data?.sessionState, 'not_checked');
+    assert.equal(who.structuredContent?.data?.loggedIn, null);
+    assert.equal(existsSync(isolatedProfile), false, 'Cold discovery must not create a browser profile.');
+  } finally {
+    await client.close();
+  }
+}
 try {
   const packed = JSON.parse(npm(['pack', `linkedin-mcp-tools@${version}`, '--json', '--pack-destination', scratch]))[0];
   assert.equal(packed.name, 'linkedin-mcp-tools');
@@ -46,35 +77,13 @@ try {
   // Installer metadata points to the disposable source tarball; runtime needs neither file.
   unlinkSync(join(bundle, 'package-lock.json'));
   unlinkSync(join(bundle, 'package.json'));
-  assert.equal(run(process.execPath, [join(bundle, manifest.server.entry_point), '--version']).trim(),
-    `linkedin-mcp v${version}`);
-  const isolatedProfile = join(scratch, 'offline-profile');
-  const client = new Client({ name: 'mcpb-offline-verifier', version: '1' });
-  const transport = new StdioClientTransport({
-    command: process.execPath,
-    args: [join(bundle, manifest.server.entry_point)],
-    env: {
-      PATH: process.env.PATH ?? '',
-      HOME: scratch,
-      USERPROFILE: scratch,
-      LINKEDIN_PROFILE_DIR: isolatedProfile,
-      LINKEDIN_ENABLE_WRITES: 'false',
-      LOG_LEVEL: 'error',
-    },
-  });
-  try {
-    await client.connect(transport);
-    const tools = (await client.listTools()).tools;
-    assert.equal(tools.length, 22, 'Pinned published package must expose 22 tools.');
-    const who = await client.callTool({ name: 'whoami', arguments: {} });
-    assert.equal(who.structuredContent?.data?.sessionState, 'not_checked');
-    assert.equal(who.structuredContent?.data?.loggedIn, null);
-    assert.equal(existsSync(isolatedProfile), false, 'Cold discovery must not create a browser profile.');
-  } finally {
-    await client.close();
-  }
+  await verifyCold(bundle);
   run(process.execPath, [npmCli, 'exec', '--yes', '--package', toolchain, '--', 'mcpb', 'validate', join(bundle, 'manifest.json')]);
   run(process.execPath, [npmCli, 'exec', '--yes', '--package', toolchain, '--', 'mcpb', 'pack', bundle, output]);
+  const unpacked = join(scratch, 'unpacked');
+  mkdirSync(unpacked);
+  run(process.execPath, [npmCli, 'exec', '--yes', '--package', toolchain, '--', 'mcpb', 'unpack', output, unpacked]);
+  await verifyCold(unpacked);
   process.stdout.write(JSON.stringify({
     bundle: output, sourceVersion: version, sourceSha256: actualSha256,
     bundleSha256: createHash('sha256').update(readFileSync(output)).digest('hex'),
