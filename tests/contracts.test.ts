@@ -292,7 +292,7 @@ it('exports private statuses without inferring submission or executing CSV formu
         records: [
           {
             job_id: '123',
-        title: ' =HYPERLINK("bad")',
+            title: ' =HYPERLINK("bad")',
             status: 'submitted_unverified',
             updated_at: '2026-10-17T00:00:00.000Z',
           },
