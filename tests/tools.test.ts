@@ -59,7 +59,7 @@ it('shares the actual engine and guard across HTTP clients', async () => {
           requestInit: { headers: { Authorization: `Bearer ${token}` } },
         }),
       );
-      expect((await client.listTools()).tools).toHaveLength(22);
+      expect((await client.listTools()).tools).toHaveLength(23);
       expect(
         (await client.callTool({ name: 'get_profile', arguments: { username: 'fixture' } }))
           .isError,

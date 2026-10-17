@@ -95,7 +95,7 @@ async function protocol(fixture: ReturnType<typeof setup>, fullServer = false) {
   const [a, b] = InMemoryTransport.createLinkedPair();
   await server.connect(b);
   await client.connect(a);
-  expect((await client.listTools()).tools).toHaveLength(fullServer ? 22 : 5);
+  expect((await client.listTools()).tools).toHaveLength(fullServer ? 23 : 5);
   cleanups.push(async () => {
     await client.close();
     await server.close();

@@ -123,6 +123,27 @@ const dataSchemas: Record<ToolName, z.ZodTypeAny> = {
     listedAt: num,
     sourceUrl: str,
   }),
+  prepare_job_application: z.object({
+    status: z.literal('draft_only'),
+    jobId: z.string(),
+    sourceUrl: z.string().url(),
+    jobTitle: z.string(),
+    company: z.string().nullable(),
+    sourceVerification: z.literal('user_supplied_not_fetched'),
+    requirements: z
+      .array(
+        z.object({
+          requirement: z.string(),
+          evidence: z.string().nullable(),
+          evidenceStatus: z.enum(['user_supplied_unverified', 'missing']),
+        }),
+      )
+      .max(20),
+    missingEvidenceCount: z.number().int().nonnegative(),
+    nextSteps: z.array(z.string()),
+    submitted: z.literal(false),
+    stored: z.literal(false),
+  }),
   search_companies: z.array(company).max(25),
   get_company: row({
     universalName: z.string(),

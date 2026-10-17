@@ -29,10 +29,14 @@ may contain title, location, listedAt, jobUrn and sourceUrl. Do not interpret a
 missing compensation/remote/workplace field as a negative statement about the job.
 For notes use a local Markdown table: role, fit evidence, missing facts, source.
 
+For a selected listing, `prepare_job_application` builds an unsaved local worksheet
+from the numeric job ID, listing title, up to 20 requirements and your own
+evidence. The tool does not fetch or verify those inputs: its evidence is marked
+`user_supplied_unverified`, and unanswered requirements are marked `missing`.
 To apply, open the returned source URL and inspect the current listing yourself.
 LinkedIn may show Easy Apply, which has its own review and final Submit step, or
 Apply, which can redirect to an employer site. This server does not inspect the
-application form, fill fields, upload a resume, or submit. Draft a worksheet from
+application form, fill fields, upload a resume, or submit. Use the worksheet from
 verified job facts and your own resume: requirement, truthful evidence, missing
 answer, and where you will verify it. Keep application answers and receipts in a
 private location you control; a clicked link is not proof of submission. See the
