@@ -11,8 +11,10 @@ at npm, GitHub Packages, MCP Registry and GitHub Release. It ships 24 tools,
 including the offline worksheet and user-entered tracker CSV. The selected
 retirement and interrupted-retirement preview commands are also in this
 release. The 4.1.0 Claude Desktop bundle source merged through
-[PR #37](https://github.com/devag7/linkedin-mcp/pull/37), but native
-installation/removal and release-asset distribution remain separate gates.
+[PR #37](https://github.com/devag7/linkedin-mcp/pull/37). Its
+[native Mac cold check](evidence/claude-native-4.1.0-2026-10-18.md) found
+24 tools and cold `whoami`, followed by removal. The exact unsigned bundle
+and checksum are now [release assets](https://github.com/devag7/linkedin-mcp/releases/tag/v4.1.0).
 The first-use cohort is still 0/0; no application submission or LinkedIn
 compatibility is established by publication.
 

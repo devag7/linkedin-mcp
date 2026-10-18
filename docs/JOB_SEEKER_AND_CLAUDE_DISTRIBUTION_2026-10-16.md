@@ -9,9 +9,12 @@ the linked primary sources before release or submission.
 **October 18 release update:** [4.1.0 is published](RELEASE_EVIDENCE_4.1.0.md)
 with 24 tools, including the offline application worksheet and user-entered
 tracker CSV. This updates the source-only classification below. The local
-Claude Desktop bundle has passed Mac/Windows offline checks and its source
-merged through [PR #37](https://github.com/devag7/linkedin-mcp/pull/37), but native 4.1.0
-installation and directory listing are separate gates. Current
+Claude Desktop bundle passed Mac/Windows offline checks, its source
+merged through [PR #37](https://github.com/devag7/linkedin-mcp/pull/37),
+and one [native Mac cold check](evidence/claude-native-4.1.0-2026-10-18.md)
+passed. The exact unsigned bundle and checksum are
+[GitHub Release assets](https://github.com/devag7/linkedin-mcp/releases/tag/v4.1.0).
+Directory listing and live account compatibility remain separate gates. Current
 [directory policy](https://support.claude.com/en/articles/13145358-anthropic-software-directory-policy)
 appears to require ownership/control of the connected LinkedIn interface,
 which this project cannot claim.
@@ -131,7 +134,7 @@ operational cost even when a free tier exists.
 | Route | Works where | Current status | Cost/constraint |
 | --- | --- | --- | --- |
 | Existing local stdio config | Claude Desktop on the user's machine | `--setup claude-desktop` exports it; native import/use unverified | No project hosting bill; each user supplies Node/Chrome and their Claude access. [Claude local/remote distinctions](https://support.claude.com/en/articles/11725091-when-to-use-desktop-and-web-connectors) |
-| Local desktop extension (`.mcpb`) | Claude Desktop | Published 4.1.0 is pinned in a 24-tool bundle candidate with hosted Mac/Windows offline checks; the earlier 4.0.0 candidate passed a temporary native install, 22-tool discovery, cold `whoami` and removal on one Mac. Native 4.1.0 check remains open. | Could simplify installation. See [bundle evidence](CLAUDE_DESKTOP_BUNDLE_2026-10-17.md); current [connector guidance](https://claude.com/docs/connectors/building/submission) excludes standalone local MCPB from its portal while [Desktop help](https://support.claude.com/en/articles/10949351-getting-started-with-local-mcp-servers-on-claude-desktop) links a separate submission form. Current directory policy is an apparent additional blocker. |
+| Local desktop extension (`.mcpb`) | Claude Desktop | The [4.1.0 unsigned bundle](https://github.com/devag7/linkedin-mcp/releases/tag/v4.1.0) pins the public npm archive; hosted Mac/Windows offline checks and one native Mac 24-tool/cold-`whoami` install and removal passed. No live account read was tested. | Could simplify installation. See [bundle evidence](CLAUDE_DESKTOP_BUNDLE_2026-10-17.md); current [connector guidance](https://claude.com/docs/connectors/building/submission) excludes standalone local MCPB from its portal while [Desktop help](https://support.claude.com/en/articles/10949351-getting-started-with-local-mcp-servers-on-claude-desktop) links a separate submission form. Current directory policy is an apparent additional blocker. |
 | Local plugin bundle | Claude Code and Cowork local runtime, not ordinary Claude chat | Not built; Chrome/profile behavior in each runtime unverified | [Claude surface support](https://support.claude.com/en/articles/13837440-use-plugins-in-claude); paid Claude plan required to submit a directory plugin. |
 | Remote custom connector | Claude web, Desktop, mobile and other hosted surfaces | Not supported by this local-only architecture | Public HTTPS server reachable from Anthropic, secure per-user auth, user-specific data isolation, verified operation and ongoing hosting. [Claude custom connectors](https://support.claude.com/en/articles/11175166-get-started-with-custom-connectors-using-remote-mcp) |
 | Remote directory connector | Same hosted surfaces, listed in Claude | **Blocked**, not ready to submit | [Official checklist](https://claude.com/docs/connectors/building/submission): HTTPS, OAuth for account actions, title/hints, docs/privacy/support, populated reviewer account, real Claude tests. [Review criteria](https://claude.com/docs/connectors/building/review-criteria) require own or legitimately proxied APIs. |

@@ -13,13 +13,12 @@ hosted check does not establish live LinkedIn behavior.
 | Safety and setup | Default-disabled writes, reviewed preview tokens, shared caps/journal, offline diagnosis and client-config export; release tests and hosted matrix | LinkedIn account restrictions remain possible |
 | Job-seeker convenience | `prepare_job_application` creates a local worksheet from user-supplied facts; `export_application_tracker` formats user-entered records as CSV | No application filling, uploading, submitting, saved-job retrieval, or server-owned tracker persistence |
 | Local retirement | Selected-profile retirement and interrupted-retirement preview; Windows private-state guard | Shared safety state, other profiles, client data and backups are outside selected retirement; complete coordinated erasure remains open |
-| Claude Desktop bundle source | [PR #37](https://github.com/devag7/linkedin-mcp/pull/37) merged at `e35721d`; [post-merge CI](https://github.com/devag7/linkedin-mcp/actions/runs/39065842613) passed 14 jobs and [release workflow](https://github.com/devag7/linkedin-mcp/actions/runs/39065842727) passed without another publish | The unsigned 4.1.0 `.mcpb` is not a GitHub Release asset until its native install, cold discovery, status and removal check is recorded |
+| Claude Desktop bundle | [PR #37](https://github.com/devag7/linkedin-mcp/pull/37) merged at `e35721d`; hosted Mac/Windows bundle builds and [native Mac cold check](evidence/claude-native-4.1.0-2026-10-18.md) discovered 24 tools and cold `whoami`; the exact unsigned bundle and checksum are [v4.1.0 release assets](https://github.com/devag7/linkedin-mcp/releases/tag/v4.1.0) with independently verified SHA-256 | Native live account use, other client versions/OSes and Claude directory acceptance remain unproven |
 
 ## Open acceptance gates
 
 | Gate | Current observation | Concrete finish line |
 | --- | --- | --- |
-| 4.1.0 Claude Desktop bundle | The pinned, unpacked bundle passes offline Mac/Windows build and 24-tool SDK discovery. A 4.0.0 bundle passed one native Mac install/removal. | Temporarily install exact 4.1.0 bytes, observe 24 native tools and cold `whoami`, remove only that extension, then attach the checked bundle and checksum to the 4.1.0 GitHub Release. Do not infer a live account read. |
 | First use | The published 3.0.0 opt-in [issue #13](https://github.com/devag7/linkedin-mcp/issues/13) has no participant results; the recorded cohort is 0/0. A separate [4.1.0 kit](FIRST_USE_VOLUNTEER_KIT_4.1.0.md) and [scoring guide](FIRST_USE_RESULTS_4.1.0.md) are prepared. The exact public package passed [fresh offline installation, 24-tool discovery and cold status](evidence/first-use-2026-10-18/published-offline.json) for all three exported client configurations on one Mac. | Review the 4.1.0 protocol, recruit willing participants through an owner-approved channel, count every started first attempt, and record only consented minimal results privately. Do not mix versions or treat 0/0 as a rate. |
 | Job research briefs | Draft [PR #5](https://github.com/devag7/linkedin-mcp/pull/5) is blocked. Earlier live runs returned no useful job and had cleanup failures; its later search-only head had failed hosted/package cleanup jobs. | Fix reproducible cleanup and useful-result failures, then obtain new bounded consent for live validation before merge or release. Preserve failed receipts. |
 | Native clients and account compatibility | No fresh-user 4.1.0 read measured in Claude Desktop, Cursor or VS Code. | Record consented real-client first use and observed failure categories, then repair what participants encounter. |
@@ -36,14 +35,12 @@ container work against current source as a separate change.
 
 ## Next sequence
 
-1. Complete the already authorized native 4.1.0 Claude Desktop check without
-   disrupting another active Claude task. If it passes, attach and verify the
-   exact unsigned bundle on the existing v4.1.0 release. Keep package/tag bytes
-   unchanged.
-2. Review and merge the distribution and 4.1.0 first-use protocol after hosted
-   checks. Then arrange an owner-led opt-in invitation. Keep the historical
-   3.0.0 kit and zero-attempt record readable.
-3. Use the first real observed onboarding failures to prioritize fixes. Treat
+1. The [4.1.0 first-use kit](FIRST_USE_VOLUNTEER_KIT_4.1.0.md) and
+   [scoring guide](FIRST_USE_RESULTS_4.1.0.md) are merged through
+   [PR #38](https://github.com/devag7/linkedin-mcp/pull/38). Arrange an
+   owner-led opt-in invitation and keep the historical 3.0.0 kit and
+   zero-attempt record readable.
+2. Use the first real observed onboarding failures to prioritize fixes. Treat
    PR #5, complete erasure, provider access and application submission as
    independent gates; none is a prerequisite to truthfully distributing 4.1.0.
 

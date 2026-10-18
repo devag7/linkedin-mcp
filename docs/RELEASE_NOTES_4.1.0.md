@@ -20,8 +20,9 @@ completed; both runs are preserved in that evidence.
   annotations. `close_session` is identified as a state-changing local action.
 - The local Claude Desktop `.mcpb` builder in [PR #37](https://github.com/devag7/linkedin-mcp/pull/37)
   pins the verified 4.1.0 npm archive and bundles all 24 tools. It is an
-  unsigned distribution candidate; its native installation and Release asset
-  are separate from the published npm package.
+  separate unsigned [GitHub Release asset](https://github.com/devag7/linkedin-mcp/releases/tag/v4.1.0)
+  whose exact bytes passed a [native Mac cold check](evidence/claude-native-4.1.0-2026-10-18.md).
+  It is not part of the published npm package.
 
 ## Boundaries
 

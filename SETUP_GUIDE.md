@@ -46,6 +46,20 @@ second-user tests and remains in 4.1.0; see the
 Source contributors can instead run `npm ci`, `npm run build`, then
 `node dist/index.js --setup cursor` from a stable reviewed checkout.
 
+### Claude Desktop extension
+
+For a local extension instead of a JSON entry, download the unsigned
+[4.1.0 `.mcpb` and checksum](https://github.com/devag7/linkedin-mcp/releases/tag/v4.1.0).
+Verify the file hash and install it through Claude Desktop Settings →
+Extensions → Advanced settings → Install extension. The
+[bundle guide](docs/CLAUDE_DESKTOP_BUNDLE_2026-10-17.md) gives the exact
+SHA-256 and verification commands. Review Claude's local-code access warning:
+the extension runs with your computer account's access. It contains no Chrome,
+login, profile or credentials; use the published CLI for the one-time manual
+login before live reads. One Claude for Mac 2.42304.0 cold check found all 24
+tools and returned `whoami` as `not_checked` without a LinkedIn read.
+The extension is not a listed Claude web connector.
+
 ### Preview an existing client configuration
 
 This feature is in published **3.1.0** and absent from 3.0.0. After installing
@@ -135,6 +149,7 @@ call may wait. HTTP is local-only and requires bearer authentication; see README
 | SDK stdio client | Node + absolute built binary | Executed from source and fresh installed tarball; no LinkedIn calls |
 | SDK loopback HTTP client | 127.0.0.1 URL + bearer header | Local protocol/security tests |
 | Claude Desktop / Cursor compatible JSON config | Example below | Configuration example; application UI/first read untested |
+| Claude Desktop local extension | Verified 4.1.0 `.mcpb` Release asset | One native Mac 2.42304.0 install, 24-tool discovery, cold `whoami` and removal; no live read |
 | Other MCP clients | Use their documented stdio settings | No compatibility claim until a client/OS/version record exists |
 
 For a client accepting `mcpServers`, use an absolute path to the built file:
