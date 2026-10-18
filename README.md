@@ -54,9 +54,11 @@ This release does not fill or submit job applications, including Easy Apply.
 Use the [job seeker and Claude distribution plan](docs/JOB_SEEKER_AND_CLAUDE_DISTRIBUTION_2026-10-16.md)
 for the application handoff workflow, proposed next features and the separate
 requirements for listing a connector in Claude.
-For a local Claude Desktop extension, see the
-[pinned MCPB build and native-test status](docs/CLAUDE_DESKTOP_BUNDLE_2026-10-17.md).
-It is a packaging candidate, not a listed Claude connector.
+For Claude Desktop, download the unsigned
+[4.1.0 extension and checksum](https://github.com/devag7/linkedin-mcp/releases/tag/v4.1.0)
+and follow the [verified local install guide](docs/CLAUDE_DESKTOP_BUNDLE_2026-10-17.md).
+One native Mac check discovered all 24 tools and passed cold `whoami`; live
+account use and Claude directory listing remain unverified.
 
 ## What it does
 

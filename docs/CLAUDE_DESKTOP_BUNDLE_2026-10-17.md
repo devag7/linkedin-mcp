@@ -1,8 +1,8 @@
 # Claude Desktop local bundle: build and evidence
 
 **Scope:** local `.mcpb` distribution of published `linkedin-mcp-tools@4.1.0`.
-This is a packaging candidate, not a
-directory listing. It includes the offline worksheet and CSV tracker, but no
+This is an unsigned [GitHub Release asset](https://github.com/devag7/linkedin-mcp/releases/tag/v4.1.0),
+not a Claude directory listing. It includes the offline worksheet and CSV tracker, but no
 job application fill or submit action.
 
 Run `npm run build:claude-mcpb -- /absolute/output/linkedin-mcp-tools-4.1.0.mcpb`.
@@ -25,7 +25,8 @@ system's real `USERPROFILE` so the server's native privacy guard can check it.
 The bundle includes the npm package and its dependencies; it does not include
 Chrome, a session, profile, credentials or private application data. The user
 still needs Chrome and one manual `--login` using the published CLI before live
-reads. The bundle is unsigned and is not posted as a GitHub Release asset.
+reads. The bundle is unsigned and runs local Node code with the user's
+filesystem access. Verify its checksum before installing it in Claude Desktop.
 
 The first local 4.1.0 build on macOS matched the independently fetched public
 npm archive byte-for-byte, found zero production audit advisories, validated
@@ -36,7 +37,30 @@ bundle SHA-256 is
 `225fcefd270ffb96a1d23b3eff40e100c809ab958d168554d1d3982e331c4428`.
 The reviewed [PR #37 CI](https://github.com/devag7/linkedin-mcp/actions/runs/39039351970)
 passed all 14 jobs, including actual bundle builds and cold checks on macOS
-and Windows. Native 4.1.0 Claude Desktop behavior remains a separate gate.
+and Windows. Its native Mac cold check is recorded below.
+
+## Native 4.1.0 result and install
+
+On October 18, the owner authorized the installer's broad local-code warning
+and a temporary install on Claude for Mac 2.42304.0. The exact bundle above
+showed all requirements met and 24 native tools: 18 read-only and 6
+write/delete, each requiring approval by default. A fresh chat called this
+extension's cold `whoami` once and returned `sessionState: not_checked`,
+`loggedIn: null`. The test extension was then removed; the pre-existing
+**LinkedIn MCP Server** extension remained installed. The
+[redacted native receipt](evidence/claude-native-4.1.0-2026-10-18.md) records
+the bounds and a separately named Claude extension notification.
+
+Download the [bundle](https://github.com/devag7/linkedin-mcp/releases/download/v4.1.0/linkedin-mcp-tools-4.1.0.mcpb)
+and [checksum file](https://github.com/devag7/linkedin-mcp/releases/download/v4.1.0/linkedin-mcp-tools-4.1.0.mcpb.sha256)
+into the same folder. On macOS, run
+`shasum -a 256 -c linkedin-mcp-tools-4.1.0.mcpb.sha256` in that folder.
+On Windows PowerShell, run
+`(Get-FileHash .\linkedin-mcp-tools-4.1.0.mcpb -Algorithm SHA256).Hash`
+and compare it with the SHA-256 above. Then use Claude Desktop Settings →
+Extensions → Advanced settings → Install extension. Review the unsigned-code
+access warning before installing. This route is a local extension, not a
+listed Claude web connector.
 
 ## Historical native 4.0.0 result
 
@@ -56,15 +80,8 @@ remained. No LinkedIn request or manual login occurred. This is native cold
 startup evidence for one Mac and one client version, not live-provider or
 cross-platform native proof.
 
-The 4.1.0 bundle has not yet been installed in Claude Desktop. Its native
-discovery and cold status must be checked separately after the public archive
-and exact bundle bytes are verified.
-
-For another native check, install the `.mcpb` through Settings → Extensions →
-Advanced settings → Install Extension, inspect its manifest and permissions,
-then verify connection, tool discovery, cold `whoami`, and clean removal.
-Record client version, OS and outcome without profile content. Any live
-LinkedIn read needs its own scope and consent.
+Any later live LinkedIn read needs its own scope and consent. This Mac cold
+check does not establish native behavior on Windows or other Claude versions.
 
 ## Directory paths
 
@@ -86,7 +103,7 @@ require a representation that the submission satisfies that policy. This
 unofficial browser extension connects to LinkedIn's interface, which the
 maintainer does not own or control. Do not submit the form or claim directory
 eligibility without written clarification or a permitted provider agreement.
-Local GitHub distribution remains possible after exact bundle and native checks.
+Local GitHub distribution is available from the exact release assets.
 A local plugin can run in Cowork and Claude
 Code, while ordinary Claude chat does not start a plugin's local MCP server;
 [Anthropic's plugin support table](https://claude.com/docs/plugins/build)

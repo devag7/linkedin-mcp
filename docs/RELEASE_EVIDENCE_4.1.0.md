@@ -32,13 +32,17 @@ The dry run skipped publication steps.
 | [npm provenance](https://registry.npmjs.org/-/npm/v1/attestations/linkedin-mcp-tools@4.1.0) | Publish and SLSA attestations name `pkg:npm/linkedin-mcp-tools@4.1.0` with the same SHA-512 digest. SLSA resolves source commit `76763a6` and `.github/workflows/release.yml`, with the first production run as invocation. A fresh consumer installed 4.1.0; `npm audit signatures` verified 99 registry signatures and 14 attestations, and its production audit had zero findings. |
 | [GitHub Packages](https://github.com/devag7/linkedin-mcp/pkgs/npm/linkedin-mcp-tools) | Public version `@devag7/linkedin-mcp-tools@4.1.0` is present in GitHub's package API. Its authenticated archive had 15 entries and matched its declared SHA-512 integrity; archive SHA-256 `661e47528c08b596a86b0d8146d54b64c4925267d18c2de54dd5c5cf2b545afc`. It is separately scoped, so its `package.json` name differs from npm's. GitHub still requires authentication for archive download. |
 | [MCP Registry](https://registry.modelcontextprotocol.io/v0.1/servers/io.github.devag7%2Flinkedin-mcp/versions/4.1.0) | HTTP 200; version 4.1.0 is active and latest, pointing to `linkedin-mcp-tools@4.1.0` over local stdio. |
-| [GitHub Release](https://github.com/devag7/linkedin-mcp/releases/tag/v4.1.0) | Final, neither draft nor prerelease. The tag resolves to `76763a6`. |
+| [GitHub Release](https://github.com/devag7/linkedin-mcp/releases/tag/v4.1.0) | Final, neither draft nor prerelease. The tag resolves to `76763a6`. The separate unsigned [MCPB bundle](https://github.com/devag7/linkedin-mcp/releases/download/v4.1.0/linkedin-mcp-tools-4.1.0.mcpb) and [checksum](https://github.com/devag7/linkedin-mcp/releases/download/v4.1.0/linkedin-mcp-tools-4.1.0.mcpb.sha256) were added after one native Mac cold check; a fresh download matched frozen bundle SHA-256 `225fcefd270ffb96a1d23b3eff40e100c809ab958d168554d1d3982e331c4428`. Package/tag bytes were not changed. |
 
 ## Product scope
 
 The [release notes](RELEASE_NOTES_4.1.0.md) describe the new offline job
 application worksheet and user-entered tracker CSV. They do not fill, upload
-or submit applications. `research_jobs` remains draft. Publication checks do
-not establish current LinkedIn behavior, job submission or native client
-compatibility. The separate first-use cohort remains unmeasured at 0/0. No
-LinkedIn request, live write or volunteer contact was part of this release.
+or submit applications. `research_jobs` remains draft. Publication checks
+alone do not establish current LinkedIn behavior, job submission or native
+client compatibility. A separate [Claude Desktop 2.42304.0 Mac cold check](evidence/claude-native-4.1.0-2026-10-18.md)
+discovered 24 tools and returned `whoami` as `not_checked` with
+`loggedIn: null` before removing the test extension. This is native setup evidence, not
+live account compatibility. The separate first-use cohort remains unmeasured
+at 0/0. No LinkedIn request, live write or volunteer contact was part of this
+release.
