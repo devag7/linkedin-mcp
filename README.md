@@ -49,6 +49,8 @@ package, disposable fixtures, no login or LinkedIn request.
 future features and measured distribution outcomes.
 The [current completion status](docs/CURRENT_COMPLETION_STATUS_2026-10-18.md)
 separates released features from remaining native, live and distribution gates.
+The owner-run [private GitHub traffic ledger](docs/ADOPTION_TRAFFIC_LEDGER_2026-10-19.md)
+tracks stars and rolling traffic without user telemetry.
 
 This release does not fill or submit job applications, including Easy Apply.
 Use the [job seeker and Claude distribution plan](docs/JOB_SEEKER_AND_CLAUDE_DISTRIBUTION_2026-10-16.md)
