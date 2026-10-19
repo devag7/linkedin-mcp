@@ -159,7 +159,7 @@ export function buildReport(ledger) {
 
 function privateFile(file, createParent) {
   if (process.platform === 'win32') {
-    throw new Error('Private ledger writing requires a reviewed native Windows ACL path');
+    throw new Error('Private ledger access requires a reviewed native Windows ACL path');
   }
   if (!isAbsolute(file)) throw new Error('Use an absolute private ledger path');
   const parent = dirname(file);

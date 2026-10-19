@@ -22,7 +22,7 @@ The default private ledger is
 creates its directory with mode 0700 and the file with mode 0600; it refuses
 broader permissions and repository-local output. To use a different private
 location, pass `--file /absolute/private/traffic.json` after `capture` or
-`report`. Windows writes are refused until an NTFS ACL path is reviewed;
+`report`. Windows access is refused until an NTFS ACL path is reviewed;
 POSIX mode bits are not proof of Windows privacy.
 
 Each capture reads the public repository star/fork totals plus the owner's
