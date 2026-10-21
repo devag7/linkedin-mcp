@@ -5,6 +5,9 @@
 The current published major version is 4.x. The
 [4.0.0 release evidence](docs/RELEASE_EVIDENCE_4.0.0.md) identifies its exact
 tag and archive; older packages do not inherit later source changes.
+The [4.1.1 patch status](docs/RELEASE_EVIDENCE_4.1.1.md) tracks the updated SDK
+floor and opt-in tool-input guard. Older packages lack that guard even when a
+fresh dependency resolution selects SDK 1.32.1.
 
 ## Reporting a vulnerability
 
@@ -31,6 +34,10 @@ Duplicate security headers are rejected. Forwarding headers do not authorize
 requests. No wildcard or other CORS access is granted. Browser CORS clients,
 reverse proxies, tunnels, LAN exposure, and serverless deployments are unsupported.
 Do not publish or forward this listener.
+
+Source 4.1.1 enables a limit of 10,000 array elements/object keys across a
+tool call's arguments before SDK schema validation. The HTTP parser retains
+its 1 MiB body limit. An SDK upgrade alone does not enable the element guard.
 
 Requests require uncompressed JSON, with a 1 MiB limit, a 10-second body deadline,
 and a 180-second response deadline. Headers are limited to 16 KiB with a 10-second

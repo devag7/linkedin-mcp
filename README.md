@@ -13,7 +13,7 @@
 
 **Structured LinkedIn reads for MCP clients — profiles, jobs, companies and inbox data, with guided offline setup and explicit safety limits.**
 
-**24 tools in published 4.1.0** · local browser reads · five explicitly confirmed writes · persisted safety limits and operation journals.
+**24 tools · 4.1.1** · local browser reads · five explicitly confirmed writes · persisted safety limits and operation journals.
 
 > This is an unofficial LinkedIn integration and accounts can be restricted.
 > Review [Account safety](#-account-safety) and [SECURITY.md](SECURITY.md) before use.
@@ -24,7 +24,10 @@
 
 ## Guided first run
 
-Published [4.1.0](docs/RELEASE_NOTES_4.1.0.md) adds an offline application
+The [4.1.1 security patch](docs/RELEASE_NOTES_4.1.1.md) requires SDK 1.32.1
+and enables its tool-input validation bound. Check the
+[publication status](docs/RELEASE_EVIDENCE_4.1.1.md) before installing the pinned
+version below. [4.1.0](docs/RELEASE_NOTES_4.1.0.md) introduced an offline application
 worksheet and user-entered tracker CSV. These do not fill or submit
 applications. Its [public archive and destinations](docs/RELEASE_EVIDENCE_4.1.0.md)
 have been independently verified.
@@ -58,10 +61,12 @@ This release does not fill or submit job applications, including Easy Apply.
 Use the [job seeker and Claude distribution plan](docs/JOB_SEEKER_AND_CLAUDE_DISTRIBUTION_2026-10-16.md)
 for the application handoff workflow, proposed next features and the separate
 requirements for listing a connector in Claude.
-For Claude Desktop, download the unsigned
-[4.1.0 extension and checksum](https://github.com/devag7/linkedin-mcp/releases/tag/v4.1.0)
-and follow the [verified local install guide](docs/CLAUDE_DESKTOP_BUNDLE_2026-10-17.md).
-One native Mac check discovered all 24 tools and passed cold `whoami`; live
+For Claude Desktop, use the generated local configuration until the unsigned
+4.1.1 extension and checksum are available in the
+[patch release assets](https://github.com/devag7/linkedin-mcp/releases/tag/v4.1.1).
+The [bundle guide](docs/CLAUDE_DESKTOP_BUNDLE_2026-10-17.md) records the exact
+version and hash. The earlier 4.1.0 native Mac check discovered 24 tools and
+passed cold `whoami`; that bundle predates the new input guard. Patch native
 account use and Claude directory listing remain unverified.
 
 ## What it does
@@ -107,10 +112,11 @@ not a guarantee of current provider compatibility or account safety.
 
 ## 🚀 Quick start
 
-Use Node.js 20 or later and Google Chrome. The commands below pin 4.1.0.
+Use Node.js 20 or later and Google Chrome. The commands below pin 4.1.1;
+run them after its publication status confirms availability.
 Setup is offline; login and subsequent reads
 are deliberate account actions. For a stable installation path and Windows
-commands, see the [setup guide](SETUP_GUIDE.md). On Windows, 4.1.0 retains the
+commands, see the [setup guide](SETUP_GUIDE.md). On Windows, 4.1.1 retains the
 requirement that state paths stay beneath the actual `%USERPROFILE%` tree. A custom path outside it
 will be refused even when an older version accepted it. See the
 [migration notes](docs/RELEASE_NOTES_4.0.0.md#upgrade-notes-and-limits).
@@ -118,7 +124,7 @@ will be refused even when an older version accepted it. See the
 **1. Diagnose offline:**
 
 ```bash
-npm install --prefix "$HOME/.local/share/linkedin-mcp" linkedin-mcp-tools@4.1.0
+npm install --prefix "$HOME/.local/share/linkedin-mcp" linkedin-mcp-tools@4.1.1
 node "$HOME/.local/share/linkedin-mcp/node_modules/linkedin-mcp-tools/dist/index.js" --setup cursor
 ```
 
@@ -144,7 +150,7 @@ accepting `mcpServers`, this version-pinned example is an alternative:
   "mcpServers": {
     "linkedin": {
       "command": "npx",
-      "args": ["-y", "linkedin-mcp-tools@4.1.0"]
+      "args": ["-y", "linkedin-mcp-tools@4.1.1"]
     }
   }
 }
