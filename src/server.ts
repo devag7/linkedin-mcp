@@ -78,7 +78,8 @@ export function createServer(
 ): CreatedServer {
   const server = new McpServer(
     { name: 'linkedin-mcp', version: VERSION },
-    { capabilities: { tools: {} } },
+    // Bound array elements/object keys before SDK schema validation.
+    { capabilities: { tools: {} }, maxToolInputElements: 10_000 },
   );
   const { engine, voyager, budget, guard } = runtime;
 

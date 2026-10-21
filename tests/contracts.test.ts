@@ -112,6 +112,39 @@ function decode(result: Awaited<ReturnType<Client['callTool']>>) {
   expect(result.structuredContent).toEqual(parsed);
   return parsed;
 }
+it('rejects excessive tool-input elements before schema validation and provider work', async () => {
+  const arguments_ = { job_id: '123', unused: Array(10_001).fill(null) };
+  expect(Buffer.byteLength(JSON.stringify(arguments_))).toBeLessThan(1024 * 1024);
+  const result = await client.callTool({ name: 'get_job_details', arguments: arguments_ });
+  expect(result.isError).toBe(true);
+  expect(JSON.stringify(result.content)).toContain('maximum of 10000 elements');
+  expect(runtime.guard.run).not.toHaveBeenCalled();
+  expect(runtime.voyager.voyagerGet).not.toHaveBeenCalled();
+  const cold = decode(await client.callTool({ name: 'whoami', arguments: {} }));
+  expect(cold.data.sessionState).toBe('not_checked');
+  const worksheet = decode(await client.callTool({
+    name: 'prepare_job_application',
+    arguments: {
+      job_id: '123',
+      job_title: 'J'.repeat(1000),
+      requirements: Array.from({ length: 20 }, () => ({
+        requirement: 'R'.repeat(1000), evidence: 'E'.repeat(1000),
+      })),
+    },
+  }));
+  expect(worksheet.data.requirements).toHaveLength(20);
+  const tracker = decode(await client.callTool({
+    name: 'export_application_tracker',
+    arguments: {
+      records: Array.from({ length: 50 }, (_, i) => ({
+        job_id: String(i + 1), title: 'T'.repeat(1000), status: 'interested',
+        updated_at: '2026-10-21T00:00:00.000Z',
+      })),
+    },
+  }));
+  expect(tracker.data.records).toHaveLength(50);
+  expect(runtime.voyager.voyagerGet).not.toHaveBeenCalled();
+});
 const messagingOwner = 'synthetic-one';
 const messagingOther = 'synthetic-other';
 const messagingUrn = `urn:li:msg_conversation:(urn:li:fsd_profile:${messagingOwner},2-synthetic)`;

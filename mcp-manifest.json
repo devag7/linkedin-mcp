@@ -1,6 +1,6 @@
 {
   "name": "linkedin-mcp-tools",
-  "version": "4.1.0",
+  "version": "4.1.1",
   "mcpName": "io.github.devag7/linkedin-mcp",
   "contractVersion": 1,
   "transport": "stdio",
@@ -15,7 +15,7 @@
       "write": false,
       "provider": "local_browser_unofficial",
       "verification": "offline_contract_tested",
-      "offlineCheckedAt": "2026-10-01",
+      "offlineCheckedAt": "2026-10-21",
       "liveCheckedAt": null,
       "availability": "available"
     },
@@ -27,7 +27,7 @@
       "write": false,
       "provider": "local_browser_unofficial",
       "verification": "offline_contract_tested",
-      "offlineCheckedAt": "2026-10-01",
+      "offlineCheckedAt": "2026-10-21",
       "liveCheckedAt": null,
       "availability": "unknown_until_checked"
     },
@@ -39,7 +39,7 @@
       "write": false,
       "provider": "local_browser_unofficial",
       "verification": "offline_contract_tested",
-      "offlineCheckedAt": "2026-10-01",
+      "offlineCheckedAt": "2026-10-21",
       "liveCheckedAt": null,
       "availability": "available"
     },
@@ -51,7 +51,7 @@
       "write": false,
       "provider": "local_browser_unofficial",
       "verification": "offline_contract_tested",
-      "offlineCheckedAt": "2026-10-01",
+      "offlineCheckedAt": "2026-10-21",
       "liveCheckedAt": null,
       "availability": "unknown_until_checked"
     },
@@ -63,7 +63,7 @@
       "write": false,
       "provider": "local_browser_unofficial",
       "verification": "offline_contract_tested",
-      "offlineCheckedAt": "2026-10-01",
+      "offlineCheckedAt": "2026-10-21",
       "liveCheckedAt": null,
       "availability": "unknown_until_checked"
     },
@@ -76,7 +76,7 @@
       "maxResults": 25,
       "provider": "local_browser_unofficial",
       "verification": "offline_contract_tested",
-      "offlineCheckedAt": "2026-10-01",
+      "offlineCheckedAt": "2026-10-21",
       "liveCheckedAt": null,
       "availability": "unknown_until_checked"
     },
@@ -89,7 +89,7 @@
       "maxResults": 50,
       "provider": "local_browser_unofficial",
       "verification": "offline_contract_tested",
-      "offlineCheckedAt": "2026-10-01",
+      "offlineCheckedAt": "2026-10-21",
       "liveCheckedAt": null,
       "availability": "unknown_until_checked"
     },
@@ -102,7 +102,7 @@
       "maxResults": 25,
       "provider": "local_browser_unofficial",
       "verification": "offline_contract_tested",
-      "offlineCheckedAt": "2026-10-01",
+      "offlineCheckedAt": "2026-10-21",
       "liveCheckedAt": null,
       "availability": "unknown_until_checked"
     },
@@ -115,7 +115,7 @@
       "maxResults": 25,
       "provider": "local_browser_unofficial",
       "verification": "offline_contract_tested",
-      "offlineCheckedAt": "2026-10-01",
+      "offlineCheckedAt": "2026-10-21",
       "liveCheckedAt": null,
       "availability": "unknown_until_checked"
     },
@@ -128,7 +128,7 @@
       "maxResults": 50,
       "provider": "local_browser_unofficial",
       "verification": "offline_contract_tested",
-      "offlineCheckedAt": "2026-10-01",
+      "offlineCheckedAt": "2026-10-21",
       "liveCheckedAt": null,
       "availability": "unknown_until_checked"
     },
@@ -140,7 +140,7 @@
       "write": false,
       "provider": "local_browser_unofficial",
       "verification": "offline_contract_tested",
-      "offlineCheckedAt": "2026-10-01",
+      "offlineCheckedAt": "2026-10-21",
       "liveCheckedAt": null,
       "availability": "unknown_until_checked"
     },
@@ -152,7 +152,7 @@
       "write": false,
       "provider": "local_browser_unofficial",
       "verification": "offline_contract_tested",
-      "offlineCheckedAt": "2026-10-01",
+      "offlineCheckedAt": "2026-10-21",
       "liveCheckedAt": null,
       "availability": "available"
     },
@@ -164,7 +164,7 @@
       "write": false,
       "provider": "local_browser_unofficial",
       "verification": "offline_contract_tested",
-      "offlineCheckedAt": "2026-10-01",
+      "offlineCheckedAt": "2026-10-21",
       "liveCheckedAt": null,
       "availability": "available"
     },
@@ -177,7 +177,7 @@
       "maxResults": 25,
       "provider": "local_browser_unofficial",
       "verification": "offline_contract_tested",
-      "offlineCheckedAt": "2026-10-01",
+      "offlineCheckedAt": "2026-10-21",
       "liveCheckedAt": null,
       "availability": "unknown_until_checked"
     },
@@ -189,7 +189,7 @@
       "write": false,
       "provider": "local_browser_unofficial",
       "verification": "offline_contract_tested",
-      "offlineCheckedAt": "2026-10-01",
+      "offlineCheckedAt": "2026-10-21",
       "liveCheckedAt": null,
       "availability": "unknown_until_checked"
     },
@@ -202,7 +202,7 @@
       "maxResults": 25,
       "provider": "local_browser_unofficial",
       "verification": "offline_contract_tested",
-      "offlineCheckedAt": "2026-10-01",
+      "offlineCheckedAt": "2026-10-21",
       "liveCheckedAt": null,
       "availability": "unknown_until_checked"
     },
@@ -215,7 +215,7 @@
       "maxResults": 25,
       "provider": "local_browser_unofficial",
       "verification": "offline_contract_tested",
-      "offlineCheckedAt": "2026-10-01",
+      "offlineCheckedAt": "2026-10-21",
       "liveCheckedAt": null,
       "availability": "unknown_until_checked"
     },
@@ -228,7 +228,7 @@
       "maxResults": 200,
       "provider": "local_browser_unofficial",
       "verification": "offline_contract_tested",
-      "offlineCheckedAt": "2026-10-01",
+      "offlineCheckedAt": "2026-10-21",
       "liveCheckedAt": null,
       "availability": "unknown_until_checked"
     },
@@ -241,7 +241,7 @@
       "maxResults": 100,
       "provider": "local_browser_unofficial",
       "verification": "offline_contract_tested",
-      "offlineCheckedAt": "2026-10-01",
+      "offlineCheckedAt": "2026-10-21",
       "liveCheckedAt": null,
       "availability": "unknown_until_checked"
     },
@@ -253,7 +253,7 @@
       "write": true,
       "provider": "local_browser_unofficial",
       "verification": "offline_contract_tested",
-      "offlineCheckedAt": "2026-10-01",
+      "offlineCheckedAt": "2026-10-21",
       "liveCheckedAt": null,
       "availability": "disabled"
     },
@@ -265,7 +265,7 @@
       "write": true,
       "provider": "local_browser_unofficial",
       "verification": "offline_contract_tested",
-      "offlineCheckedAt": "2026-10-01",
+      "offlineCheckedAt": "2026-10-21",
       "liveCheckedAt": null,
       "availability": "disabled",
       "newThreadEnabled": false
@@ -278,7 +278,7 @@
       "write": true,
       "provider": "local_browser_unofficial",
       "verification": "offline_contract_tested",
-      "offlineCheckedAt": "2026-10-01",
+      "offlineCheckedAt": "2026-10-21",
       "liveCheckedAt": null,
       "availability": "disabled"
     },
@@ -290,7 +290,7 @@
       "write": true,
       "provider": "local_browser_unofficial",
       "verification": "offline_contract_tested",
-      "offlineCheckedAt": "2026-10-01",
+      "offlineCheckedAt": "2026-10-21",
       "liveCheckedAt": null,
       "availability": "disabled"
     },
@@ -302,7 +302,7 @@
       "write": true,
       "provider": "local_browser_unofficial",
       "verification": "offline_contract_tested",
-      "offlineCheckedAt": "2026-10-01",
+      "offlineCheckedAt": "2026-10-21",
       "liveCheckedAt": null,
       "availability": "disabled"
     }

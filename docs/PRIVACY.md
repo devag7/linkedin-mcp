@@ -28,11 +28,11 @@ details. Browser requests and returned data still involve LinkedIn and the
 selected MCP client.
 The server does not add cloud storage, analytics uploads or background telemetry.
 
-The source-only `prepare_job_application` and `export_application_tracker`
+The published 4.1.0 `prepare_job_application` and `export_application_tracker`
 tools use only their call inputs and return their outputs to the MCP client.
 They create no application database or CSV file. The client or user may retain
 those inputs and results independently; any exported CSV should be kept private.
-The source server does not claim to erase client-retained data.
+The server does not claim to erase client-retained data.
 
 `linkedin-mcp --logout` removes only an unaliased profile directory. Symlinks, Windows junctions and aliased ancestors are refused; nested links are unlinked without deleting their targets. For a custom
 LINKEDIN_PROFILE_DIR, it refuses deletion unless the user also explicitly supplies
@@ -53,12 +53,12 @@ Full coordinated erasure tooling is still an explicit coverage gap.
 
 Published 4.0.0 `--retirement-preview` inspects one selected browser profile
 and prints bounded file/directory counts with fixed refusal reasons. It has
-`applicationSupported:false` and no circuit-presence field. The unreleased
-source extends the preview with circuit presence and an explicit apply command.
+`applicationSupported:false` and no circuit-presence field. Published 4.1.0
+extends the preview with circuit presence and an explicit apply command.
 Neither preview prints paths, names, content or manifest hashes, acquires
 locks, launches Chrome, makes account requests or deletes anything. Both set
 `deletionAuthorized:false`. The separate
-`--retire-profile --confirm-retirement` command will remove that selected
+`--retire-profile --confirm-retirement` command removes that selected
 profile and its circuit file after fresh checks under the profile owner lock.
 For a configured custom profile it also requires `--confirm-profile-deletion`.
 Run the read-only preview first. The apply command makes no LinkedIn request.
@@ -80,7 +80,7 @@ erasure and safe handling of uncooperating processes remain open. The
 published 4.0.0 Windows guard does not authorize retirement or change the
 preceding 3.1.0 archive.
 
-Unreleased `--retirement-recovery-preview` gives a path-free, read-only report
+Published 4.1.0 `--retirement-recovery-preview` gives a path-free, read-only report
 for an interrupted selected-profile retirement: fixed presence fields and bounded
 remaining quarantine counts. It never resumes removal or clears an owner lock or
 marker. A valid marker always requires private operator review, even when its

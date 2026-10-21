@@ -70,7 +70,7 @@ try {
   // A consumer does not inherit this repository's lockfile or npm overrides.
   // Verify the actual fresh resolution, including any nested Express copies.
   const consumerLock = JSON.parse(readFileSync(join(install, 'package-lock.json'), 'utf8'));
-  assert.equal(pkg.dependencies['@modelcontextprotocol/sdk'], '^1.31.0',
+  assert.equal(pkg.dependencies['@modelcontextprotocol/sdk'], '^1.32.1',
     'The shipped SDK dependency must exclude the affected versions.');
   const assertInstalledFloor = (name, entry, minimum) => {
     const actual = JSON.parse(readFileSync(join(install, name, 'package.json'), 'utf8'));
@@ -87,7 +87,7 @@ try {
       name.endsWith('/node_modules/@modelcontextprotocol/sdk'),
   );
   assert.ok(sdks.length > 0, 'Expected the consumer SDK dependency.');
-  for (const [name, entry] of sdks) assertInstalledFloor(name, entry, [1, 31, 0]);
+  for (const [name, entry] of sdks) assertInstalledFloor(name, entry, [1, 32, 1]);
   const proxies = Object.entries(consumerLock.packages).filter(
     ([name]) => name === 'node_modules/proxy-addr' || name.endsWith('/node_modules/proxy-addr'),
   );
