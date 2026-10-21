@@ -122,6 +122,28 @@ it('rejects excessive tool-input elements before schema validation and provider 
   expect(runtime.voyager.voyagerGet).not.toHaveBeenCalled();
   const cold = decode(await client.callTool({ name: 'whoami', arguments: {} }));
   expect(cold.data.sessionState).toBe('not_checked');
+  const worksheet = decode(await client.callTool({
+    name: 'prepare_job_application',
+    arguments: {
+      job_id: '123',
+      job_title: 'J'.repeat(1000),
+      requirements: Array.from({ length: 20 }, () => ({
+        requirement: 'R'.repeat(1000), evidence: 'E'.repeat(1000),
+      })),
+    },
+  }));
+  expect(worksheet.data.requirements).toHaveLength(20);
+  const tracker = decode(await client.callTool({
+    name: 'export_application_tracker',
+    arguments: {
+      records: Array.from({ length: 50 }, (_, i) => ({
+        job_id: String(i + 1), title: 'T'.repeat(1000), status: 'interested',
+        updated_at: '2026-10-21T00:00:00.000Z',
+      })),
+    },
+  }));
+  expect(tracker.data.records).toHaveLength(50);
+  expect(runtime.voyager.voyagerGet).not.toHaveBeenCalled();
 });
 const messagingOwner = 'synthetic-one';
 const messagingOther = 'synthetic-other';
