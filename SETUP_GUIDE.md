@@ -49,9 +49,9 @@ Source contributors can instead run `npm ci`, `npm run build`, then
 
 ### Claude Desktop extension
 
-For a local extension instead of a JSON entry, use the unsigned
-[4.1.1 `.mcpb` and checksum](https://github.com/devag7/linkedin-mcp/releases/tag/v4.1.1)
-are independently verified public assets. The generated configuration above is
+For a local extension instead of a JSON entry, use the independently verified
+[unsigned 4.1.1 `.mcpb` and checksum](https://github.com/devag7/linkedin-mcp/releases/tag/v4.1.1).
+The generated configuration above is
 an alternative local installation route.
 The earlier 4.1.0 bundle predates the new input guard.
 Verify the file hash and install it through Claude Desktop Settings →
