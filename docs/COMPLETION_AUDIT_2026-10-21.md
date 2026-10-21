@@ -2,8 +2,9 @@
 
 **The complete plan is not finished.** Public 4.1.0 delivers the 24-tool core,
 offline client setup, selected-profile retirement and two local job-seeker
-helpers. A security patch candidate, 4.1.1, raises the SDK minimum to 1.32.1.
-That candidate is not a public release until every destination is read back.
+helpers. The 4.1.1 security patch is independently verified on npm and GitHub Packages,
+with SDK 1.32.1 and an input guard. Registry timeouts still block final GitHub
+Release completion; see [current receipts](RELEASE_EVIDENCE_4.1.1.md).
 The original roadmap and historical failed receipts remain unchanged.
 
 This audit compares the immutable
@@ -18,7 +19,7 @@ source features, native tests and adoption outcomes have different finish lines.
 | ID | Current result | Remaining acceptance |
 | --- | --- | --- |
 | P-01 Diagnosis | Shipped offline doctor/setup; live diagnosis remains explicit. | Real first use across claimed clients/OSes; preserve unknown account state until authorized reads. |
-| P-02 Capability inventory | Shipped route, permission, result limit and verification metadata through cold `whoami`; browser availability stays unknown. | 4.1.1 candidate refreshes the recorded offline-check date, including tools added after October 1. No new live-check claim. |
+| P-02 Capability inventory | Shipped route, permission, result limit and verification metadata through cold `whoami`; browser availability stays unknown. | Public 4.1.1 refreshes the recorded offline-check date, including tools added after October 1. No new live-check claim. |
 | P-03 Structured responses | Shipped typed envelopes, text/structured output and partial/error contracts. | Current live shape coverage and failure-rate measurements for each advertised provider operation. |
 | P-04 Bounded search | Existing people/jobs/company/feed reads are bounded; cursors require matching paging evidence. | New saved-job/filter/post/inbox search features below; no implicit full crawl. |
 | P-05 Reviewed writes | Shipped opt-in, preview proof, durable operation IDs, caps and unknown-outcome handling. | Current consented live evidence for each claimed action; new-thread messaging remains experimental. |
@@ -43,7 +44,7 @@ source features, native tests and adoption outcomes have different finish lines.
 | P9 Official provider | Blocked by missing granted app access | Owner supplies granted scopes; implement a separate capability-limited provider and approved identity/publishing tests. No browser fallback masquerading as official access. |
 | P10 Distribution/tutorials/community | Partial | Setup/demo/workflow guides and registry/package/release destinations exist. Awesome MCP submission awaits upstream acceptance; Glama needs owner sign-in/re-sync and hosted-copy correction. Three observed end-to-end tutorial flows, repeatable issue response and measured distribution outcomes remain open. |
 | P11 Opt-in/traffic ledger | Partial | [Private ledger](ADOPTION_TRAFFIC_LEDGER_2026-10-19.md) ships; consent/scoring kit and public opt-in issue exist. Capture weekly; first-use and repeat-use samples and a complete monthly report are still missing. No hidden telemetry. |
-| P12 Development advisory follow-up | Earlier esbuild issue resolved; new SDK patch in progress | Source moved to esbuild 0.28.2 in prior work. October 21 audit found four SDK advisories aggregated as one high package finding; candidate SDK 1.32.1 clears the full audit. Finish patch publication/readback; do not repeat the stale “one low esbuild” claim as current. |
+| P12 Development advisory follow-up | Earlier esbuild issue resolved; SDK patch shipped on npm/GitHub Packages | Source moved to esbuild 0.28.2 in prior work. October 21 audit found four SDK advisories aggregated as one high package finding; SDK 1.32.1 clears the full source audit and the input guard ships in public 4.1.1. Finish Registry/Release and desktop-bundle readback; do not repeat the stale “one low esbuild” claim as current. |
 
 ## Later job-seeker and Claude scope
 

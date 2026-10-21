@@ -1,0 +1,18 @@
+{
+  "checkedOn": "2026-10-21",
+  "version": "4.1.1",
+  "sourceArchiveSha256": "3aa33f9a38e2928625f9a7d24d300b644102c87121dc0168766048e1cf7368ec",
+  "bundleSha256": "c16e7266efeb5717ad57be317564110a8b49b08d44ac1f01ab7c7ad797215199",
+  "manifestValidated": true,
+  "productionFindings": 0,
+  "packedAndUnpackedChecks": {
+    "tools": 24,
+    "coldWhoami": "not_checked",
+    "oversizedInputRejected": true,
+    "browserProfileCreated": false,
+    "linkedInRequests": 0
+  },
+  "nativeDesktopInstall": "not performed",
+  "hostedBundleChecks": "pending",
+  "publicAsset": "not uploaded"
+}

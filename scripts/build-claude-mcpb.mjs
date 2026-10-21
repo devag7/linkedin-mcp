@@ -8,8 +8,8 @@ import { join, resolve } from 'node:path';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 
-const version = '4.1.0';
-const expectedSha256 = '477c0cbfffe1901c9dea926dd8b9b4be6c9ff223154ff111854be949e798d8f9';
+const version = '4.1.1';
+const expectedSha256 = '3aa33f9a38e2928625f9a7d24d300b644102c87121dc0168766048e1cf7368ec';
 const toolchain = '@anthropic-ai/mcpb@2.1.2';
 const output = resolve(process.argv[2] || join(tmpdir(), `linkedin-mcp-tools-${version}.mcpb`));
 const npmCli = process.env.npm_execpath;
@@ -47,6 +47,12 @@ async function verifyCold(folder) {
     const who = await client.callTool({ name: 'whoami', arguments: {} });
     assert.equal(who.structuredContent?.data?.sessionState, 'not_checked');
     assert.equal(who.structuredContent?.data?.loggedIn, null);
+    const oversized = await client.callTool({
+      name: 'get_job_details',
+      arguments: { job_id: '123', unused: Array(10_001).fill(null) },
+    });
+    assert.equal(oversized.isError, true, 'The packaged runtime must reject excessive inputs.');
+    assert.ok(JSON.stringify(oversized.content).includes('maximum of 10000 elements'));
     assert.equal(existsSync(isolatedProfile), false, 'Cold discovery must not create a browser profile.');
   } finally {
     await client.close();

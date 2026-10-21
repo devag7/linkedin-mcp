@@ -1,22 +1,25 @@
 # Claude Desktop local bundle: build and evidence
 
-**Scope:** local `.mcpb` distribution of published `linkedin-mcp-tools@4.1.0`.
-This is an unsigned [GitHub Release asset](https://github.com/devag7/linkedin-mcp/releases/tag/v4.1.0),
-not a Claude directory listing. It includes the offline worksheet and CSV tracker, but no
-job application fill or submit action.
+**Current build target:** published `linkedin-mcp-tools@4.1.1`. The unsigned
+4.1.1 bundle is prepared locally; hosted checks and public asset distribution
+are pending. The existing public 4.1.0 bundle/native receipt below is historical.
+Neither bundle is a Claude directory listing, and neither fills or submits jobs.
 
-Run `npm run build:claude-mcpb -- /absolute/output/linkedin-mcp-tools-4.1.0.mcpb`.
-The build pins the public npm archive SHA-256
-`477c0cbfffe1901c9dea926dd8b9b4be6c9ff223154ff111854be949e798d8f9`
-and the official MCPB toolchain version 2.1.2. It installs production
-dependencies only, requires a zero-finding production audit, validates the
-manifest, and starts the bundled MCP server through its actual entry point in a
-disposable home. Cold discovery must return 24 tools and `whoami` must report
-`not_checked` without creating a Chrome profile. It then emits the bundle and
-its SHA-256. The builder unpacks the resulting `.mcpb` and repeats the cold
-startup/discovery check against the unpacked bytes. No LinkedIn request is part
-of the build. CI also runs that exact build on macOS and Windows with Node 22;
-the local result alone is not cross-platform proof.
+Run `npm run build:claude-mcpb -- /absolute/output/linkedin-mcp-tools-4.1.1.mcpb`.
+The builder pins public npm archive SHA-256
+`3aa33f9a38e2928625f9a7d24d300b644102c87121dc0168766048e1cf7368ec`
+and MCPB toolchain 2.1.2. It installs production dependencies only, requires a
+zero-finding audit, validates the manifest, and starts the bundled server in a
+disposable home. Packed and unpacked startup both require 24 tools, cold
+`whoami: not_checked`, rejection of excessive tool inputs by the 10,000-element
+guard, and no browser profile creation. No LinkedIn request is part of this build.
+
+The October 21 local 4.1.1 build passed those checks. Its SHA-256 is
+`c16e7266efeb5717ad57be317564110a8b49b08d44ac1f01ab7c7ad797215199`;
+[redacted local receipt](evidence/release-4.1.1-2026-10-21/claude-bundle-local.json).
+This checksum identifies that exact local artifact; other dependency resolutions
+or packaging hosts may emit different bundle bytes. CI builds and checks the
+pinned runtime on macOS and Windows. No native Claude 4.1.1 install/check has run.
 
 On Windows, CI creates its disposable state under the actual user profile with
 the repository's private ACL helper. The verifier preserves the operating
@@ -27,6 +30,8 @@ Chrome, a session, profile, credentials or private application data. The user
 still needs Chrome and one manual `--login` using the published CLI before live
 reads. The bundle is unsigned and runs local Node code with the user's
 filesystem access. Verify its checksum before installing it in Claude Desktop.
+
+## Historical 4.1.0 bundle and native receipt
 
 The first local 4.1.0 build on macOS matched the independently fetched public
 npm archive byte-for-byte, found zero production audit advisories, validated

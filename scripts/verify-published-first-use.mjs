@@ -17,6 +17,10 @@ const cohorts = {
     sha256: '477c0cbfffe1901c9dea926dd8b9b4be6c9ff223154ff111854be949e798d8f9',
     tools: 24,
   },
+  '4.1.1': {
+    sha256: '3aa33f9a38e2928625f9a7d24d300b644102c87121dc0168766048e1cf7368ec',
+    tools: 24,
+  },
 };
 const cohortVersion = process.argv[3] ?? '3.0.0';
 const cohort = cohorts[cohortVersion];
@@ -158,6 +162,14 @@ for (const name of ['claude-desktop', 'cursor', 'vscode']) {
     const identity = (await client.callTool({ name: 'whoami', arguments: {} })).structuredContent;
     assert.equal(identity.data.sessionState, 'not_checked');
     assert.equal(identity.data.loggedIn, null);
+    if (cohortVersion === '4.1.1') {
+      const excessive = await client.callTool({
+        name: 'get_job_details',
+        arguments: { job_id: '123', unused: Array(10_001).fill(null) },
+      });
+      assert.equal(excessive.isError, true);
+      assert.ok(JSON.stringify(excessive.content).includes('maximum of 10000 elements'));
+    }
     assert.equal(
       (await client.callTool({ name: 'close_session', arguments: {} })).structuredContent.data
         .closed,
@@ -170,6 +182,7 @@ for (const name of ['claude-desktop', 'cursor', 'vscode']) {
       sdkDiscovery: 'passed',
       tools: tools.length,
       coldIdentity: 'not_checked',
+      inputGuard: cohortVersion === '4.1.1' ? 'passed' : 'not tested for historical runtime',
       cleanup: 'passed',
     });
   } finally {
@@ -186,7 +199,7 @@ assert.equal(safetyHash(), before, 'Shared safety state changed during offline v
 const lock = JSON.parse(readFileSync(join(prefix, 'package-lock.json'), 'utf8'));
 for (const [path, entry] of Object.entries(lock.packages)) {
   const minimum = path.endsWith('/@modelcontextprotocol/sdk')
-    ? [1, 31, 0]
+    ? [1, 32, 1]
     : path.endsWith('/proxy-addr')
       ? [2, 0, 8]
       : null;
