@@ -25,6 +25,8 @@ async function verifyCold(folder) {
   const manifest = JSON.parse(readFileSync(join(folder, 'manifest.json'), 'utf8'));
   assert.equal(manifest.version, version);
   const entry = join(folder, manifest.server.entry_point);
+  assert.equal(existsSync(join(folder, 'node_modules/.package-lock.json')), false,
+    'Disposable installer metadata must not be distributed.');
   assert.equal(run(process.execPath, [entry, '--version']).trim(), `linkedin-mcp v${version}`);
   const isolatedProfile = join(scratch, 'offline-profile');
   const client = new Client({ name: 'mcpb-offline-verifier', version: '1' });
@@ -82,9 +84,10 @@ try {
   assert.equal(installed.version, version);
   const audit = JSON.parse(npm(['audit', '--omit=dev', '--json'], bundle));
   assert.equal(audit.metadata.vulnerabilities.total, 0, 'Production dependencies must have zero audit findings.');
-  // Installer metadata points to the disposable source tarball; runtime needs neither file.
+  // Installer metadata points to the disposable source tarball; runtime needs none of it.
   unlinkSync(join(bundle, 'package-lock.json'));
   unlinkSync(join(bundle, 'package.json'));
+  rmSync(join(bundle, 'node_modules/.package-lock.json'), { force: true });
   await verifyCold(bundle);
   run(process.execPath, [npmCli, 'exec', '--yes', '--package', toolchain, '--', 'mcpb', 'validate', join(bundle, 'manifest.json')]);
   run(process.execPath, [npmCli, 'exec', '--yes', '--package', toolchain, '--', 'mcpb', 'pack', bundle, output]);

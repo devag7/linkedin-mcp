@@ -2,7 +2,7 @@
   "checkedOn": "2026-10-21",
   "version": "4.1.1",
   "sourceArchiveSha256": "3aa33f9a38e2928625f9a7d24d300b644102c87121dc0168766048e1cf7368ec",
-  "bundleSha256": "c16e7266efeb5717ad57be317564110a8b49b08d44ac1f01ab7c7ad797215199",
+  "bundleSha256": "373844201bb51f54b9f69f5373abe974b30287a2b064fe00a3ddc49e6a584b87",
   "manifestValidated": true,
   "productionFindings": 0,
   "packedAndUnpackedChecks": {
@@ -14,5 +14,7 @@
   },
   "nativeDesktopInstall": "not performed",
   "hostedBundleChecks": "pending",
-  "publicAsset": "not uploaded"
+  "publicAsset": "not uploaded",
+  "disposableInstallerMetadataExcluded": true,
+  "supersededUnpublishedBundleSha256": "c16e7266efeb5717ad57be317564110a8b49b08d44ac1f01ab7c7ad797215199"
 }

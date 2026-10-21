@@ -1,8 +1,8 @@
-# LinkedIn MCP 4.1.1 — verified packages, finalization blocked
+# LinkedIn MCP 4.1.1 — verified core release
 
-Updated October 21, 2026. **npm and GitHub Packages are verified public. The
-MCP Registry step is blocked by timeouts; the GitHub Release remains a draft.**
-This is partial distribution, not a completed all-destination release.
+Updated October 21, 2026. **npm, GitHub Packages, active MCP Registry metadata
+and the finalized GitHub Release/tag are independently verified.** The separate
+4.1.1 desktop bundle is prepared locally; final hosted checks/upload are pending.
 
 ## Exact public artifact
 
@@ -19,8 +19,8 @@ Source/tag: `3b3e31a9673ddf291e9cb7bc76bf8539d1b8cb0d` / `v4.1.1`.
 | --- | --- | --- |
 | [npm 4.1.1](https://www.npmjs.com/package/linkedin-mcp-tools/v/4.1.1) | Public bytes, integrity and publish/SLSA subject match; provenance names the source SHA and `release.yml` | Upload acceptance alone was not counted as verification |
 | [GitHub Packages](https://github.com/devag7/linkedin-mcp/pkgs/npm/linkedin-mcp-tools) | Public version ID `1420543751`; archive SHA-256 `31e71a7c764256fc0d0ae2a3d12985c1957f84ad855fadd53356fd3c1adbf196`; 15 files match npm except the expected scoped package name | Downloads still require authentication |
-| [MCP Registry target](https://registry.modelcontextprotocol.io/v0.1/servers/io.github.devag7%2Flinkedin-mcp/versions/4.1.1) | No successful 4.1.1 publication/readback | Known published 4.1.0 also timed out in local probes; the underlying service/network cause is unproven |
-| GitHub tag / Release | Tag points to the intended source; Release remains draft | Finalization correctly failed with the Registry job; do not describe the Release as public |
+| [MCP Registry target](https://registry.modelcontextprotocol.io/v0.1/servers/io.github.devag7%2Flinkedin-mcp/versions/4.1.1) | Active 4.1.1 metadata independently read back: npm identifier/version and stdio transport match | Earlier timeout failures remain preserved; the underlying cause is unproven |
+| [GitHub Release/tag](https://github.com/devag7/linkedin-mcp/releases/tag/v4.1.1) | Finalized October 21 at 15:33:55 UTC; tag and target both name `3b3e31a…` | Desktop extension asset is a separate artifact; no directory acceptance claim |
 | Claude Desktop bundle | Local unsigned 4.1.1 bundle built from the verified public npm archive; packed/unpacked cold discovery and guard checks passed | Hosted bundle checks and public asset upload pending; no native 4.1.1 installation or live read |
 
 A fresh public npm installation resolved SDK 1.32.1 and had zero production
@@ -63,13 +63,23 @@ An earlier local attempt failed with `ENOSPC` during tests/build/disposable
 installation. Its failure summary and logs remain private; after storage became
 available, the required checks passed. This does not prove native client UI.
 
-## Remaining release work
+A later bounded read returned 404 for missing 4.1.1, so only failed jobs of
+that same run were resumed. Attempt 3 passed all 10 jobs, published and verified
+the missing Registry entry, then finalized the GitHub Release. Independent
+[Registry readback](evidence/release-4.1.1-2026-10-21/registry-public-readback.json)
+confirmed active status, exact npm package/version and stdio transport. GitHub
+readback confirmed a public Release and an unchanged intended tag. Successful
+recovery does not explain or erase earlier failures; npm was uploaded only once.
 
-Finish the reviewed 4.1.1 MCPB hosted checks and checksum asset. Once a bounded
-Registry read succeeds, resume only missing jobs of the existing frozen-source
-workflow, verify active Registry metadata, then finalize and independently read
-back the GitHub Release/assets. Do not replace the published npm artifact or
-move its tag. Retain all failed attempts.
+## Remaining desktop distribution work
+
+Finish the cleaned 4.1.1 MCPB hosted checks, upload its exact checksum and bundle,
+and independently verify the public asset bytes. The first unpublished bundle
+retained a disposable local file reference in npm's hidden installer lock; its
+receipt is preserved privately. The builder now excludes that unused metadata
+and asserts its absence before packing and after unpacking. This changes bundle
+bytes, not the verified npm archive or its tag. Native 4.1.1 installation remains
+untested.
 
 [Release notes](RELEASE_NOTES_4.1.1.md), [security repair](SDK_SECURITY_REPAIR_2026-10-21.md)
 and the [full-scope audit](COMPLETION_AUDIT_2026-10-21.md) keep product gaps separate.

@@ -3,8 +3,8 @@
 **The complete plan is not finished.** Public 4.1.0 delivers the 24-tool core,
 offline client setup, selected-profile retirement and two local job-seeker
 helpers. The 4.1.1 security patch is independently verified on npm and GitHub Packages,
-with SDK 1.32.1 and an input guard. Registry timeouts still block final GitHub
-Release completion; see [current receipts](RELEASE_EVIDENCE_4.1.1.md).
+with SDK 1.32.1 and an input guard. MCP Registry metadata and the finalized
+GitHub Release/tag are also verified; see [current receipts](RELEASE_EVIDENCE_4.1.1.md).
 The original roadmap and historical failed receipts remain unchanged.
 
 This audit compares the immutable
@@ -44,7 +44,7 @@ source features, native tests and adoption outcomes have different finish lines.
 | P9 Official provider | Blocked by missing granted app access | Owner supplies granted scopes; implement a separate capability-limited provider and approved identity/publishing tests. No browser fallback masquerading as official access. |
 | P10 Distribution/tutorials/community | Partial | Setup/demo/workflow guides and registry/package/release destinations exist. Awesome MCP submission awaits upstream acceptance; Glama needs owner sign-in/re-sync and hosted-copy correction. Three observed end-to-end tutorial flows, repeatable issue response and measured distribution outcomes remain open. |
 | P11 Opt-in/traffic ledger | Partial | [Private ledger](ADOPTION_TRAFFIC_LEDGER_2026-10-19.md) ships; consent/scoring kit and public opt-in issue exist. Capture weekly; first-use and repeat-use samples and a complete monthly report are still missing. No hidden telemetry. |
-| P12 Development advisory follow-up | Earlier esbuild issue resolved; SDK patch shipped on npm/GitHub Packages | Source moved to esbuild 0.28.2 in prior work. October 21 audit found four SDK advisories aggregated as one high package finding; SDK 1.32.1 clears the full source audit and the input guard ships in public 4.1.1. Finish Registry/Release and desktop-bundle readback; do not repeat the stale “one low esbuild” claim as current. |
+| P12 Development advisory follow-up | Earlier esbuild issue resolved; SDK patch shipped on npm/GitHub Packages | Source moved to esbuild 0.28.2 in prior work. October 21 audit found four SDK advisories aggregated as one high package finding; SDK 1.32.1 clears the full source audit and the input guard ships in public 4.1.1. Core publication is verified; finish the separate desktop-bundle readback; do not repeat the stale “one low esbuild” claim as current. |
 
 ## Later job-seeker and Claude scope
 

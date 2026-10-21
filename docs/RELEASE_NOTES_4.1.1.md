@@ -1,7 +1,7 @@
 # LinkedIn MCP 4.1.1
 
-Security maintenance patch: npm and GitHub Packages are independently verified.
-MCP Registry timeouts still block final GitHub Release completion; see the
+Security maintenance patch: npm, GitHub Packages, active MCP Registry metadata
+and the finalized GitHub Release/tag are independently verified; see the
 [release evidence](RELEASE_EVIDENCE_4.1.1.md).
 
 - Require MCP TypeScript SDK 1.32.1 or later in the 1.x line and lock 1.32.1

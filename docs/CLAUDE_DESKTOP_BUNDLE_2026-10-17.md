@@ -15,8 +15,9 @@ disposable home. Packed and unpacked startup both require 24 tools, cold
 guard, and no browser profile creation. No LinkedIn request is part of this build.
 
 The October 21 local 4.1.1 build passed those checks. Its SHA-256 is
-`c16e7266efeb5717ad57be317564110a8b49b08d44ac1f01ab7c7ad797215199`;
+`373844201bb51f54b9f69f5373abe974b30287a2b064fe00a3ddc49e6a584b87`;
 [redacted local receipt](evidence/release-4.1.1-2026-10-21/claude-bundle-local.json).
+Disposable npm installer metadata is excluded and checked absent after unpacking.
 This checksum identifies that exact local artifact; other dependency resolutions
 or packaging hosts may emit different bundle bytes. CI builds and checks the
 pinned runtime on macOS and Windows. No native Claude 4.1.1 install/check has run.
