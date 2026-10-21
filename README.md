@@ -49,6 +49,8 @@ package, disposable fixtures, no login or LinkedIn request.
 future features and measured distribution outcomes.
 The [current completion status](docs/CURRENT_COMPLETION_STATUS_2026-10-18.md)
 separates released features from remaining native, live and distribution gates.
+The [October 21 full-scope audit](docs/COMPLETION_AUDIT_2026-10-21.md)
+maps all original requirements and later job-seeker additions to their remaining work.
 The owner-run [private GitHub traffic ledger](docs/ADOPTION_TRAFFIC_LEDGER_2026-10-19.md)
 tracks stars and rolling traffic without user telemetry.
 

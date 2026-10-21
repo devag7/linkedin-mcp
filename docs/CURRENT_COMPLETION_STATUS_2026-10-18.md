@@ -1,9 +1,13 @@
-# Current completion status — October 18, 2026
+# Current completion status — reviewed October 21, 2026
 
 This is the current-state index for the original roadmap, the job-seeker plan,
 and Claude distribution. Older dated evidence remains in its original files.
 “Shipped” means present in a verified public artifact; a passing fixture or
 hosted check does not establish live LinkedIn behavior.
+
+The [October 21 full-scope audit](COMPLETION_AUDIT_2026-10-21.md) maps every
+original functional requirement, later backlog item and job-seeker addition.
+The complete roadmap has not been achieved.
 
 ## Published and verified
 
@@ -19,13 +23,15 @@ hosted check does not establish live LinkedIn behavior.
 
 | Gate | Current observation | Concrete finish line |
 | --- | --- | --- |
-| First use | The published 3.0.0 opt-in [issue #13](https://github.com/devag7/linkedin-mcp/issues/13) has no participant results; the recorded cohort is 0/0. A separate [4.1.0 kit](FIRST_USE_VOLUNTEER_KIT_4.1.0.md) and [scoring guide](FIRST_USE_RESULTS_4.1.0.md) are prepared. The exact public package passed [fresh offline installation, 24-tool discovery and cold status](evidence/first-use-2026-10-18/published-offline.json) for all three exported client configurations on one Mac. | Review the 4.1.0 protocol, recruit willing participants through an owner-approved channel, count every started first attempt, and record only consented minimal results privately. Do not mix versions or treat 0/0 as a rate. |
+| First use | The owner-authorized 4.1.0 opt-in [issue #13](https://github.com/devag7/linkedin-mcp/issues/13) was updated October 19 and still has no responses on October 21; the recorded cohort is 0/0. The [4.1.0 kit](FIRST_USE_VOLUNTEER_KIT_4.1.0.md) and [scoring guide](FIRST_USE_RESULTS_4.1.0.md) are available. The exact public package passed [fresh offline installation, 24-tool discovery and cold status](evidence/first-use-2026-10-18/published-offline.json) for all three exported client configurations on one Mac. | A willing participant personally consents and starts the pinned 4.1.0 protocol. Count every first started attempt and record only consented minimal results privately. Do not mix versions or treat 0/0 as a rate. |
 | Job research briefs | Draft [PR #5](https://github.com/devag7/linkedin-mcp/pull/5) is blocked. Earlier live runs returned no useful job and had cleanup failures; its later search-only head had failed hosted/package cleanup jobs. | Fix reproducible cleanup and useful-result failures, then obtain new bounded consent for live validation before merge or release. Preserve failed receipts. |
 | Native clients and account compatibility | No fresh-user 4.1.0 read measured in Claude Desktop, Cursor or VS Code. | Record consented real-client first use and observed failure categories, then repair what participants encounter. |
 | Full privacy retirement | Selected-profile tools are scoped and released. | Design, review and test complete coordinated erasure with active-owner, interruption, same-account race and Windows evidence. Never use it to reset safety caps. |
 | Official provider and Claude directory | Official LinkedIn app grants/scopes are unavailable. The local browser server is not a remote HTTPS connector. [Anthropic's directory policy](https://support.claude.com/en/articles/13145358-anthropic-software-directory-policy) appears to require control of connected interfaces. | Obtain permitted provider access and written directory eligibility/route clarification before implementing or submitting a remote connector. Do not claim listing eligibility from a local `.mcpb`. |
 | Application submission | LinkedIn Easy Apply and external ATS submission are absent. | Require a permitted integration, exact per-job field/attachment mapping, human final approval and receipt proof. Keep unsupported auto-apply claims out of release copy. |
-| Distribution and adoption | [Awesome MCP PR #15490](https://github.com/punkpeye/awesome-mcp-servers/pull/15490) edits the existing listing with verified 24-tool 4.1.0 facts; upstream acceptance remains pending. [Glama](https://glama.ai/mcp/servers/devag7/linkedin-mcp) still shows stale version/tool/hosting copy. Its [Admin page](https://glama.ai/mcp/servers/devag7/linkedin-mcp/admin) offers free GitHub-account claiming and re-sync, but this has not been authorized or performed. The first [private traffic capture](ADOPTION_TRAFFIC_LEDGER_2026-10-19.md) recorded 10 stars; first-use remains 0/0. | Owner signs into Glama with the repository's GitHub account and requests re-sync, then corrects editable fields and seeks platform correction for generated hosted copy. Capture GitHub traffic weekly and actual consenting first-use/repeat-use outcomes separately. 10,000 stars and GitHub Trending daily are targets, not guaranteed milestones. |
+| Further product scope | Saved jobs, richer job filters, inbox keyword search, post search, job alerts/application history, reusable resume/cover-letter drafts and server-owned tracker persistence are absent. | Follow the bounded source/identity/privacy acceptance criteria in the full-scope audit; capture provider routes only under new scoped consent. |
+| SDK security maintenance | October 21 source audit found SDK 1.31.0 affected by new advisories. The 4.1.1 repair candidate requires and locks SDK 1.32.1; [repair evidence](SDK_SECURITY_REPAIR_2026-10-21.md). Fresh 4.1.0 installs and the verified public 4.1.0 MCPB already use 1.32.1. | Complete source, package and hosted gates, then verify every public 4.1.1 destination. Candidate metadata is not publication proof. |
+| Distribution and adoption | [Awesome MCP PR #15490](https://github.com/punkpeye/awesome-mcp-servers/pull/15490) remains open on October 21. [Glama](https://glama.ai/mcp/servers/devag7/linkedin-mcp) still shows older 4.0.0 installation instructions and generic hosted deployment copy. Its [Admin page](https://glama.ai/mcp/servers/devag7/linkedin-mcp/admin) requires the repository owner's GitHub sign-in for claiming/re-sync. The [private traffic ledger](ADOPTION_TRAFFIC_LEDGER_2026-10-19.md) now records 12 stars, +2 since October 19; first-use remains 0/0. | Owner signs into Glama and requests re-sync, then corrects editable fields and seeks platform correction for generated hosted copy. Capture traffic weekly and consented first-use/repeat-use outcomes separately. 10,000 stars and GitHub Trending daily are targets, not guaranteed milestones. |
 
 An older external [Dockerfile PR #2](https://github.com/devag7/linkedin-mcp/pull/2)
 also remains open. Its submitted diff removes the `builder` stage while still
@@ -35,11 +41,9 @@ container work against current source as a separate change.
 
 ## Next sequence
 
-1. The [4.1.0 first-use kit](FIRST_USE_VOLUNTEER_KIT_4.1.0.md) and
-   [scoring guide](FIRST_USE_RESULTS_4.1.0.md) are merged through
-   [PR #38](https://github.com/devag7/linkedin-mcp/pull/38). Arrange an
-   owner-led opt-in invitation and keep the historical 3.0.0 kit and
-   zero-attempt record readable.
+1. Complete the SDK patch gates and public readback. A participant can then
+   choose to start the already pinned 4.1.0 study under its own consent; do not
+   silently change its version or combine a future patch-version cohort.
 2. Use the first real observed onboarding failures to prioritize fixes. Treat
    PR #5, complete erasure, provider access and application submission as
    independent gates; none is a prerequisite to truthfully distributing 4.1.0.

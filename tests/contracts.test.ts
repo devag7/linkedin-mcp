@@ -112,6 +112,17 @@ function decode(result: Awaited<ReturnType<Client['callTool']>>) {
   expect(result.structuredContent).toEqual(parsed);
   return parsed;
 }
+it('rejects excessive tool-input elements before schema validation and provider work', async () => {
+  const arguments_ = { job_id: '123', unused: Array(10_001).fill(null) };
+  expect(Buffer.byteLength(JSON.stringify(arguments_))).toBeLessThan(1024 * 1024);
+  const result = await client.callTool({ name: 'get_job_details', arguments: arguments_ });
+  expect(result.isError).toBe(true);
+  expect(JSON.stringify(result.content)).toContain('maximum of 10000 elements');
+  expect(runtime.guard.run).not.toHaveBeenCalled();
+  expect(runtime.voyager.voyagerGet).not.toHaveBeenCalled();
+  const cold = decode(await client.callTool({ name: 'whoami', arguments: {} }));
+  expect(cold.data.sessionState).toBe('not_checked');
+});
 const messagingOwner = 'synthetic-one';
 const messagingOther = 'synthetic-other';
 const messagingUrn = `urn:li:msg_conversation:(urn:li:fsd_profile:${messagingOwner},2-synthetic)`;
