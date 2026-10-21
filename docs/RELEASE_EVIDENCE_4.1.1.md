@@ -2,7 +2,8 @@
 
 Updated October 21, 2026. **npm, GitHub Packages, active MCP Registry metadata
 and the finalized GitHub Release/tag are independently verified.** The separate
-4.1.1 desktop bundle is prepared locally; final hosted checks/upload are pending.
+4.1.1 unsigned desktop bundle and checksum are public; their exact bytes are
+independently verified after hosted Mac/Windows packed/unpacked checks.
 
 ## Exact public artifact
 
@@ -21,7 +22,7 @@ Source/tag: `3b3e31a9673ddf291e9cb7bc76bf8539d1b8cb0d` / `v4.1.1`.
 | [GitHub Packages](https://github.com/devag7/linkedin-mcp/pkgs/npm/linkedin-mcp-tools) | Public version ID `1420543751`; archive SHA-256 `31e71a7c764256fc0d0ae2a3d12985c1957f84ad855fadd53356fd3c1adbf196`; 15 files match npm except the expected scoped package name | Downloads still require authentication |
 | [MCP Registry target](https://registry.modelcontextprotocol.io/v0.1/servers/io.github.devag7%2Flinkedin-mcp/versions/4.1.1) | Active 4.1.1 metadata independently read back: npm identifier/version and stdio transport match | Earlier timeout failures remain preserved; the underlying cause is unproven |
 | [GitHub Release/tag](https://github.com/devag7/linkedin-mcp/releases/tag/v4.1.1) | Finalized October 21 at 15:33:55 UTC; tag and target both name `3b3e31a…` | Desktop extension asset is a separate artifact; no directory acceptance claim |
-| Claude Desktop bundle | Local unsigned 4.1.1 bundle built from the verified public npm archive; packed/unpacked cold discovery and guard checks passed | Hosted bundle checks and public asset upload pending; no native 4.1.1 installation or live read |
+| [Claude Desktop bundle/checksum](https://github.com/devag7/linkedin-mcp/releases/tag/v4.1.1) | Public unsigned bundle SHA-256 `373844201bb51f54b9f69f5373abe974b30287a2b064fe00a3ddc49e6a584b87`; independent public download and checksum match | Hosted Mac/Windows build/cold checks passed; native 4.1.1 installation and live reads remain untested |
 
 A fresh public npm installation resolved SDK 1.32.1 and had zero production
 audit findings. npm cryptographic verification confirmed 99 registry signatures
@@ -71,10 +72,13 @@ confirmed active status, exact npm package/version and stdio transport. GitHub
 readback confirmed a public Release and an unchanged intended tag. Successful
 recovery does not explain or erase earlier failures; npm was uploaded only once.
 
-## Remaining desktop distribution work
+## Desktop distribution verification
 
-Finish the cleaned 4.1.1 MCPB hosted checks, upload its exact checksum and bundle,
-and independently verify the public asset bytes. The first unpublished bundle
+The cleaned 4.1.1 MCPB passed [hosted Mac/Windows checks](evidence/release-4.1.1-2026-10-21/claude-bundle-hosted.json).
+The exact local bundle and checksum were uploaded, then an unauthenticated
+[public download](evidence/release-4.1.1-2026-10-21/claude-bundle-public.json)
+matched both bytes and checksum. Host-generated bundle bytes may differ; all
+verified builds pin the same approved public npm archive. The first unpublished bundle
 retained a disposable local file reference in npm's hidden installer lock; its
 receipt is preserved privately. The builder now excludes that unused metadata
 and asserts its absence before packing and after unpacking. This changes bundle
@@ -84,3 +88,9 @@ untested.
 [Release notes](RELEASE_NOTES_4.1.1.md), [security repair](SDK_SECURITY_REPAIR_2026-10-21.md)
 and the [full-scope audit](COMPLETION_AUDIT_2026-10-21.md) keep product gaps separate.
 There is no new live LinkedIn or native client compatibility evidence.
+
+Source installation-guide updates after the release do not replace the public
+npm archive or move `v4.1.1`. The new bundle/pilot documentation is reviewed in
+[PR #44](https://github.com/devag7/linkedin-mcp/pull/44). Its initial head was
+superseded and its unfinished CI cancelled after finding the disposable hidden
+lock reference. No cancelled run is counted as a full pass.

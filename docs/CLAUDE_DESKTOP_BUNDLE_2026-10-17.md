@@ -1,8 +1,8 @@
 # Claude Desktop local bundle: build and evidence
 
 **Current build target:** published `linkedin-mcp-tools@4.1.1`. The unsigned
-4.1.1 bundle is prepared locally; hosted checks and public asset distribution
-are pending. The existing public 4.1.0 bundle/native receipt below is historical.
+4.1.1 bundle and checksum are verified public Release assets; hosted Mac and
+Windows packed/unpacked checks passed. The existing public 4.1.0 bundle/native receipt below is historical.
 Neither bundle is a Claude directory listing, and neither fills or submits jobs.
 
 Run `npm run build:claude-mcpb -- /absolute/output/linkedin-mcp-tools-4.1.1.mcpb`.
@@ -21,6 +21,18 @@ Disposable npm installer metadata is excluded and checked absent after unpacking
 This checksum identifies that exact local artifact; other dependency resolutions
 or packaging hosts may emit different bundle bytes. CI builds and checks the
 pinned runtime on macOS and Windows. No native Claude 4.1.1 install/check has run.
+
+Download the [4.1.1 bundle](https://github.com/devag7/linkedin-mcp/releases/download/v4.1.1/linkedin-mcp-tools-4.1.1.mcpb)
+and [checksum](https://github.com/devag7/linkedin-mcp/releases/download/v4.1.1/linkedin-mcp-tools-4.1.1.mcpb.sha256)
+into the same folder. On macOS use
+`shasum -a 256 -c linkedin-mcp-tools-4.1.1.mcpb.sha256`.
+On PowerShell use `(Get-FileHash .\linkedin-mcp-tools-4.1.1.mcpb -Algorithm SHA256).Hash`
+and compare with the exact SHA-256 above. Install through Claude Desktop Settings
+→ Extensions → Advanced settings → Install extension. Review the unsigned-code
+warning; local Node code runs with your computer account's access. The independent
+[public receipt](evidence/release-4.1.1-2026-10-21/claude-bundle-public.json) and
+[hosted receipt](evidence/release-4.1.1-2026-10-21/claude-bundle-hosted.json) describe
+what passed and what remains untested.
 
 On Windows, CI creates its disposable state under the actual user profile with
 the repository's private ACL helper. The verifier preserves the operating

@@ -13,8 +13,8 @@
     "linkedInRequests": 0
   },
   "nativeDesktopInstall": "not performed",
-  "hostedBundleChecks": "pending",
-  "publicAsset": "not uploaded",
+  "hostedBundleChecks": "Mac and Windows passed at 4544a0f",
+  "publicAsset": "independently verified; see claude-bundle-public.json",
   "disposableInstallerMetadataExcluded": true,
   "supersededUnpublishedBundleSha256": "c16e7266efeb5717ad57be317564110a8b49b08d44ac1f01ab7c7ad797215199"
 }

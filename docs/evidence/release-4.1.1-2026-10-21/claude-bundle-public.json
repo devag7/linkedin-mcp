@@ -1,0 +1,11 @@
+{
+  "checkedOn": "2026-10-21",
+  "version": "4.1.1",
+  "publicAssetUrl": "https://github.com/devag7/linkedin-mcp/releases/download/v4.1.1/linkedin-mcp-tools-4.1.1.mcpb",
+  "bundleSha256": "373844201bb51f54b9f69f5373abe974b30287a2b064fe00a3ddc49e6a584b87",
+  "publicChecksumMatches": true,
+  "publicBytes": 7248661,
+  "unsigned": true,
+  "nativeDesktopInstall": "not performed",
+  "linkedInRequests": 0
+}

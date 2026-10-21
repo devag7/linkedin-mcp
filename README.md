@@ -61,8 +61,8 @@ This release does not fill or submit job applications, including Easy Apply.
 Use the [job seeker and Claude distribution plan](docs/JOB_SEEKER_AND_CLAUDE_DISTRIBUTION_2026-10-16.md)
 for the application handoff workflow, proposed next features and the separate
 requirements for listing a connector in Claude.
-For Claude Desktop, use the generated local configuration until the unsigned
-4.1.1 extension and checksum are available in the
+For Claude Desktop, use the generated local configuration or the verified unsigned
+4.1.1 extension and checksum in the
 [patch release assets](https://github.com/devag7/linkedin-mcp/releases/tag/v4.1.1).
 The [bundle guide](docs/CLAUDE_DESKTOP_BUNDLE_2026-10-17.md) records the exact
 version and hash. The earlier 4.1.0 native Mac check discovered 24 tools and
@@ -90,8 +90,8 @@ results are recorded in [release readiness](docs/RELEASE_READINESS_3.0.0.md). On
 maintainer health/own-profile read also passed with partial metadata;
 [scope and evidence](docs/ZERO_COST_EXECUTION_EVIDENCE_2026-10-01.md#7-consented-maintainer-live-read--passed-limited-scope)
 do not establish fresh-user or broader live compatibility.
-The exact published 4.1.0 artifact and all four destinations are
-[independently verified](docs/RELEASE_EVIDENCE_4.1.0.md). Native-client first-use cohorts
+The exact published 4.1.1 artifact, all four destinations and its unsigned
+Claude bundle are [independently verified](docs/RELEASE_EVIDENCE_4.1.1.md). Native-client first-use cohorts
 and broad live-provider compatibility remain unverified.
 See [execution progress](docs/ROADMAP_PROGRESS.md) and the linked evidence.
 
