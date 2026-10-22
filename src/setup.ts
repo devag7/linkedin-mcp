@@ -1,9 +1,11 @@
 /** Offline onboarding and client configuration. Never launches Chrome or edits client files. */
+import { homedir } from 'node:os';
 import { resolve } from 'node:path';
 import type { EnvConfig } from './config/env.js';
 import { inspectSetup } from './doctor.js';
 import { profilePath } from './safety/state-lock.js';
 import { VERSION } from './version.js';
+import { previewClientConfig, unavailableClientConfig } from './setup-config.js';
 
 export const CLIENTS = ['claude-desktop', 'cursor', 'vscode'] as const;
 export type SetupClient = (typeof CLIENTS)[number];
@@ -25,6 +27,9 @@ export function clientConfiguration(
     LINKEDIN_HEADLESS: String(config.LINKEDIN_HEADLESS),
     LINKEDIN_ENABLE_WRITES: 'false',
     LINKEDIN_ENABLE_EXPERIMENTAL_MESSAGES: 'false',
+    ...(process.platform === 'win32'
+      ? { SystemRoot: process.env.SystemRoot || 'C:\\Windows', USERPROFILE: homedir() }
+      : {}),
     ...(config.LINKEDIN_CHROME_PATH
       ? { LINKEDIN_CHROME_PATH: resolve(config.LINKEDIN_CHROME_PATH) }
       : {}),
@@ -35,7 +40,7 @@ export function clientConfiguration(
     : { mcpServers: { linkedin: server } };
 }
 
-export function setupReport(client: SetupClient, config: EnvConfig) {
+export function setupReport(client: SetupClient, config: EnvConfig, configFile?: string) {
   // Diagnose before resolving configuration: invalid aliases must produce JSON.
   const diagnosis = inspectSetup(config, { transport: 'stdio', port: 3000, logLevel: 'error' });
   const configuration =
@@ -70,6 +75,13 @@ export function setupReport(client: SetupClient, config: EnvConfig) {
     diagnosis,
     destination,
     configuration,
+    ...(configFile
+      ? {
+          configMerge: server
+            ? previewClientConfig(client, configFile, server)
+            : unavailableClientConfig(client),
+        }
+      : {}),
     commands: server
       ? {
           doctor: { ...server, args: [...server.args, '--doctor'] },

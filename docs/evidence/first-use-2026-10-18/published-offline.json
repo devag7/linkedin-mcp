@@ -1,0 +1,47 @@
+{
+  "packageVersion": "4.1.0",
+  "archiveHash": "477c0cbfffe1901c9dea926dd8b9b4be6c9ff223154ff111854be949e798d8f9",
+  "archiveIntegrity": "sha512-Hd7x3QZkMgXXIOCGQL9jT3+7OdI2RZQJtsaijHqE15FZFQVQRRRBByy602WuVhEb4XBWx0gaUNVesujcPmUz/Q==",
+  "files": 15,
+  "installedBundleHash": "380db7815f8a01a97ddf0899ef7697730e5fd93479223813de4f3c7416cef681",
+  "node": "v22.14.0",
+  "platform": "darwin",
+  "installMs": 3576,
+  "consumerProductionFindings": 0,
+  "sdk": "1.32.1",
+  "proxyAddr": "2.0.8",
+  "flows": [
+    {
+      "clientConfiguration": "claude-desktop",
+      "setupStatus": "local_ready",
+      "setupMs": 330,
+      "sdkDiscovery": "passed",
+      "tools": 24,
+      "coldIdentity": "not_checked",
+      "cleanup": "passed"
+    },
+    {
+      "clientConfiguration": "cursor",
+      "setupStatus": "local_ready",
+      "setupMs": 342,
+      "sdkDiscovery": "passed",
+      "tools": 24,
+      "coldIdentity": "not_checked",
+      "cleanup": "passed"
+    },
+    {
+      "clientConfiguration": "vscode",
+      "setupStatus": "local_ready",
+      "setupMs": 401,
+      "sdkDiscovery": "passed",
+      "tools": 24,
+      "coldIdentity": "not_checked",
+      "cleanup": "passed"
+    }
+  ],
+  "sharedSafetyStateUnchanged": true,
+  "linkedInRequests": 0,
+  "browserLaunches": 0,
+  "volunteerAttempts": 0,
+  "scope": "Fresh npm cache/config/prefix and empty profile; existing host Node/Chrome and read-only shared budget. SDK flows, not native client UI or live compatibility."
+}

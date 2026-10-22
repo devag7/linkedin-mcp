@@ -104,6 +104,7 @@ export class ValidationProcessTracker {
     ) as ProcessAccountingCounts;
     const selected = new Set<number>();
     const present = new Set<number>();
+    const byPid = new Map<number, ValidationProcess>();
     for (const row of rows) {
       if (
         !Number.isSafeInteger(row.pid) ||
@@ -118,6 +119,7 @@ export class ValidationProcessTracker {
       )
         throw new Error('PROCESS_SNAPSHOT_INVALID');
       present.add(row.pid);
+      byPid.set(row.pid, row);
       // The known Node observer is not a Chrome/profile process, even if its
       // argv quotes the profile. Do not seed its probe/compiler descendants.
       // Other rows (including genuine profile children of this observer) still
@@ -139,6 +141,16 @@ export class ValidationProcessTracker {
         selected.add(row.pid);
         counts.trackedAlive++;
       }
+    }
+    // A child first seen after its tracked parent exited or its PID was reused
+    // cannot be attributed to either lifetime. Do not manufacture clean zero.
+    for (const row of rows) {
+      if (row.pid === process.pid || selected.has(row.pid)) continue;
+      const trackedParent = this.tracked.get(row.parent);
+      if (!trackedParent) continue;
+      const currentParent = byPid.get(row.parent);
+      if (!currentParent || currentParent.start !== trackedParent.start)
+        throw new Error('PROCESS_IDENTITY_UNCERTAIN');
     }
     for (let changed = true; changed; ) {
       changed = false;

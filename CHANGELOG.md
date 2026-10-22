@@ -1,28 +1,44 @@
 # Changelog
 
-All notable changes follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [4.0.0] — Windows privacy boundary and offline retirement preview
 
-## [3.1.0] — Search-only candidate (unreleased)
+- Added `--retirement-preview` for bounded, path-free counts of one selected
+  browser profile. It never deletes state or authorizes coordinated erasure.
+- Added native Windows ACL creation and verification for profile, circuit,
+  budget and lock state under the actual `%USERPROFILE%` tree. Every state path
+  outside that tree now refuses, including previously accepted private custom
+  paths. Unverified existing state fails closed before sensitive writes. A hosted
+  second-user probe passed on synthetic state; existing exposed files and other
+  Windows policies are not certified.
+- Aligned Windows release fixtures with the private-state rules. The server
+  still exposes 22 tools; no LinkedIn route or write policy changed.
 
-- Adds bounded source-linked research_jobs: title/location/listing-date facts,
-  comparison-evidence counts, honest partial/empty/error states and Markdown.
-- Two explicit Voyager GET attempts including identity, one underlying search,
-  no enrichment, fallback, retries, paging or storage. Useful live output and
-  strict cleanup remain release gates; see docs/RELEASE_NOTES_3.1.0.md.
-- Earlier unpublished draft enrichment inputs are narrowed to false-only.
+## [3.1.0] — Offline convenience and build repair
 
-## [3.0.0] — Released core
+- Read-only `--setup <client> --config-file <path>` JSON/JSONC merge preview:
+  bounded parsing, duplicate/root/conflict checks, safe entry addition only and
+  no existing-file mutation or unrelated credential output.
+- Reconcile the original roadmap with merged main, closed draft PR #5 and the
+  unbuilt/unmeasured privacy, official-provider and first-use gates.
+- Offline `--data-inventory` reports fixed local state categories without reading
+  contents, printing paths, changing files or producing a deletion plan. Present
+  locks, aliases, unexpected types and uncertain observations fail closed.
+  Coordinated erasure and native Windows ACL privacy remain open.
+- Replaced the affected development build wrapper with patched direct esbuild.
+  The CLI contract and exact 15-file package inventory remain enforced.
 
-22 tools; guided offline setup/client exports, default-disabled writes with issued
-preview proof, authenticated loopback HTTP, alias-safe logout, precise partial
-read contracts, identity/source checks, and strict15-file packaging. This released
-version contains no research_jobs or job-brief feature.
+## [3.0.0] — Core safety and guided setup
 
-Writes require exact issued five-minute preview proof plus human approval in the
-client. HTTP remains local authenticated loopback. Safety/account history fails
-closed; unknown write outcomes never retry. See docs/RELEASE_NOTES_3.0.0.md and
-SETUP_GUIDE.md for breaking migration and verified scope. Native first-use,
-coordinated erasure and Windows privacy remain separate open limitations.
+22 tools; default-disabled writes with issued preview proof, authenticated loopback
+HTTP, safe profile logout, offline setup/client exports, precise read contracts and
+strict 15-file packaging. See docs/RELEASE_NOTES_3.0.0.md and SETUP_GUIDE.md for
+breaking changes, migration and verified scope.
+
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [2.0.3] - 2026-06-17
 

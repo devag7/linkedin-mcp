@@ -113,7 +113,14 @@ function validateInventory(values: unknown): asserts values is WindowsValidation
 }
 
 export function readWindowsValidationProcesses(
-  execute: () => string = () =>
+  execute?: () => string,
+  phase: 'preflight' | 'runtime' = 'runtime',
+): WindowsValidationProcess[] {
+  // The first Windows CIM query may initialize the provider on a cold runner.
+  // Give only that pre-launch check more time; all later/cleanup probes retain
+  // their original five-second subprocess bound and fail closed on timeout.
+  const timeoutMs = phase === 'preflight' ? 15_000 : 5_000;
+  const nativeRead = () =>
     execFileSync(
       'powershell.exe',
       [
@@ -122,12 +129,11 @@ export function readWindowsValidationProcesses(
         '-Command',
         'Get-CimInstance Win32_Process | Select-Object ProcessId,ParentProcessId,CommandLine,@{Name="CreationDate";Expression={if ($null -ne $_.CreationDate) {$_.CreationDate.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffffffZ", [System.Globalization.CultureInfo]::InvariantCulture)} else {$null}}} | ConvertTo-Json -Compress',
       ],
-      { encoding: 'utf8', stdio: 'pipe', timeout: 5000, maxBuffer: 2 * 1024 * 1024 },
-    ),
-): WindowsValidationProcess[] {
+      { encoding: 'utf8', stdio: 'pipe', timeout: timeoutMs, maxBuffer: 2 * 1024 * 1024 },
+    );
   let text: string;
   try {
-    text = execute();
+    text = (execute ?? nativeRead)();
   } catch (error) {
     const timedOut =
       error !== null && typeof error === 'object' && 'code' in error && error.code === 'ETIMEDOUT';

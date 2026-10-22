@@ -35,6 +35,7 @@ export async function verifyFinalCleanup(
   const started = now();
   let checks = 0;
   let probeFailed = false;
+  let processOwnershipUncertain = false;
   const sample = () => {
     checks++;
     try {
@@ -57,6 +58,10 @@ export async function verifyFinalCleanup(
           }),
         ) as ProcessAccountingCounts;
       }
+      // An unclassified profile footprint is uncertainty, even if its process
+      // disappears before the final sample. Preserve the counts and latch failure.
+      if (accounting && accounting.unclassifiedProfileReferences !== 0)
+        processOwnershipUncertain = true;
       return {
         ...(accounting ? { processAccounting: accounting } : {}),
         remainingProcesses: state.remainingProcesses,
@@ -98,6 +103,7 @@ export async function verifyFinalCleanup(
     immediate,
     final,
     teardownFailed: options.teardownFailed ?? false,
-    verified: !options.teardownFailed && !probeFailed && clean(final),
+    processOwnershipUncertain,
+    verified: !options.teardownFailed && !probeFailed && !processOwnershipUncertain && clean(final),
   };
 }

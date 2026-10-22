@@ -6,6 +6,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { expect, it } from 'vitest';
 import { verifyFinalCleanup } from '../scripts/validation-cleanup.js';
+import { PROCESS_ACCOUNTING_KEYS } from '../scripts/validation-processes.js';
 
 async function fixture() {
   const dir = mkdtempSync(join(tmpdir(), 'linkedin-cleanup-fixture-'));
@@ -176,4 +177,46 @@ it('uses a monotonic bounded wait and fails invalid process counts', async () =>
       { maximumMs: 5001 },
     ),
   ).rejects.toThrow('INVALID_CLEANUP_BOUND');
+});
+
+it('keeps observed ownership uncertainty failed after later clean snapshots', async () => {
+  let samples = 0;
+  const accounting = () => Object.fromEntries(PROCESS_ACCOUNTING_KEYS.map((key) => [key,
+    key === 'unclassifiedProfileReferences' && samples === 1 ? 1 : 0,
+  ])) as Record<(typeof PROCESS_ACCOUNTING_KEYS)[number], number>;
+  const report = await verifyFinalCleanup(() => {
+    samples++;
+    return {
+      remainingProcesses: samples === 1 ? 1 : 0,
+      ownershipReleased: true,
+      contextInactive: true,
+      processAccounting: accounting(),
+    };
+  }, { maximumMs: 0 });
+  expect(report.processOwnershipUncertain).toBe(true);
+  expect(report.immediate.processAccounting?.unclassifiedProfileReferences).toBe(1);
+  expect(report.final.remainingProcesses).toBe(0);
+  expect(report.verified).toBe(false);
+});
+
+it('also latches uncertainty first observed during final polling', async () => {
+  let sample = 0;
+  let now = 0;
+  const report = await verifyFinalCleanup(() => {
+    sample++;
+    return {
+      remainingProcesses: sample < 3 ? 1 : 0,
+      ownershipReleased: true,
+      contextInactive: true,
+      processAccounting: Object.fromEntries(PROCESS_ACCOUNTING_KEYS.map((key) => [key,
+        key === 'unclassifiedProfileReferences' && sample === 2 ? 1 : 0,
+      ])) as Record<(typeof PROCESS_ACCOUNTING_KEYS)[number], number>,
+    };
+  }, { maximumMs: 100, intervalMs: 25, now: () => now, wait: async ms => { now += ms; } });
+  expect(report.immediate.processAccounting?.unclassifiedProfileReferences).toBe(0);
+  expect(report.final.processAccounting?.unclassifiedProfileReferences).toBe(0);
+  expect(report.final.remainingProcesses).toBe(0);
+  expect(report.processOwnershipUncertain).toBe(true);
+  expect(report.verified).toBe(false);
+  expect(report.maximumWaitMs).toBe(100);
 });

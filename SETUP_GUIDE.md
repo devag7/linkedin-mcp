@@ -1,7 +1,9 @@
 # Setup and client verification
 
-This guide targets the released 22-tool core **3.0.0**. Publication is independently
-verified in [launch evidence](docs/LAUNCH_EVIDENCE_2026-10-07.md). Native-client
+This guide targets the 24-tool **4.1.1** security patch. Check its
+[publication status](docs/RELEASE_EVIDENCE_4.1.1.md) before installing. The
+[4.1.0 publication evidence](docs/RELEASE_EVIDENCE_4.1.0.md) and preceding
+[4.0.0 evidence](docs/RELEASE_EVIDENCE_4.0.0.md) remain available. Native-client
 first-use cohorts and broader live-provider compatibility remain unverified.
 Node 20+ and installed Google Chrome are required. Login requires a local display.
 No OAuth/cookie value copied into environment variables activates an official API
@@ -13,14 +15,14 @@ Install the published package at a stable path, then request the client report.
 On macOS/Linux:
 
 ```sh
-npm install --prefix "$HOME/.local/share/linkedin-mcp" linkedin-mcp-tools@3.0.0
+npm install --prefix "$HOME/.local/share/linkedin-mcp" linkedin-mcp-tools@4.1.1
 node "$HOME/.local/share/linkedin-mcp/node_modules/linkedin-mcp-tools/dist/index.js" --setup cursor
 ```
 
 On Windows PowerShell:
 
 ```powershell
-npm install --prefix "$env:LOCALAPPDATA\linkedin-mcp" linkedin-mcp-tools@3.0.0
+npm install --prefix "$env:LOCALAPPDATA\linkedin-mcp" linkedin-mcp-tools@4.1.1
 node "$env:LOCALAPPDATA\linkedin-mcp\node_modules\linkedin-mcp-tools\dist\index.js" --setup cursor
 ```
 
@@ -31,10 +33,78 @@ accesses LinkedIn. Exit1 means a local issue needs attention; login remains
 `not_checked`. For only the snippet, replace `--setup cursor` with
 `--client-config cursor`. Resolve diagnosis before merging the generated entry.
 Run its exact login command yourself when ready; use the same installed bundle
-and profile for login and MCP. Native Windows privacy remains unverified.
+and profile for login and MCP. On Windows, 4.1.1 refuses every state path outside
+the actual `%USERPROFILE%` tree. A custom profile under Public or another shared
+directory was unsafe with 3.1.0: a
+[native second-user probe](https://github.com/devag7/linkedin-mcp/actions/runs/38213175092)
+could list such a synthetic profile despite the requested mode bits. Use an
+account-private location and review its NTFS ACL before login. The
+[merged source guard](https://github.com/devag7/linkedin-mcp/pull/24) now refuses
+every state path outside the actual `%USERPROFILE%` tree and passed hosted
+second-user tests and remains in 4.1.1; see the
+[4.0.0 migration notes](docs/RELEASE_NOTES_4.0.0.md#upgrade-notes-and-limits).
 
 Source contributors can instead run `npm ci`, `npm run build`, then
 `node dist/index.js --setup cursor` from a stable reviewed checkout.
+
+### Claude Desktop extension
+
+For a local extension instead of a JSON entry, use the independently verified
+[unsigned 4.1.1 `.mcpb` and checksum](https://github.com/devag7/linkedin-mcp/releases/tag/v4.1.1).
+The generated configuration above is
+an alternative local installation route.
+The earlier 4.1.0 bundle predates the new input guard.
+Verify the file hash and install it through Claude Desktop Settings →
+Extensions → Advanced settings → Install extension. The
+[bundle guide](docs/CLAUDE_DESKTOP_BUNDLE_2026-10-17.md) gives the exact
+SHA-256 and verification commands. Review Claude's local-code access warning:
+the extension runs with your computer account's access. It contains no Chrome,
+login, profile or credentials; use the published CLI for the one-time manual
+login before live reads. One historical 4.1.0 Claude for Mac 2.42304.0 cold check found all 24
+tools and returned `whoami` as `not_checked` without a LinkedIn read.
+The extension is not a listed Claude web connector.
+
+### Preview an existing client configuration
+
+This feature is in published **3.1.0** and absent from 3.0.0. After installing
+the package at a stable path, choose a client file explicitly:
+
+```sh
+node "$HOME/.local/share/linkedin-mcp/node_modules/linkedin-mcp-tools/dist/index.js" --setup cursor --config-file /absolute/path/to/mcp.json
+```
+
+The extra `configMerge` report distinguishes a missing file (`absent`), an entry
+ready to add (`ready_to_add`), an identical entry (`already_matches`), a conflicting
+entry (`conflict`) and invalid input (`invalid`). If profile diagnosis cannot
+generate a safe entry, it says `unavailable` and does not read the selected file.
+No existing client file is changed, server launched or provider contacted.
+
+JSON and JSONC comments/trailing commas are accepted using
+[Microsoft's JSONC parser](https://github.com/microsoft/node-jsonc-parser).
+Duplicate keys, malformed input, nonobject roots/maps and the wrong client's root
+are refused. Input is limited to1MiB,64 container levels and50,000 visited containers,
+properties and literals.
+The explicit native VS Code export expects `servers`; its newer portable
+`mcpServers` destination requires a different export and is deliberately refused
+here. See [VS Code's formats](https://code.visualstudio.com/docs/agent-customization/mcp-servers)
+and [Cursor's configuration guide](https://cursor.com/docs/mcp).
+
+Only a proposed JSON Patch addition for the generated `linkedin` entry is printed;
+unrelated names, settings, environment values, comments and raw parser/filesystem
+errors are not echoed. A conflict produces no replacement patch. Review locally
+and merge in your editor, preserving other servers and comments. This is a
+snapshot, not a transaction: rerun after changes, because applying a generic JSON
+Patch `add` to a stale document can replace an entry. No automatic patch application
+is provided. Final-component symlinks/junctions and unavailable file identity are
+refused; parent-directory aliases can resolve during this read-only operation.
+Opened-file identity/timestamp checks detect the tested replacement cases, not
+all possible concurrent changes or hostile filesystem behavior.
+
+`already_matches` proves only equality with this build's safe entry; it does not
+prove native client acceptance, runtime startup, login or provider compatibility.
+Overall exit1 can still reflect missing Chrome or a latched safety stop even when
+the merge plan is valid. Read `configMerge.status` separately from setup diagnosis.
+The published 3.0.0 volunteer protocol does not exercise this new command.
 
 The generated entry uses the absolute Node executable and this installed build,
 sets the same profile for login and MCP, forces stdio and disables writes. Merge
@@ -83,6 +153,7 @@ call may wait. HTTP is local-only and requires bearer authentication; see README
 | SDK stdio client | Node + absolute built binary | Executed from source and fresh installed tarball; no LinkedIn calls |
 | SDK loopback HTTP client | 127.0.0.1 URL + bearer header | Local protocol/security tests |
 | Claude Desktop / Cursor compatible JSON config | Example below | Configuration example; application UI/first read untested |
+| Claude Desktop local extension | Verified 4.1.1 `.mcpb` Release asset; hosted Mac/Windows cold/guard checks | Historical native 4.1.0 Mac 2.42304.0 discovery/cold/removal passed. Native 4.1.1 and live reads untested |
 | Other MCP clients | Use their documented stdio settings | No compatibility claim until a client/OS/version record exists |
 
 For a client accepting `mcpServers`, use an absolute path to the built file:
@@ -161,11 +232,31 @@ partial/empty/error states instead of assuming successful arrays are complete.
    stopped runtime and separately preserved compatible state, not cap deletion.
 8. Logout refuses symlink/junction/ancestor aliases. A custom profile requires
    explicit deletion confirmation; external safety files remain. Coordinated
-   erasure tooling and NTFS ACL enforcement are still open: verify Windows
-   native directory privacy before any account use and do not infer it from CI.
+   erasure tooling remains open. Native Windows ACL enforcement is published in
+   4.0.0 and remains in 4.1.1; verify the installed version and Windows
+   directory privacy before account use. Hosted tests cover synthetic state.
 
 Pagination emits a continuation only when returned start/count/total agree with
 observed rows. Contradictory zero/short pages remain partial with no next cursor.
 Job details must identify the requested numeric job URN before a canonical URL is
 attached. Official OAuth remains unavailable; v1 cookie/OAuth
 environment variables do not enable it. New-thread messaging remains experimental.
+
+## Version 3.1.0 metadata inventory
+
+In the installed 3.1.0 package, run:
+
+```sh
+node "$HOME/.local/share/linkedin-mcp/node_modules/linkedin-mcp-tools/dist/index.js" --data-inventory
+```
+
+The command prints a path-free, read-only snapshot of known local state categories. It honors
+`LINKEDIN_PROFILE_DIR`; shared budget/journal and legacy credentials still refer
+to the OS home store. It neither requires nor tests login or Chrome, and does not
+validate configuration, file contents or permissions. Do not interpret an
+`observed` result or an absent lock as permission to delete state or reset caps.
+Exit 1 means a category was refused or uncertain; review the fixed reason and
+stop associated runtimes manually before considering a separate operation.
+
+This is absent from published 3.0.0. The exact scope, omissions and reason codes
+are in [inventory contract](docs/PRIVACY.md#inventory-json-contract).
