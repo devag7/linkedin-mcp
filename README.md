@@ -1,3 +1,9 @@
+> **Unreleased private integration candidate.** This branch adds blocked,
+> search-only `research_jobs` to the24-tool4.1.1 core (25 candidate tools).
+> The package version is deliberately unchanged; these bytes are not the
+> public4.1.1 release. Use the verified public core for ordinary installation.
+> No job-brief compatibility, useful result or cleanup acceptance is claimed.
+
 <div align="center">
 
 # 🔗 LinkedIn MCP
@@ -13,7 +19,7 @@
 
 **Structured LinkedIn reads for MCP clients — profiles, jobs, companies and inbox data, with guided offline setup and explicit safety limits.**
 
-**Published core: 22 tools. Draft 3.1.0: 23.** · local browser reads · five explicitly confirmed writes · persisted safety limits and operation journals.
+**24 tools · 4.1.1** · local browser reads · five explicitly confirmed writes · persisted safety limits and operation journals.
 
 > This is an unofficial LinkedIn integration and accounts can be restricted.
 > Review [Account safety](#-account-safety) and [SECURITY.md](SECURITY.md) before use.
@@ -24,24 +30,50 @@
 
 ## Guided first run
 
-**3.0.0 is released: 22 tools, guided local setup and manual Chrome login.**
-This is a local stdio tool; generic hosted deployment controls are not installation
-instructions. [Verified publication receipts](docs/LAUNCH_EVIDENCE_2026-10-07.md)
-cover its four release destinations. Start with the pinned published
-[quick start](#-quick-start), [setup guide](SETUP_GUIDE.md) and
-[synthetic setup demonstration](docs/RELEASE_DEMO_3.0.0.md).
+The [4.1.1 security patch](docs/RELEASE_NOTES_4.1.1.md) requires SDK 1.32.1
+and enables its tool-input validation bound. Check the
+[publication status](docs/RELEASE_EVIDENCE_4.1.1.md) before installing the pinned
+version below. [4.1.0](docs/RELEASE_NOTES_4.1.0.md) introduced an offline application
+worksheet and user-entered tracker CSV. These do not fill or submit
+applications. Its [public archive and destinations](docs/RELEASE_EVIDENCE_4.1.0.md)
+have been independently verified.
 
-**This branch is the unpublished 23-tool 3.1.0 candidate in draft PR #5.**
-`research_jobs` is absent from published 3.0.0. The tool table below describes
-this candidate's source; its prior live brief failed the usefulness criterion.
-For offline candidate review, run `npm ci`, `npm run build`, then
-`node dist/index.js --setup cursor` (also `claude-desktop` or `vscode`). Candidate
-exports target its unpublished version; use a stable absolute source-build path
-for isolated offline inspection, never infer that `npx` can install 3.1.0.
-No new LinkedIn request is authorized by this candidate's setup instructions.
-See [candidate gates](docs/RELEASE_READINESS_3.1.0.md) and the
-[execution plan](docs/PRODUCT_EXECUTION_PLAN_2026.md).
+**4.0.0 added offline retirement preview and native Windows privacy checks.**
+Read its breaking Windows upgrade notes before changing an existing installation.
+This is a local stdio tool; Glama's generic “Deploy Server” or browser-hosting
+controls are not supported installation instructions. No hosted service is required.
+[4.0.0 release notes](docs/RELEASE_NOTES_4.0.0.md) describe those changes and limits.
+[Verified 3.1.0 publication receipts](docs/RELEASE_EVIDENCE_3.1.0.md)
+remain available for the preceding release.
 
+Start with the [quick start](#-quick-start) and [setup guide](SETUP_GUIDE.md).
+Setup reports local issues, client configuration and exact next steps without
+contacting LinkedIn. Merge the generated entry into your existing client file.
+See the [synthetic setup demonstration](docs/RELEASE_DEMO_3.0.0.md): real published
+package, disposable fixtures, no login or LinkedIn request.
+
+`research_jobs` is **not included**; its job-research brief remains in
+[draft PR #5](https://github.com/devag7/linkedin-mcp/pull/5). The
+[execution plan](docs/PRODUCT_EXECUTION_PLAN_2026.md) tracks first use, privacy,
+future features and measured distribution outcomes.
+The [current completion status](docs/CURRENT_COMPLETION_STATUS_2026-10-18.md)
+separates released features from remaining native, live and distribution gates.
+The [October 21 full-scope audit](docs/COMPLETION_AUDIT_2026-10-21.md)
+maps all original requirements and later job-seeker additions to their remaining work.
+The owner-run [private GitHub traffic ledger](docs/ADOPTION_TRAFFIC_LEDGER_2026-10-19.md)
+tracks stars and rolling traffic without user telemetry.
+
+This release does not fill or submit job applications, including Easy Apply.
+Use the [job seeker and Claude distribution plan](docs/JOB_SEEKER_AND_CLAUDE_DISTRIBUTION_2026-10-16.md)
+for the application handoff workflow, proposed next features and the separate
+requirements for listing a connector in Claude.
+For Claude Desktop, use the generated local configuration or the verified unsigned
+4.1.1 extension and checksum in the
+[patch release assets](https://github.com/devag7/linkedin-mcp/releases/tag/v4.1.1).
+The [bundle guide](docs/CLAUDE_DESKTOP_BUNDLE_2026-10-17.md) records the exact
+version and hash. The earlier 4.1.0 native Mac check discovered 24 tools and
+passed cold `whoami`; that bundle predates the new input guard. Patch native
+account use and Claude directory listing remain unverified.
 
 ## What it does
 
@@ -56,7 +88,7 @@ return a status including `unknown` when completion cannot be established.
 
 ## Verification status
 
-3.0.0 introduces breaking safety and client requirements; read the
+3.0.0 introduced breaking safety and client requirements; read the
 [migration guide](SETUP_GUIDE.md#migrating-from-203-to-300).
 [Hosted source/package/browser checks](https://github.com/devag7/linkedin-mcp/actions/workflows/ci.yml)
 cover Node20/22 across Linux, macOS and Windows. Exact core-only candidate/head
@@ -64,7 +96,8 @@ results are recorded in [release readiness](docs/RELEASE_READINESS_3.0.0.md). On
 maintainer health/own-profile read also passed with partial metadata;
 [scope and evidence](docs/ZERO_COST_EXECUTION_EVIDENCE_2026-10-01.md#7-consented-maintainer-live-read--passed-limited-scope)
 do not establish fresh-user or broader live compatibility.
-The exact published 3.0.0 artifact is independently verified; native-client first-use cohorts
+The exact published 4.1.1 artifact, all four destinations and its unsigned
+Claude bundle are [independently verified](docs/RELEASE_EVIDENCE_4.1.1.md). Native-client first-use cohorts
 and broad live-provider compatibility remain unverified.
 See [execution progress](docs/ROADMAP_PROGRESS.md) and the linked evidence.
 
@@ -85,15 +118,19 @@ not a guarantee of current provider compatibility or account safety.
 
 ## 🚀 Quick start
 
-Use Node.js 20 or later and Google Chrome. The commands below pin the published
-3.0.0 package. Setup is offline; login and subsequent reads are deliberate account
-actions. For a stable installation path and Windows commands, see the
-[setup guide](SETUP_GUIDE.md).
+Use Node.js 20 or later and Google Chrome. The commands below pin 4.1.1;
+run them after its publication status confirms availability.
+Setup is offline; login and subsequent reads
+are deliberate account actions. For a stable installation path and Windows
+commands, see the [setup guide](SETUP_GUIDE.md). On Windows, 4.1.1 retains the
+requirement that state paths stay beneath the actual `%USERPROFILE%` tree. A custom path outside it
+will be refused even when an older version accepted it. See the
+[migration notes](docs/RELEASE_NOTES_4.0.0.md#upgrade-notes-and-limits).
 
 **1. Diagnose offline:**
 
 ```bash
-npm install --prefix "$HOME/.local/share/linkedin-mcp" linkedin-mcp-tools@3.0.0
+npm install --prefix "$HOME/.local/share/linkedin-mcp" linkedin-mcp-tools@4.1.1
 node "$HOME/.local/share/linkedin-mcp/node_modules/linkedin-mcp-tools/dist/index.js" --setup cursor
 ```
 
@@ -119,7 +156,7 @@ accepting `mcpServers`, this version-pinned example is an alternative:
   "mcpServers": {
     "linkedin": {
       "command": "npx",
-      "args": ["-y", "linkedin-mcp-tools@3.0.0"]
+      "args": ["-y", "linkedin-mcp-tools@4.1.1"]
     }
   }
 }
@@ -357,12 +394,12 @@ See [write evidence](docs/PHASE0_WRITE_EVIDENCE.md) and
 
 <!-- capabilities:start -->
 
-23 registered tools. Native contract version 1 returns structuredContent and identical JSON text, with fetchedAt, source, partial and status metadata. [Full route and verification inventory](docs/CAPABILITIES.md).
+25 registered tools. Native contract version 1 returns structuredContent and identical JSON text, with fetchedAt, source, partial and status metadata. [Full route and verification inventory](docs/CAPABILITIES.md).
 
 | Group | Tools |
 | --- | --- |
 | Session | `whoami`, `health_check`, `close_session` |
-| Reads | `get_my_profile`, `get_profile`, `get_feed`, `get_notifications`, `search_people`, `research_jobs`, `search_jobs`, `get_inbox`, `get_job_details`, `search_companies`, `get_company`, `get_company_posts`, `get_company_employees`, `get_pending_invitations`, `get_conversation` |
+| Reads | `get_my_profile`, `get_profile`, `get_feed`, `get_notifications`, `search_people`, `research_jobs`, `search_jobs`, `get_inbox`, `get_job_details`, `prepare_job_application`, `export_application_tracker`, `search_companies`, `get_company`, `get_company_posts`, `get_company_employees`, `get_pending_invitations`, `get_conversation` |
 | Opt-in alpha writes | `connect_with_person`, `send_message`, `create_post`, `react_to_post`, `comment_on_post` |
 
 <!-- capabilities:end -->
@@ -381,10 +418,19 @@ synthetic; a real first-read recording remains a consented validation step.
 contain explicit call limits and source-link rules. [Client setup](SETUP_GUIDE.md)
 separates locally exercised MCP transport from untested client applications.
 [Privacy and deletion](docs/PRIVACY.md) explains retained safety history.
+[Selected-profile retirement design](docs/RETIREMENT_TRANSACTION_DESIGN.md)
+documents the selected-profile retirement command, its confirmation and
+interruption behavior, the read-only recovery preview for an interrupted
+attempt, and the shared state it deliberately preserves. Both commands are in
+published 4.1.0.
 [Roadmap coverage](docs/ROADMAP_COVERAGE.md) tracks every acceptance requirement.
+The 3.1.0 release adds a [read-only config merge preview](SETUP_GUIDE.md#preview-an-existing-client-configuration)
+that checks an explicitly selected JSON/JSONC file for missing, matching or conflicting
+entries without changing files or exposing other servers' credentials. It is
+available in published 3.1.0; native-client and live compatibility remain unverified.
 [Official-provider pilot](docs/OFFICIAL_PROVIDER_PILOT.md) describes the app/scopes
-and integration evidence still needed. Docker files are an experimental Linux
-recipe; no container build, display/login or runtime has been verified locally.
+and integration evidence still needed. The experimental Docker builder stage
+passed locally on Node 22; container display/login and runtime remain unverified.
 
 ## 🛠 Development
 
@@ -409,27 +455,28 @@ Made by [Dev Agarwalla](https://github.com/devag7)
 
 </div>
 
-## Search-only job briefs in unpublished 3.1.0
+### Version 3.1.0 local data inventory
 
-`research_jobs({keywords:"TypeScript engineer",count:10,enrich_first:false})`
-assembles up to ten first-page observations from `search_jobs`. Each fact has its
-exact supported job source URL, source tool and fetch time. The selected fields
-are title, location and listing date; missing fields remain unknown. A useful job
-requires an observed title plus location or listing date. Title-only results are
-insufficient and remain partial. JSON includes Markdown, query, request counters,
-per-read status, gaps and next steps. It never infers salary, fit or availability.
+The 3.1.0 command `node dist/index.js --data-inventory` reports
+which fixed local storage categories are present: the selected profile, its
+circuit and owner lock, shared budgets/write journal and transaction lock, and
+legacy credentials. It reads filesystem metadata only, prints no private paths
+or contents, and changes nothing. It does not read or validate JSON, traverse
+profile contents, prove owners have stopped, verify Windows ACLs or authorize
+deletion. Any observed alias, unexpected type, inaccessible or changed identity,
+or present lock returns `needs_attention` with exit code 1. Otherwise `observed`
+means only that the bounded presence snapshot succeeded.
 
-The enforced ceiling is two explicit Voyager GET attempts including identity and
-one underlying tool call. Browser navigation/assets/background traffic are outside
-that counter. No detail enrichment, cursor following, fallback, retry or storage.
-`enrich_first` defaults to false; true is rejected before provider work. This
-narrows the earlier unpublished draft; refresh its tool schema if you tested it.
-Existing `get_job_details` stays a separate core tool with strict identity checks;
-this brief does not call it or accept normalized job identifiers.
+This command is **available in released 3.1.0**, not 3.0.0. See the
+[inventory contract](docs/PRIVACY.md#inventory-json-contract); coordinated erasure remains open.
 
-Run `npm run demo:brief` for a synthetic offline SDK demo. It launches no browser
-and accesses no LinkedIn account; fixture URLs are illustrative. Useful live output
-and strict cleanup have not yet passed for this narrowed build. Published3.0.0 has
-22 tools and does not include job briefs. PR #5 stays draft until its useful live,
-cleanup and exact release gates pass. See [candidate readiness](docs/RELEASE_READINESS_3.1.0.md)
-and [the one-run protocol](docs/SEARCH_ONLY_VALIDATION_2026-10-11.md).
+## Blocked search-only research candidate
+
+`research_jobs` composes one existing job-search first page. It permits two
+explicit Voyager attempts including identity, one underlying read tool and at
+most ten linked entities. `enrich_first:true` is rejected before provider work.
+No detail read, retries, paging, fallback, storage or inferred fields. Useful
+comparison requires a title plus an independently observed location or listing
+time from the same canonical source. Title-only results remain partial.
+Source/freshness/unknown fields remain explicit. Prior failed live and cleanup
+receipts stay failed; no old consent authorizes another account request.

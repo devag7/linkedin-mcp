@@ -29,6 +29,30 @@ may contain title, location, listedAt, jobUrn and sourceUrl. Do not interpret a
 missing compensation/remote/workplace field as a negative statement about the job.
 For notes use a local Markdown table: role, fit evidence, missing facts, source.
 
+For a selected listing, `prepare_job_application` builds an unsaved local worksheet
+from the numeric job ID, listing title, up to 20 requirements and your own
+evidence. The tool does not fetch or verify those inputs: its evidence is marked
+`user_supplied_unverified`, and unanswered requirements are marked `missing`.
+To apply, open the returned source URL and inspect the current listing yourself.
+LinkedIn may show Easy Apply, which has its own review and final Submit step, or
+Apply, which can redirect to an employer site. This server does not inspect the
+application form, fill fields, upload a resume, or submit. Use the worksheet from
+verified job facts and your own resume: requirement, truthful evidence, missing
+answer, and where you will verify it. Keep application answers and receipts in a
+private location you control; a clicked link is not proof of submission. See the
+[job seeker plan](JOB_SEEKER_AND_CLAUDE_DISTRIBUTION_2026-10-16.md).
+
+For private status tracking, pass only jobs you choose to
+`export_application_tracker`. It formats at most 50 user-entered records as CSV
+and does not read LinkedIn or save the file. `submitted_unverified` means you
+reported an attempt without a verified receipt. `receipt_verified` requires
+your explicit receipt confirmation, still labelled user supplied. You can retain
+that confirmation if the status later becomes `rejected` or `withdrawn`.
+Optional `next_action` and `follow_up_at` fields help you plan a follow-up.
+Save the CSV
+yourself in a private location if you want it to persist; do not attach it to a
+public issue or repository. A later call needs you to supply the records again.
+
 ## Research a company before an interview
 
 Search companies once (count:3), select one returned slug, then fetch the overview

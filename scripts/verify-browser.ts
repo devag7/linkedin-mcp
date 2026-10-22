@@ -34,10 +34,10 @@ const tracker = new ValidationProcessTracker(profile);
 const windowsTracker = new WindowsValidationProcessTracker(profile);
 const processProbeDeadlineMs = process.platform === 'win32' ? 5000 : 1000;
 let processProbeFailure: string | undefined;
-function observeProcesses() {
+function observeProcesses(phase: 'preflight' | 'runtime' = 'runtime') {
   try {
     if (process.platform !== 'win32') return tracker.sample(readValidationProcesses());
-    return windowsTracker.sample(readWindowsValidationProcesses());
+    return windowsTracker.sample(readWindowsValidationProcesses(undefined, phase));
   } catch (error) {
     // The verifier catches probe errors; retain only a fixed code, never the cause.
     processProbeFailure ??= offlineLifecycleFailureCode(error);
@@ -49,7 +49,7 @@ let monitor:
   | ReturnType<typeof monitorValidationProcesses<ReturnType<typeof observeProcesses>>>
   | undefined;
 try {
-  if (observeProcesses().remainingProcesses) throw new Error('TEMP_PROFILE_ALREADY_ACTIVE');
+  if (observeProcesses('preflight').remainingProcesses) throw new Error('TEMP_PROFILE_ALREADY_ACTIVE');
   monitor = monitorValidationProcesses(observeProcesses, () => {});
   stage = 'browser_launch';
   const [context, sameContext] = await Promise.all([

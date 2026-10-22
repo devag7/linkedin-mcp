@@ -7,9 +7,9 @@ Guidance for AI agents using or contributing to **LinkedIn MCP**
 
 An MCP server exposing LinkedIn to any MCP client (Claude, Cursor, …) as
 structured JSON. It drives a real stealth Chrome to pass Cloudflare, then calls
-LinkedIn's Voyager API from inside the authenticated page. Published 3.0.0 has
-22 tools. This unpublished 3.1.0 draft adds `research_jobs` as tool 23; the
-`@latest` installation below provides the released core, not this draft tool.
+LinkedIn's Voyager API from inside the authenticated page. Source 4.1.1
+has 24 tools, including two offline job-seeker tools introduced in 4.1.0.
+The earlier 4.0.0 had 22; publication is tracked in the version's release evidence.
 
 ## Using it (as an agent / MCP client)
 
@@ -30,7 +30,9 @@ LinkedIn's Voyager API from inside the authenticated page. Published 3.0.0 has
 
 - Profiles: `get_my_profile`, `get_profile`
 - Search: `search_people`, `search_jobs`, `get_job_details`, `search_companies`,
-  `get_company`, `get_company_posts`, `get_company_employees`, `research_jobs` (draft only)
+  `get_company`, `get_company_posts`, `get_company_employees`,
+  `prepare_job_application`, `export_application_tracker` (published local
+  preparation/export; neither submits or stores applications)
 - Feed/messaging: `get_feed`, `get_notifications`, `get_inbox`, `get_conversation`,
   `get_pending_invitations`
 - Writes (gated): `connect_with_person`, `send_message`, `create_post`,
@@ -45,7 +47,7 @@ pacing for real use, and stop immediately if `health_check` reports a checkpoint
 
 ## Contributing (code agents)
 
-- TypeScript, strict. `npm run build` (tsup), `npm run typecheck`, `npm test`
+- TypeScript, strict. `npm run build` (esbuild), `npm run typecheck`, `npm test`
   (vitest), `npm run lint` (eslint) — all must pass; CI enforces them.
 - Voyager endpoints rotate. Write endpoint shapes are captured live via
   `--writecapture` (intercept the SPA's POST, abort it — zero side effects) and
@@ -57,3 +59,10 @@ New submissions require preview proof; reuse an existing journal ID and identica
 inputs only to look up its outcome after timeout/restart. Never auto-retry unknown
 outcomes. `--setup <client>` and cold `whoami` are offline; live reads require
 separate authorization. Platform fixture checks do not establish provider support.
+
+## Unreleased research integration
+
+This private candidate adds search-only research_jobs to the24-tool core (25
+total). It is not the public4.1.1 artifact. No version bump, merge, publication,
+account access or native installation is part of this integration. A useful
+source-linked result and strict cleanup remain separate blocked gates.

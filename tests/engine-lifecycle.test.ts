@@ -25,6 +25,14 @@ function engine() {
     new BrowserSafety(new CircuitBreaker()),
   );
 }
+it('blocks browser launch while a retirement marker remains', async () => {
+  writeFileSync(`${dir}.retirement.json`, 'synthetic interrupted retirement');
+  const launch = vi.spyOn(chromium, 'launchPersistentContext');
+  const e = engine();
+  await expect(e.ensureContext()).rejects.toMatchObject({ code: 'STATE_INVALID' });
+  expect(launch).not.toHaveBeenCalled();
+  await e.dispose();
+});
 it('disposal prevents a queued caller from relaunching a browser', async () => {
   const launch = vi.spyOn(chromium, 'launchPersistentContext');
   const e = engine();

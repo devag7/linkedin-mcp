@@ -1,7 +1,7 @@
 {
   "name": "linkedin-mcp-tools",
-  "version": "3.1.0",
-  "description": "Unofficial local LinkedIn MCP: structured reads, bounded source-linked job briefs, guided offline client setup and explicit safety limits. Current provider compatibility is not guaranteed.",
+  "version": "4.1.1",
+  "description": "Unofficial local LinkedIn MCP: structured profile, job, company and inbox reads, guided offline client setup and explicit safety limits. Current provider compatibility is not guaranteed.",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
@@ -9,7 +9,7 @@
   },
   "scripts": {
     "dev": "tsx src/index.ts",
-    "build": "tsup",
+    "build": "node scripts/build.mjs",
     "start": "node dist/index.js",
     "setup:browser": "patchright install chrome",
     "login": "tsx src/index.ts --login",
@@ -29,28 +29,31 @@
     "metadata:sync": "tsx scripts/sync-metadata.ts",
     "metadata:check": "tsx scripts/sync-metadata.ts --check",
     "demo:offline": "node scripts/demo-offline.mjs",
+    "build:claude-mcpb": "node scripts/build-claude-mcpb.mjs",
     "verify:browser": "tsx scripts/verify-browser.ts",
     "verify:setup": "node scripts/verify-setup.mjs",
+    "verify:inventory": "node scripts/verify-data-inventory.mjs",
     "prepack": "node scripts/check-package.mjs",
     "verify:pack": "node scripts/check-package.mjs",
     "demo:brief": "tsx scripts/demo-brief.ts"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.31.0",
+    "@modelcontextprotocol/sdk": "^1.32.1",
+    "jsonc-parser": "^3.3.1",
     "patchright": "^1.60.2",
     "zod": "^3.25.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",
     "@types/node": "^22.15.0",
+    "esbuild": "^0.28.2",
     "eslint": "^9.27.0",
     "prettier": "^3.5.3",
-    "tsup": "^8.5.0",
     "tsx": "^4.19.4",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.61.0",
     "vite": "^6.4.4",
-    "vitest": "^4.1.11"
+    "vitest": "^4.1.12"
   },
   "keywords": [
     "mcp",
@@ -100,5 +103,6 @@
     "docs/PRIVACY.md",
     "docs/WORKFLOWS.md"
   ],
-  "mcpName": "io.github.devag7/linkedin-mcp"
+  "mcpName": "io.github.devag7/linkedin-mcp",
+  "private": true
 }

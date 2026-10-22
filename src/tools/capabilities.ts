@@ -30,7 +30,9 @@ export const CAPABILITIES = {
   research_jobs: read('bounded search-only composition of one search_jobs first page', 'voyager', 10),
   search_jobs: read('voyagerJobsDashJobCards', 'voyager', 25),
   get_inbox: read('/me + messengerConversations', 'voyager', 50),
-  get_job_details: read('/jobs/jobPostings/:id (provisional; current live validation pending)'),
+  get_job_details: read('voyagerJobsDashJobPosting'),
+  prepare_job_application: local('local application worksheet; no submit or storage'),
+  export_application_tracker: local('local application status export; no storage'),
   search_companies: read('/search/results/companies/', 'dom', 25),
   get_company: read('/company/:slug/about/', 'dom'),
   get_company_posts: read('/company/:slug/posts/', 'dom', 25),
@@ -59,7 +61,7 @@ export function capabilityManifest(
     ...CAPABILITIES[name],
     provider: 'local_browser_unofficial',
     verification: 'offline_contract_tested',
-    offlineCheckedAt: '2026-10-01',
+    offlineCheckedAt: '2026-10-21',
     liveCheckedAt: null,
     availability:
       CAPABILITIES[name].write && !policy.writesEnabled

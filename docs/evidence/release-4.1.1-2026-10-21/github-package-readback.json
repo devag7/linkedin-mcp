@@ -1,0 +1,9 @@
+{
+  "version": "4.1.1",
+  "public": true,
+  "versionId": 1420543751,
+  "files": 15,
+  "declaredIntegrityMatches": true,
+  "archiveSha256": "31e71a7c764256fc0d0ae2a3d12985c1957f84ad855fadd53356fd3c1adbf196",
+  "filesMatchVerifiedNpmExceptScopedName": true
+}

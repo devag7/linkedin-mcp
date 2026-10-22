@@ -13,7 +13,6 @@
  */
 
 import {
-  mkdirSync,
   readFileSync,
   writeFileSync,
   openSync,
@@ -31,9 +30,10 @@ import {
   type WriteOutcome,
   type OperationOutcome,
 } from './write-operation.js';
-import { dirname, join } from 'node:path';
+import { join } from 'node:path';
 import { homedir } from 'node:os';
 import type { Logger } from '../types.js';
+import { ensurePrivateStateFileParent, fixedWindowsStateCode, verifyPrivateStateFileIfPresent } from './windows-private-state.js';
 
 /** Write actions tracked against daily + combined-write caps. */
 export type WriteActionType =
@@ -865,6 +865,7 @@ export class BudgetTracker {
 
   private load(): PersistedState {
     try {
+      verifyPrivateStateFileIfPresent(this.storagePath);
       const fd = openSync(this.storagePath, 'r');
       try {
         if (fstatSync(fd).size > 8 * 1024 * 1024) throw new Error('oversized');
@@ -877,9 +878,12 @@ export class BudgetTracker {
     } catch (error) {
       if ((error as NodeJS.ErrnoException).code === 'ENOENT' && !this.fileSeen)
         return { version: 1, accounts: {} };
-      throw new Error(
+      const failure = new Error(
         'Budget state is unreadable or invalid. Restore safety state before restarting; counters were not reset.',
       );
+      const stateCode = fixedWindowsStateCode(error);
+      if (stateCode) Object.assign(failure, { stateCode });
+      throw failure;
     }
   }
 
@@ -896,7 +900,7 @@ export class BudgetTracker {
     this.assertAvailable();
     const temp = `${this.storagePath}.${randomUUID()}.tmp`;
     try {
-      mkdirSync(dirname(this.storagePath), { recursive: true, mode: 0o700 });
+      ensurePrivateStateFileParent(this.storagePath);
       const body = JSON.stringify(this.state);
       if (Buffer.byteLength(body) > 8 * 1024 * 1024) throw new Error('oversized');
       const fd = openSync(temp, 'wx', 0o600);
