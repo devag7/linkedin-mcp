@@ -1,0 +1,10 @@
+{
+  "name": "linkedin-mcp-local",
+  "displayName": "LinkedIn MCP (local, unofficial)",
+  "version": "4.1.1",
+  "description": "Local LinkedIn MCP tools and guided application preparation. Account reads require separate consent; writes are disabled in this package. Does not submit applications.",
+  "author": { "name": "Dev Agarwalla", "url": "https://github.com/devag7" },
+  "homepage": "https://github.com/devag7/linkedin-mcp",
+  "repository": "https://github.com/devag7/linkedin-mcp",
+  "license": "MIT"
+}

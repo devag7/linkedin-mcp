@@ -6,6 +6,13 @@ implementation plan, not evidence of LinkedIn application or Claude directory
 acceptance. Provider rules and Claude submission requirements can change; recheck
 the linked primary sources before release or submission.
 
+**October 22 distribution update:** Public 4.1.1 and its manual Desktop MCPB
+are verified separately in [release evidence](RELEASE_EVIDENCE_4.1.1.md).
+The [local plugin candidate](CLAUDE_PLUGIN_2026-10-22.md) adds a packaging/skill
+route, with native startup and directory eligibility still open. Anthropic now
+says standalone MCPB directory listings are deprecated; this supersedes older
+interest-form guidance below. No application submission capability is added.
+
 **October 18 release update:** [4.1.0 is published](RELEASE_EVIDENCE_4.1.0.md)
 with 24 tools, including the offline application worksheet and user-entered
 tracker CSV. This updates the source-only classification below. The local
