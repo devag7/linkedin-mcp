@@ -2,7 +2,7 @@
   "manifest_version": "0.3",
   "name": "linkedin-mcp-tools",
   "display_name": "LinkedIn MCP (local)",
-  "version": "4.1.0",
+  "version": "4.1.1",
   "description": "Run the unofficial LinkedIn MCP server locally with your own Chrome profile. Reads need login; writes remain disabled by default.",
   "author": {
     "name": "Dev Agarwalla",

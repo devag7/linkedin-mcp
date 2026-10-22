@@ -2,8 +2,9 @@
 
 **The complete plan is not finished.** Public 4.1.0 delivers the 24-tool core,
 offline client setup, selected-profile retirement and two local job-seeker
-helpers. A security patch candidate, 4.1.1, raises the SDK minimum to 1.32.1.
-That candidate is not a public release until every destination is read back.
+helpers. The 4.1.1 security patch is independently verified on npm and GitHub Packages,
+with SDK 1.32.1 and an input guard. MCP Registry metadata and the finalized
+GitHub Release/tag are also verified; see [current receipts](RELEASE_EVIDENCE_4.1.1.md).
 The original roadmap and historical failed receipts remain unchanged.
 
 This audit compares the immutable
@@ -18,7 +19,7 @@ source features, native tests and adoption outcomes have different finish lines.
 | ID | Current result | Remaining acceptance |
 | --- | --- | --- |
 | P-01 Diagnosis | Shipped offline doctor/setup; live diagnosis remains explicit. | Real first use across claimed clients/OSes; preserve unknown account state until authorized reads. |
-| P-02 Capability inventory | Shipped route, permission, result limit and verification metadata through cold `whoami`; browser availability stays unknown. | 4.1.1 candidate refreshes the recorded offline-check date, including tools added after October 1. No new live-check claim. |
+| P-02 Capability inventory | Shipped route, permission, result limit and verification metadata through cold `whoami`; browser availability stays unknown. | Public 4.1.1 refreshes the recorded offline-check date, including tools added after October 1. No new live-check claim. |
 | P-03 Structured responses | Shipped typed envelopes, text/structured output and partial/error contracts. | Current live shape coverage and failure-rate measurements for each advertised provider operation. |
 | P-04 Bounded search | Existing people/jobs/company/feed reads are bounded; cursors require matching paging evidence. | New saved-job/filter/post/inbox search features below; no implicit full crawl. |
 | P-05 Reviewed writes | Shipped opt-in, preview proof, durable operation IDs, caps and unknown-outcome handling. | Current consented live evidence for each claimed action; new-thread messaging remains experimental. |
@@ -43,7 +44,7 @@ source features, native tests and adoption outcomes have different finish lines.
 | P9 Official provider | Blocked by missing granted app access | Owner supplies granted scopes; implement a separate capability-limited provider and approved identity/publishing tests. No browser fallback masquerading as official access. |
 | P10 Distribution/tutorials/community | Partial | Setup/demo/workflow guides and registry/package/release destinations exist. Awesome MCP submission awaits upstream acceptance; Glama needs owner sign-in/re-sync and hosted-copy correction. Three observed end-to-end tutorial flows, repeatable issue response and measured distribution outcomes remain open. |
 | P11 Opt-in/traffic ledger | Partial | [Private ledger](ADOPTION_TRAFFIC_LEDGER_2026-10-19.md) ships; consent/scoring kit and public opt-in issue exist. Capture weekly; first-use and repeat-use samples and a complete monthly report are still missing. No hidden telemetry. |
-| P12 Development advisory follow-up | Earlier esbuild issue resolved; new SDK patch in progress | Source moved to esbuild 0.28.2 in prior work. October 21 audit found four SDK advisories aggregated as one high package finding; candidate SDK 1.32.1 clears the full audit. Finish patch publication/readback; do not repeat the stale “one low esbuild” claim as current. |
+| P12 Development advisory follow-up | Earlier esbuild issue resolved; SDK patch shipped on npm/GitHub Packages | Source moved to esbuild 0.28.2 in prior work. October 21 audit found four SDK advisories aggregated as one high package finding; SDK 1.32.1 clears the full source audit and the input guard ships in public 4.1.1. Core and desktop-bundle publication/readback are verified; do not repeat the stale “one low esbuild” claim as current. |
 
 ## Later job-seeker and Claude scope
 
@@ -56,7 +57,7 @@ source features, native tests and adoption outcomes have different finish lines.
 | Alerts/application history | Not built. Needs verified provider routes or clearly local user-input semantics; no background account polling is authorized. |
 | Interview/follow-up preparation | General company/profile reads exist; dedicated source-linked preparation flow is not implemented or validated. |
 | Form filling, resume upload, Easy Apply, ATS submission | Not built. A permitted provider integration, field/attachment mapping, exact per-job approval, durable unknown-outcome handling and actual receipt proof are prerequisites. No generic bulk submit feature. |
-| Claude local extension | Public 4.1.0 MCPB; one authorized Mac install/discovery/cold-status/removal passed. Other native/live pairings remain open. |
+| Claude local extension | Public 4.1.1 MCPB/checksum with independently verified bytes and hosted Mac/Windows cold/guard checks. One historical 4.1.0 Mac native check passed; native 4.1.1/live pairings remain open. |
 | Claude Code/Cowork plugin | Not built or tested; runtime/browser/profile compatibility is unknown. |
 | Claude web/remote connector | Not implemented. Needs HTTPS, per-user OAuth/isolation, privacy/support, permitted provider access and real connector tests. |
 | Claude directory listing | Not submitted or accepted. Current [policy §3F](https://support.claude.com/en/articles/13145358-anthropic-software-directory-policy) requires control of connected endpoints/interfaces. This is an apparent eligibility blocker for the current LinkedIn browser path; obtain written route clarification/permission. Local installation is not directory acceptance. |
@@ -74,7 +75,8 @@ Large SaaS/CRM hosting and mandatory paid bridges are not required for this loca
 - Public 4.1.0 npm bytes still match SHA-256
   `477c0cbfffe1901c9dea926dd8b9b4be6c9ff223154ff111854be949e798d8f9`;
   15 files, matching SRI, provenance source and public MCPB hash. MCP Registry is
-  active/latest; GitHub package version and final release/tag remain present.
+  active/latest at this initial refresh; 4.1.1 became latest after the patch.
+  GitHub package version and final release/tag remained present.
   Fresh consumer: 99 verified registry signatures, 15 verified attestations and
   zero production findings. GitHub Packages archive bytes were verified in the
   [October 18 release receipt](RELEASE_EVIDENCE_4.1.0.md); this refresh checked its version metadata.
@@ -91,9 +93,9 @@ Large SaaS/CRM hosting and mandatory paid bridges are not required for this loca
 - 10,000 stars and daily GitHub Trending remain unachieved/unverified outcomes.
   No claim about Trending's ranking algorithm or a promised date is made.
 
-Finish the SDK patch first. Then the fastest evidence-producing step is one
-willing new participant completing the pinned 4.1.0 kit, while the owner fixes
-Glama access. Prioritize the participant's first reproducible failure. Work on
+The SDK patch and 4.1.1 bundle are now publicly verified. The fastest next
+evidence-producing step is one willing new participant completing the separate
+[4.1.1 kit](FIRST_USE_VOLUNTEER_KIT_4.1.1.md), while the owner fixes Glama access. Prioritize the participant's first reproducible failure. Work on
 coordinated erasure and PR #5 offline in separate reviewable changes; provider
 captures, live tests, submissions and external outreach require their stated scopes.
 

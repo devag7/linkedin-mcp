@@ -49,9 +49,10 @@ Source contributors can instead run `npm ci`, `npm run build`, then
 
 ### Claude Desktop extension
 
-For a local extension instead of a JSON entry, use the unsigned
-[4.1.1 `.mcpb` and checksum](https://github.com/devag7/linkedin-mcp/releases/tag/v4.1.1)
-when available. Until then, use the generated local configuration above.
+For a local extension instead of a JSON entry, use the independently verified
+[unsigned 4.1.1 `.mcpb` and checksum](https://github.com/devag7/linkedin-mcp/releases/tag/v4.1.1).
+The generated configuration above is
+an alternative local installation route.
 The earlier 4.1.0 bundle predates the new input guard.
 Verify the file hash and install it through Claude Desktop Settings →
 Extensions → Advanced settings → Install extension. The
@@ -152,7 +153,7 @@ call may wait. HTTP is local-only and requires bearer authentication; see README
 | SDK stdio client | Node + absolute built binary | Executed from source and fresh installed tarball; no LinkedIn calls |
 | SDK loopback HTTP client | 127.0.0.1 URL + bearer header | Local protocol/security tests |
 | Claude Desktop / Cursor compatible JSON config | Example below | Configuration example; application UI/first read untested |
-| Claude Desktop local extension | Verified 4.1.0 `.mcpb` Release asset | One native Mac 2.42304.0 install, 24-tool discovery, cold `whoami` and removal; no live read |
+| Claude Desktop local extension | Verified 4.1.1 `.mcpb` Release asset; hosted Mac/Windows cold/guard checks | Historical native 4.1.0 Mac 2.42304.0 discovery/cold/removal passed. Native 4.1.1 and live reads untested |
 | Other MCP clients | Use their documented stdio settings | No compatibility claim until a client/OS/version record exists |
 
 For a client accepting `mcpServers`, use an absolute path to the built file:

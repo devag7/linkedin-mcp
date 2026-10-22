@@ -1,6 +1,8 @@
 # LinkedIn MCP 4.1.1
 
-Security maintenance candidate; publication is not yet verified.
+Security maintenance patch: npm, GitHub Packages, active MCP Registry metadata
+and the finalized GitHub Release/tag are independently verified; see the
+[release evidence](RELEASE_EVIDENCE_4.1.1.md).
 
 - Require MCP TypeScript SDK 1.32.1 or later in the 1.x line and lock 1.32.1
   for source builds. This excludes the versions affected by the four
@@ -16,7 +18,7 @@ The tool count remains 24. The [full-scope audit](COMPLETION_AUDIT_2026-10-21.md
 records unfinished research, privacy, native/live validation, submission and
 distribution work.
 
-After public publication is verified, update the stable installation with:
+Update the stable installation from the verified public npm package with:
 
 ```sh
 npm install --prefix "$HOME/.local/share/linkedin-mcp" linkedin-mcp-tools@4.1.1

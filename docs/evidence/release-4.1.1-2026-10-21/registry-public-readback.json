@@ -1,0 +1,31 @@
+{
+  "server": {
+    "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+    "name": "io.github.devag7/linkedin-mcp",
+    "description": "Unofficial local LinkedIn research and opt-in alpha writes; live compatibility is unverified.",
+    "repository": {
+      "url": "https://github.com/devag7/linkedin-mcp",
+      "source": "github"
+    },
+    "version": "4.1.1",
+    "packages": [
+      {
+        "registryType": "npm",
+        "identifier": "linkedin-mcp-tools",
+        "version": "4.1.1",
+        "transport": {
+          "type": "stdio"
+        }
+      }
+    ]
+  },
+  "_meta": {
+    "io.modelcontextprotocol.registry/official": {
+      "status": "active",
+      "statusChangedAt": "2026-10-21T15:33:33.433757Z",
+      "publishedAt": "2026-10-21T15:33:33.433757Z",
+      "updatedAt": "2026-10-21T15:33:33.433757Z",
+      "isLatest": true
+    }
+  }
+}

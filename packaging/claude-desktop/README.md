@@ -1,6 +1,6 @@
 # LinkedIn MCP local Desktop extension
 
-This extension packages the independently published `linkedin-mcp-tools@4.1.0`
+This extension packages the independently published `linkedin-mcp-tools@4.1.1`
 archive and its production dependencies for Claude Desktop. It starts a local
 MCP server. It does not include a logged-in browser profile, credentials or
 application data. Install Chrome, then run the one-time manual login documented

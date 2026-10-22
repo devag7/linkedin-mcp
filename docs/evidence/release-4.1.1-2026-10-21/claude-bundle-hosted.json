@@ -1,0 +1,23 @@
+{
+  "sourceHead": "4544a0f4a0dbefd35dfe2625d67c63e03c7573c3",
+  "run": "https://github.com/devag7/linkedin-mcp/actions/runs/39627228445",
+  "jobs": [
+    {
+      "name": "Claude bundle (macos-latest, Node 22)",
+      "url": "https://github.com/devag7/linkedin-mcp/actions/runs/39627228445/job/119315490985",
+      "conclusion": "success",
+      "sourceSha256": "3aa33f9a38e2928625f9a7d24d300b644102c87121dc0168766048e1cf7368ec",
+      "bundleSha256": "81dd22dad4b6646b2787184cb6e792cb1863485317cac5a9aa5d7f7a1581b239",
+      "productionFindings": 0
+    },
+    {
+      "name": "Claude bundle (windows-latest, Node 22)",
+      "url": "https://github.com/devag7/linkedin-mcp/actions/runs/39627228445/job/119315491608",
+      "conclusion": "success",
+      "sourceSha256": "3aa33f9a38e2928625f9a7d24d300b644102c87121dc0168766048e1cf7368ec",
+      "bundleSha256": "94b7f15910e5b7c032a04cdd158e591431f9db533a5ebeeffc54c39c42427267",
+      "productionFindings": 0
+    }
+  ],
+  "scope": "Pinned public npm runtime, manifest, packed/unpacked 24-tool cold discovery, input guard and absent installer metadata; no native app install, browser launch or LinkedIn request."
+}
