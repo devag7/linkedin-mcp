@@ -34,7 +34,8 @@
     "verify:setup": "node scripts/verify-setup.mjs",
     "verify:inventory": "node scripts/verify-data-inventory.mjs",
     "prepack": "node scripts/check-package.mjs",
-    "verify:pack": "node scripts/check-package.mjs"
+    "verify:pack": "node scripts/check-package.mjs",
+    "build:claude-plugin": "node scripts/build-claude-plugin.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.32.1",

@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "linkedin-mcp-local": {
+      "command": "node",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/node_modules/linkedin-mcp-tools/dist/index.js"],
+      "env": { "LINKEDIN_ENABLE_WRITES": "false" }
+    }
+  }
+}

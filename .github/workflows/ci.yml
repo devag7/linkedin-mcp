@@ -95,7 +95,7 @@ jobs:
         run: npm run verify:browser
 
   claude-bundle:
-    name: Claude bundle (${{ matrix.os }}, Node 22)
+    name: Claude packages (${{ matrix.os }}, Node 22)
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -113,3 +113,5 @@ jobs:
         run: node --import tsx scripts/prepare-windows-ci-temp.ts
       - name: Build, unpack and start pinned 4.1.1 Claude bundle offline
         run: npm run build:claude-mcpb
+      - name: Build, unpack and start pinned 4.1.1 Claude plugin offline
+        run: npm run build:claude-plugin

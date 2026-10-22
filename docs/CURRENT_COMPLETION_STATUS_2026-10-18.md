@@ -23,9 +23,9 @@ The complete roadmap has not been achieved.
 
 | Gate | Current observation | Concrete finish line |
 | --- | --- | --- |
-| First use | The owner-authorized 4.1.0 opt-in [issue #13](https://github.com/devag7/linkedin-mcp/issues/13) was updated October 19 and still has no responses on October 21; the recorded cohort is 0/0. The [4.1.0 kit](FIRST_USE_VOLUNTEER_KIT_4.1.0.md) and [scoring guide](FIRST_USE_RESULTS_4.1.0.md) are available. The exact public package passed [fresh offline installation, 24-tool discovery and cold status](evidence/first-use-2026-10-18/published-offline.json) for all three exported client configurations on one Mac. | A willing participant personally consents and starts the pinned 4.1.0 protocol. Count every first started attempt and record only consented minimal results privately. Do not mix versions or treat 0/0 as a rate. |
+| First use | The owner-authorized [issue #13](https://github.com/devag7/linkedin-mcp/issues/13) now invites published 4.1.1 use. The recorded cohort remains 0/0, unmeasured. New participants use the [4.1.1 kit](FIRST_USE_VOLUNTEER_KIT_4.1.1.md) and [scoring guide](FIRST_USE_RESULTS_4.1.1.md). Earlier 4.1.0 offline and native observations are historical and do not establish 4.1.1 first use. | A willing participant personally consents and starts the pinned 4.1.1 protocol. Count every first started attempt and retain failures; keep consented minimal results private and version cohorts distinct. Do not treat 0/0 as a rate. |
 | Job research briefs | Draft [PR #5](https://github.com/devag7/linkedin-mcp/pull/5) is blocked. Earlier live runs returned no useful job and had cleanup failures; its later search-only head had failed hosted/package cleanup jobs. | Fix reproducible cleanup and useful-result failures, then obtain new bounded consent for live validation before merge or release. Preserve failed receipts. |
-| Native clients and account compatibility | No fresh-user 4.1.0 read measured in Claude Desktop, Cursor or VS Code. | Record consented real-client first use and observed failure categories, then repair what participants encounter. |
+| Native clients and account compatibility | No fresh-user 4.1.1 read measured in Claude Desktop, Cursor or VS Code. | Record consented real-client first use and observed failure categories, then repair what participants encounter. |
 | Full privacy retirement | Selected-profile tools are scoped and released. | Design, review and test complete coordinated erasure with active-owner, interruption, same-account race and Windows evidence. Never use it to reset safety caps. |
 | Official provider and Claude directory | Official LinkedIn app grants/scopes are unavailable. The local browser server is not a remote HTTPS connector. [Anthropic's directory policy](https://support.claude.com/en/articles/13145358-anthropic-software-directory-policy) appears to require control of connected interfaces. | Obtain permitted provider access and written directory eligibility/route clarification before implementing or submitting a remote connector. Do not claim listing eligibility from a local `.mcpb`. |
 | Application submission | LinkedIn Easy Apply and external ATS submission are absent. | Require a permitted integration, exact per-job field/attachment mapping, human final approval and receipt proof. Keep unsupported auto-apply claims out of release copy. |
@@ -38,6 +38,13 @@ also remains open. Its submitted diff removes the `builder` stage while still
 copying from it, and predates the current experimental Docker recipe. It is
 not a 4.1.0 release gate or a verified hosted deployment path; review any
 container work against current source as a separate change.
+
+## Local Claude plugin preparation
+
+A [local plugin candidate](CLAUDE_PLUGIN_2026-10-22.md) wraps exact public
+4.1.1 with a job-preparation skill. Source packaging, hosted checks, native
+startup and directory acceptance are separate gates. This does not add
+application submission, a remote connector or PR #5 to the released runtime.
 
 ## Next sequence
 
