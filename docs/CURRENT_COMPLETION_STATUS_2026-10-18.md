@@ -9,13 +9,23 @@ The [October 21 full-scope audit](COMPLETION_AUDIT_2026-10-21.md) maps every
 original functional requirement, later backlog item and job-seeker addition.
 The complete roadmap has not been achieved.
 
-## October 26 security notice
+## October 26 security gate
 
-A fresh source/production audit reports four affected packages, including high
-Zod and body-parser findings. Earlier zero-audit receipts remain historical;
-they do not establish current clearance. A separate runtime repair is being
-prepared. The unreleased local Claude plugin stays blocked on replacement of
-its pinned public runtime; no audit exception or publication is implied.
+Fresh source/production audits found four affected packages, including high
+Zod and body-parser findings; the installed publisher also failed on newly
+affected ip-address/undici versions. Earlier zero-audit receipts are historical.
+The separate [source and publisher repair](SECURITY_REPAIR_2026-10-26.md) in
+[PR #48](https://github.com/devag7/linkedin-mcp/pull/48) is merged at
+`c7d9af30508c0d2a7b69d5df033e784268089dcd`. This repairs the source checkout,
+not the immutable public 4.1.1 runtime or its wrappers. Replacement publication
+and independent destination/archive verification remain required.
+
+The local Claude plugin stays pinned to public 4.1.1 and blocked on its
+zero-audit gate until a verified replacement archive can be reviewed and
+repinned. The source-candidate MCPB audit and pinned-public plugin audit are
+separate gates; neither is waived. Do not begin a new public 4.1.1 pilot or
+recommend it as security-cleared. No profile access, publication, full roadmap
+completion or plugin package-gate pass is implied by this source integration.
 
 ## Published and verified
 
@@ -31,7 +41,7 @@ its pinned public runtime; no audit exception or publication is implied.
 
 | Gate | Current observation | Concrete finish line |
 | --- | --- | --- |
-| First use | The owner-authorized [issue #13](https://github.com/devag7/linkedin-mcp/issues/13) now invites published 4.1.1 use. The recorded cohort remains 0/0, unmeasured. New participants use the [4.1.1 kit](FIRST_USE_VOLUNTEER_KIT_4.1.1.md) and [scoring guide](FIRST_USE_RESULTS_4.1.1.md). Earlier 4.1.0 offline and native observations are historical and do not establish 4.1.1 first use. | A willing participant personally consents and starts the pinned 4.1.1 protocol. Count every first started attempt and retain failures; keep consented minimal results private and version cohorts distinct. Do not treat 0/0 as a rate. |
+| First use | The owner-authorized [issue #13](https://github.com/devag7/linkedin-mcp/issues/13) and existing [4.1.1 kit](FIRST_USE_VOLUNTEER_KIT_4.1.1.md)/[scoring guide](FIRST_USE_RESULTS_4.1.1.md) remain historical preparation. The recorded cohort is 0/0, unmeasured. New 4.1.1 attempts are paused by the current security gate; earlier offline/native observations do not establish first use. | After a replacement public artifact is independently verified, review and update the version-pinned kit and invitation before a willing participant personally consents and starts. Count every first started attempt and retain failures; keep minimal results private and version cohorts distinct. Do not treat 0/0 as a rate. |
 | Job research briefs | Draft [PR #5](https://github.com/devag7/linkedin-mcp/pull/5) is blocked. Earlier live runs returned no useful job and had cleanup failures; its later search-only head had failed hosted/package cleanup jobs. | Fix reproducible cleanup and useful-result failures, then obtain new bounded consent for live validation before merge or release. Preserve failed receipts. |
 | Native clients and account compatibility | No fresh-user 4.1.1 read measured in Claude Desktop, Cursor or VS Code. | Record consented real-client first use and observed failure categories, then repair what participants encounter. |
 | Full privacy retirement | Selected-profile tools are scoped and released. | Design, review and test complete coordinated erasure with active-owner, interruption, same-account race and Windows evidence. Never use it to reset safety caps. |
@@ -56,9 +66,12 @@ application submission, a remote connector or PR #5 to the released runtime.
 
 ## Next sequence
 
-1. Use the verified public 4.1.1 package or bundle. The separately pinned [4.1.1 consent kit](FIRST_USE_VOLUNTEER_KIT_4.1.1.md) and
-   [results guide](FIRST_USE_RESULTS_4.1.1.md) keep a new patch cohort distinct
-   from historical 4.1.0. No participant has started either recorded cohort.
+1. Complete replacement publication and independent verification before repinning
+   the plugin or updating the owner-led pilot invitation and consent kit. Existing
+   public 4.1.1 bytes are not currently security-cleared. Preserve the historical
+   [4.1.1 kit](FIRST_USE_VOLUNTEER_KIT_4.1.1.md) and
+   [results guide](FIRST_USE_RESULTS_4.1.1.md); no participant has started either
+   recorded cohort and no outreach is part of this integration.
 2. Use the first real observed onboarding failures to prioritize fixes. Treat
    PR #5, complete erasure, provider access and application submission as
    independent gates; none is a prerequisite to truthfully distributing the verified

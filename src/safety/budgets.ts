@@ -109,7 +109,7 @@ export interface WriteCounters {
 }
 
 const counter = z.number().finite().int().nonnegative();
-const counters = z.record(counter);
+const counters = z.record(z.string(), counter);
 const writeRecordSchema = z.object({
   fingerprint: z.string().regex(/^[a-f0-9]{64}$/),
   action: z.enum([
@@ -137,6 +137,7 @@ const writeRecordSchema = z.object({
 const budgetSchema = z.object({
   version: z.literal(1),
   accounts: z.record(
+    z.string(),
     z.object({
       ageWeek: counter,
       warmupStartedAt: counter.optional(),
@@ -145,7 +146,7 @@ const budgetSchema = z.object({
       pendingInvites: counter,
       acceptedInvites: counter,
       sentInvites: counter,
-      operations: z.record(writeRecordSchema).optional(),
+      operations: z.record(z.string(), writeRecordSchema).optional(),
     }),
   ),
 });

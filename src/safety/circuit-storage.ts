@@ -12,6 +12,7 @@ const stateSchema = z.object({
   globalTrippedAt: nonnegative,
   globalReason: z.string().max(512),
   actions: z.record(
+    z.string(),
     z.object({ strikes: nonnegative.int(), cooldownUntil: nonnegative, lastStrikeAt: nonnegative }),
   ),
   rate429Count: nonnegative.int(),

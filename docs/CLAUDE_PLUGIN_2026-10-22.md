@@ -16,6 +16,25 @@ rejects unexpected files or symlinks before copying. Four deterministic local
 fixtures pass, including `.env` and nested private-file refusals. This changes
 packaging only; it does not repair the runtime advisories.
 
+## October 26 source integration checkpoint
+
+This private integration preserves plugin head
+`6f0942a7dc407439e6d80e5df74af865ccf8f7b2` and merges reviewed main
+`c7d9af30508c0d2a7b69d5df033e784268089dcd` without rewriting history.
+Main's repaired source dependencies do not change the plugin's immutable public
+4.1.1 archive pin or template version. A replacement must first be published and
+independently verified before the wrapper can be repinned and its package gates
+rerun. No future archive is fetched or treated as verified here.
+
+CI retains main's audited `--from-source` MCPB candidate build and the separately
+audited public-runtime plugin build. The four template refusal fixtures run
+before either package build, so a blocked public-runtime audit cannot hide their
+result. The exact four-file template allowlist and all four fixtures are unchanged.
+All four disposable built-in Node fixtures pass at this checkpoint; no full
+suite, package build/audit, hosted dispatch, browser/native/account operation or
+publication is claimed. Historical failed evidence remains failed. This source
+integration is not permission to distribute the old wrapper as security-cleared.
+
 ## Scope
 
 `packaging/claude-plugin` is a template for a local plugin containing the exact

@@ -10,9 +10,9 @@ import { createRequire } from 'node:module';
 export const bundlePatches = {
   'brace-expansion': ['5.0.9', '5.0.12'],
   'http-cache-semantics': ['4.2.0', '4.3.0'],
-  'ip-address': ['10.5.0', '10.7.3'],
+  'ip-address': ['10.5.0', '10.7.5'],
   'postcss-selector-parser': ['7.1.4', '7.1.6'],
-  undici: ['6.28.0', '6.28.1'],
+  undici: ['6.28.0', '6.29.1'],
 };
 const read = (file) => JSON.parse(fs.readFileSync(file, 'utf8'));
 

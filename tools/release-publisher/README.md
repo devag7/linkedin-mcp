@@ -56,3 +56,13 @@ version, identity, integrity and directory-alias validation. The disposable audi
 lock records the actual7.1.6 bytes. No npm auth code or audit threshold changes.
 The failed original audit and subsequent actual installer result are retained in
 [dependency repair evidence](../../docs/DEPENDENCY_REPAIR_3.0.0_2026-10-06.md).
+
+
+October 26: fresh ip-address/undici advisories make the baseline real installer
+fail its final audit. Locked replacements advance to 10.7.5 and 6.29.1, retaining
+exact old/new identity/version/integrity and dependency checks, lock rewriting
+and the cache-policy guard. The repaired actual Node 24 installation passes a
+zero production audit and reports npm 12.2.0. The raw blueprint describes npm's
+original bundled modules and is not an installed-publisher audit. Baseline and
+repaired installation outputs are preserved in the [security repair evidence](../../docs/SECURITY_REPAIR_2026-10-26.md).
+No authentication, OIDC-only policy or publication permission changes.
