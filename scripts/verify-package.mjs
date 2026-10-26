@@ -27,6 +27,9 @@ const runNpm = (args, cwd = root) =>
     maxBuffer: 2 * 1024 * 1024,
   });
 try {
+  process.stdout.write(execFileSync(process.execPath, [resolve('scripts/verify-build.mjs')], {
+    encoding: 'utf8', timeout: 30000,
+  }));
   const packed = JSON.parse(
     runNpm(['pack', '--json', '--ignore-scripts', '--pack-destination', dir]),
   )[0];
@@ -62,10 +65,12 @@ try {
     ['install', '--ignore-scripts', '--no-audit', '--no-fund', join(dir, packed.filename)],
     install,
   );
+  assert.equal(runNpm(['exec', '--offline', '--', 'linkedin-mcp', '--version'], install).trim(),
+    `linkedin-mcp v${pkg.version}`, 'The installed npm bin/shim must execute the CLI.');
   // A consumer does not inherit this repository's lockfile or npm overrides.
   // Verify the actual fresh resolution, including any nested Express copies.
   const consumerLock = JSON.parse(readFileSync(join(install, 'package-lock.json'), 'utf8'));
-  assert.equal(pkg.dependencies['@modelcontextprotocol/sdk'], '^1.31.0',
+  assert.equal(pkg.dependencies['@modelcontextprotocol/sdk'], '^1.32.1',
     'The shipped SDK dependency must exclude the affected versions.');
   const assertInstalledFloor = (name, entry, minimum) => {
     const actual = JSON.parse(readFileSync(join(install, name, 'package.json'), 'utf8'));
@@ -82,7 +87,7 @@ try {
       name.endsWith('/node_modules/@modelcontextprotocol/sdk'),
   );
   assert.ok(sdks.length > 0, 'Expected the consumer SDK dependency.');
-  for (const [name, entry] of sdks) assertInstalledFloor(name, entry, [1, 31, 0]);
+  for (const [name, entry] of sdks) assertInstalledFloor(name, entry, [1, 32, 1]);
   const proxies = Object.entries(consumerLock.packages).filter(
     ([name]) => name === 'node_modules/proxy-addr' || name.endsWith('/node_modules/proxy-addr'),
   );
@@ -110,9 +115,15 @@ try {
     `linkedin-mcp v${pkg.version}`,
   );
   const shipped = readFileSync(bundle, 'utf8');
+  if (pkg.private === true) {
+    const metadata = JSON.parse(readFileSync(join(install, 'node_modules', pkg.name, 'mcp-manifest.json'), 'utf8'));
+    assert.equal(metadata.tools.length, 25, 'Private research candidate must retain all24core tools plus research.');
+    assert.ok(metadata.tools.some((tool) => tool.name === 'research_jobs'));
+    assert.ok(shipped.includes('research_jobs'));
+  }
   if (pkg.version === '3.0.0') {
     const metadata = JSON.parse(readFileSync(join(install, 'node_modules', pkg.name, 'mcp-manifest.json'), 'utf8'));
-    assert.equal(metadata.tools.length, 22, '3.0.0 is the approved 22-tool core release.');
+    assert.equal(metadata.tools.length, 24, 'Current source registers the offline job-seeker tools.');
     assert.ok(!metadata.tools.some((tool) => tool.name === 'research_jobs'));
     assert.ok(!shipped.includes('research_jobs'), 'The deferred research tool must not enter the core bundle.');
   }
@@ -230,7 +241,8 @@ try {
   process.stdout.write(
     execFileSync(process.execPath, [resolve('scripts/verify-setup.mjs'), bundle], {
       encoding: 'utf8',
-      timeout: 30000,
+      // Three full client cases run sequentially; record timing separately.
+      timeout: process.platform === 'win32' ? 180000 : 30000,
     }),
   );
   const smoke = execFileSync(
@@ -239,6 +251,16 @@ try {
     { encoding: 'utf8', timeout: 30000 },
   );
   process.stdout.write(smoke);
+  process.stdout.write(
+    execFileSync(process.execPath, [resolve('scripts/verify-data-inventory.mjs'), bundle], {
+      encoding: 'utf8', timeout: 30000,
+    }),
+  );
+  process.stdout.write(
+    execFileSync(process.execPath, [resolve('scripts/verify-retirement.mjs'), bundle], {
+      encoding: 'utf8', timeout: process.platform === 'win32' ? 120000 : 30000,
+    }),
+  );
   process.stdout.write(
     JSON.stringify({
       packedArtifact: 'passed',

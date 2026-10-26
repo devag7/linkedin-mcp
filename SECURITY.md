@@ -2,8 +2,12 @@
 
 ## Supported versions
 
-The current code line is 2.x. This document describes the source checkout;
-installing an older published version does not include unreleased fixes.
+The current published major version is 4.x. The
+[4.0.0 release evidence](docs/RELEASE_EVIDENCE_4.0.0.md) identifies its exact
+tag and archive; older packages do not inherit later source changes.
+The [4.1.1 patch status](docs/RELEASE_EVIDENCE_4.1.1.md) tracks the updated SDK
+floor and opt-in tool-input guard. Older packages lack that guard even when a
+fresh dependency resolution selects SDK 1.32.1.
 
 ## Reporting a vulnerability
 
@@ -30,6 +34,10 @@ Duplicate security headers are rejected. Forwarding headers do not authorize
 requests. No wildcard or other CORS access is granted. Browser CORS clients,
 reverse proxies, tunnels, LAN exposure, and serverless deployments are unsupported.
 Do not publish or forward this listener.
+
+Source 4.1.1 enables a limit of 10,000 array elements/object keys across a
+tool call's arguments before SDK schema validation. The HTTP parser retains
+its 1 MiB body limit. An SDK upgrade alone does not enable the element guard.
 
 Requests require uncompressed JSON, with a 1 MiB limit, a 10-second body deadline,
 and a 180-second response deadline. Headers are limited to 16 KiB with a 10-second
@@ -63,6 +71,11 @@ not clear separate safety-state files. A custom profile requires the additional
 `--confirm-profile-deletion` flag before its entire directory can be removed. Do not point it at a directory containing
 unrelated data. Never commit or attach a browser profile to a support request.
 Use a trusted local OS account and review tool arguments before approving writes.
+On Windows, avoid a custom profile under Public or another shared directory. A
+[disposable native probe](https://github.com/devag7/linkedin-mcp/actions/runs/38213175092)
+found second-user directory access under a public custom parent; the default-style
+user-profile fixture denied access, but that does not prove every existing ACL.
+Review native permissions before login.
 
 ## Checkpoint stops and recovery
 
@@ -116,8 +129,10 @@ counters. No target content, raw response detail, cookies, or authentication tok
 are stored in journal entries. Input hashes are fingerprints, not anonymization.
 State is validated, bounded to 8 MiB, and replaced using a synced temporary file
 and atomic rename requesting POSIX mode `0600`. Node mode bits do not establish
-Windows ACL privacy; use an account-private directory and see
-[platform permission limits](docs/PRIVACY.md). Corruption/read failures block startup; save
+Windows ACL privacy by themselves. Published 4.0.0 adds native ACL creation and
+verification within the actual `%USERPROFILE%` tree; 3.1.0 predates that change.
+Use an account-private directory and see [platform permission limits](docs/PRIVACY.md).
+Corruption/read failures block startup; save
 failures latch a stop in the running tracker. Preserve reservations when repairing
 storage. Unknown invitations remain conservative inputs to safety gates across days.
 
@@ -164,8 +179,13 @@ stdio processes. The [hosted Node20/22 matrix](https://github.com/devag7/linkedi
 passed all 12 source/package jobs on Linux, macOS and Windows, including actual
 Chrome launch, ownership and cleanup with empty temporary profiles. This does not
 prove live LinkedIn behavior, Windows native ACL privacy or release authentication.
+Later [native second-user checks](https://github.com/devag7/linkedin-mcp/actions/runs/38685192976)
+passed for synthetic state on the merged source and are included in
+[published 4.0.0](docs/RELEASE_EVIDENCE_4.0.0.md); they do not revise the
+earlier matrix or the published 3.1.0 archive.
 LICENSE was recovered from the committed revision after cloud-sync deletion;
-packed-package checks require it. No publishing was performed.
+packed-package checks require it. No publishing was performed in that earlier
+implementation pass.
 
 ### PR #3 preview and erasure corrections (2026-10-01)
 
@@ -185,5 +205,7 @@ entry before deletion, checking that the moved entry is still that directory. Ne
 links are unlinked without traversing targets. This protects ordinary accidental
 aliases and entry replacement; Node filesystem APIs do not provide an atomic
 open-relative deletion primitive against an adversarial local process replacing
-ancestor directories. Keep state directories private. Windows ACL verification is
-still an explicit open item. Safety journals and checkpoints survive logout.
+ancestor directories. Keep state directories private. Native Windows ACL creation
+and verification are merged into source, with the hosted-runner and published
+version limits described in [PRIVACY.md](docs/PRIVACY.md). Safety journals and
+checkpoints survive logout.

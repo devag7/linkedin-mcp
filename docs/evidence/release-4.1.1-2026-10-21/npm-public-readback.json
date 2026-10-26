@@ -1,0 +1,12 @@
+{
+  "checkedOn": "2026-10-21",
+  "version": "4.1.1",
+  "files": 15,
+  "sha256": "3aa33f9a38e2928625f9a7d24d300b644102c87121dc0168766048e1cf7368ec",
+  "integrityMatches": true,
+  "attestationSubjectsMatch": true,
+  "sourceSha": "3b3e31a9673ddf291e9cb7bc76bf8539d1b8cb0d",
+  "packagedInstallGuidance": "4.1.1",
+  "newInputGuardPresent": true,
+  "cryptographicSignatureCheck": "recorded separately"
+}

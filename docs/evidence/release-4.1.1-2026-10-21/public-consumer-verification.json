@@ -1,0 +1,14 @@
+{
+  "package": "linkedin-mcp-tools@4.1.1",
+  "sdk": "1.32.1",
+  "productionFindings": 0,
+  "signatureVerification": "audited 99 packages in 1s\n\n99 packages have verified registry signatures\n\n15 packages have verified attestations",
+  "protocolProof": {
+    "publicTools": 24,
+    "coldWhoami": "not_checked",
+    "oversizedInputRejected": true,
+    "browserProfileCreated": false,
+    "linkedInRequests": 0
+  },
+  "disposableConsumerRemoved": true
+}

@@ -1,0 +1,36 @@
+{
+  "manifest_version": "0.3",
+  "name": "linkedin-mcp-tools",
+  "display_name": "LinkedIn MCP (local)",
+  "version": "4.1.1",
+  "description": "Run the unofficial LinkedIn MCP server locally with your own Chrome profile. Reads need login; writes remain disabled by default.",
+  "author": {
+    "name": "Dev Agarwalla",
+    "url": "https://github.com/devag7"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/devag7/linkedin-mcp.git"
+  },
+  "homepage": "https://github.com/devag7/linkedin-mcp",
+  "documentation": "https://github.com/devag7/linkedin-mcp/blob/main/SETUP_GUIDE.md",
+  "support": "https://github.com/devag7/linkedin-mcp/issues",
+  "license": "MIT",
+  "privacy_policies": [
+    "https://github.com/devag7/linkedin-mcp/blob/main/docs/PRIVACY.md",
+    "https://www.linkedin.com/legal/privacy-policy"
+  ],
+  "server": {
+    "type": "node",
+    "entry_point": "node_modules/linkedin-mcp-tools/dist/index.js",
+    "mcp_config": {
+      "command": "node",
+      "args": ["${__dirname}/node_modules/linkedin-mcp-tools/dist/index.js"]
+    }
+  },
+  "tools_generated": true,
+  "compatibility": {
+    "platforms": ["darwin", "win32"],
+    "runtimes": { "node": ">=20.0.0" }
+  }
+}

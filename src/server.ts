@@ -27,6 +27,7 @@ import { registerSessionTools } from './tools/session.js';
 import { registerProfileTools } from './tools/profile.js';
 import { registerFeedTools } from './tools/feed.js';
 import { registerDiscoveryTools } from './tools/discovery.js';
+import { registerApplicationTools } from './tools/application.js';
 import { registerWriteTools } from './tools/write.js';
 import { registerResearchTools } from './tools/research.js';
 import { VERSION } from './version.js';
@@ -78,7 +79,8 @@ export function createServer(
 ): CreatedServer {
   const server = new McpServer(
     { name: 'linkedin-mcp', version: VERSION },
-    { capabilities: { tools: {} } },
+    // Bound array elements/object keys before SDK schema validation.
+    { capabilities: { tools: {} }, maxToolInputElements: 10_000 },
   );
   const { engine, voyager, budget, guard } = runtime;
 
@@ -98,6 +100,7 @@ export function createServer(
   registerProfileTools(server, voyager, guard, logger);
   registerFeedTools(server, voyager, guard, logger);
   registerDiscoveryTools(server, voyager, engine, guard, logger);
+  registerApplicationTools(server);
   registerWriteTools(server, voyager, guard, logger, policy);
   registerResearchTools(server, logger);
   logger.info('MCP server created', {

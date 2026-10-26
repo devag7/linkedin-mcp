@@ -4,6 +4,7 @@ import { homedir } from 'node:os';
 import { dirname, isAbsolute, join, parse, relative, resolve } from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { StateLock } from '../safety/state-lock.js';
+import { assertNoRetirementMarker } from '../retirement.js';
 
 function directorySnapshot(directory: string) {
   for (let current = directory; ; current = dirname(current)) {
@@ -49,7 +50,7 @@ export function removeSavedProfile(
   } = {},
 ): boolean {
   const home = options.homeDir ?? homedir();
-  if (options.profileDir?.trim() && !options.confirmCustom)
+  if (options.profileDir !== undefined && options.profileDir !== '' && !options.confirmCustom)
     throw new Error(
       'A custom profile deletion requires --confirm-profile-deletion after reviewing its directory.',
     );
@@ -60,6 +61,7 @@ export function removeSavedProfile(
     contains(directory, options.workingDir ?? process.cwd())
   )
     throw new Error('PROFILE_DELETION_ROOT_REFUSED');
+  assertNoRetirementMarker(directory);
   const initial = directorySnapshot(directory);
   if (!initial) return false;
   const owner = new StateLock(`${directory}.owner`, true);
