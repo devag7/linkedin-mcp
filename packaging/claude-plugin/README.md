@@ -1,6 +1,6 @@
-# LinkedIn MCP local plugin — candidate 4.1.1
+# LinkedIn MCP local plugin — 4.1.2
 
-This unofficial plugin packages the verified public `linkedin-mcp-tools@4.1.1`
+This unofficial plugin packages the verified public `linkedin-mcp-tools@4.1.2`
 runtime and a guided job-preparation skill. It exposes 24 tools, including local
 application worksheets and CSV export. It does not fill or submit applications,
 upload resumes, or maintain a persistent application tracker. Writes are disabled
@@ -65,7 +65,7 @@ project does not own LinkedIn's interfaces; the directory policy's approved
 Connector exception is not blanket permission to automate third-party sites.
 Obtain written eligibility/provider clarification before submission. Portal
 access may require an existing paid Claude plan, separate from free local
-distribution. This candidate has not been submitted or accepted.
+distribution. This plugin has not been submitted or accepted.
 
 References: [plugin structure](https://claude.com/docs/plugins/build),
 [submission route](https://claude.com/docs/connectors/building/submission),

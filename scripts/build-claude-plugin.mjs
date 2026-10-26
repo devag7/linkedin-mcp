@@ -11,8 +11,8 @@ import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js'
 import { copyPluginTemplate } from './claude-plugin-template.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const version = '4.1.1';
-const expectedSha256 = '3aa33f9a38e2928625f9a7d24d300b644102c87121dc0168766048e1cf7368ec';
+const version = '4.1.2';
+const expectedSha256 = '6a03ee1a415d064fb573455689e142c5cbec1f140040b66f5674dcab23370947';
 const npmCli = process.env.npm_execpath;
 assert.ok(npmCli, 'Run through npm run build:claude-plugin.');
 const scratch = realpathSync(mkdtempSync(join(tmpdir(), 'linkedin-plugin-build-')));

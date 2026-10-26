@@ -133,3 +133,23 @@ hosted results and independent review before distribution.
 No native plugin installation or LinkedIn request is part of this milestone.
 The public 4.1.1 release, its tag, bundle and separate first-use cohort remain
 unchanged. First-use remains 0/0, unmeasured.
+
+## October 26 verified public runtime repin
+
+The public npm 4.1.2 archive is now downloadable and matches the reviewed
+15-file candidate byte for byte, SHA-256
+`6a03ee1a415d064fb573455689e142c5cbec1f140040b66f5674dcab23370947`.
+The wrapper manifest and both public builders now target that exact public
+runtime. Historical 4.1.1 results and its new advisory failures above remain
+unchanged. This update does not claim the new wrapper ZIP/MCPB is published,
+native-client tested or directory accepted. New wrapper results and independent
+review must be recorded before distribution. The completed 4.1.2 core release
+and all destination readbacks are tracked separately.
+
+Local public-runtime wrapper checks now pass: production audits zero, staged and
+unpacked 24-tool discovery/cold status/input guard, and all four dirty-template
+fixtures. MCPB SHA-256 `526b183e36f40139c8a351335859268ca680bd3d309f5980fcc92f3e27d81ba7`;
+plugin ZIP SHA-256 `cd0417c9dda049792b7095432690de1a065af9e04fd1ca458b3f9d1d1524de62`.
+Claude Code 2.1.308 static strict validation passes with the same directory-only
+missing-icon warning and marketplace advice. Hosted final-head checks and
+independent review remain separate; these local files are not yet release assets.
