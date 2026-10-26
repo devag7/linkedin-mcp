@@ -1,6 +1,33 @@
 # Claude Desktop local bundle: build and evidence
 
-**Current build target:** published `linkedin-mcp-tools@4.1.1`. The unsigned
+## Current 4.1.2 build and installation
+
+The current builder targets the verified public `linkedin-mcp-tools@4.1.2`
+archive, SHA-256 `6a03ee1a415d064fb573455689e142c5cbec1f140040b66f5674dcab23370947`.
+Build with `npm run build:claude-mcpb -- /absolute/output/linkedin-mcp-tools-4.1.2.mcpb`.
+The local unsigned bundle hash is
+`526b183e36f40139c8a351335859268ca680bd3d309f5980fcc92f3e27d81ba7`.
+Production audit and staged/unpacked 24-tool cold status/input-guard checks pass.
+Use the [4.1.2 release evidence](RELEASE_EVIDENCE_4.1.2.md) for current asset,
+hosted-check and independent public-download status before installing.
+
+When the matching 4.1.2 bundle and checksum are present in the
+[release assets](https://github.com/devag7/linkedin-mcp/releases/tag/v4.1.2),
+download both into the same folder and check
+`shasum -a 256 -c linkedin-mcp-tools-4.1.2.mcpb.sha256` on macOS, or compare
+`(Get-FileHash .\linkedin-mcp-tools-4.1.2.mcpb -Algorithm SHA256).Hash` on PowerShell.
+Install through Claude Desktop's Extensions advanced settings only after
+reviewing its unsigned local-code access warning. Native 4.1.2 installation,
+live LinkedIn use and directory acceptance are not established by package checks.
+The explicit `--from-source` mode produces a separately labeled unreleased
+checkout bundle; it is never interchangeable with verified public-archive mode.
+
+## Historical 4.1.1 build instructions and evidence
+
+The following pins, commands and receipts are historical, not current install
+recommendations. Newly reported advisories prevent treating 4.1.1 as security-cleared.
+
+**Historical build target:** published `linkedin-mcp-tools@4.1.1`. The unsigned
 4.1.1 bundle and checksum are verified public Release assets; hosted Mac and
 Windows packed/unpacked checks passed. The existing public 4.1.0 bundle/native receipt below is historical.
 Neither bundle is a Claude directory listing, and neither fills or submits jobs.

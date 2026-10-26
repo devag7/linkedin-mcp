@@ -40,3 +40,12 @@ real-state deletion or outreach occurs. Existing source/package fixtures use
 disposable data only. Native/live/cohort/privacy/directory acceptance and the
 blocked research brief remain open. No cohort rate or broad compatibility is
 inferred from fixtures; required maintainer service spend remains $0.
+
+## Completed core publication — October 26
+
+[Public evidence](RELEASE_EVIDENCE_4.1.2.md) supersedes the preparation-only status
+above: PR #49 merged at `436754e8a7de85013418aaf0a55ccd900f59380d`, core 4.1.2
+is independently verified at all four destinations, and the same-SHA production
+resume passed all ten jobs while skipping npm upload. The first visibility
+failure remains failed and its cause unproven. Claude wrapper assets, native/live
+validation and first-use are separate gates; none follows from core publication.

@@ -1,6 +1,16 @@
 # Local Claude plugin candidate — October 22, 2026
 
-## October 26 security and review update
+## Current 4.1.2 target
+
+The current plugin template and builder target public core 4.1.2, SHA-256
+`6a03ee1a415d064fb573455689e142c5cbec1f140040b66f5674dcab23370947`.
+Local ZIP hash: `cd0417c9dda049792b7095432690de1a065af9e04fd1ca458b3f9d1d1524de62`.
+Both staged/unpacked protocol checks and production audits pass. See
+[4.1.2 release evidence](RELEASE_EVIDENCE_4.1.2.md) for hosted and public-asset
+status; no native, live-provider or directory acceptance is implied.
+The 4.1.1 preparation/failure records below remain historical.
+
+## Historical 4.1.1 security and review update
 
 The original `1c729f5` candidate passed all 14 hosted jobs, including macOS and
 Windows plugin checks. Those results are historical. A fresh October 26 source
@@ -16,7 +26,7 @@ rejects unexpected files or symlinks before copying. Four deterministic local
 fixtures pass, including `.env` and nested private-file refusals. This changes
 packaging only; it does not repair the runtime advisories.
 
-## October 26 source integration checkpoint
+## Historical source integration checkpoint
 
 This private integration preserves plugin head
 `6f0942a7dc407439e6d80e5df74af865ccf8f7b2` and merges reviewed main
@@ -35,15 +45,15 @@ suite, package build/audit, hosted dispatch, browser/native/account operation or
 publication is claimed. Historical failed evidence remains failed. This source
 integration is not permission to distribute the old wrapper as security-cleared.
 
-## Scope
+## Current 4.1.2 scope
 
 `packaging/claude-plugin` is a template for a local plugin containing the exact
-public 4.1.1 runtime, its production dependencies and a job-preparation skill.
+public 4.1.2 runtime, its production dependencies and a job-preparation skill.
 The builder verifies npm archive SHA-256
-`3aa33f9a38e2928625f9a7d24d300b644102c87121dc0168766048e1cf7368ec`.
+`6a03ee1a415d064fb573455689e142c5cbec1f140040b66f5674dcab23370947`.
 It does not build the runtime from this checkout or include experimental PR #5.
 The plugin exposes the same 24 tools; runtime version and public release stay
-4.1.1. The ZIP and its own checksum are separate artifacts from the npm archive
+4.1.2. The ZIP and its own checksum are separate artifacts from the npm archive
 and the published MCPB.
 
 ## Build and verification
