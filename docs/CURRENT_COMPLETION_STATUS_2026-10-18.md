@@ -9,6 +9,16 @@ The [October 21 full-scope audit](COMPLETION_AUDIT_2026-10-21.md) maps every
 original functional requirement, later backlog item and job-seeker addition.
 The complete roadmap has not been achieved.
 
+## October 26 security gate
+
+Fresh source/production audits report four affected packages, including high
+Zod and body-parser findings; the real installed publisher also fails on newly
+affected ip-address/undici versions. Earlier zero-audit receipts are historical.
+A separate [source and publisher repair](SECURITY_REPAIR_2026-10-26.md) passes
+local candidate gates; independent review and hosted acceptance remain required.
+Public 4.1.1 and its wrapper are not currently security-cleared. No release,
+profile access or full roadmap completion is implied by preparing a repair.
+
 ## Published and verified
 
 | Area | Evidence | Boundary |

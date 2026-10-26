@@ -9,7 +9,7 @@ import type { BudgetTracker } from '../safety/budgets.js';
 import { SafetyStateError } from '../safety/state-lock.js';
 
 const identitySchema = z.object({
-  data: z.record(z.unknown()).optional(),
+  data: z.record(z.string(), z.unknown()).optional(),
   included: z.array(z.object({ entityUrn: z.string().optional() }).passthrough()).optional(),
 });
 export function verifiedAccountKey(input: unknown): string {

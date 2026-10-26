@@ -48,7 +48,7 @@ const write = z.union([
       target: z.string(),
       route: z.string(),
       effect: z.string(),
-      content: z.record(z.unknown()),
+      content: z.record(z.string(), z.unknown()),
     }),
   }),
   row({
@@ -77,7 +77,7 @@ const dataSchemas: Record<ToolName, z.ZodTypeAny> = {
     loggedIn: z.boolean().nullable(),
     sessionState: z.enum(['not_checked', 'logged_in', 'logged_out']),
     tools: z.number().int(),
-    capabilities: z.array(z.record(z.unknown())),
+    capabilities: z.array(z.record(z.string(), z.unknown())),
     circuitOpen: z.boolean(),
   }),
   health_check: row({
@@ -85,7 +85,7 @@ const dataSchemas: Record<ToolName, z.ZodTypeAny> = {
     version: z.string(),
     voyager: z.enum(['blocked', 'ok', 'auth_required', 'error']),
     circuitOpen: z.boolean(),
-    budget: z.record(z.unknown()),
+    budget: z.record(z.string(), z.unknown()),
   }),
   close_session: row({ closed: z.literal(true) }),
   get_my_profile: profile,
@@ -191,7 +191,7 @@ const dataSchemas: Record<ToolName, z.ZodTypeAny> = {
   get_pending_invitations: row({
     received: z.array(invitation).max(100).optional(),
     sent: z.array(invitation).max(100).optional(),
-    errors: z.record(z.string()).optional(),
+    errors: z.record(z.string(), z.string()).optional(),
   }),
   get_conversation: z
     .array(
