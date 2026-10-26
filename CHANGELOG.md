@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.1.2] — Security update
+
+Updates Zod to 4.6.7 and affected runtime/publisher dependencies; preserves 24
+core tools, exact identity checks and existing safety/input/cleanup bounds.
+See docs/RELEASE_NOTES_4.1.2.md and docs/RELEASE_READINESS_4.1.2.md. No
+publication, native-client acceptance or live-provider claim.
+
 ## [4.0.0] — Windows privacy boundary and offline retirement preview
 
 - Added `--retirement-preview` for bounded, path-free counts of one selected

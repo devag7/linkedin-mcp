@@ -1,28 +1,32 @@
 # Setup and client verification
 
-This guide targets the 24-tool **4.1.1** security patch. Check its
-[publication status](docs/RELEASE_EVIDENCE_4.1.1.md) before installing. The
-[4.1.0 publication evidence](docs/RELEASE_EVIDENCE_4.1.0.md) and preceding
-[4.0.0 evidence](docs/RELEASE_EVIDENCE_4.0.0.md) remain available. Native-client
-first-use cohorts and broader live-provider compatibility remain unverified.
+This guide targets the 24-tool **4.1.2 security update**. Check
+[release availability](https://github.com/devag7/linkedin-mcp/releases/tag/v4.1.2)
+and the [readiness record](https://github.com/devag7/linkedin-mcp/blob/main/docs/RELEASE_READINESS_4.1.2.md)
+before installing. These instructions do not establish publication. Historical
+4.1.1 bytes have newly reported dependency advisories; their publication receipts
+are identity evidence, not current security clearance. For offline source setup,
+use a reviewed checkout with `npm run build` and `node dist/index.js --setup cursor`.
+Native first-use and broader live compatibility remain unproven.
 Node 20+ and installed Google Chrome are required. Login requires a local display.
 No OAuth/cookie value copied into environment variables activates an official API
 provider. There is no dotenv loader; use your shell or your client's env settings.
 
 ## Guided offline first run
 
-Install the published package at a stable path, then request the client report.
+After checking 4.1.2 availability and verification, install it at a stable path
+and request the client report.
 On macOS/Linux:
 
 ```sh
-npm install --prefix "$HOME/.local/share/linkedin-mcp" linkedin-mcp-tools@4.1.1
+npm install --prefix "$HOME/.local/share/linkedin-mcp" linkedin-mcp-tools@4.1.2
 node "$HOME/.local/share/linkedin-mcp/node_modules/linkedin-mcp-tools/dist/index.js" --setup cursor
 ```
 
 On Windows PowerShell:
 
 ```powershell
-npm install --prefix "$env:LOCALAPPDATA\linkedin-mcp" linkedin-mcp-tools@4.1.1
+npm install --prefix "$env:LOCALAPPDATA\linkedin-mcp" linkedin-mcp-tools@4.1.2
 node "$env:LOCALAPPDATA\linkedin-mcp\node_modules\linkedin-mcp-tools\dist\index.js" --setup cursor
 ```
 
@@ -49,20 +53,18 @@ Source contributors can instead run `npm ci`, `npm run build`, then
 
 ### Claude Desktop extension
 
-For a local extension instead of a JSON entry, use the independently verified
-[unsigned 4.1.1 `.mcpb` and checksum](https://github.com/devag7/linkedin-mcp/releases/tag/v4.1.1).
-The generated configuration above is
-an alternative local installation route.
-The earlier 4.1.0 bundle predates the new input guard.
-Verify the file hash and install it through Claude Desktop Settings →
-Extensions → Advanced settings → Install extension. The
-[bundle guide](docs/CLAUDE_DESKTOP_BUNDLE_2026-10-17.md) gives the exact
-SHA-256 and verification commands. Review Claude's local-code access warning:
-the extension runs with your computer account's access. It contains no Chrome,
-login, profile or credentials; use the published CLI for the one-time manual
-login before live reads. One historical 4.1.0 Claude for Mac 2.42304.0 cold check found all 24
-tools and returned `whoami` as `not_checked` without a LinkedIn read.
-The extension is not a listed Claude web connector.
+The [unsigned 4.1.1 extension and checksum](https://github.com/devag7/linkedin-mcp/releases/tag/v4.1.1)
+remain historical identity evidence. Newly reported dependency findings mean
+they do not establish current security clearance. The default builder retains
+this exact public pin and its zero-audit gate.
+
+The `--from-source` mode builds an explicitly unreleased checkout bundle for
+offline verification; it does not claim public artifact identity. Native
+installation and account use remain unverified.
+The [bundle guide](docs/CLAUDE_DESKTOP_BUNDLE_2026-10-17.md) records historical
+checks: one 4.1.0 Claude for Mac cold check discovered 24 tools and returned
+`whoami` as `not_checked` without a LinkedIn read. That bundle predates the SDK
+input guard. The extension is not a listed Claude web connector.
 
 ### Preview an existing client configuration
 
