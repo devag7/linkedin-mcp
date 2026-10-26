@@ -27,8 +27,8 @@ to the final source and `release.yml` on main, producer run attempt 1.
 | [MCP Registry 4.1.2](https://registry.modelcontextprotocol.io/v0.1/servers/io.github.devag7%2Flinkedin-mcp/versions/4.1.2) | Active/latest; correct `linkedin-mcp-tools@4.1.2` npm identifier and stdio transport; metadata matches reviewed server.json |
 | [GitHub Release/tag](https://github.com/devag7/linkedin-mcp/releases/tag/v4.1.2) | Finalized, not draft/prerelease; tag and target are the exact final source SHA |
 
-Independent readback completed October 26 at 10:50 UTC. The raw private receipt
-is retained by the coordinator; public metadata contains no account content.
+Independent readback completed October 26 at 10:50 UTC. The [redacted public receipt](evidence/release-4.1.2-2026-10-26/core-public-readback.json)
+contains public metadata only; raw private logs remain with the coordinator.
 
 ## Workflow history and failure preservation
 
@@ -57,15 +57,18 @@ unreleased and separate from default verified-public mode.
 
 | Artifact | Local SHA-256 | Distribution boundary |
 | --- | --- | --- |
-| Unsigned Desktop MCPB | `526b183e36f40139c8a351335859268ca680bd3d309f5980fcc92f3e27d81ba7` | Public asset/readback pending; native 4.1.2 install untested |
-| Local Claude plugin ZIP | `cd0417c9dda049792b7095432690de1a065af9e04fd1ca458b3f9d1d1524de62` | Public asset/readback pending; native Code/Cowork loading untested |
+| Unsigned Desktop MCPB | `526b183e36f40139c8a351335859268ca680bd3d309f5980fcc92f3e27d81ba7` | Public asset and checksum downloaded independently; exact bytes match. Native 4.1.2 install untested |
+| Local Claude plugin ZIP | `cd0417c9dda049792b7095432690de1a065af9e04fd1ca458b3f9d1d1524de62` | Public asset and checksum downloaded independently; exact bytes match. Native Code/Cowork loading untested |
 
 Claude Code 2.1.308 static strict validation passed with directory-only missing-icon
-warning and marketplace advice. Four template privacy fixtures pass. Final hosted
-wrapper checks and independent documentation review are recorded in PR #47 before
-publication. Directory acceptance is not implied: local command plugins differ
+warning and marketplace advice. Four template privacy fixtures pass. All 14 hosted wrapper checks passed at `c43733f`; runtime/pin/template review
+was clean, with the separate documentation consistency correction recorded in
+PR #47. Both public wrapper files and checksum companions were independently
+downloaded and matched their local bytes. Directory acceptance is not implied: local command plugins differ
 from a remote HTTPS/OAuth connector, and provider/Directory Policy eligibility
-still needs clarification. Public wrapper readback is a separate recorded step.
+still needs clarification. The [wrapper download receipt](evidence/release-4.1.2-2026-10-26/claude-public-readback.json)
+and [14-job hosted record](evidence/release-4.1.2-2026-10-26/wrapper-hosted-checks.json)
+keep public bytes, platform checks and native acceptance separate.
 
 ## Remaining acceptance
 
