@@ -1,4 +1,4 @@
-/** Build a disposable, pinned MCPB from the independently published npm archive. */
+/** Build an audited MCPB from a pinned public archive or explicit checkout candidate. */
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
@@ -8,10 +8,12 @@ import { join, resolve } from 'node:path';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 
-const version = '4.1.1';
+const fromSource = process.argv[2] === '--from-source';
+const version = fromSource ? JSON.parse(readFileSync('package.json', 'utf8')).version : '4.1.1';
+assert.match(version, /^\d+\.\d+\.\d+$/);
 const expectedSha256 = '3aa33f9a38e2928625f9a7d24d300b644102c87121dc0168766048e1cf7368ec';
 const toolchain = '@anthropic-ai/mcpb@2.1.2';
-const output = resolve(process.argv[2] || join(tmpdir(), `linkedin-mcp-tools-${version}.mcpb`));
+const output = resolve(process.argv[fromSource ? 3 : 2] || join(tmpdir(), `linkedin-mcp-tools-${version}${fromSource ? '-candidate' : ''}.mcpb`));
 const npmCli = process.env.npm_execpath;
 assert.ok(npmCli, 'Run through npm run build:claude-mcpb.');
 const scratch = realpathSync(mkdtempSync(join(tmpdir(), 'linkedin-mcpb-')));
@@ -61,12 +63,12 @@ async function verifyCold(folder) {
   }
 }
 try {
-  const packed = JSON.parse(npm(['pack', `linkedin-mcp-tools@${version}`, '--json', '--pack-destination', scratch]))[0];
+  const packed = JSON.parse(npm(['pack', fromSource ? process.cwd() : `linkedin-mcp-tools@${version}`, '--json', '--pack-destination', scratch]))[0];
   assert.equal(packed.name, 'linkedin-mcp-tools');
   assert.equal(packed.version, version);
   const archive = join(scratch, packed.filename);
   const actualSha256 = createHash('sha256').update(readFileSync(archive)).digest('hex');
-  assert.equal(actualSha256, expectedSha256, 'Public npm archive differs from approved release.');
+  if (!fromSource) assert.equal(actualSha256, expectedSha256, 'Public npm archive differs from approved release.');
 
   const bundle = join(scratch, 'bundle');
   mkdirSync(bundle);
@@ -74,6 +76,13 @@ try {
   copyFileSync('packaging/claude-desktop/README.md', join(bundle, 'README.md'));
   copyFileSync('LICENSE', join(bundle, 'LICENSE'));
   const manifest = JSON.parse(readFileSync(join(bundle, 'manifest.json'), 'utf8'));
+  if (fromSource) {
+    manifest.version = version;
+    manifest.display_name += ' (unreleased candidate)';
+    manifest.description = 'Unreleased source candidate; not the published npm artifact. ' + manifest.description;
+    writeFileSync(join(bundle, 'README.md'), `# Unreleased LinkedIn MCP source candidate\n\nBuilt from the current checkout, version ${version}. These are not the public npm or MCPB bytes. Identify this build by the receipt archive and bundle SHA-256 values. It exposes 24 tools; cold protocol checks do not establish native-client or live-provider compatibility.\n\nLocal Node code runs with the user account permissions. Account access requires a separate manual login and scoped consent. Writes remain disabled by default. No application submission or full data erasure is provided. See https://github.com/devag7/linkedin-mcp/blob/main/docs/PRIVACY.md for retention and support details.\n`);
+    writeFileSync(join(bundle, 'manifest.json'), JSON.stringify(manifest, null, 2) + '\n');
+  }
   assert.equal(manifest.version, version);
   writeFileSync(join(bundle, 'package.json'), JSON.stringify({
     name: 'linkedin-mcp-desktop-bundle', version, private: true,
@@ -96,7 +105,8 @@ try {
   run(process.execPath, [npmCli, 'exec', '--yes', '--package', toolchain, '--', 'mcpb', 'unpack', output, unpacked]);
   await verifyCold(unpacked);
   process.stdout.write(JSON.stringify({
-    bundle: output, sourceVersion: version, sourceSha256: actualSha256,
+    bundle: output, sourceKind: fromSource ? 'checkout_candidate' : 'verified_public_npm',
+    sourceVersion: version, sourceSha256: actualSha256,
     bundleSha256: createHash('sha256').update(readFileSync(output)).digest('hex'),
     productionFindings: 0,
   }) + '\n');

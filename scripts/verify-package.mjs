@@ -95,12 +95,18 @@ try {
   for (const [name, entry] of proxies) {
     assertInstalledFloor(name, entry, [2, 0, 8]);
   }
+  const zods = Object.entries(consumerLock.packages).filter(
+    ([name]) => name === 'node_modules/zod' || name.endsWith('/node_modules/zod'),
+  );
+  assert.ok(zods.length > 0, 'Expected the runtime Zod dependency.');
+  for (const [name, entry] of zods) assertInstalledFloor(name, entry, [4, 6, 7]);
   const consumerAudit = JSON.parse(runNpm(['audit', '--omit=dev', '--json'], install));
   assert.equal(consumerAudit.metadata.vulnerabilities.total, 0, 'Consumer production audit must be clean.');
   const dependencyEvidence = {
     sdk: consumerLock.packages['node_modules/@modelcontextprotocol/sdk'].version,
     sdks: sdks.map(([path, entry]) => ({ path, version: entry.version })),
     proxies: proxies.map(([path, entry]) => ({ path, version: entry.version })),
+    zods: zods.map(([path, entry]) => ({ path, version: entry.version })),
     productionFindings: consumerAudit.metadata.vulnerabilities.total,
   };
   if (process.env.PACK_DEPENDENCY_OUTPUT)
