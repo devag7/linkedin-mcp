@@ -1,12 +1,12 @@
 # Setup and client verification
 
-This guide targets the 24-tool **unreleased 4.1.2 security candidate**.
-[Readiness](docs/RELEASE_READINESS_4.1.2.md) tracks its required gates. Public 4.1.1
-bytes remain unchanged but have newly reported dependency advisories; historical
-publication receipts are identity evidence, not current security clearance.
-The 4.1.2 registry-install commands below are future instructions: do not use them
-until publication and independent readback. For offline candidate setup now,
-use the reviewed checkout with `npm run build` and `node dist/index.js --setup cursor`.
+This guide targets the 24-tool **4.1.2 security update**. Check
+[release availability](https://github.com/devag7/linkedin-mcp/releases/tag/v4.1.2)
+and the [readiness record](https://github.com/devag7/linkedin-mcp/blob/main/docs/RELEASE_READINESS_4.1.2.md)
+before installing. These instructions do not establish publication. Historical
+4.1.1 bytes have newly reported dependency advisories; their publication receipts
+are identity evidence, not current security clearance. For offline source setup,
+use a reviewed checkout with `npm run build` and `node dist/index.js --setup cursor`.
 Native first-use and broader live compatibility remain unproven.
 Node 20+ and installed Google Chrome are required. Login requires a local display.
 No OAuth/cookie value copied into environment variables activates an official API
@@ -14,7 +14,8 @@ provider. There is no dotenv loader; use your shell or your client's env setting
 
 ## Guided offline first run
 
-After 4.1.2 is published and verified, install it at a stable path and request the client report.
+After checking 4.1.2 availability and verification, install it at a stable path
+and request the client report.
 On macOS/Linux:
 
 ```sh
@@ -57,8 +58,9 @@ remain historical identity evidence. Newly reported dependency findings mean
 they do not establish current security clearance. The default builder retains
 this exact public pin and its zero-audit gate.
 
-The 4.1.2 `--from-source` bundle is explicitly unreleased and supports offline
-candidate verification. Native installation and account use remain unverified.
+The `--from-source` mode builds an explicitly unreleased checkout bundle for
+offline verification; it does not claim public artifact identity. Native
+installation and account use remain unverified.
 The [bundle guide](docs/CLAUDE_DESKTOP_BUNDLE_2026-10-17.md) records historical
 checks: one 4.1.0 Claude for Mac cold check discovered 24 tools and returned
 `whoami` as `not_checked` without a LinkedIn read. That bundle predates the SDK

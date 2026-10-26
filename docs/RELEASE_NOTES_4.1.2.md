@@ -1,7 +1,10 @@
-# 4.1.2 — unreleased security patch candidate
+# 4.1.2 — security patch
 
-Preparation only. Based on dependency repair 9befcc393d39b610d1346fd6289247c098ea8a73
-(PR #48), stacked for review; no merge or publication is implied.
+Based on dependency repair 9befcc393d39b610d1346fd6289247c098ea8a73
+(PR #48). Consult [readiness](RELEASE_READINESS_4.1.2.md) and the
+[GitHub Release](https://github.com/devag7/linkedin-mcp/releases/tag/v4.1.2)
+for publication and verification status. These notes define release scope;
+they do not establish availability.
 
 - Runtime: Zod 4.6.7, body-parser 2.4.0, fast-uri 3.1.9 and ip-address 10.7.5
   address newly reported October 26 findings. Internal Zod 4 record declarations

@@ -13,7 +13,7 @@
 
 **Structured LinkedIn reads for MCP clients — profiles, jobs, companies and inbox data, with guided offline setup and explicit safety limits.**
 
-**24 tools · 4.1.2 candidate** · local browser reads · five explicitly confirmed writes · persisted safety limits and operation journals.
+**24 tools · 4.1.2 security update** · local browser reads · five explicitly confirmed writes · persisted safety limits and operation journals.
 
 > This is an unofficial LinkedIn integration and accounts can be restricted.
 > Review [Account safety](#-account-safety) and [SECURITY.md](SECURITY.md) before use.
@@ -24,17 +24,17 @@
 
 ## Guided first run
 
-**4.1.2 is an unreleased security candidate**, stacked on the dependency
-repair under review. It updates Zod and affected runtime/publisher dependencies while retaining
-24 tools and the SDK input guard. See [candidate notes](docs/RELEASE_NOTES_4.1.2.md)
-and [readiness](docs/RELEASE_READINESS_4.1.2.md). No 4.1.2 publication, native use
-or broader live compatibility is claimed.
+4.1.2 updates Zod and affected runtime/publisher dependencies while retaining
+24 tools and the SDK input guard. See the [release notes](docs/RELEASE_NOTES_4.1.2.md)
+and [readiness record](https://github.com/devag7/linkedin-mcp/blob/main/docs/RELEASE_READINESS_4.1.2.md).
+The commands below target 4.1.2; check its [release availability](https://github.com/devag7/linkedin-mcp/releases/tag/v4.1.2)
+and destination verification before installing. These instructions do not
+establish publication, native use or broader live compatibility.
 
-The public 4.1.1 archive/tag remain immutable. Their verified bytes and historical
-receipts do not establish current security clearance: October 26 audits found
-new dependency advisories. Until 4.1.2 is published and independently verified,
-use the reviewed candidate checkout for offline setup/verification; do not run
-the future registry-install commands below. 4.1.0 introduced local application
+The immutable 4.1.1 archive/tag have newly reported October 26 dependency
+advisories. Their verified bytes and historical receipts do not establish
+current security clearance. Source contributors can use a reviewed checkout
+for offline setup and verification. 4.1.0 introduced local application
 worksheets and CSV export; neither fills or submits applications.
 
 **4.0.0 added offline retirement preview and native Windows privacy checks.**
@@ -62,16 +62,17 @@ maps all original requirements and later job-seeker additions to their remaining
 The owner-run [private GitHub traffic ledger](docs/ADOPTION_TRAFFIC_LEDGER_2026-10-19.md)
 tracks stars and rolling traffic without user telemetry.
 
-This candidate does not fill or submit job applications, including Easy Apply.
+This version does not fill or submit job applications, including Easy Apply.
 Use the [job seeker and Claude distribution plan](docs/JOB_SEEKER_AND_CLAUDE_DISTRIBUTION_2026-10-16.md)
 for the application handoff workflow, proposed next features and the separate
 requirements for listing a connector in Claude.
-The public 4.1.1 Desktop extension/checksum remain historical release assets,
-not a security-cleared replacement candidate. The default bundle builder keeps
-that exact public pin unchanged; its zero-audit gate currently blocks a fresh
-public-wrapper build. `npm run build:claude-mcpb -- --from-source` instead builds
-an explicitly **unreleased** candidate for offline checks. No native installation
-or directory acceptance is established.
+Desktop bundle availability and hashes are tracked separately in the
+[bundle guide](docs/CLAUDE_DESKTOP_BUNDLE_2026-10-17.md) and release assets.
+Historical 4.1.1 bundle identity does not clear its newly reported dependency
+findings; the builder retains its zero-audit gate. For offline source checks,
+`npm run build:claude-mcpb -- --from-source` builds an explicitly **unreleased**
+checkout bundle. Those checks do not establish native installation or directory
+acceptance.
 
 ## What it does
 
@@ -94,7 +95,11 @@ results are recorded in [release readiness](docs/RELEASE_READINESS_3.0.0.md). On
 maintainer health/own-profile read also passed with partial metadata;
 [scope and evidence](docs/ZERO_COST_EXECUTION_EVIDENCE_2026-10-01.md#7-consented-maintainer-live-read--passed-limited-scope)
 do not establish fresh-user or broader live compatibility.
-The exact public 4.1.1 bytes and destinations were [independently verified](docs/RELEASE_EVIDENCE_4.1.1.md); that historical identity proof does not clear current advisories. 4.1.2 destination checks remain pending. Native-client first-use cohorts
+The exact public 4.1.1 bytes and destinations were
+[independently verified](docs/RELEASE_EVIDENCE_4.1.1.md); that historical identity
+proof does not clear current advisories. Consult the
+[4.1.2 readiness record](https://github.com/devag7/linkedin-mcp/blob/main/docs/RELEASE_READINESS_4.1.2.md)
+for its destination status. Native-client first-use cohorts
 and broad live-provider compatibility remain unverified.
 See [execution progress](docs/ROADMAP_PROGRESS.md) and the linked evidence.
 
@@ -115,8 +120,9 @@ not a guarantee of current provider compatibility or account safety.
 
 ## 🚀 Quick start
 
-Use Node.js 20 or later and Google Chrome. The commands below target 4.1.2 only after publication and readback;
-run them after its publication status confirms availability.
+Use Node.js 20 or later and Google Chrome. The commands below target 4.1.2;
+check its [release availability](https://github.com/devag7/linkedin-mcp/releases/tag/v4.1.2)
+and [verification status](https://github.com/devag7/linkedin-mcp/blob/main/docs/RELEASE_READINESS_4.1.2.md) before installing.
 Setup is offline; login and subsequent reads
 are deliberate account actions. For a stable installation path and Windows
 commands, see the [setup guide](SETUP_GUIDE.md). On Windows, 4.1.1 retains the

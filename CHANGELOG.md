@@ -1,6 +1,6 @@
 # Changelog
 
-## [4.1.2] — Unreleased security candidate
+## [4.1.2] — Security update
 
 Updates Zod to 4.6.7 and affected runtime/publisher dependencies; preserves 24
 core tools, exact identity checks and existing safety/input/cleanup bounds.
