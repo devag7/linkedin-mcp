@@ -115,3 +115,5 @@ jobs:
         run: npm run build:claude-mcpb
       - name: Build, unpack and start pinned 4.1.1 Claude plugin offline
         run: npm run build:claude-plugin
+      - name: Reject unexpected private plugin template files
+        run: node --test scripts/claude-plugin-template.test.mjs

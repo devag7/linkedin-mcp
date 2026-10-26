@@ -1,5 +1,21 @@
 # Local Claude plugin candidate — October 22, 2026
 
+## October 26 security and review update
+
+The original `1c729f5` candidate passed all 14 hosted jobs, including macOS and
+Windows plugin checks. Those results are historical. A fresh October 26 source
+production audit now reports four affected packages (two high, two moderate),
+including Zod 3.25.76; the pinned public runtime cannot currently meet the build's
+zero-audit gate. Do not distribute this candidate as security-cleared or bypass
+the audit. A separate reviewed runtime repair and replacement release are needed
+before repinning the public wrapper. Public archive identity remains unchanged.
+
+Independent review found the recursive template copy could include untracked
+private files. The follow-up uses an exact four-file template allowlist and
+rejects unexpected files or symlinks before copying. Four deterministic local
+fixtures pass, including `.env` and nested private-file refusals. This changes
+packaging only; it does not repair the runtime advisories.
+
 ## Scope
 
 `packaging/claude-plugin` is a template for a local plugin containing the exact

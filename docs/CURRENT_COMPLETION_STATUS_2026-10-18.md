@@ -9,6 +9,14 @@ The [October 21 full-scope audit](COMPLETION_AUDIT_2026-10-21.md) maps every
 original functional requirement, later backlog item and job-seeker addition.
 The complete roadmap has not been achieved.
 
+## October 26 security notice
+
+A fresh source/production audit reports four affected packages, including high
+Zod and body-parser findings. Earlier zero-audit receipts remain historical;
+they do not establish current clearance. A separate runtime repair is being
+prepared. The unreleased local Claude plugin stays blocked on replacement of
+its pinned public runtime; no audit exception or publication is implied.
+
 ## Published and verified
 
 | Area | Evidence | Boundary |

@@ -2,12 +2,13 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
-import { copyFileSync, cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
+import { copyPluginTemplate } from './claude-plugin-template.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const version = '4.1.1';
@@ -83,7 +84,7 @@ try {
   const archive = join(scratch, packed.filename);
   assert.equal(sha(archive), expectedSha256, 'Public runtime differs from approved release.');
   const folder = join(scratch, 'plugin');
-  cpSync(join(root, 'packaging/claude-plugin'), folder, { recursive: true });
+  copyPluginTemplate(join(root, 'packaging/claude-plugin'), folder);
   copyFileSync(join(root, 'LICENSE'), join(folder, 'LICENSE'));
   writeFileSync(join(folder, 'package.json'), JSON.stringify({
     name: 'linkedin-mcp-local-plugin-builder', version, private: true,
