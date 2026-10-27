@@ -4,7 +4,7 @@ Target: additive application-evidence reuse and local resume/cover-letter drafts
 Base: merged main `ef56b65ba3e905031d2c10197438652ce0301a7c`.
 The previously verified public 4.1.2 source/tag and archives remain unchanged.
 
-## Current preparation
+## Preparation snapshot (preserved)
 
 The source implementation is complete. Independent runtime/test review is clean;
 final frozen-head documentation review and hosted gates remain pending. Local
@@ -55,3 +55,14 @@ Candidate SRI:
 This identifies the reviewed local candidate, not a public npm artifact. Existing
 4.1.2 MCPB/plugin assets remain pinned to their verified public runtime; they do
 not silently gain 4.2.0's new optional fields.
+
+## Publication completion update
+
+Core 4.2.0 is now independently verified at all four destinations. Source/tag
+`bf729d63a72bdced8bda09407520dc2aea3d31f6`, archive/hash above, two registry
+signatures and two signed attestations match. Final reviewed-head and merged-main
+CI passed 14/14; final dry run 10/10. Production attempt 1 failed visibility after upload;
+its failed-job-only same-source resume passed 10/10 and skipped another npm upload.
+The original cause remains unknown. See [complete core evidence](RELEASE_EVIDENCE_4.2.0.md).
+Claude wrapper publication/native acceptance remain separate; the current
+4.2.0 local wrapper builds are recorded there with their remaining gates.

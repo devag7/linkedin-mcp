@@ -1,0 +1,24 @@
+{
+  "checkedAt": "2026-10-27T11:56:13.133129+00:00",
+  "state": "local_builds_verified_public_assets_not_yet_published",
+  "runtimeVersion": "4.2.0",
+  "runtimeArchiveSha256": "cd6ab6df8df54236e953de6a6f8cf7cf095746da5d92fbe1727e7228d2d44b0a",
+  "mcpbSha256": "d53f67ef5a226b96003baf9b157f8e5efa8449ec65eed1813d911296c6887109",
+  "pluginSha256": "17980a241c2bac77a8296b4ac8e8f3e001368c9baa6a9ede681c740aca64605e",
+  "productionFindings": {
+    "mcpb": 0,
+    "plugin": 0
+  },
+  "stagedAndUnpackedColdChecks": "passed",
+  "selectedEvidenceDraftAndUnusedFactProbes": "passed",
+  "templatePrivacyFixtures": 4,
+  "nativeClient": "not_tested",
+  "directory": "not_submitted",
+  "staticManifestValidation": {
+    "cliVersion": "2.1.285 (Claude Code)",
+    "strict": "passed",
+    "isolatedConfig": true,
+    "productRuntimeStarted": false,
+    "nativePluginLoad": "not_tested"
+  }
+}

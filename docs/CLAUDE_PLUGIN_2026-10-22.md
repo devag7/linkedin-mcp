@@ -1,6 +1,32 @@
 # Local Claude plugin candidate — October 22, 2026
 
-## Current 4.1.2 target
+## Current 4.2.0 target and checks
+
+The default builder now pins the verified public 4.2.0 core archive, SHA-256
+`cd6ab6df8df54236e953de6a6f8cf7cf095746da5d92fbe1727e7228d2d44b0a`.
+Build with `npm run build:claude-plugin -- /absolute/output/linkedin-mcp-local-4.2.0.zip`.
+The local ZIP SHA-256 is
+`17980a241c2bac77a8296b4ac8e8f3e001368c9baa6a9ede681c740aca64605e`.
+Both staged/unpacked runtimes pass cold status, 24-tool discovery, input bounds,
+selected-evidence drafts and unused-fact isolation; production audit is zero.
+Four template privacy fixtures pass. Claude Code 2.1.285 static strict manifest
+validation passes under isolated configuration; it does not load the plugin or
+prove native Code/Cowork/Desktop behavior. [4.2.0 evidence](RELEASE_EVIDENCE_4.2.0.md)
+records the separate hosted and public distribution gates. Check the matching
+[release assets/checksums](https://github.com/devag7/linkedin-mcp/releases/tag/v4.2.0)
+before using a downloaded ZIP.
+
+The plugin skill checks the installed schema, uses only explicit user-provided
+mappings, preserves unverified lineage and never invokes account reads, writes,
+application submission or file/library persistence as part of local drafting.
+Unsigned local Node code has the user's account permissions; review it before
+intentional installation. The [current directory research](CLAUDE_DIRECTORY_RESEARCH_2026-10-27.md)
+distinguishes manual packages, plugin submissions and remote connectors.
+
+All 4.1.2/4.1.1 preparation and validation sections below are historical. They
+are preserved as version-specific evidence, not current build instructions.
+
+## Historical 4.1.2 target
 
 The current plugin template and builder target public core 4.1.2, SHA-256
 `6a03ee1a415d064fb573455689e142c5cbec1f140040b66f5674dcab23370947`.
@@ -45,7 +71,7 @@ suite, package build/audit, hosted dispatch, browser/native/account operation or
 publication is claimed. Historical failed evidence remains failed. This source
 integration is not permission to distribute the old wrapper as security-cleared.
 
-## Current 4.1.2 scope
+## Historical 4.1.2 scope
 
 `packaging/claude-plugin` is a template for a local plugin containing the exact
 public 4.1.2 runtime, its production dependencies and a job-preparation skill.

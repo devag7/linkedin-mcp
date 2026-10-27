@@ -11,8 +11,8 @@ import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js'
 import { copyPluginTemplate } from './claude-plugin-template.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const version = '4.1.2';
-const expectedSha256 = '6a03ee1a415d064fb573455689e142c5cbec1f140040b66f5674dcab23370947';
+const version = '4.2.0';
+const expectedSha256 = 'cd6ab6df8df54236e953de6a6f8cf7cf095746da5d92fbe1727e7228d2d44b0a';
 const npmCli = process.env.npm_execpath;
 assert.ok(npmCli, 'Run through npm run build:claude-plugin.');
 const scratch = realpathSync(mkdtempSync(join(tmpdir(), 'linkedin-plugin-build-')));
@@ -71,6 +71,41 @@ async function verifyCold(folder) {
     });
     assert.equal(large.isError, true);
     assert.ok(JSON.stringify(large.content).includes('maximum of 10000 elements'));
+    const selectedEvidence = 'Synthetic supplied project evidence.';
+    const materials = await client.callTool({
+      name: 'prepare_job_application',
+      arguments: {
+        job_id: '123', job_title: 'Synthetic wrapper check', company: 'Synthetic company',
+        evidence_library: [
+          { id: 'selected', text: selectedEvidence, source_label: 'Synthetic user label' },
+          { id: 'unused', text: 'WRAPPER_UNUSED_PRIVATE_FACT', source_label: 'WRAPPER_UNUSED_LABEL' },
+        ],
+        requirements: [
+          { requirement: 'TypeScript', evidence_ids: ['selected'] },
+          { requirement: 'Incident response' },
+        ],
+        include_drafts: true,
+      },
+    });
+    assert.notEqual(materials.isError, true, 'Offline evidence/drafts probe must succeed.');
+    const worksheet = materials.structuredContent?.data;
+    assert.equal(worksheet?.missingEvidenceCount, 1);
+    assert.equal(worksheet?.requirements?.[0]?.evidenceItems?.[0]?.text, selectedEvidence);
+    assert.equal(worksheet?.requirements?.[0]?.evidenceStatus, 'user_supplied_unverified');
+    assert.equal(worksheet?.requirements?.[1]?.evidenceStatus, 'missing');
+    assert.deepEqual(worksheet?.drafts?.resumeBullets, [JSON.stringify(selectedEvidence)]);
+    assert.equal(worksheet?.drafts?.verification, 'user_supplied_unverified');
+    assert.equal(worksheet?.drafts?.lineage?.[0]?.text, selectedEvidence);
+    assert.equal(worksheet?.drafts?.lineage?.[0]?.bindings?.[0]?.requirementIndex, 0);
+    assert.deepEqual(worksheet?.drafts?.lineage?.[0]?.bindings?.[0]?.sources,
+      [{ kind: 'library', evidenceId: 'selected', sourceLabel: 'Synthetic user label' }]);
+    assert.ok(worksheet?.drafts?.coverLetter?.includes(JSON.stringify(selectedEvidence)));
+    assert.equal(worksheet?.submitted, false);
+    assert.equal(worksheet?.stored, false);
+    assert.equal(JSON.stringify(materials).includes('WRAPPER_UNUSED'), false);
+    const stillCold = await client.callTool({ name: 'whoami', arguments: {} });
+    assert.equal(stillCold.structuredContent?.data?.sessionState, 'not_checked');
+    assert.equal(stillCold.structuredContent?.data?.loggedIn, null);
   } finally { await client.close(); }
   assert.equal(existsSync(profile), false, 'Offline verification must not create a browser profile.');
 }

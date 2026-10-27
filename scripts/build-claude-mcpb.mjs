@@ -9,9 +9,9 @@ import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 
 const fromSource = process.argv[2] === '--from-source';
-const version = fromSource ? JSON.parse(readFileSync('package.json', 'utf8')).version : '4.1.2';
+const version = fromSource ? JSON.parse(readFileSync('package.json', 'utf8')).version : '4.2.0';
 assert.match(version, /^\d+\.\d+\.\d+$/);
-const expectedSha256 = '6a03ee1a415d064fb573455689e142c5cbec1f140040b66f5674dcab23370947';
+const expectedSha256 = 'cd6ab6df8df54236e953de6a6f8cf7cf095746da5d92fbe1727e7228d2d44b0a';
 const toolchain = '@anthropic-ai/mcpb@2.1.2';
 const output = resolve(process.argv[fromSource ? 3 : 2] || join(tmpdir(), `linkedin-mcp-tools-${version}${fromSource ? '-candidate' : ''}.mcpb`));
 const npmCli = process.env.npm_execpath;
@@ -57,6 +57,41 @@ async function verifyCold(folder) {
     });
     assert.equal(oversized.isError, true, 'The packaged runtime must reject excessive inputs.');
     assert.ok(JSON.stringify(oversized.content).includes('maximum of 10000 elements'));
+    const selectedEvidence = 'Synthetic supplied project evidence.';
+    const materials = await client.callTool({
+      name: 'prepare_job_application',
+      arguments: {
+        job_id: '123', job_title: 'Synthetic wrapper check', company: 'Synthetic company',
+        evidence_library: [
+          { id: 'selected', text: selectedEvidence, source_label: 'Synthetic user label' },
+          { id: 'unused', text: 'WRAPPER_UNUSED_PRIVATE_FACT', source_label: 'WRAPPER_UNUSED_LABEL' },
+        ],
+        requirements: [
+          { requirement: 'TypeScript', evidence_ids: ['selected'] },
+          { requirement: 'Incident response' },
+        ],
+        include_drafts: true,
+      },
+    });
+    assert.notEqual(materials.isError, true, 'Offline evidence/drafts probe must succeed.');
+    const worksheet = materials.structuredContent?.data;
+    assert.equal(worksheet?.missingEvidenceCount, 1);
+    assert.equal(worksheet?.requirements?.[0]?.evidenceItems?.[0]?.text, selectedEvidence);
+    assert.equal(worksheet?.requirements?.[0]?.evidenceStatus, 'user_supplied_unverified');
+    assert.equal(worksheet?.requirements?.[1]?.evidenceStatus, 'missing');
+    assert.deepEqual(worksheet?.drafts?.resumeBullets, [JSON.stringify(selectedEvidence)]);
+    assert.equal(worksheet?.drafts?.verification, 'user_supplied_unverified');
+    assert.equal(worksheet?.drafts?.lineage?.[0]?.text, selectedEvidence);
+    assert.equal(worksheet?.drafts?.lineage?.[0]?.bindings?.[0]?.requirementIndex, 0);
+    assert.deepEqual(worksheet?.drafts?.lineage?.[0]?.bindings?.[0]?.sources,
+      [{ kind: 'library', evidenceId: 'selected', sourceLabel: 'Synthetic user label' }]);
+    assert.ok(worksheet?.drafts?.coverLetter?.includes(JSON.stringify(selectedEvidence)));
+    assert.equal(worksheet?.submitted, false);
+    assert.equal(worksheet?.stored, false);
+    assert.equal(JSON.stringify(materials).includes('WRAPPER_UNUSED'), false);
+    const stillCold = await client.callTool({ name: 'whoami', arguments: {} });
+    assert.equal(stillCold.structuredContent?.data?.sessionState, 'not_checked');
+    assert.equal(stillCold.structuredContent?.data?.loggedIn, null);
     assert.equal(existsSync(isolatedProfile), false, 'Cold discovery must not create a browser profile.');
   } finally {
     await client.close();
@@ -80,7 +115,7 @@ try {
     manifest.version = version;
     manifest.display_name += ' (unreleased candidate)';
     manifest.description = 'Unreleased source candidate; not the published npm artifact. ' + manifest.description;
-    writeFileSync(join(bundle, 'README.md'), `# Unreleased LinkedIn MCP source candidate\n\nBuilt from the current checkout, version ${version}. These are not the public npm or MCPB bytes. Identify this build by the receipt archive and bundle SHA-256 values. It exposes 24 tools; cold protocol checks do not establish native-client or live-provider compatibility.\n\nLocal Node code runs with the user account permissions. Account access requires a separate manual login and scoped consent. Writes remain disabled by default. No application submission or full data erasure is provided. See https://github.com/devag7/linkedin-mcp/blob/main/docs/PRIVACY.md for retention and support details.\n`);
+    writeFileSync(join(bundle, 'README.md'), `# Unreleased LinkedIn MCP source candidate\n\nBuilt from the current checkout, version ${version}. These are not the public npm or MCPB bytes. Identify this build by the receipt archive and bundle SHA-256 values. It exposes 24 tools; cold protocol checks do not establish native-client or live-provider compatibility.\n\nUnsigned local Node code runs with the user account permissions. Account access requires a separate manual login and scoped consent. Writes remain disabled by default. No application submission or full data erasure is provided. See https://github.com/devag7/linkedin-mcp/blob/main/docs/PRIVACY.md for retention and support details.\n`);
     writeFileSync(join(bundle, 'manifest.json'), JSON.stringify(manifest, null, 2) + '\n');
   }
   assert.equal(manifest.version, version);

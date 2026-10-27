@@ -111,9 +111,12 @@ export async function packageState(pkg, pack, registry = NPM, options = {}) {
 }
 
 export async function verifyPackage(pkg, pack, registry = NPM, options = {}) {
-  for (let i = 0; i < 6; i++) {
+  // Missing metadata only: bounded read-only propagation tolerance, never another upload.
+  // 97 seconds of waits; existing per-request timeouts remain separate and unchanged.
+  const waits = [2_000, 5_000, 10_000, 20_000, 30_000, 30_000];
+  for (let i = 0; i <= waits.length; i++) {
     if ((await packageState(pkg, pack, registry, options)) === 'verified') return;
-    if (i < 5) await (options.wait ?? delay)(2_000);
+    if (i < waits.length) await (options.wait ?? delay)(waits[i]);
   }
   fail('PACKAGE_NOT_VISIBLE');
 }

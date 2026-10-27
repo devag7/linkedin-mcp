@@ -1,0 +1,99 @@
+{
+  "checkedAt": "2026-10-27T11:50:56.819066+00:00",
+  "version": "4.2.0",
+  "status": "all_four_destinations_independently_verified",
+  "sourceSha": "bf729d63a72bdced8bda09407520dc2aea3d31f6",
+  "reviewedCandidateSha": "837d572a111bf7079c275631f2f2e08a67421d75",
+  "sourceTree": "d059b088378c557ed5fa590170431fed32e379ae",
+  "sourceTreeEqualsReviewedCandidate": true,
+  "npm": {
+    "url": "https://www.npmjs.com/package/linkedin-mcp-tools/v/4.2.0",
+    "status": "verified",
+    "checkedAt": "2026-10-27T11:42:42.464Z",
+    "archiveSha256": "cd6ab6df8df54236e953de6a6f8cf7cf095746da5d92fbe1727e7228d2d44b0a",
+    "integrity": "sha512-1YcuiUg0ZWawg/eRXp/IPq+z8dgmrYH0EipLq1RKf2n2cjRVXxYoKkCh+DkRlM6+miVn50/CUD7gJh/bG5ntBA==",
+    "expectedReviewedArchiveHashMatches": true,
+    "fileCount": 15,
+    "registrySignaturesVerified": 2,
+    "attestationsCryptographicallyVerified": 2,
+    "signedProducerSourceSha": "bf729d63a72bdced8bda09407520dc2aea3d31f6",
+    "signedProducerRunId": 40495398802,
+    "signedProducerAttempt": 1,
+    "signatureScope": "package-specific; not dependency-tree audit"
+  },
+  "githubPackages": {
+    "url": "https://github.com/users/devag7/packages/npm/linkedin-mcp-tools/1453956841",
+    "status": "verified",
+    "checkedAt": "2026-10-27T11:49:09.678796+00:00",
+    "visibility": "public",
+    "versionId": 1453956841,
+    "archiveSha256": "6c7d4451743ae37248f76e71a0cbc2e03afc2b3e17b60852e8155a58c859db64",
+    "integrity": "sha512-JcsexSr9tEF9i4mE4Hwth0ovD0rZ37/k/xtE85bsq5gmEYFOYs5lCoTTVeuo5fXWvKJfKZS8f4d0MKWdNPNmoQ==",
+    "integrityAndShasumMatch": true,
+    "fileCount": 15,
+    "allFilesAndModesMatchNpmExceptScopedName": true,
+    "authenticatedArchiveRead": true,
+    "unauthenticatedPackageApiStatus": 401,
+    "limitation": "Public visibility does not provide anonymous archive access."
+  },
+  "mcpRegistry": {
+    "url": "https://registry.modelcontextprotocol.io/v0.1/servers/io.github.devag7%2Flinkedin-mcp/versions/4.2.0",
+    "status": "verified",
+    "checkedAt": "2026-10-27T11:47:57.508290+00:00",
+    "registryStatus": "active",
+    "isLatest": true,
+    "version": "4.2.0",
+    "packages": [
+      {
+        "registryType": "npm",
+        "identifier": "linkedin-mcp-tools",
+        "version": "4.2.0",
+        "transport": {
+          "type": "stdio"
+        }
+      }
+    ],
+    "matchesReviewedServerMetadataExactly": true,
+    "publishedAt": "2026-10-27T11:43:34.958113Z"
+  },
+  "githubRelease": {
+    "url": "https://github.com/devag7/linkedin-mcp/releases/tag/v4.2.0",
+    "status": "verified",
+    "checkedAt": "2026-10-27T11:47:56.910331+00:00",
+    "id": 425383475,
+    "tag": "v4.2.0",
+    "tagCommitSha": "bf729d63a72bdced8bda09407520dc2aea3d31f6",
+    "targetCommitish": "bf729d63a72bdced8bda09407520dc2aea3d31f6",
+    "draft": false,
+    "prerelease": false,
+    "publishedAt": "2026-10-27T11:43:59Z",
+    "assetNamesAtObservation": []
+  },
+  "productionWorkflow": {
+    "url": "https://github.com/devag7/linkedin-mcp/actions/runs/40495398802",
+    "sourceSha": "bf729d63a72bdced8bda09407520dc2aea3d31f6",
+    "attempt": 2,
+    "status": "completed",
+    "conclusion": "success",
+    "jobCount": 10,
+    "allTenJobsSuccess": true,
+    "npmUploadOnResume": "skipped",
+    "firstAttempt": {
+      "url": "https://github.com/devag7/linkedin-mcp/actions/runs/40495398802/attempts/1",
+      "conclusion": "failure",
+      "uploadStep": "success",
+      "exactNpmVerificationStep": "failure",
+      "observedError": "PACKAGE_NOT_VISIBLE",
+      "preserved": true
+    },
+    "failureCause": "unproven; later visibility/resume success does not explain the initial failure"
+  },
+  "remainingGaps": [
+    "4.2 Claude/native wrappers and any assets require separate publication and readback.",
+    "No installation, product runtime, native-client, LinkedIn/provider, cohort/usefulness, coordinated-erasure or directory acceptance was performed or established by this readback."
+  ],
+  "mutationsPerformed": false,
+  "productRuntimeExecuted": false,
+  "linkedInRequests": 0,
+  "cashSpend": 0
+}
