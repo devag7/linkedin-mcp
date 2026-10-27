@@ -1,6 +1,31 @@
 # Claude Desktop local bundle: build and evidence
 
-## Current 4.1.2 build and installation
+## Current 4.2.0 build and installation
+
+The default builder pins verified public core 4.2.0, archive SHA-256
+`cd6ab6df8df54236e953de6a6f8cf7cf095746da5d92fbe1727e7228d2d44b0a`.
+Build with `npm run build:claude-mcpb -- /absolute/output/linkedin-mcp-tools-4.2.0.mcpb`.
+The local unsigned MCPB SHA-256 is
+`d53f67ef5a226b96003baf9b157f8e5efa8449ec65eed1813d911296c6887109`.
+Audits, staged/unpacked cold status, 24 tools, input bounds, selected-fact drafts
+and unused-fact isolation pass. [4.2.0 evidence](RELEASE_EVIDENCE_4.2.0.md)
+separates local, hosted and public asset results.
+
+When both matching files are available in the [4.2.0 release assets](https://github.com/devag7/linkedin-mcp/releases/tag/v4.2.0),
+download the MCPB and its `.sha256` companion. On macOS, run
+`shasum -a 256 -c linkedin-mcp-tools-4.2.0.mcpb.sha256`; on PowerShell compare
+`(Get-FileHash .\linkedin-mcp-tools-4.2.0.mcpb -Algorithm SHA256).Hash`.
+Review the unsigned local-code warning before any intentional installation:
+Node code runs with the computer user's permissions. Account reads require
+separate manual login and scoped consent; local drafts use supplied facts only.
+Native 4.2.0 installation/live use and directory acceptance remain unverified.
+Explicit `--from-source` mode still labels an unreleased checkout candidate and
+never substitutes it for default verified-public mode.
+
+The following 4.1.2/4.1.1/4.1.0 commands, hashes and observations are historical,
+not current installation recommendations. Their receipts remain unchanged.
+
+## Historical 4.1.2 build and installation
 
 The current builder targets the verified public `linkedin-mcp-tools@4.1.2`
 archive, SHA-256 `6a03ee1a415d064fb573455689e142c5cbec1f140040b66f5674dcab23370947`.

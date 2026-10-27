@@ -1,5 +1,11 @@
 # Full-scope completion audit — October 21, 2026
 
+**October 27 delta:** [4.2.0 is published and independently verified](RELEASE_EVIDENCE_4.2.0.md),
+adding bounded reusable evidence and local resume/cover-letter draft assembly.
+Current wrapper/native/directory gates remain separate; the dated tables below
+preserve the original October 21 snapshot. Use the current completion index for
+latest scope rather than treating those older "not built" rows as current.
+
 **October 26 delta:** core [4.1.2 is published and independently verified](RELEASE_EVIDENCE_4.1.2.md).
 The local Claude plugin package is implemented and its distribution checks are
 tracked separately; native and directory acceptance remain open. The tables
