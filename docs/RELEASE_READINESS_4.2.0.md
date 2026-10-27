@@ -47,10 +47,10 @@ Mandatory new maintainer service cost: $0.
   passed offline. Native applications and draft usefulness remain unmeasured.
 
 Candidate archive SHA-256:
-`e6cc4c3c13ed27fc3021aaf7948195f40a09a48a1663c5753cf64ed30b2b2d60`.
+`cd6ab6df8df54236e953de6a6f8cf7cf095746da5d92fbe1727e7228d2d44b0a`.
 
 Candidate SRI:
-`sha512-3Z737nXdZAF4OQPCUfXqTImHs5SaFVqXkqVpYUbue+qxvbNZfAoNMnuI80DvCyMKij6MpDNuQSI0ylPLIM7foA==`.
+`sha512-1YcuiUg0ZWawg/eRXp/IPq+z8dgmrYH0EipLq1RKf2n2cjRVXxYoKkCh+DkRlM6+miVn50/CUD7gJh/bG5ntBA==`.
 
 This identifies the reviewed local candidate, not a public npm artifact. Existing
 4.1.2 MCPB/plugin assets remain pinned to their verified public runtime; they do

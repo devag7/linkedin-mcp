@@ -106,7 +106,7 @@ do not establish fresh-user or broader live compatibility.
 The exact public 4.1.1 bytes and destinations were
 [independently verified](docs/RELEASE_EVIDENCE_4.1.1.md); that historical identity
 proof does not clear current advisories. Consult the
-[4.1.2 readiness record](https://github.com/devag7/linkedin-mcp/blob/main/docs/RELEASE_READINESS_4.2.0.md)
+[4.1.2 release evidence](https://github.com/devag7/linkedin-mcp/blob/main/docs/RELEASE_EVIDENCE_4.1.2.md)
 for its destination status. Native-client first-use cohorts
 and broad live-provider compatibility remain unverified.
 See [execution progress](docs/ROADMAP_PROGRESS.md) and the linked evidence.
