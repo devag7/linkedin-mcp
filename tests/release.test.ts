@@ -174,6 +174,108 @@ describe('independent npm and GitHub Packages checks', () => {
     );
     expect(fetchImpl).toHaveBeenCalledTimes(1);
   });
+  const propagationWaits = [2000, 5000, 10000, 20000, 30000, 30000];
+  it.each([NPM, GITHUB_PACKAGES])(
+    'returns immediately for verified metadata at %s',
+    async (registry) => {
+      const fetchImpl = vi.fn(async () => response(metadata()));
+      const wait = vi.fn(async () => undefined);
+      await verifyPackage(pkg, pack, registry, { fetchImpl, wait });
+      expect(fetchImpl).toHaveBeenCalledTimes(1);
+      expect(fetchImpl.mock.calls[0][1]).toMatchObject({ method: 'GET', body: undefined });
+      expect(wait).not.toHaveBeenCalled();
+    },
+  );
+  it('allows late metadata visibility with seven reads and six bounded waits only', async () => {
+    let calls = 0;
+    const fetchImpl = vi.fn(async () => (++calls < 7 ? response({}, 404) : response(metadata())));
+    const wait = vi.fn(async () => undefined);
+    await verifyPackage(pkg, pack, NPM, { fetchImpl, wait });
+    expect(fetchImpl).toHaveBeenCalledTimes(7);
+    expect(wait.mock.calls.map(([milliseconds]) => milliseconds)).toEqual(propagationWaits);
+    expect(propagationWaits.reduce((sum, milliseconds) => sum + milliseconds, 0)).toBe(97000);
+    expect(
+      fetchImpl.mock.calls.every(
+        ([, options]) => options.method === 'GET' && options.body === undefined,
+      ),
+    ).toBe(true);
+  });
+  it('stops after seven missing reads without a final wait or a write', async () => {
+    const fetchImpl = vi.fn(async () => response({ name: pkg.name, versions: {} }));
+    const wait = vi.fn(async () => undefined);
+    await expect(verifyPackage(pkg, pack, NPM, { fetchImpl, wait })).rejects.toThrow(
+      'PACKAGE_NOT_VISIBLE',
+    );
+    expect(fetchImpl).toHaveBeenCalledTimes(7);
+    expect(wait.mock.calls.map(([milliseconds]) => milliseconds)).toEqual(propagationWaits);
+    expect(fetchImpl.mock.calls.every(([, options]) => options.method === 'GET')).toBe(true);
+  });
+  it.each([
+    [
+      'mismatched integrity',
+      () => response(metadata(pkg, 'different')),
+      'PUBLISHED_ARTIFACT_MISMATCH',
+    ],
+    [
+      'wrong package name',
+      () => response({ name: 'another-package', versions: {} }),
+      'INVALID_PACKAGE_METADATA',
+    ],
+    [
+      'wrong version',
+      () =>
+        response({
+          name: pkg.name,
+          versions: { [pkg.version]: { ...pkg, version: '9.9.9', dist: { integrity } } },
+        }),
+      'PUBLISHED_ARTIFACT_MISMATCH',
+    ],
+    ['unauthorized', () => response({}, 401), 'DESTINATION_HTTP_401'],
+    ['rate limited', () => response({}, 429), 'DESTINATION_HTTP_429'],
+    ['server failure', () => response({}, 503), 'DESTINATION_HTTP_503'],
+    [
+      'network failure',
+      () => {
+        throw new Error('synthetic-network-failure');
+      },
+      'synthetic-network-failure',
+    ],
+    ['malformed JSON', () => new Response('{not-json'), 'INVALID_DESTINATION_JSON'],
+    [
+      'oversized body',
+      () => new Response('x'.repeat(2 * 1024 * 1024 + 1)),
+      'DESTINATION_RESPONSE_TOO_LARGE',
+    ],
+  ] as const)('never retries %s as missing metadata', async (_name, value, error) => {
+    const fetchImpl = vi.fn(async () => value());
+    const wait = vi.fn(async () => undefined);
+    await expect(verifyPackage(pkg, pack, NPM, { fetchImpl, wait })).rejects.toThrow(error);
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+    expect(wait).not.toHaveBeenCalled();
+  });
+  it('fails immediately on mismatched content after an earlier missing read', async () => {
+    let calls = 0;
+    const fetchImpl = vi.fn(async () =>
+      ++calls === 1 ? response({}, 404) : response(metadata(pkg, 'different')),
+    );
+    const wait = vi.fn(async () => undefined);
+    await expect(verifyPackage(pkg, pack, NPM, { fetchImpl, wait })).rejects.toThrow(
+      'PUBLISHED_ARTIFACT_MISMATCH',
+    );
+    expect(fetchImpl).toHaveBeenCalledTimes(2);
+    expect(wait.mock.calls.map(([milliseconds]) => milliseconds)).toEqual([2000]);
+  });
+  it('propagates a failed injected wait without another read', async () => {
+    const fetchImpl = vi.fn(async () => response({}, 404));
+    const wait = vi.fn(async () => {
+      throw new Error('synthetic-stop');
+    });
+    await expect(verifyPackage(pkg, pack, NPM, { fetchImpl, wait })).rejects.toThrow(
+      'synthetic-stop',
+    );
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+    expect(wait).toHaveBeenCalledTimes(1);
+  });
   it('verifies propagation with a bounded wait; never repeats publish', async () => {
     const fetchImpl = vi
       .fn()
@@ -189,7 +291,7 @@ describe('independent npm and GitHub Packages checks', () => {
     await expect(
       verifyPackage(pkg, pack, NPM, { fetchImpl, wait: async () => undefined }),
     ).rejects.toThrow('PACKAGE_NOT_VISIBLE');
-    expect(fetchImpl).toHaveBeenCalledTimes(6);
+    expect(fetchImpl).toHaveBeenCalledTimes(7);
   });
   it('rejects malformed JSON instead of interpreting it as a missing destination', async () => {
     await expect(
