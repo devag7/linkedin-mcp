@@ -1,0 +1,86 @@
+{
+  "checkedAt": "2026-10-26T10:50:29.440149+00:00",
+  "version": "4.1.2",
+  "sourceSha": "436754e8a7de85013418aaf0a55ccd900f59380d",
+  "sourceTree": "a48ec6e5b8d461e59a510a817a38edeabaa37f45",
+  "allFourDestinationsIndependentlyVerified": true,
+  "npm": {
+    "url": "https://www.npmjs.com/package/linkedin-mcp-tools/v/4.1.2",
+    "archiveSha256": "6a03ee1a415d064fb573455689e142c5cbec1f140040b66f5674dcab23370947",
+    "integrityMatches": true,
+    "files": 15,
+    "archiveMatchesRetainedReviewedCandidate": true,
+    "registrySignaturesVerified": 2,
+    "attestationsCryptographicallyVerified": 2,
+    "scope": "package-specific metadata/signatures/attestations, not dependency-tree audit",
+    "provenanceProducerSourceSha": "436754e8a7de85013418aaf0a55ccd900f59380d",
+    "provenanceRunAttempt": 1,
+    "rawReceipt": "npm-independent-readback.json"
+  },
+  "githubPackages": {
+    "versionUrl": "https://github.com/users/devag7/packages/npm/linkedin-mcp-tools/1447088525",
+    "public": true,
+    "publicReadAuthRequired": true,
+    "unauthenticatedApiResult": 401,
+    "versionId": 1447088525,
+    "archiveSha256": "b179a6c9b33bc836a61ead1e227d422bb6e3fdb14f6810abb01660b829d10287",
+    "integrity": "sha512-FF2VzUg1fNh2LIxALJcuA5ZpcU1TEsYNZUeDbTIQsTP5HMWUUYKmw5UANk/aRve39p790XzLX3gXHVWZ496KmQ==",
+    "declaredIntegrityAndShasumMatch": true,
+    "files": 15,
+    "filesMatchVerifiedNpmExceptScopedName": true
+  },
+  "mcpRegistry": {
+    "url": "https://registry.modelcontextprotocol.io/v0.1/servers/io.github.devag7%2Flinkedin-mcp/versions/4.1.2",
+    "status": "active",
+    "isLatest": true,
+    "version": "4.1.2",
+    "packages": [
+      {
+        "registryType": "npm",
+        "identifier": "linkedin-mcp-tools",
+        "version": "4.1.2",
+        "transport": {
+          "type": "stdio"
+        }
+      }
+    ],
+    "matchesReviewedServerMetadataExactly": true,
+    "publishedAt": "2026-10-26T10:41:50.803973Z"
+  },
+  "githubRelease": {
+    "url": "https://github.com/devag7/linkedin-mcp/releases/tag/v4.1.2",
+    "releaseId": 424123055,
+    "tag": "v4.1.2",
+    "tagCommitSha": "436754e8a7de85013418aaf0a55ccd900f59380d",
+    "targetCommitish": "436754e8a7de85013418aaf0a55ccd900f59380d",
+    "draft": false,
+    "prerelease": false,
+    "publishedAt": "2026-10-26T10:42:21Z",
+    "assetsAtReadback": []
+  },
+  "workflow": {
+    "url": "https://github.com/devag7/linkedin-mcp/actions/runs/40283329312",
+    "attempt": 2,
+    "conclusion": "success",
+    "jobCount": 10,
+    "allTenJobsSuccess": true,
+    "sourceSha": "436754e8a7de85013418aaf0a55ccd900f59380d",
+    "npmUploadOnResume": "skipped",
+    "attempt1Conclusion": "failure",
+    "attempt1PackageNotVisibleObservedInLogs": true,
+    "failureCause": "unproven; later visibility does not explain the original failure"
+  },
+  "remainingGaps": [
+    "No Desktop extension assets were present at the Release readback; wrapper publication/readback remains separate.",
+    "Public GitHub Packages archive download requires authentication despite public visibility.",
+    "No native-client, LinkedIn/provider, first-use/cohort, coordinated-erasure or broad promotion acceptance is established by this artifact readback."
+  ],
+  "localSideEffects": {
+    "newInstallations": 0,
+    "runtimeExecutions": 0,
+    "linkedInRequests": 0,
+    "browserLaunches": 0,
+    "releaseMutations": 0,
+    "cashSpend": 0
+  }
+}

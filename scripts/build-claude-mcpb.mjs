@@ -9,9 +9,9 @@ import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 
 const fromSource = process.argv[2] === '--from-source';
-const version = fromSource ? JSON.parse(readFileSync('package.json', 'utf8')).version : '4.1.1';
+const version = fromSource ? JSON.parse(readFileSync('package.json', 'utf8')).version : '4.1.2';
 assert.match(version, /^\d+\.\d+\.\d+$/);
-const expectedSha256 = '3aa33f9a38e2928625f9a7d24d300b644102c87121dc0168766048e1cf7368ec';
+const expectedSha256 = '6a03ee1a415d064fb573455689e142c5cbec1f140040b66f5674dcab23370947';
 const toolchain = '@anthropic-ai/mcpb@2.1.2';
 const output = resolve(process.argv[fromSource ? 3 : 2] || join(tmpdir(), `linkedin-mcp-tools-${version}${fromSource ? '-candidate' : ''}.mcpb`));
 const npmCli = process.env.npm_execpath;

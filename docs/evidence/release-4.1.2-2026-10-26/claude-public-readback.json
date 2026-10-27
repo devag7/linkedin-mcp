@@ -1,0 +1,31 @@
+{
+  "runtimeArchiveSha256": "6a03ee1a415d064fb573455689e142c5cbec1f140040b66f5674dcab23370947",
+  "assets": [
+    {
+      "name": "linkedin-mcp-tools-4.1.2.mcpb",
+      "url": "https://github.com/devag7/linkedin-mcp/releases/download/v4.1.2/linkedin-mcp-tools-4.1.2.mcpb",
+      "bytes": 7936174,
+      "sha256": "526b183e36f40139c8a351335859268ca680bd3d309f5980fcc92f3e27d81ba7"
+    },
+    {
+      "name": "linkedin-mcp-tools-4.1.2.mcpb.sha256",
+      "url": "https://github.com/devag7/linkedin-mcp/releases/download/v4.1.2/linkedin-mcp-tools-4.1.2.mcpb.sha256",
+      "bytes": 96,
+      "sha256": "8e896f09b09f763d93911d79c35a9374d0ff55bcddf78c26af25a3cf3d038fd0"
+    },
+    {
+      "name": "linkedin-mcp-local-4.1.2.zip",
+      "url": "https://github.com/devag7/linkedin-mcp/releases/download/v4.1.2/linkedin-mcp-local-4.1.2.zip",
+      "bytes": 9672919,
+      "sha256": "cd0417c9dda049792b7095432690de1a065af9e04fd1ca458b3f9d1d1524de62"
+    },
+    {
+      "name": "linkedin-mcp-local-4.1.2.zip.sha256",
+      "url": "https://github.com/devag7/linkedin-mcp/releases/download/v4.1.2/linkedin-mcp-local-4.1.2.zip.sha256",
+      "bytes": 95,
+      "sha256": "815eaf0037bade797d83846bb6b0d605fd38886abc2f4062b2f5a45b8d62cf48"
+    }
+  ],
+  "publicReadback": "exact_bytes_matched",
+  "nativeClient": "not_tested"
+}

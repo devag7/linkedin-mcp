@@ -1,6 +1,33 @@
 # Claude Desktop local bundle: build and evidence
 
-**Current build target:** published `linkedin-mcp-tools@4.1.1`. The unsigned
+## Current 4.1.2 build and installation
+
+The current builder targets the verified public `linkedin-mcp-tools@4.1.2`
+archive, SHA-256 `6a03ee1a415d064fb573455689e142c5cbec1f140040b66f5674dcab23370947`.
+Build with `npm run build:claude-mcpb -- /absolute/output/linkedin-mcp-tools-4.1.2.mcpb`.
+The local unsigned bundle hash is
+`526b183e36f40139c8a351335859268ca680bd3d309f5980fcc92f3e27d81ba7`.
+Production audit and staged/unpacked 24-tool cold status/input-guard checks pass.
+Use the [4.1.2 release evidence](RELEASE_EVIDENCE_4.1.2.md) for current asset,
+hosted-check and independent public-download status before installing.
+
+When the matching 4.1.2 bundle and checksum are present in the
+[release assets](https://github.com/devag7/linkedin-mcp/releases/tag/v4.1.2),
+download both into the same folder and check
+`shasum -a 256 -c linkedin-mcp-tools-4.1.2.mcpb.sha256` on macOS, or compare
+`(Get-FileHash .\linkedin-mcp-tools-4.1.2.mcpb -Algorithm SHA256).Hash` on PowerShell.
+Install through Claude Desktop's Extensions advanced settings only after
+reviewing its unsigned local-code access warning. Native 4.1.2 installation,
+live LinkedIn use and directory acceptance are not established by package checks.
+The explicit `--from-source` mode produces a separately labeled unreleased
+checkout bundle; it is never interchangeable with verified public-archive mode.
+
+## Historical 4.1.1 build instructions and evidence
+
+The following pins, commands and receipts are historical, not current install
+recommendations. Newly reported advisories prevent treating 4.1.1 as security-cleared.
+
+**Historical build target:** published `linkedin-mcp-tools@4.1.1`. The unsigned
 4.1.1 bundle and checksum are verified public Release assets; hosted Mac and
 Windows packed/unpacked checks passed. The existing public 4.1.0 bundle/native receipt below is historical.
 Neither bundle is a Claude directory listing, and neither fills or submits jobs.
@@ -101,33 +128,28 @@ cross-platform native proof.
 Any later live LinkedIn read needs its own scope and consent. This Mac cold
 check does not establish native behavior on Windows or other Claude versions.
 
-## Directory paths
+## Directory paths — updated October 22, 2026
 
-As checked October 17, Anthropic's
-[connector submission guide](https://claude.com/docs/connectors/building/submission)
-says a standalone local MCPB cannot be submitted through the remote connector
-portal; it suggests a plugin. Its
-[Desktop extension help](https://support.claude.com/en/articles/10949351-getting-started-with-local-mcp-servers-on-claude-desktop)
-also links a separate [Desktop extension interest form](https://clau.de/desktop-extention-submission).
-The accessible form asks for a public GitHub repository, a `.mcpb` upload,
-contact details, a first-party confirmation and agreement to directory terms.
-The truthful first-party answer for this project is **No**; Anthropic says the
-form indicates interest and does not guarantee inclusion. The form and remote
-portal are distinct routes, and the documentation is not fully aligned.
-More importantly, the current [Software Directory Policy](https://support.claude.com/en/articles/13145358-anthropic-software-directory-policy)
-requires developers to verify they own or control any API endpoint, domain or
-interface their software connects to. The [terms](https://support.claude.com/en/articles/13145338-anthropic-software-directory-terms)
-require a representation that the submission satisfies that policy. This
-unofficial browser extension connects to LinkedIn's interface, which the
-maintainer does not own or control. Do not submit the form or claim directory
-eligibility without written clarification or a permitted provider agreement.
-Local GitHub distribution is available from the exact release assets.
-A local plugin can run in Cowork and Claude
-Code, while ordinary Claude chat does not start a plugin's local MCP server;
-[Anthropic's plugin support table](https://claude.com/docs/plugins/build)
-defines the surfaces. A remote Connector Directory entry requires public HTTPS,
-account authentication and legitimate permission to proxy the underlying
-service. This local browser architecture does not meet that remote gate.
+Anthropic's current [connector submission guide](https://claude.com/docs/connectors/building/submission)
+says desktop-extension directory listings are deprecated and standalone MCPB
+listings are no longer accepted. Local MCP servers must be included in a plugin.
+This supersedes the October 17 interest-form discussion; the old form is not a
+current verified route. Manual installation of this public MCPB remains a
+separate distribution method.
 
-No hosting charge is required to build or run this local bundle. Claude plan
-requirements and any future directory review are external prerequisites.
+The [local plugin candidate](CLAUDE_PLUGIN_2026-10-22.md) prepares that format;
+packaging alone does not prove eligibility. The current
+[Software Directory Policy](https://support.claude.com/en/articles/13145358-anthropic-software-directory-policy)
+§3F requires ownership/control of connected resources. Its plugin exception
+concerns already-approved Connectors, not a blanket exception for third-party
+browser automation. This project does not own LinkedIn's interfaces. Obtain
+written clarification or permitted provider access before claiming eligibility
+or submitting. No directory submission has occurred.
+
+A local plugin command server loads in Claude Code and local Cowork sessions;
+ordinary Claude chat ignores it. Native browser/login compatibility remains
+unverified. A remote Connector entry instead needs HTTPS, account authentication
+and legitimate provider access. See [plugin support](https://claude.com/docs/plugins/build).
+
+Local builds/distribution need no paid hosting. The directory portal's paid-plan
+requirement and any review or provider prerequisites remain separate.

@@ -95,7 +95,7 @@ jobs:
         run: npm run verify:browser
 
   claude-bundle:
-    name: Claude bundle (${{ matrix.os }}, Node 22)
+    name: Claude packages (${{ matrix.os }}, Node 22)
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -111,6 +111,10 @@ jobs:
       - name: Keep Windows bundle fixtures under the current user profile
         if: runner.os == 'Windows'
         run: node --import tsx scripts/prepare-windows-ci-temp.ts
+      - name: Reject unexpected private plugin template files
+        run: node --test scripts/claude-plugin-template.test.mjs
       - run: npm run build
       - name: Build, unpack and audit current candidate Claude bundle offline
         run: npm run build:claude-mcpb -- --from-source
+      - name: Build, unpack and audit pinned public 4.1.2 Claude plugin offline
+        run: npm run build:claude-plugin

@@ -1,5 +1,11 @@
 # Full-scope completion audit — October 21, 2026
 
+**October 26 delta:** core [4.1.2 is published and independently verified](RELEASE_EVIDENCE_4.1.2.md).
+The local Claude plugin package is implemented and its distribution checks are
+tracked separately; native and directory acceptance remain open. The tables
+below preserve the October 21 snapshot. Use the [current completion index](CURRENT_COMPLETION_STATUS_2026-10-18.md)
+for current security, wrapper and pilot state. The full roadmap is still incomplete.
+
 **The complete plan is not finished.** Public 4.1.0 delivers the 24-tool core,
 offline client setup, selected-profile retirement and two local job-seeker
 helpers. The 4.1.1 security patch is independently verified on npm and GitHub Packages,

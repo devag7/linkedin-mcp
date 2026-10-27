@@ -1,0 +1,98 @@
+{
+  "wrapperSource": "c43733fcf0bad0b2e08791348bdeeb7dcd60f19b",
+  "runtimeSource": "436754e8a7de85013418aaf0a55ccd900f59380d",
+  "run": {
+    "conclusion": "success",
+    "databaseId": 40309484590,
+    "headSha": "c43733fcf0bad0b2e08791348bdeeb7dcd60f19b",
+    "status": "completed",
+    "url": "https://github.com/devag7/linkedin-mcp/actions/runs/40309484590"
+  },
+  "jobs": [
+    {
+      "id": 121526789003,
+      "name": "Claude packages (windows-latest, Node 22)",
+      "conclusion": "success",
+      "html_url": "https://github.com/devag7/linkedin-mcp/actions/runs/40309484590/job/121526789003"
+    },
+    {
+      "id": 121526789254,
+      "name": "Source checks (ubuntu-latest, Node 20)",
+      "conclusion": "success",
+      "html_url": "https://github.com/devag7/linkedin-mcp/actions/runs/40309484590/job/121526789254"
+    },
+    {
+      "id": 121526789300,
+      "name": "Packed artifact (macos-latest, Node 22)",
+      "conclusion": "success",
+      "html_url": "https://github.com/devag7/linkedin-mcp/actions/runs/40309484590/job/121526789300"
+    },
+    {
+      "id": 121526789301,
+      "name": "Claude packages (macos-latest, Node 22)",
+      "conclusion": "success",
+      "html_url": "https://github.com/devag7/linkedin-mcp/actions/runs/40309484590/job/121526789301"
+    },
+    {
+      "id": 121526789386,
+      "name": "Packed artifact (ubuntu-latest, Node 22)",
+      "conclusion": "success",
+      "html_url": "https://github.com/devag7/linkedin-mcp/actions/runs/40309484590/job/121526789386"
+    },
+    {
+      "id": 121526789400,
+      "name": "Source checks (windows-latest, Node 22)",
+      "conclusion": "success",
+      "html_url": "https://github.com/devag7/linkedin-mcp/actions/runs/40309484590/job/121526789400"
+    },
+    {
+      "id": 121526789431,
+      "name": "Source checks (macos-latest, Node 22)",
+      "conclusion": "success",
+      "html_url": "https://github.com/devag7/linkedin-mcp/actions/runs/40309484590/job/121526789431"
+    },
+    {
+      "id": 121526789458,
+      "name": "Source checks (ubuntu-latest, Node 22)",
+      "conclusion": "success",
+      "html_url": "https://github.com/devag7/linkedin-mcp/actions/runs/40309484590/job/121526789458"
+    },
+    {
+      "id": 121526789492,
+      "name": "Packed artifact (windows-latest, Node 22)",
+      "conclusion": "success",
+      "html_url": "https://github.com/devag7/linkedin-mcp/actions/runs/40309484590/job/121526789492"
+    },
+    {
+      "id": 121526789516,
+      "name": "Source checks (macos-latest, Node 20)",
+      "conclusion": "success",
+      "html_url": "https://github.com/devag7/linkedin-mcp/actions/runs/40309484590/job/121526789516"
+    },
+    {
+      "id": 121526789523,
+      "name": "Packed artifact (windows-latest, Node 20)",
+      "conclusion": "success",
+      "html_url": "https://github.com/devag7/linkedin-mcp/actions/runs/40309484590/job/121526789523"
+    },
+    {
+      "id": 121526789549,
+      "name": "Packed artifact (ubuntu-latest, Node 20)",
+      "conclusion": "success",
+      "html_url": "https://github.com/devag7/linkedin-mcp/actions/runs/40309484590/job/121526789549"
+    },
+    {
+      "id": 121526789572,
+      "name": "Source checks (windows-latest, Node 20)",
+      "conclusion": "success",
+      "html_url": "https://github.com/devag7/linkedin-mcp/actions/runs/40309484590/job/121526789572"
+    },
+    {
+      "id": 121526789582,
+      "name": "Packed artifact (macos-latest, Node 20)",
+      "conclusion": "success",
+      "html_url": "https://github.com/devag7/linkedin-mcp/actions/runs/40309484590/job/121526789582"
+    }
+  ],
+  "scope": "14 hosted offline checks; native clients not tested"
+}
