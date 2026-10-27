@@ -1,6 +1,6 @@
 {
   "name": "linkedin-mcp-tools",
-  "version": "4.1.2",
+  "version": "4.2.0",
   "mcpName": "io.github.devag7/linkedin-mcp",
   "contractVersion": 1,
   "transport": "stdio",
@@ -146,7 +146,7 @@
     },
     {
       "name": "prepare_job_application",
-      "route": "local application worksheet; no submit or storage",
+      "route": "local application worksheet and draft materials; no submit or storage",
       "source": "engine",
       "permission": "local",
       "write": false,

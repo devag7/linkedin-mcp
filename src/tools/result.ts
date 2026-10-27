@@ -81,6 +81,8 @@ const messages: Record<string, string> = {
     'Browser writes are disabled. Review the preview and enable LINKEDIN_ENABLE_WRITES only for deliberately approved alpha actions.',
   UNVERIFIED_ROUTE:
     'Starting new message threads has no current successful integration evidence. It requires the separate experimental opt-in.',
+  INVALID_APPLICATION_EVIDENCE:
+    'Application evidence references are inconsistent. Correct duplicate IDs or missing references locally; no account check is needed.',
   INVALID_TRACKER_RECORD:
     'Application tracker input is inconsistent. Correct duplicate IDs or receipt confirmation before exporting.',
 };

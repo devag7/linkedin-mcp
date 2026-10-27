@@ -1,4 +1,4 @@
-# Current completion status — reviewed October 26, 2026
+# Current completion status — reviewed October 27, 2026
 
 This is the current-state index for the original roadmap, the job-seeker plan,
 and Claude distribution. Older dated evidence remains in its original files.
@@ -26,6 +26,23 @@ remain historical. The public pilot invitation was paused during repair; use
 only the new version-separated 4.1.2 kit after verified release and merged
 instructions. Recorded participant attempts remain 0/0, unmeasured.
 
+## 4.2.0 additive source milestone
+
+The application worksheet source now supports optional evidence-library reuse,
+explicit per-requirement mapping, and deterministic resume/cover-letter drafts.
+The tool count stays 24 and existing requests retain their old output shape.
+[Requirements and workflow](APPLICATION_MATERIALS_2026-10-27.md) define the bounds;
+[4.2.0 readiness](RELEASE_READINESS_4.2.0.md) separates this candidate from actual
+publication. Do not infer 4.2.0 availability from this source index. The independently
+verified public 4.1.2 core and Claude wrapper receipts below remain historical
+version-specific proof. Local draft assembly does not establish native usefulness,
+application filling or submission. Persistent libraries/trackers remain absent.
+
+A separate [4.2.0 kit](FIRST_USE_VOLUNTEER_KIT_4.2.0.md) and
+[results guide](FIRST_USE_RESULTS_4.2.0.md) preserve the approved account-read pilot
+scope. No recorded participant has started. Update the public invitation only
+after 4.2.0 publication is independently verified; keep older cohorts distinct.
+
 ## Published and verified
 
 | Area | Evidence | Boundary |
@@ -46,7 +63,7 @@ instructions. Recorded participant attempts remain 0/0, unmeasured.
 | Full privacy retirement | Selected-profile tools are scoped and released. | Design, review and test complete coordinated erasure with active-owner, interruption, same-account race and Windows evidence. Never use it to reset safety caps. |
 | Official provider and Claude directory | Official LinkedIn app grants/scopes are unavailable. The local browser server is not a remote HTTPS connector. [Anthropic's directory policy](https://support.claude.com/en/articles/13145358-anthropic-software-directory-policy) appears to require control of connected interfaces. | Obtain permitted provider access and written directory eligibility/route clarification before implementing or submitting a remote connector. Do not claim listing eligibility from a local `.mcpb`. |
 | Application submission | LinkedIn Easy Apply and external ATS submission are absent. | Require a permitted integration, exact per-job field/attachment mapping, human final approval and receipt proof. Keep unsupported auto-apply claims out of release copy. |
-| Further product scope | Saved jobs, richer job filters, inbox keyword search, post search, job alerts/application history, reusable resume/cover-letter drafts and server-owned tracker persistence are absent. | Follow the bounded source/identity/privacy acceptance criteria in the full-scope audit; capture provider routes only under new scoped consent. |
+| Further product scope | Saved jobs, richer job filters, inbox keyword search, post search, job alerts/application history, dedicated interview/follow-up flows and server-owned tracker persistence are absent. Source4.2.0 adds bounded offline materials assembly; publication and usefulness remain separate gates. | Follow the bounded source/identity/privacy acceptance criteria in the full-scope audit; capture provider routes only under new scoped consent. |
 | SDK security maintenance | Core 4.1.2 retains SDK 1.32.1/input guard, migrates to Zod 4.6.7, repairs affected transitive and publisher dependencies, and clears current audits; [repair evidence](SECURITY_REPAIR_2026-10-26.md). Earlier esbuild/Vitest findings are resolved. | Continue advisory monitoring. A zero known-finding audit is not broad provider or native-client proof. |
 | Distribution and adoption | [Awesome MCP PR #15490](https://github.com/punkpeye/awesome-mcp-servers/pull/15490) remains open on October 21. [Glama](https://glama.ai/mcp/servers/devag7/linkedin-mcp) still shows older 4.0.0 installation instructions and generic hosted deployment copy. Its [Admin page](https://glama.ai/mcp/servers/devag7/linkedin-mcp/admin) requires the repository owner's GitHub sign-in for claiming/re-sync. The [private traffic ledger](ADOPTION_TRAFFIC_LEDGER_2026-10-19.md) now records 12 stars, +2 since October 19; first-use remains 0/0. | Owner signs into Glama and requests re-sync, then corrects editable fields and seeks platform correction for generated hosted copy. Capture traffic weekly and consented first-use/repeat-use outcomes separately. 10,000 stars and GitHub Trending daily are targets, not guaranteed milestones. |
 
