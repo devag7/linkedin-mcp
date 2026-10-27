@@ -1,6 +1,6 @@
 # LinkedIn MCP local Desktop extension
 
-This extension packages the independently published `linkedin-mcp-tools@4.1.2`
+This extension packages the independently published `linkedin-mcp-tools@4.2.0`
 archive and its production dependencies for Claude Desktop. It starts a local
 MCP server. It does not include a logged-in browser profile, credentials or
 application data. Install Chrome, then run the one-time manual login documented
@@ -9,8 +9,18 @@ before asking Claude for account reads. LinkedIn can change or restrict the
 unofficial provider; no current live compatibility is guaranteed. Browser writes
 remain disabled by default and always require a separate reviewed preview and
 human approval. This extension does not fill or submit job applications.
-It includes an offline worksheet and CSV export for user-entered application
-statuses; neither tool checks whether a job application was submitted.
+The offline preparation tool can reuse evidence explicitly selected by the user
+and return deterministic resume bullets and a cover-letter draft when requested.
+Inspect the tool's supported input schema before sending optional library,
+reference or draft fields. Facts and source labels remain user-supplied and
+unverified; labels are not files or URLs to open. Exact selected evidence stays
+in structured lineage; draft display text is quoted and control-escaped. Missing
+facts remain gaps. No evidence library or tracker is saved by the server. CSV
+export formats user-entered statuses and does not verify submission.
+
+This is unsigned local Node code running with your computer account's permissions.
+Inspect the archive and checksum before allowing it to run. Offline package
+checks do not establish native-client, live-provider or directory acceptance.
 
 ## Privacy Policy
 

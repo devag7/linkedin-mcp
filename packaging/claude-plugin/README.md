@@ -1,8 +1,9 @@
-# LinkedIn MCP local plugin — 4.1.2
+# LinkedIn MCP local plugin — 4.2.0
 
-This unofficial plugin packages the verified public `linkedin-mcp-tools@4.1.2`
+This unofficial plugin packages the verified public `linkedin-mcp-tools@4.2.0`
 runtime and a guided job-preparation skill. It exposes 24 tools, including local
-application worksheets and CSV export. It does not fill or submit applications,
+application worksheets, explicit evidence reuse, deterministic draft materials and
+CSV export. It does not fill or submit applications,
 upload resumes, or maintain a persistent application tracker. Writes are disabled
 by the supplied server configuration.
 
@@ -30,7 +31,8 @@ entry exists only after building and unpacking the resulting ZIP. Inspect the
 archive and its checksum before allowing local code to run. Node 20+ must be on
 the client's PATH; Google Chrome and a separately authorized manual LinkedIn
 login are needed only for account reads. Local code runs with the user's account
-permissions. Do not share an authenticated Chrome profile.
+permissions. This unsigned local-code package must be reviewed before use.
+Do not share an authenticated Chrome profile.
 
 With Claude Code installed, static-check the unpacked folder using
 `claude plugin validate /absolute/path/to/unpacked-plugin --strict`.
@@ -50,7 +52,13 @@ separate acceptance gates. There is no cloud HTTPS/OAuth connector here.
 
 The runtime uses a local Chrome profile for authenticated reads only after the
 user separately logs in and authorizes access. Application preparation/export
-uses supplied facts and does not persist a tracker. Client conversations and
+uses only explicitly selected user-supplied facts; source labels are opaque,
+unverified descriptions, not paths/URLs to open. It does not persist an evidence
+library or tracker. Inspect the current tool schema before using optional
+`evidence_library`, requirement `evidence_ids` or `include_drafts` fields. An
+older runtime must receive only the fields it advertises. Exact facts remain in
+structured evidence/lineage; displayed drafts are quoted and control-escaped.
+Unknowns stay missing, and no qualification or job-fit score is inferred. Client conversations and
 user-saved exports have their own retention. Selected-profile retirement is
 scoped; it does not erase shared safety state, client conversations or backups.
 See the [privacy policy](https://github.com/devag7/linkedin-mcp/blob/main/docs/PRIVACY.md)
