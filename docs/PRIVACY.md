@@ -34,6 +34,14 @@ They create no application database or CSV file. The client or user may retain
 those inputs and results independently; any exported CSV should be kept private.
 The server does not claim to erase client-retained data.
 
+Source 4.2.0 extends the local worksheet with an optional evidence library and
+resume/cover-letter drafts. Libraries are supplied again by the client on each
+call; the server neither reads source-label paths/URLs nor stores a library or
+material file. Unreferenced library facts are excluded from resolved outputs and
+drafts. The selected input/output still reaches the MCP client and may be retained
+under its policies. Review every supplied statement before using a draft. Check
+4.2.0 publication separately; old 4.1.2 artifacts do not contain this extension.
+
 `linkedin-mcp --logout` removes only an unaliased profile directory. Symlinks, Windows junctions and aliased ancestors are refused; nested links are unlinked without deleting their targets. For a custom
 LINKEDIN_PROFILE_DIR, it refuses deletion unless the user also explicitly supplies
 `--confirm-profile-deletion`. Review that exact path first: the whole directory is

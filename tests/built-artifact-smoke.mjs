@@ -42,6 +42,36 @@ try {
         payload(await client.callTool({ name: 'whoami', arguments: {} })).data.sessionState,
         'not_checked',
       );
+      const materials = payload(await client.callTool({
+        name: 'prepare_job_application',
+        arguments: {
+          job_id: '123', job_title: 'Synthetic engineer',
+          evidence_library: [
+            { id: 'selected', text: 'Maintained a TypeScript library', source_label: 'Synthetic notes' },
+            { id: 'unused', text: 'UNUSED_PRIVATE_FACT_MUST_NOT_BE_RETURNED' },
+          ],
+          requirements: [
+            { requirement: 'TypeScript', evidence_ids: ['selected'] },
+            { requirement: 'Incident response' },
+          ],
+          include_drafts: true,
+        },
+      }));
+      assert.equal(materials.meta.source, 'engine');
+      assert.equal(materials.data.missingEvidenceCount, 1);
+      assert.equal(materials.data.requirements[0].evidenceStatus, 'user_supplied_unverified');
+      assert.deepEqual(materials.data.drafts.resumeBullets, [JSON.stringify('Maintained a TypeScript library')]);
+      assert.equal(materials.data.drafts.lineage[0].text, 'Maintained a TypeScript library');
+      assert.equal(materials.data.stored, false);
+      assert.equal(materials.data.submitted, false);
+      assert.ok(!JSON.stringify(materials).includes('UNUSED_PRIVATE_FACT_MUST_NOT_BE_RETURNED'));
+      assert.equal(payload(await client.callTool({ name: 'whoami', arguments: {} })).data.sessionState, 'not_checked');
+      assert.equal(payload(await client.callTool({
+        name: 'prepare_job_application',
+        arguments: { job_id: '123', job_title: 'Synthetic', requirements: [
+          { requirement: 'Example', evidence_ids: ['absent'] },
+        ], include_drafts: false },
+      })).code, 'INVALID_APPLICATION_EVIDENCE');
       const names = [
         'connect_with_person',
         'send_message',
@@ -77,7 +107,7 @@ try {
     }
   }
   console.log(
-    'PASS: two fresh built stdio processes, 24 tools, write IDs, confirmation refusal, persisted stop, blocked health, clean close.',
+    'PASS: two fresh built stdio processes, 24 tools, offline material drafts/unused-fact privacy, write IDs, confirmation refusal, persisted stop, blocked health, clean close.',
   );
 } finally {
   rmSync(dir, { recursive: true, force: true });

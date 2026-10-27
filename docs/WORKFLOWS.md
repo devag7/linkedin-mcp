@@ -107,3 +107,28 @@ The tool currently returns classified status, not a verified newly created post
 URL. Do not invent that URL or describe a bare HTTP 200 as confirmed publication.
 
 No live write is part of these documentation or contract checks.
+
+## Reuse evidence and draft materials locally (4.2.0)
+
+This workflow uses only supplied inputs. It requires no login, health probe or
+provider read. Verify that the installed version/tool schema supports the new
+4.2.0 fields; old 4.1.2 packages and wrappers do not.
+
+1. Choose one job yourself and supply its copied ID/title, requirements and any
+   company label. Keep a small evidence library in storage you control: each
+   fact has a stable ID, exact text and an optional unverified source label.
+2. Call `prepare_job_application` with the library, explicit per-requirement
+   `evidence_ids` and `include_drafts:true`. Inline evidence is still accepted.
+   Reusing a library means supplying it again, not asking the server to save it.
+3. Review `requirements[].evidenceItems`, `missingEvidenceCount`, `drafts.lineage`
+   and `drafts.remainingQuestions`. The same claim may support several user-chosen
+   requirements; it is deduplicated in drafts without losing those bindings.
+4. Use the quoted draft text as a review aid; exact claim text remains in lineage.
+   Check each claim against your records, answer missing questions truthfully and
+   edit your own final resume/letter. No source label or requirement proves fit.
+5. Save/export only if you choose, according to your client/storage policy. Submit
+   manually on the employer site if appropriate and keep any receipt privately.
+
+[Bounded synthetic request and requirements](https://github.com/devag7/linkedin-mcp/blob/main/docs/APPLICATION_MATERIALS_2026-10-27.md).
+This preparation flow is outside the separately consented own-profile pilot; do
+not add it to a participant's approved one-read attempt.

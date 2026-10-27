@@ -70,6 +70,23 @@ const write = z.union([
     detail: str,
   }),
 ]);
+const applicationEvidenceSource = z.object({
+  kind: z.enum(['inline', 'library']),
+  evidenceId: z
+    .string()
+    .regex(/^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$/)
+    .nullable(),
+  sourceLabel: z
+    .string()
+    .max(200)
+    .nullable()
+    .describe('Opaque user-provided label only; not a file/URL read or verification'),
+});
+const applicationEvidenceItem = z.object({
+  text: z.string().min(1).max(1000),
+  verification: z.literal('user_supplied_unverified'),
+  sources: z.array(applicationEvidenceSource).min(1).max(11),
+});
 const dataSchemas: Record<ToolName, z.ZodTypeAny> = {
   whoami: row({
     server: z.literal('linkedin-mcp'),
@@ -136,6 +153,7 @@ const dataSchemas: Record<ToolName, z.ZodTypeAny> = {
           requirement: z.string(),
           evidence: z.string().nullable(),
           evidenceStatus: z.enum(['user_supplied_unverified', 'missing']),
+          evidenceItems: z.array(applicationEvidenceItem).max(11).optional(),
         }),
       )
       .max(20),
@@ -143,6 +161,36 @@ const dataSchemas: Record<ToolName, z.ZodTypeAny> = {
     nextSteps: z.array(z.string()),
     submitted: z.literal(false),
     stored: z.literal(false),
+    drafts: z
+      .object({
+        verification: z.literal('user_supplied_unverified'),
+        resumeBullets: z
+          .array(z.string().max(6002))
+          .max(50)
+          .describe('Quoted plain-text renderings; exact evidence text remains in lineage'),
+        coverLetter: z.string().max(315000),
+        lineage: z
+          .array(
+            z.object({
+              bulletIndex: z.number().int().min(0).max(49),
+              text: z.string().min(1).max(1000),
+              verification: z.literal('user_supplied_unverified'),
+              bindings: z
+                .array(
+                  z.object({
+                    requirementIndex: z.number().int().min(0).max(19),
+                    requirement: z.string().min(1).max(1000),
+                    sources: z.array(applicationEvidenceSource).min(1).max(11),
+                  }),
+                )
+                .min(1)
+                .max(20),
+            }),
+          )
+          .max(50),
+        remainingQuestions: z.array(z.string().max(6500)).max(22),
+      })
+      .optional(),
   }),
   export_application_tracker: z.object({
     status: z.literal('export_only'),

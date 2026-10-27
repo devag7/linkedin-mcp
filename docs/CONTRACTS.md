@@ -80,3 +80,28 @@ The runtime write opt-in and experimental-route gate still apply.
 After a timeout/restart, repeat the original operation ID and inputs to retrieve a
 journaled outcome; no proof is needed for that lookup, and no action is resubmitted.
 Unsubmitted previews do not survive restart. The server cannot infer human consent.
+
+## Optional application evidence and drafts (4.2.0 source)
+
+`prepare_job_application` retains its original inputs and response shape when
+new options are omitted. `evidence_library` accepts up to 30 user-supplied
+`id`/`text`/optional `source_label` records; each requirement can select up to
+10 unique `evidence_ids`. IDs are case-sensitive, 1–64 ASCII alphanumeric,
+hyphen or underscore characters, with an alphanumeric first character.
+Missing or duplicate references return `INVALID_APPLICATION_EVIDENCE`; no
+reference is guessed. Source labels are unverified opaque text, never read
+as files or fetched as URLs. Existing inline evidence remains supported. In a references-only row, the old
+`evidence` field remains null while `evidenceItems` carries the selected facts
+and `evidenceStatus` reflects their presence; mixed rows preserve both sources.
+
+Extended rows retain selected exact evidence and its lineage, distinguish
+missing evidence, and exclude unused library facts. `include_drafts:true`
+adds `drafts`: JSON-quoted plain-text resume bullets, a cover-letter draft,
+source/requirement lineage and remaining questions. Exact selected claim text
+remains in lineage; displayed values are delimited so controls/newlines stay visible as supplied data.
+Clients must still treat all supplied text as untrusted content. All supplied claims remain unverified;
+the engine does not assert a match score, qualifications or submission.
+Drafting is deterministic and uses no provider, model, file or storage call.
+`submitted:false` and `stored:false` remain true guarantees for this tool.
+Published 4.1.2 does not support this extension; verify 4.2.0 availability and
+the installed schema separately. Native usefulness remains unmeasured.

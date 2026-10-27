@@ -1,6 +1,6 @@
 # Capabilities and compatibility
 
-Generated from src/tools/capabilities.ts for linkedin-mcp-tools v4.1.2.
+Generated from src/tools/capabilities.ts for linkedin-mcp-tools v4.2.0.
 
 | Tool | Route | Source | Permission | Max rows | Evidence | Current live check |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -15,7 +15,7 @@ Generated from src/tools/capabilities.ts for linkedin-mcp-tools v4.1.2.
 | search_jobs | voyagerJobsDashJobCards | voyager | authenticated_browser | 25 | offline_contract_tested (2026-10-21) | Unchecked |
 | get_inbox | /me + messengerConversations | voyager | authenticated_browser | 50 | offline_contract_tested (2026-10-21) | Unchecked |
 | get_job_details | voyagerJobsDashJobPosting | voyager | authenticated_browser | — | offline_contract_tested (2026-10-21) | Unchecked |
-| prepare_job_application | local application worksheet; no submit or storage | engine | local | — | offline_contract_tested (2026-10-21) | Unchecked |
+| prepare_job_application | local application worksheet and draft materials; no submit or storage | engine | local | — | offline_contract_tested (2026-10-21) | Unchecked |
 | export_application_tracker | local application status export; no storage | engine | local | — | offline_contract_tested (2026-10-21) | Unchecked |
 | search_companies | /search/results/companies/ | dom | authenticated_browser | 25 | offline_contract_tested (2026-10-21) | Unchecked |
 | get_company | /company/:slug/about/ | dom | authenticated_browser | — | offline_contract_tested (2026-10-21) | Unchecked |
