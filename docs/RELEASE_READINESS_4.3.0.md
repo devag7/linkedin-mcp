@@ -1,5 +1,24 @@
 # 4.3.0 release readiness — October 29, 2026
 
+## Publication verified — October 29
+
+The core is published and independently verified on npm, public GitHub Packages,
+the active MCP Registry and the finalized GitHub Release/tag. Source/tag is
+`10132b3f7878a7c9255af6a55d0454301f142e6b`, with archive SHA-256
+`3896b31a25fe442fa23246dbf5e814dc1b7efde33636d81d72e858603aed20f9`.
+[Release evidence](RELEASE_EVIDENCE_4.3.0.md) separates each destination and proof.
+Candidate/main CI passed 14 jobs each, pinned dry run passed ten with publication
+steps skipped, and production passed all ten on its first attempt using OIDC.
+A separate session independently verified all four destinations and npm crypto.
+
+Both Claude packages now build locally from that exact public archive and pass
+audits, staged/unpacked cold discovery and interview checks. Static Claude Code
+2.1.285 manifest validation passes in an isolated configuration. Final wrapper
+review/hosted integration and public asset/readback status are recorded separately
+in release distribution notes. No native 4.3.0 installation or live use is implied.
+
+## Preparation snapshot (preserved)
+
 Target: optional local interview preparation in the existing worksheet, retaining
 24 tools and old-call compatibility. Base main is `497110a`; immutable public
 4.2.0 and its independently verified Claude downloads remain unchanged.

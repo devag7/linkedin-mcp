@@ -1,0 +1,39 @@
+{
+  "checkedAt": "2026-10-29T11:32:40.507829+00:00",
+  "version": "4.3.0",
+  "source": "10132b3f7878a7c9255af6a55d0454301f142e6b",
+  "npm": {
+    "url": "https://www.npmjs.com/package/linkedin-mcp-tools/v/4.3.0",
+    "sha256": "3896b31a25fe442fa23246dbf5e814dc1b7efde33636d81d72e858603aed20f9",
+    "integrity": "sha512-zDnSSOHH9KQ7dUhGJjKAObVSL/Hcu4pphgdJFunPhwDe+sYlfNP1yTvaeiHZut9FytgaohRzO/igtne8C8EHVQ==",
+    "signaturesAndAttestationsVerified": true
+  },
+  "githubPackages": {
+    "url": "https://github.com/users/devag7/packages/npm/package/linkedin-mcp-tools",
+    "visibility": "public",
+    "archiveSha256": "2547c42ce03d51eea9393e11c5c761810a5293d60fff55c7b51b392f034a4e3d",
+    "filesAndModesEqualExceptScopedName": true,
+    "fileCount": 15,
+    "anonymousDownloadHttpStatus": 401,
+    "downloadsRequireAuthentication": true
+  },
+  "mcpRegistry": {
+    "url": "https://registry.modelcontextprotocol.io/v0.1/servers/io.github.devag7%2Flinkedin-mcp/versions/4.3.0",
+    "status": "active",
+    "sourcePackagesMatch": true
+  },
+  "githubRelease": {
+    "url": "https://github.com/devag7/linkedin-mcp/releases/tag/v4.3.0",
+    "draft": false,
+    "tagSourceMatches": true
+  },
+  "productRuntimeExecuted": false,
+  "linkedInRequests": 0,
+  "scope": "Direct public release/archive/provenance/destination readbacks; no native or LinkedIn compatibility evidence",
+  "productionRun": "https://github.com/devag7/linkedin-mcp/actions/runs/40863061813",
+  "mainCI": "https://github.com/devag7/linkedin-mcp/actions/runs/40863061694",
+  "reviewedSource": "7f2b0c5581fb5e68992fa274208d6468b40d987d",
+  "mergedTree": "6997d7dc6a12d17cd088327e1d5b0396cd0b34ed",
+  "npmSignaturesVerified": 2,
+  "npmAttestationsVerified": 2
+}

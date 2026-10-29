@@ -6,9 +6,9 @@ with exact reviewed-byte and independent public readbacks. The source-lock
 checks passed on its reviewed head and merged main, with zero recorded repaired
 source/consumer/publisher audit findings. Neither update changes the immutable
 4.2.0 core archive. The [interview preparation kit](INTERVIEW_PREPARATION_2026-10-29.md)
-is a separate 4.3.0 release candidate, absent from published 4.2.0. Its
-source-only head passed independent review; final-head candidate and publication
-gates remain separate in the [readiness record](RELEASE_READINESS_4.3.0.md).
+is now part of verified public [4.3.0](RELEASE_EVIDENCE_4.3.0.md), absent from
+older 4.2.0. Candidate/main CI, pinned dry run, production and independent
+destination/provenance readbacks pass. Claude/native gates remain separate.
 The dated tables below remain historical; use the
 [current completion index](CURRENT_COMPLETION_STATUS_2026-10-18.md) for current scope.
 
