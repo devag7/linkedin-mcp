@@ -11,8 +11,8 @@ import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js'
 import { copyPluginTemplate } from './claude-plugin-template.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const version = '4.2.0';
-const expectedSha256 = 'cd6ab6df8df54236e953de6a6f8cf7cf095746da5d92fbe1727e7228d2d44b0a';
+const version = '4.3.0';
+const expectedSha256 = '3896b31a25fe442fa23246dbf5e814dc1b7efde33636d81d72e858603aed20f9';
 const npmCli = process.env.npm_execpath;
 assert.ok(npmCli, 'Run through npm run build:claude-plugin.');
 const scratch = realpathSync(mkdtempSync(join(tmpdir(), 'linkedin-plugin-build-')));
@@ -85,6 +85,7 @@ async function verifyCold(folder) {
           { requirement: 'Incident response' },
         ],
         include_drafts: true,
+        include_interview_prep: true,
       },
     });
     assert.notEqual(materials.isError, true, 'Offline evidence/drafts probe must succeed.');
@@ -103,6 +104,23 @@ async function verifyCold(folder) {
     assert.equal(worksheet?.submitted, false);
     assert.equal(worksheet?.stored, false);
     assert.equal(JSON.stringify(materials).includes('WRAPPER_UNUSED'), false);
+    const interview = worksheet?.interviewPrep;
+    assert.equal(interview?.status, 'practice_only');
+    assert.equal(interview?.verification, 'user_supplied_unverified');
+    assert.deepEqual(interview?.practiceQuestions?.map((question) => question.requirementIndex), [0, 1]);
+    assert.deepEqual(interview?.practiceQuestions?.[0]?.evidenceItemIndices, [0]);
+    assert.deepEqual(interview?.practiceQuestions?.[1]?.evidenceItemIndices, []);
+    assert.equal(interview?.practiceQuestions?.[1]?.evidenceStatus, 'missing');
+    for (const question of interview.practiceQuestions)
+      assert.deepEqual(question.starWorksheet, { situation: null, task: null, action: null, result: null });
+    assert.equal(interview?.questionsForInterviewer?.length, 3);
+    assert.equal(interview?.followUpTemplate?.kind, 'fill_in_template');
+    assert.equal(interview?.followUpTemplate?.requiresVerifiedInterview, true);
+    assert.deepEqual(interview?.followUpTemplate?.placeholders, [
+      '[INTERVIEWER_NAME]', '[INTERVIEW_DATE]', '[DISCUSSION_TOPIC]', '[NEXT_STEP_OR_QUESTION]', '[YOUR_NAME]',
+    ]);
+    for (const placeholder of interview.followUpTemplate.placeholders)
+      assert.ok(interview.followUpTemplate.body.includes(placeholder));
     const stillCold = await client.callTool({ name: 'whoami', arguments: {} });
     assert.equal(stillCold.structuredContent?.data?.sessionState, 'not_checked');
     assert.equal(stillCold.structuredContent?.data?.loggedIn, null);

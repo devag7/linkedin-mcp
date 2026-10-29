@@ -9,7 +9,33 @@ The [October 21 full-scope audit](COMPLETION_AUDIT_2026-10-21.md) maps every
 original functional requirement, later backlog item and job-seeker addition.
 The complete roadmap has not been achieved.
 
-## October 29 distribution and maintenance update
+## October 29 current release: 4.3.0
+
+[Core 4.3.0 is published and independently verified](RELEASE_EVIDENCE_4.3.0.md)
+on npm, GitHub Packages, the MCP Registry and GitHub Releases. It keeps 24 tools
+and adds optional interview preparation to the existing local worksheet:
+selected-evidence practice prompts, null STAR worksheets, generic interviewer
+questions and a conditional unfilled follow-up template. Existing calls retain
+their old shape; no provider, model, storage or send operation is added.
+
+Candidate and merged-main CI passed 14 jobs each, the pinned non-publishing dry
+run passed ten, and production passed ten on its first attempt. Exact public
+bytes/SRI, registry signatures and publish/provenance attestations bind source
+10132b3 to the reviewed archive. Direct and separate-session destination
+readbacks agree. Source, fresh-consumer and publisher audits recorded zero.
+
+The 4.3.0 Claude packages have passed local staged/unpacked SDK/interview checks
+and zero-finding audits. Static plugin manifest validation passed; native use
+remains untested. Final wrapper review/hosted integration and public downloads
+are distinct checkpoints in the Release distribution notes. Existing 4.2.0
+archives/assets stay unchanged and do not acquire the new interview option.
+
+The [4.3.0 volunteer kit](FIRST_USE_VOLUNTEER_KIT_4.3.0.md) and
+[results guide](FIRST_USE_RESULTS_4.3.0.md) are merged. Recorded cohorts remain
+0/0, unmeasured; use the public invitation only with its matching versioned kit.
+The interview flow is excluded from the one-profile-read pilot.
+
+## October 29 earlier 4.2.0 distribution and maintenance checkpoint
 
 Both public 4.2.0 Claude packages and their checksum files are now attached to the
 [finalized release](https://github.com/devag7/linkedin-mcp/releases/tag/v4.2.0).
@@ -33,12 +59,9 @@ The [public opt-in invitation](https://github.com/devag7/linkedin-mcp/issues/13)
 now points to the merged 4.2.0 kit and scoring guide. Recorded attempts remain
 0/0, unmeasured. No participant contact or account access occurred.
 
-The [offline interview preparation kit](INTERVIEW_PREPARATION_2026-10-29.md)
-is implemented in a [4.3.0 release candidate](RELEASE_READINESS_4.3.0.md). The
-source-only checkpoint passed 835 local tests, source/installed-package checks
-and independent review. The versioned candidate's final-head gates and publication
-remain separate. Published 4.2.0 does not support the new option. Its acceptance
-is separate from completed 4.2.0 distribution; required new service spend is $0.
+The source-only interview checkpoint was tested before preparing the separate
+4.3.0 candidate. Current public 4.3.0 acceptance is recorded above; public 4.2.0
+never contained the interview option. Required new service spend remains $0.
 
 ## October 27 release and materials update
 
@@ -68,24 +91,24 @@ has started; keep 0/0 as unmeasured. Historical protocols and failed receipts re
 
 | Area | Evidence | Boundary |
 | --- | --- | --- |
-| Core package | [4.2.0 release evidence](RELEASE_EVIDENCE_4.2.0.md): npm archive/provenance, GitHub Packages, active MCP Registry metadata and finalized GitHub Release/tag independently verified; 24 tools and exact 15-file npm archive, SDK ^1.32.1 floor and input guard | No broad live-provider or native-client first-use proof |
+| Core package | [4.3.0 release evidence](RELEASE_EVIDENCE_4.3.0.md): exact 15-file archive, npm integrity/signatures/provenance, public scoped package, active Registry and finalized Release/tag verified; 24 tools and existing SDK structural guard | No broad live-provider or native-client first-use proof |
 | Safety and setup | Default-disabled writes, reviewed preview tokens, shared caps/journal, offline diagnosis and client-config export; release tests and hosted matrix | LinkedIn account restrictions remain possible |
-| Job-seeker convenience | `prepare_job_application` creates a worksheet and optional evidence-linked draft materials from user-supplied facts; `export_application_tracker` formats user-entered records as CSV | No application filling, uploading, submitting, saved-job retrieval, or server-owned tracker persistence |
+| Job-seeker convenience | `prepare_job_application` creates an unsaved worksheet, optional evidence-linked resume/letter drafts and 4.3.0 interview practice/follow-up templates; `export_application_tracker` formats user-entered records as CSV | No form filling, uploading, submission, saved-job retrieval or server-owned tracker persistence; claims remain supplied and unverified |
 | Local retirement | Selected-profile retirement and interrupted-retirement preview; Windows private-state guard | Shared safety state, other profiles, client data and backups are outside selected retirement; complete coordinated erasure remains open |
-| Claude Desktop bundle | Unsigned 4.2.0 MCPB and local plugin builders wrap the verified public runtime; [asset/evidence status](RELEASE_EVIDENCE_4.2.0.md) distinguishes local, hosted and public checks. Historical [4.1.0 native Mac receipt](evidence/claude-native-4.1.0-2026-10-18.md) remains separate. | Native 4.2.0 install, live account use, other client/OS pairings and directory acceptance remain unproven |
+| Claude Desktop bundle | 4.3.0 MCPB/plugin local builds wrap the verified public runtime and pass SDK/interview/audit checks; [evidence](RELEASE_EVIDENCE_4.3.0.md) distinguishes local, hosted and public checkpoints. Historical native 4.1.0 evidence stays separate. | Native 4.3.0 installation, live use, other client/OS pairings and directory acceptance remain unproven |
 
 ## Open acceptance gates
 
 | Gate | Current observation | Concrete finish line |
 | --- | --- | --- |
-| First use | Version-separated [4.2.0 consent kit](FIRST_USE_VOLUNTEER_KIT_4.2.0.md), [scoring guide](FIRST_USE_RESULTS_4.2.0.md) and updated public invitation are available. The recorded cohort remains 0/0, unmeasured; historical versions do not establish 4.2.0 first use. | A willing participant consents personally; count every first started attempt, keep failures and version cohorts separate, and retain minimal results privately. |
+| First use | Merged [4.3.0 consent kit](FIRST_USE_VOLUNTEER_KIT_4.3.0.md) and [scoring guide](FIRST_USE_RESULTS_4.3.0.md); recorded cohort 0/0, unmeasured. Earlier protocols/cohorts stay separate. | The public invitation must match the selected versioned kit. Participants personally consent; count every first started attempt, keep failures, and retain minimal rows privately. |
 | Job research briefs | Draft [PR #5](https://github.com/devag7/linkedin-mcp/pull/5) is blocked. Earlier live runs returned no useful job and had cleanup failures; its later search-only head had failed hosted/package cleanup jobs. | Fix reproducible cleanup and useful-result failures, then obtain new bounded consent for live validation before merge or release. Preserve failed receipts. |
-| Native clients and account compatibility | No fresh-user 4.2.0 read measured in Claude Desktop, Cursor or VS Code. | Record consented real-client first use and observed failure categories, then repair what participants encounter. |
+| Native clients and account compatibility | No fresh-user 4.3.0 read measured in Claude Desktop, Cursor or VS Code. Offline SDK exports and static validation are separate. | Record consented native first use and failure categories, then repair observed problems. |
 | Full privacy retirement | Selected-profile tools are scoped and released. | Design, review and test complete coordinated erasure with active-owner, interruption, same-account race and Windows evidence. Never use it to reset safety caps. |
 | Official provider and Claude directory | Official LinkedIn app grants/scopes are unavailable. The local browser server is not a remote HTTPS connector. [Current official route/policy research](CLAUDE_DIRECTORY_RESEARCH_2026-10-27.md) distinguishes local plugin submission from remote HTTPS/OAuth and identifies interface-control and installable-source gaps. | Obtain permitted provider access and written eligibility clarification; prepare a complete installable GitHub plugin source before any directory submission. A remote connector requires separate HTTPS/OAuth design. Do not claim listing eligibility from a local `.mcpb`. |
 | Application submission | LinkedIn Easy Apply and external ATS submission are absent. | Require a permitted integration, exact per-job field/attachment mapping, human final approval and receipt proof. Keep unsupported auto-apply claims out of release copy. |
-| Further product scope | Saved jobs, richer job filters, inbox keyword search, post search, job alerts/application history and server-owned tracker persistence are absent. The offline interview/follow-up kit is a 4.3.0 release candidate, not yet a published feature in this preparation snapshot. Public 4.2.0 provides bounded materials assembly; native usefulness remains unmeasured. | Complete the final-head candidate gates and independently verify release destinations for the interview kit. Follow the source/identity/privacy criteria for provider features; capture routes only under new scoped consent. |
-| SDK security maintenance | Core 4.2.0 retains SDK ^1.32.1/input guard and Zod 4.6.7; earlier esbuild/Vitest findings are resolved. The [October 29 adapter lock repair](SECURITY_HONO_NODE_SERVER_2026-10-29.md) clears the newly observed moderate source finding; repaired source/consumer/publisher audits recorded zero. | Continue advisory monitoring and update affected existing installations deliberately. A zero known-finding audit is not broad provider or native-client proof. |
+| Further product scope | Public 4.3.0 adds the offline interview/follow-up kit. Saved jobs, richer filters, inbox/post search, job alerts/application history and server-owned persistence remain absent. | Measure interview usefulness separately from the account-read pilot. Follow source/identity/privacy criteria for provider features and capture routes only under new scoped consent. |
+| SDK security maintenance | Core 4.3.0 retains SDK ^1.32.1/input guard and Zod 4.6.7; earlier esbuild/Vitest findings are resolved. The [October 29 adapter lock repair](SECURITY_HONO_NODE_SERVER_2026-10-29.md) clears the newly observed moderate source finding; repaired source/consumer/publisher audits recorded zero. | Continue advisory monitoring and update affected existing installations deliberately. A zero known-finding audit is not broad provider or native-client proof. |
 | Distribution and adoption | [Awesome MCP PR #15490](https://github.com/punkpeye/awesome-mcp-servers/pull/15490) remains open on October 21. The October 21 [Glama observation](https://glama.ai/mcp/servers/devag7/linkedin-mcp) showed older 4.0.0 installation instructions and generic hosted deployment copy; it is not a fresh October 27 readback. Its [Admin page](https://glama.ai/mcp/servers/devag7/linkedin-mcp/admin) requires the repository owner's GitHub sign-in for claiming/re-sync. The [private traffic ledger](ADOPTION_TRAFFIC_LEDGER_2026-10-19.md) now records 12 stars, +2 since October 19; first-use remains 0/0. | Recheck Glama; if still stale, the owner signs in and requests re-sync, then corrects editable fields and seeks platform correction for generated hosted copy. The October 27 private capture reports 12 stars, +2 since October 19, with 22 observed October days and no complete month. Clones are not installs. Capture traffic weekly and consented first-use/repeat-use outcomes separately. 10,000 stars and GitHub Trending daily are targets, not guaranteed milestones. |
 
 An older external [Dockerfile PR #2](https://github.com/devag7/linkedin-mcp/pull/2)
@@ -96,17 +119,17 @@ container work against current source as a separate change.
 
 ## Local Claude plugin preparation
 
-A [published local plugin bundle](CLAUDE_PLUGIN_2026-10-22.md) wraps exact public
-4.2.0 with a job-preparation skill. Public distribution, hosted checks, native
+The [4.3.0 local plugin build](CLAUDE_PLUGIN_2026-10-22.md) wraps exact public
+4.3.0 with a job-preparation skill; its final public asset gates are separate. Public distribution, hosted checks, native
 startup and directory acceptance are separate gates. This does not add
 application submission, a remote connector or PR #5 to the released runtime.
 
 ## Next sequence
 
-1. Use the verified public 4.2.0 runtime after checking its release evidence.
-   The [4.2.0 consent kit](FIRST_USE_VOLUNTEER_KIT_4.2.0.md) and
-   [results guide](FIRST_USE_RESULTS_4.2.0.md) define a new, separate cohort.
-   The existing public invitation now uses these merged instructions;
+1. Use the verified public 4.3.0 runtime after checking its release evidence.
+   The [4.3.0 consent kit](FIRST_USE_VOLUNTEER_KIT_4.3.0.md) and
+   [results guide](FIRST_USE_RESULTS_4.3.0.md) define a new, separate cohort.
+   Match the public invitation to these version-pinned merged instructions;
    a participant must personally consent before starting. Historical protocols
    and failures stay preserved. No individual outreach is part of this update.
 2. Use the first real observed onboarding failures to prioritize fixes. Treat

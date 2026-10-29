@@ -1,0 +1,34 @@
+{
+  "checkedDate": "2026-10-29",
+  "scope": "Local build checkpoint; public asset/integration acceptance separate",
+  "artifacts": [
+    {
+      "name": "linkedin-mcp-tools-4.3.0.mcpb",
+      "sha256": "761b8511deed46c2b689bb9574b843df5bc24c3cc427237b0bc8f12fb7b1c650",
+      "sourceVersion": "4.3.0",
+      "sourceSha256": "3896b31a25fe442fa23246dbf5e814dc1b7efde33636d81d72e858603aed20f9",
+      "sourceKind": "verified_public_npm",
+      "productionFindings": 0,
+      "stagedAndUnpackedChecks": "24tools/cold/structuralguard/drafts/interview/unusedfactprivacy/profileabsence passed",
+      "native4_3_0": "not tested",
+      "publicAssetReadback": "not part of this local checkpoint"
+    },
+    {
+      "name": "linkedin-mcp-local-4.3.0.zip",
+      "sha256": "e514616d244270b4d2cf8e3f920815165bb416da47672b7e88cee03117b9224c",
+      "sourceVersion": "4.3.0",
+      "sourceSha256": "3896b31a25fe442fa23246dbf5e814dc1b7efde33636d81d72e858603aed20f9",
+      "sourceKind": "verified_public_npm",
+      "productionFindings": 0,
+      "stagedAndUnpackedChecks": "24tools/cold/structuralguard/drafts/interview/unusedfactprivacy/profileabsence passed",
+      "native4_3_0": "not tested",
+      "publicAssetReadback": "not part of this local checkpoint"
+    }
+  ],
+  "staticPluginValidation": {
+    "cli": "Claude Code2.1.285",
+    "strict": "passed",
+    "isolatedConfig": true,
+    "nativeLoad": false
+  }
+}

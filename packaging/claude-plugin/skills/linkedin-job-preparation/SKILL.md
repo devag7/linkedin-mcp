@@ -42,3 +42,15 @@ Account reads require an explicit scope and budget from the human. Never add
 searches, health checks, retries or login to this offline preparation workflow.
 Stop on checkpoints, uncertain results or cleanup failure. Do not enable writes,
 submit applications or contact employers as part of this skill.
+
+## Optional interview preparation
+
+When the user requests interview preparation, first verify that the tool schema
+advertises `include_interview_prep`, then set it to true on the local worksheet.
+It works independently of `include_drafts`. Follow each question’s requirement
+index and row-local evidence indices to the selected exact statements and labels.
+Unknown facts stay unknown; the null STAR worksheet does not establish any
+anecdote or achievement. The questions are practice aids, not employer predictions.
+Use the follow-up only as a fill-in template after the user verifies a real
+interview and recipient, and require human review. Do not send it, contact an
+employer, infer interview history or call provider tools for this local flow.

@@ -1,6 +1,6 @@
-# LinkedIn MCP local plugin — 4.2.0
+# LinkedIn MCP local plugin — 4.3.0
 
-This unofficial plugin packages the verified public `linkedin-mcp-tools@4.2.0`
+This unofficial plugin packages the verified public `linkedin-mcp-tools@4.3.0`
 runtime and a guided job-preparation skill. It exposes 24 tools, including local
 application worksheets, explicit evidence reuse, deterministic draft materials and
 CSV export. It does not fill or submit applications,
@@ -78,3 +78,13 @@ distribution. This plugin has not been submitted or accepted.
 References: [plugin structure](https://claude.com/docs/plugins/build),
 [submission route](https://claude.com/docs/connectors/building/submission),
 [directory policy](https://support.claude.com/en/articles/13145358-anthropic-software-directory-policy).
+
+## Offline interview kit
+
+The pinned 4.3.0 runtime supports `include_interview_prep:true` on
+`prepare_job_application`, independently of resume/cover-letter drafts. Practice
+questions reference only selected evidence; unknown answers and STAR fields stay
+blank. A follow-up template requires truthful human completion after verifying
+the real interview and recipient. No message, application, provider request or
+server-owned record is created. Inspect the advertised schema and returned kit;
+4.2.0 bundles do not upgrade themselves. Native 4.3.0 use remains untested.

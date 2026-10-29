@@ -1,5 +1,32 @@
 # Claude Desktop local bundle: build and evidence
 
+## October 29: 4.3.0 public-runtime build
+
+The current builder wraps the [independently verified public 4.3.0 core](RELEASE_EVIDENCE_4.3.0.md),
+SHA-256 `3896b31a25fe442fa23246dbf5e814dc1b7efde33636d81d72e858603aed20f9`.
+It adds the optional evidence-linked interview kit to the existing preparation
+flow. The Desktop MCPB local build has SHA-256 `761b8511deed46c2b689bb9574b843df5bc24c3cc427237b0bc8f12fb7b1c650`.
+[Local receipt](evidence/release-4.3.0-2026-10-29/wrapper-local-builds.json)
+records the stage/unpack, zero-audit, cold 24-tool and new interview checks.
+
+Use `npm run build:claude-mcpb` with a new output path for a current build. The installer
+formats remain distinct: MCPB is for manual Claude Desktop extension use;
+plugin ZIP is for documented local plugin surfaces. Check the
+[4.3.0 Release asset list and distribution notes](https://github.com/devag7/linkedin-mcp/releases/tag/v4.3.0)
+for actual public downloads, checksums and final integration status. A local
+archive or successful SDK probe alone is not public distribution evidence.
+
+Static Claude Code 2.1.285 manifest validation passes with an isolated config
+and blocked network proxy. No plugin load, native 4.3.0 installation, account
+read or directory submission was performed. Local Node code runs with the
+user's account permissions; review the unsigned-code warning before installing.
+The server stores no evidence library or draft; the client controls its copies.
+
+The 4.2.0 and earlier blocks below are historical version-specific evidence and
+recipes. They do not establish 4.3.0 native use or upgrade an installed 4.2.0
+bundle. Use the current builder/version above for new local builds.
+
+
 ## Current 4.2.0 build and installation
 
 The default builder pins verified public core 4.2.0, archive SHA-256
