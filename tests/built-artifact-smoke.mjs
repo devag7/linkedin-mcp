@@ -134,6 +134,53 @@ try {
       assert.equal(interview.data.submitted, false);
       assert.equal(interview.data.stored, false);
       assert.equal(JSON.stringify(interview).includes('UNUSED_INTERVIEW'), false);
+      const trackerInput = {
+        records: [
+          {
+            job_id: '123',
+            title: 'Synthetic',
+            status: 'submitted_unverified',
+            updated_at: '2026-10-28T00:00:00Z',
+            follow_up_at: '2026-10-29T00:00:00Z',
+          },
+          {
+            job_id: '456',
+            title: 'Synthetic closed',
+            status: 'withdrawn',
+            updated_at: '2026-10-28T00:00:00Z',
+            follow_up_at: '2026-10-27T00:00:00Z',
+          },
+        ],
+      };
+      const legacyTracker = payload(
+        await client.callTool({
+          name: 'export_application_tracker',
+          arguments: trackerInput,
+        }),
+      ).data;
+      assert.equal('followUpPlan' in legacyTracker, false);
+      const plannedTracker = payload(
+        await client.callTool({
+          name: 'export_application_tracker',
+          arguments: {
+            ...trackerInput,
+            include_follow_up_plan: true,
+            as_of: '2026-10-30T00:00:00Z',
+          },
+        }),
+      ).data;
+      assert.deepEqual(plannedTracker.followUpPlan, {
+        referenceTime: '2026-10-30T00:00:00Z',
+        basis: 'user_supplied_dates',
+        notificationsScheduled: false,
+        overdueRecordIndices: [0],
+        dueNowRecordIndices: [],
+        upcomingRecordIndices: [],
+        unscheduledRecordIndices: [],
+        closedRecordIndices: [1],
+      });
+      const { followUpPlan: _plan, ...unchangedTracker } = plannedTracker;
+      assert.deepEqual(unchangedTracker, legacyTracker);
       assert.equal(
         payload(await client.callTool({ name: 'whoami', arguments: {} })).data.sessionState,
         'not_checked',
@@ -187,7 +234,7 @@ try {
     }
   }
   console.log(
-    'PASS: two fresh built stdio processes, 24 tools, offline material/interview practice and unused-fact privacy, write IDs, confirmation refusal, persisted stop, blocked health, clean close.',
+    'PASS: two fresh built stdio processes, 24 tools, offline material/interview practice, explicit follow-up timing and unused-fact privacy, write IDs, confirmation refusal, persisted stop, blocked health, clean close.',
   );
 } finally {
   rmSync(dir, { recursive: true, force: true });

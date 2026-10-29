@@ -66,6 +66,15 @@ Absent attribution remains unknown. Known delivery timestamps sort ascending;
 undated messages remain undated and stable at the end. Counts and partial/unsupported
 continuation behavior are unchanged. These are optional additive contract fields.
 
+## Optional local follow-up timing (unreleased source)
+
+`export_application_tracker` accepts `include_follow_up_plan:true` with an explicit
+UTC `as_of`. It adds bounded zero-based record-index groups for overdue, due-now,
+upcoming, unscheduled and closed records. Default/false calls retain their
+previous data shape and identical CSV. No actions, notifications, storage or
+submission claims are generated. [Exact contract and example](APPLICATION_FOLLOW_UP_2026-10-29.md).
+This is not included in public 4.3.0.
+
 ## New write submission authorization
 
 Call the write with `confirm:false` first. Its preview includes `operationId`,

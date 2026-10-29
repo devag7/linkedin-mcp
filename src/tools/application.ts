@@ -3,6 +3,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { registerTool } from './register.js';
 import { failure, ok } from './result.js';
+import { buildFollowUpPlan } from './application-follow-up.js';
 import {
   applicationInputShape,
   ApplicationEvidenceError,
@@ -30,8 +31,16 @@ export function registerApplicationTools(server: McpServer): void {
   registerTool(
     server,
     'export_application_tracker',
-    'Format up to 50 application statuses that you enter into a CSV. It does not inspect LinkedIn, infer submission, or save data. A receipt-verified status requires your explicit confirmation.',
+    'Format up to 50 application statuses that you enter into a CSV. Optionally classify follow-up dates against your explicit as_of time; no notifications are scheduled. It does not inspect LinkedIn, infer submission, or save data. A receipt-verified status requires your explicit confirmation.',
     {
+      include_follow_up_plan: z.boolean().default(false),
+      as_of: z
+        .string()
+        .datetime()
+        .optional()
+        .describe(
+          'Explicit UTC reference time; required only with include_follow_up_plan:true. No current date is inferred.',
+        ),
       records: z
         .array(
           z.object({
@@ -55,7 +64,13 @@ export function registerApplicationTools(server: McpServer): void {
         .min(1)
         .max(50),
     },
-    async ({ records }) => {
+    async ({ records, include_follow_up_plan, as_of }) => {
+      if (include_follow_up_plan !== (as_of !== undefined))
+        return failure(
+          'export_application_tracker',
+          'INVALID_TRACKER_RECORD',
+          'Supply include_follow_up_plan:true together with an explicit UTC as_of time, or omit both.',
+        );
       const ids = records.map((record) => record.job_id);
       if (new Set(ids).size !== ids.length)
         return failure(
@@ -118,6 +133,9 @@ export function registerApplicationTools(server: McpServer): void {
           csv,
           stored: false as const,
           submittedByTool: false as const,
+          ...(include_follow_up_plan && as_of !== undefined
+            ? { followUpPlan: buildFollowUpPlan(rows, as_of) }
+            : {}),
         },
         'engine',
       );

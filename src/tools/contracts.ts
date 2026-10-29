@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import type { ToolName } from './capabilities.js';
+import { followUpPlanSchema } from './application-follow-up.js';
 const str = z.string().optional();
 const num = z.number().optional();
 const row = (shape: z.ZodRawShape) => z.object(shape).passthrough();
@@ -270,6 +271,7 @@ const dataSchemas: Record<ToolName, z.ZodTypeAny> = {
     csv: z.string(),
     stored: z.literal(false),
     submittedByTool: z.literal(false),
+    followUpPlan: followUpPlanSchema.optional(),
   }),
   search_companies: z.array(company).max(25),
   get_company: row({

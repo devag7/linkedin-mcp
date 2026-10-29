@@ -376,6 +376,127 @@ it('rejects duplicate jobs and unsupported receipt claims in tracker exports', a
     expect(result.data).toBeNull();
   }
 });
+describe('optional local follow-up timing plan', () => {
+  const row = {
+    job_id: '123',
+    title: 'Unverified supplied title',
+    status: 'submitted_unverified',
+    updated_at: '2026-10-17T00:00:00.000Z',
+    next_action: 'User-selected action',
+  };
+  const asOf = '2026-10-29T12:00:00.000Z';
+  const call = async (extra: Record<string, unknown> = {}) =>
+    decode(
+      await client.callTool({
+        name: 'export_application_tracker',
+        arguments: { records: [row], ...extra },
+      }),
+    );
+  it('keeps legacy and explicit-false data and CSV byte-equivalent', async () => {
+    const legacy = await call();
+    const disabled = await call({ include_follow_up_plan: false });
+    expect(disabled.data).toEqual(legacy.data);
+    expect(Object.keys(legacy.data).sort()).toEqual([
+      'csv',
+      'records',
+      'sourceVerification',
+      'status',
+      'stored',
+      'submittedByTool',
+    ]);
+    expect(legacy.data).not.toHaveProperty('followUpPlan');
+  });
+  it.each([
+    { include_follow_up_plan: true },
+    { as_of: asOf },
+    { include_follow_up_plan: false, as_of: asOf },
+  ])('requires the explicit flag and reference time together: %j', async (extra) => {
+    const result = await call(extra);
+    expect(result).toMatchObject({ code: 'INVALID_TRACKER_RECORD', data: null });
+    expect(result.hint).toContain('as_of');
+  });
+  it('sorts due dates across unscheduled rows and preserves exact row lineage', async () => {
+    vi.mocked(runtime.voyager.voyagerGet).mockClear();
+    const records = [
+      { ...row, follow_up_at: '2026-10-30T12:00:00Z' },
+      { ...row, job_id: '2' },
+      { ...row, job_id: '3', follow_up_at: '2026-10-28T12:00:00Z' },
+      { ...row, job_id: '4', follow_up_at: asOf },
+      { ...row, job_id: '5', follow_up_at: '2026-10-27T12:00:00Z' },
+      { ...row, job_id: '6', status: 'rejected', follow_up_at: '2026-10-20T12:00:00Z' },
+      { ...row, job_id: '7', status: 'withdrawn' },
+      { ...row, job_id: '8', follow_up_at: '2026-10-28T12:00:00.000Z', next_action: undefined },
+    ];
+    const legacy = await call({ records });
+    const planned = await call({ records, include_follow_up_plan: true, as_of: asOf });
+    expect(planned.data.followUpPlan).toEqual({
+      referenceTime: asOf,
+      basis: 'user_supplied_dates',
+      notificationsScheduled: false,
+      overdueRecordIndices: [4, 2, 7],
+      dueNowRecordIndices: [3],
+      upcomingRecordIndices: [0],
+      unscheduledRecordIndices: [1],
+      closedRecordIndices: [5, 6],
+    });
+    const { followUpPlan: _plan, ...unchanged } = planned.data;
+    expect(unchanged).toEqual(legacy.data);
+    expect(planned.data.records[7].nextAction).toBeNull();
+    expect(planned.data.records[0].status).toBe('submitted_unverified');
+    expect(runtime.voyager.voyagerGet).not.toHaveBeenCalled();
+    expect(runtime.engine.hasActiveContext).toBe(false);
+  });
+  it('preserves sub-millisecond ordering, equivalent dates and stable ties', async () => {
+    const dates = [
+      '2026-10-29T12:00:00.0001Z',
+      '2026-10-29T12:00:00Z',
+      '2026-10-29T11:59:59.999999Z',
+      '2026-10-29T12:00:00.0000Z',
+      '2026-10-29T12:00:00.00001Z',
+      '2026-10-29T12:00:00.0001Z',
+    ];
+    const result = await call({
+      records: dates.map((follow_up_at, i) => ({ ...row, job_id: String(i + 1), follow_up_at })),
+      include_follow_up_plan: true,
+      as_of: asOf,
+    });
+    expect(result.data.followUpPlan).toMatchObject({
+      overdueRecordIndices: [2],
+      dueNowRecordIndices: [1, 3],
+      upcomingRecordIndices: [4, 0, 5],
+    });
+  });
+  it('partitions all 50 bounded records exactly once without inventing actions', async () => {
+    const result = await call({
+      records: Array.from({ length: 50 }, (_, i) => ({
+        ...row,
+        job_id: String(i + 1),
+        next_action: undefined,
+      })),
+      include_follow_up_plan: true,
+      as_of: asOf,
+    });
+    expect(result.data.followUpPlan.unscheduledRecordIndices).toEqual(
+      Array.from({ length: 50 }, (_, i) => i),
+    );
+    expect(
+      result.data.records.every((entry: { nextAction: unknown }) => entry.nextAction === null),
+    ).toBe(true);
+  });
+  it('rejects invalid and non-UTC reference dates at the SDK boundary', async () => {
+    for (const as_of of ['2026-02-30T00:00:00Z', 'yesterday', '2026-10-29T12:00:00+05:30']) {
+      const result = await client.callTool({
+        name: 'export_application_tracker',
+        arguments: {
+          records: [row],
+          include_follow_up_plan: true,
+          as_of,
+        },
+      });
+      expect(result.isError).toBe(true);
+    }
+  });
+});
 describe('protocol errors on every read registration', () => {
   it.each(reads)(
     '%s retains typed/redacted auth, quota, checkpoint, timeout and malformed-response errors',
