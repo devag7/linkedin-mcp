@@ -11,6 +11,12 @@ The complete roadmap has not been achieved.
 
 ## October 29 current release: 4.3.0
 
+An additive [local follow-up timing plan](APPLICATION_FOLLOW_UP_2026-10-29.md)
+is being validated separately in source. It groups supplied tracker records at
+an explicit reference time without scheduling notifications or storing records.
+It is not in published 4.3.0; persistence, live application history and automatic
+reminders remain open.
+
 [Core 4.3.0 is published and independently verified](RELEASE_EVIDENCE_4.3.0.md)
 on npm, GitHub Packages, the MCP Registry and GitHub Releases. It keeps 24 tools
 and adds optional interview preparation to the existing local worksheet:
@@ -24,16 +30,24 @@ bytes/SRI, registry signatures and publish/provenance attestations bind source
 10132b3 to the reviewed archive. Direct and separate-session destination
 readbacks agree. Source, fresh-consumer and publisher audits recorded zero.
 
-The 4.3.0 Claude packages have passed local staged/unpacked SDK/interview checks
-and zero-finding audits. Static plugin manifest validation passed; native use
-remains untested. Final wrapper review/hosted integration and public downloads
-are distinct checkpoints in the Release distribution notes. Existing 4.2.0
+Both 4.3.0 Claude packages and their checksum files are public. Anonymous downloads
+matched reviewed bytes and GitHub asset digests; independent readback confirmed
+asset metadata, checksum files, retained core tag/integrity and current pilot links.
+Wrapper PR #54 and merged-main CI passed 14 jobs each. Local staged/unpacked
+SDK/interview checks, zero-finding audits and static plugin validation passed;
+native 4.3.0 use remains untested. The MCPB omits the source map and retains exact
+runtime JavaScript; the plugin ZIP embeds all 15 core files. The cancelled
+same-version release is not counted as a pass. See the
+[Release distribution notes](https://github.com/devag7/linkedin-mcp/releases/tag/v4.3.0).
+Existing 4.2.0
 archives/assets stay unchanged and do not acquire the new interview option.
 
 The [4.3.0 volunteer kit](FIRST_USE_VOLUNTEER_KIT_4.3.0.md) and
 [results guide](FIRST_USE_RESULTS_4.3.0.md) are merged. Recorded cohorts remain
 0/0, unmeasured; use the public invitation only with its matching versioned kit.
 The interview flow is excluded from the one-profile-read pilot.
+The [public invitation](https://github.com/devag7/linkedin-mcp/issues/13) now uses
+this matching 4.3.0 kit and scoring guide; no participant contact occurred.
 
 ## October 29 earlier 4.2.0 distribution and maintenance checkpoint
 
