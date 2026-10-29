@@ -191,6 +191,56 @@ const dataSchemas: Record<ToolName, z.ZodTypeAny> = {
         remainingQuestions: z.array(z.string().max(6500)).max(22),
       })
       .optional(),
+    interviewPrep: z
+      .object({
+        status: z.literal('practice_only'),
+        verification: z.literal('user_supplied_unverified'),
+        practiceQuestions: z
+          .array(
+            z.object({
+              requirementIndex: z.number().int().min(0).max(19),
+              question: z.string().max(6500),
+              evidenceItemIndices: z
+                .array(z.number().int().min(0).max(10))
+                .max(11)
+                .describe(
+                  'Indices into evidenceItems on the requirement identified by requirementIndex',
+                ),
+              evidenceStatus: z.enum(['user_supplied_unverified', 'missing']),
+              starWorksheet: z.object({
+                situation: z.null(),
+                task: z.null(),
+                action: z.null(),
+                result: z.null(),
+              }),
+            }),
+          )
+          .min(1)
+          .max(20),
+        questionsForInterviewer: z.array(z.string().max(500)).max(3),
+        followUpTemplate: z.object({
+          kind: z.literal('fill_in_template'),
+          requiresVerifiedInterview: z
+            .literal(true)
+            .describe(
+              'A human must verify the interview context before using this template; this is not an event assertion',
+            ),
+          subject: z.string().max(12500),
+          body: z.string().max(13500),
+          placeholders: z
+            .array(
+              z.enum([
+                '[INTERVIEWER_NAME]',
+                '[INTERVIEW_DATE]',
+                '[DISCUSSION_TOPIC]',
+                '[NEXT_STEP_OR_QUESTION]',
+                '[YOUR_NAME]',
+              ]),
+            )
+            .length(5),
+        }),
+      })
+      .optional(),
   }),
   export_application_tracker: z.object({
     status: z.literal('export_only'),

@@ -13,7 +13,7 @@
 
 **Structured LinkedIn reads for MCP clients — profiles, jobs, companies and inbox data, with guided offline setup and explicit safety limits.**
 
-**24 tools · 4.2.0 application preparation** · local browser reads · five explicitly confirmed writes · persisted safety limits and operation journals.
+**24 tools · 4.3.0 interview preparation** · local browser reads · five explicitly confirmed writes · persisted safety limits and operation journals.
 
 > This is an unofficial LinkedIn integration and accounts can be restricted.
 > Review [Account safety](#-account-safety) and [SECURITY.md](SECURITY.md) before use.
@@ -24,12 +24,13 @@
 
 ## Guided first run
 
-4.2.0 adds optional reusable evidence, source-linked resume bullets and a
-reviewable cover-letter draft to the local application worksheet. It retains
-24 tools, the 4.1.2 dependency repairs and the SDK input guard. See the
-[release notes](https://github.com/devag7/linkedin-mcp/blob/main/docs/RELEASE_NOTES_4.2.0.md)
-and [readiness record](https://github.com/devag7/linkedin-mcp/blob/main/docs/RELEASE_READINESS_4.2.0.md).
-The commands below target 4.2.0; check its [release availability](https://github.com/devag7/linkedin-mcp/releases/tag/v4.2.0)
+4.3.0 adds optional evidence-linked interview practice, blank STAR worksheets
+and a human-reviewed follow-up template to the local application worksheet.
+It retains 4.2.0 evidence reuse and resume/cover-letter drafts, 24 tools,
+reviewed dependency repairs and the SDK input guard. See the
+[release notes](https://github.com/devag7/linkedin-mcp/blob/main/docs/RELEASE_NOTES_4.3.0.md)
+and [readiness record](https://github.com/devag7/linkedin-mcp/blob/main/docs/RELEASE_READINESS_4.3.0.md).
+The commands below target 4.3.0; check its [release availability](https://github.com/devag7/linkedin-mcp/releases/tag/v4.3.0)
 and destination verification before installing. These instructions do not
 establish publication, native use or broader live compatibility.
 
@@ -128,9 +129,9 @@ not a guarantee of current provider compatibility or account safety.
 
 ## 🚀 Quick start
 
-Use Node.js 20 or later and Google Chrome. The commands below target 4.2.0;
-check its [release availability](https://github.com/devag7/linkedin-mcp/releases/tag/v4.2.0)
-and [verification status](https://github.com/devag7/linkedin-mcp/blob/main/docs/RELEASE_READINESS_4.2.0.md) before installing.
+Use Node.js 20 or later and Google Chrome. The commands below target 4.3.0;
+check its [release availability](https://github.com/devag7/linkedin-mcp/releases/tag/v4.3.0)
+and [verification status](https://github.com/devag7/linkedin-mcp/blob/main/docs/RELEASE_READINESS_4.3.0.md) before installing.
 Setup is offline; login and subsequent reads
 are deliberate account actions. For a stable installation path and Windows
 commands, see the [setup guide](SETUP_GUIDE.md). On Windows, 4.1.1 retains the
@@ -141,7 +142,7 @@ will be refused even when an older version accepted it. See the
 **1. Diagnose offline:**
 
 ```bash
-npm install --prefix "$HOME/.local/share/linkedin-mcp" linkedin-mcp-tools@4.2.0
+npm install --prefix "$HOME/.local/share/linkedin-mcp" linkedin-mcp-tools@4.3.0
 node "$HOME/.local/share/linkedin-mcp/node_modules/linkedin-mcp-tools/dist/index.js" --setup cursor
 ```
 
@@ -167,7 +168,7 @@ accepting `mcpServers`, this version-pinned example is an alternative:
   "mcpServers": {
     "linkedin": {
       "command": "npx",
-      "args": ["-y", "linkedin-mcp-tools@4.2.0"]
+      "args": ["-y", "linkedin-mcp-tools@4.3.0"]
     }
   }
 }

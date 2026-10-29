@@ -1,6 +1,6 @@
 {
   "name": "linkedin-mcp-tools",
-  "version": "4.2.0",
+  "version": "4.3.0",
   "description": "Unofficial local LinkedIn MCP: structured profile, job, company and inbox reads, guided offline client setup and explicit safety limits. Current provider compatibility is not guaranteed.",
   "type": "module",
   "main": "dist/index.js",
