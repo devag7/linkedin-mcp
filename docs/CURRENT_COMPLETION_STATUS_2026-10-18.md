@@ -33,10 +33,11 @@ The [public opt-in invitation](https://github.com/devag7/linkedin-mcp/issues/13)
 now points to the merged 4.2.0 kit and scoring guide. Recorded attempts remain
 0/0, unmeasured. No participant contact or account access occurred.
 
-The next [offline interview preparation proposal](INTERVIEW_PREPARATION_2026-10-29.md)
-is a source milestone in progress. Published 4.2.0 does not support that new
-option. Its implementation, review and verification are separate from the
-completed 4.2.0 distribution work; required new maintainer service spend is $0.
+The [offline interview preparation kit](INTERVIEW_PREPARATION_2026-10-29.md)
+is implemented in an unpublished source candidate. Its 835 local tests, source
+gates and installed-package checks pass; independent review and hosted gates
+remain pending. Published 4.2.0 does not support the new option. Its acceptance
+is separate from completed 4.2.0 distribution; required new service spend is $0.
 
 ## October 27 release and materials update
 
@@ -82,7 +83,7 @@ has started; keep 0/0 as unmeasured. Historical protocols and failed receipts re
 | Full privacy retirement | Selected-profile tools are scoped and released. | Design, review and test complete coordinated erasure with active-owner, interruption, same-account race and Windows evidence. Never use it to reset safety caps. |
 | Official provider and Claude directory | Official LinkedIn app grants/scopes are unavailable. The local browser server is not a remote HTTPS connector. [Current official route/policy research](CLAUDE_DIRECTORY_RESEARCH_2026-10-27.md) distinguishes local plugin submission from remote HTTPS/OAuth and identifies interface-control and installable-source gaps. | Obtain permitted provider access and written eligibility clarification; prepare a complete installable GitHub plugin source before any directory submission. A remote connector requires separate HTTPS/OAuth design. Do not claim listing eligibility from a local `.mcpb`. |
 | Application submission | LinkedIn Easy Apply and external ATS submission are absent. | Require a permitted integration, exact per-job field/attachment mapping, human final approval and receipt proof. Keep unsupported auto-apply claims out of release copy. |
-| Further product scope | Saved jobs, richer job filters, inbox keyword search, post search, job alerts/application history, dedicated interview/follow-up flows and server-owned tracker persistence are absent. Public 4.2.0 adds bounded offline materials assembly; native usefulness remains unmeasured. | Follow the bounded source/identity/privacy acceptance criteria in the full-scope audit; capture provider routes only under new scoped consent. |
+| Further product scope | Saved jobs, richer job filters, inbox keyword search, post search, job alerts/application history and server-owned tracker persistence are absent. The offline interview/follow-up kit is a locally verified source candidate, not a published feature. Public 4.2.0 provides bounded materials assembly; native usefulness remains unmeasured. | Finish source review/hosted gates and a separately verified release for the interview kit. Follow the source/identity/privacy criteria for provider features; capture routes only under new scoped consent. |
 | SDK security maintenance | Core 4.2.0 retains SDK ^1.32.1/input guard and Zod 4.6.7; earlier esbuild/Vitest findings are resolved. The [October 29 adapter lock repair](SECURITY_HONO_NODE_SERVER_2026-10-29.md) clears the newly observed moderate source finding; repaired source/consumer/publisher audits recorded zero. | Continue advisory monitoring and update affected existing installations deliberately. A zero known-finding audit is not broad provider or native-client proof. |
 | Distribution and adoption | [Awesome MCP PR #15490](https://github.com/punkpeye/awesome-mcp-servers/pull/15490) remains open on October 21. The October 21 [Glama observation](https://glama.ai/mcp/servers/devag7/linkedin-mcp) showed older 4.0.0 installation instructions and generic hosted deployment copy; it is not a fresh October 27 readback. Its [Admin page](https://glama.ai/mcp/servers/devag7/linkedin-mcp/admin) requires the repository owner's GitHub sign-in for claiming/re-sync. The [private traffic ledger](ADOPTION_TRAFFIC_LEDGER_2026-10-19.md) now records 12 stars, +2 since October 19; first-use remains 0/0. | Recheck Glama; if still stale, the owner signs in and requests re-sync, then corrects editable fields and seeks platform correction for generated hosted copy. The October 27 private capture reports 12 stars, +2 since October 19, with 22 observed October days and no complete month. Clones are not installs. Capture traffic weekly and consented first-use/repeat-use outcomes separately. 10,000 stars and GitHub Trending daily are targets, not guaranteed milestones. |
 

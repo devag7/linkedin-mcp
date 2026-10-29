@@ -105,3 +105,42 @@ Drafting is deterministic and uses no provider, model, file or storage call.
 `submitted:false` and `stored:false` remain true guarantees for this tool.
 Published 4.1.2 does not support this extension; verify 4.2.0 availability and
 the installed schema separately. Native usefulness remains unmeasured.
+
+## Optional interview kit (unreleased source)
+
+Published 4.2.0 does not support this option. Check the installed tool's advertised
+schema and returned `interviewPrep`; a successful worksheet response alone does
+not establish support.
+
+`include_interview_prep:true` independently requests practice questions and a
+fill-in follow-up template. Omitting the option or passing false preserves the
+previous output. Existing evidence bounds and missing/duplicate-reference errors
+continue to apply. No new tool is registered.
+
+The optional `interviewPrep` contains:
+
+- `status:"practice_only"` and `verification:"user_supplied_unverified"`.
+- One `practiceQuestions` item per requirement, up to 20. Each contains its
+  zero-based `requirementIndex`, quoted question, `evidenceStatus`,
+  `evidenceItemIndices` and a `starWorksheet` with null `situation`, `task`,
+  `action` and `result`. No anecdote or result is inferred.
+- Evidence indices resolve only within
+  `requirements[requirementIndex].evidenceItems`. These rows are present when
+  interview preparation is requested, including when drafts are disabled.
+  Exact selected text and all its supplied source bindings remain in those rows;
+  unused library facts stay absent. Missing evidence has empty indices.
+- Three generic `questionsForInterviewer`, not predictions of employer questions.
+- A `followUpTemplate` with `kind:"fill_in_template"`,
+  `requiresVerifiedInterview:true`, subject/body and five placeholders:
+  `[INTERVIEWER_NAME]`, `[INTERVIEW_DATE]`, `[DISCUSSION_TOPIC]`,
+  `[NEXT_STEP_OR_QUESTION]` and `[YOUR_NAME]`. Verify actual interview context
+  before manually completing or using the template.
+
+Supplied role, company and requirement strings are JSON/control-quoted in
+rendered text. Exact structured claims and labels remain untrusted data. No
+interview event, recipient, answer, qualification or sent message is established.
+The tool adds no provider, model, file, storage or send operation; outer
+`submitted:false` and `stored:false` remain unchanged.
+
+Implementation, package, review and hosted gates remain separate from public
+release. Offline checks do not establish native-client or interview usefulness.

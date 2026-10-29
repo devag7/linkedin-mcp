@@ -51,6 +51,12 @@ export const applicationInputShape = {
     .boolean()
     .optional()
     .describe('Default false: include deterministic, unverified plain-text drafts only when true'),
+  include_interview_prep: z
+    .boolean()
+    .optional()
+    .describe(
+      'Default false: optional offline practice questions, blank STAR worksheets and an unsent fill-in follow-up template; no interview is verified',
+    ),
 };
 export const applicationInputSchema = z.object(applicationInputShape);
 export type ApplicationInput = z.infer<typeof applicationInputSchema>;
@@ -114,7 +120,8 @@ export function prepareApplicationMaterials(raw: ApplicationInput) {
   const extended =
     input.evidence_library !== undefined ||
     input.requirements.some((requirement) => requirement.evidence_ids !== undefined) ||
-    input.include_drafts === true;
+    input.include_drafts === true ||
+    input.include_interview_prep === true;
   const lineage = new Map<string, DraftLineage>();
   const rows = input.requirements.map(
     ({ requirement, evidence, evidence_ids }, requirementIndex) => {
@@ -188,6 +195,51 @@ export function prepareApplicationMaterials(raw: ApplicationInput) {
           ],
         }
       : undefined;
+  const interviewPrep =
+    input.include_interview_prep === true
+      ? {
+          status: 'practice_only' as const,
+          verification: 'user_supplied_unverified' as const,
+          practiceQuestions: rows.map((row, requirementIndex) => ({
+            requirementIndex,
+            question:
+              row.evidenceStatus === 'missing'
+                ? `For requirement ${quotedText(row.requirement)}, no evidence is selected. What truthful example, if any, can you provide? Leave unknown STAR fields blank.`
+                : `For requirement ${quotedText(row.requirement)}, use only the selected statements to practice describing the situation, task, your own actions and a verifiable result. What remains unknown?`,
+            // Indices refer only to this requirement's resolved evidence, not the whole library.
+            evidenceItemIndices: (row.evidenceItems ?? []).map((_item, index) => index),
+            evidenceStatus: row.evidenceStatus,
+            starWorksheet: { situation: null, task: null, action: null, result: null },
+          })),
+          questionsForInterviewer: [
+            'What would success in the first three months look like?',
+            'Which responsibilities are the highest priority for this role?',
+            'How are expectations and feedback communicated?',
+          ],
+          followUpTemplate: {
+            kind: 'fill_in_template' as const,
+            requiresVerifiedInterview: true as const,
+            subject: `Follow-up template for ${role}`,
+            body: [
+              'FILL-IN TEMPLATE ONLY — do not send without human review.',
+              'Use only if you personally verify that an interview occurred, the recipient is correct, and every detail is truthful. This tool does not establish those facts.',
+              `Role/company copied from your supplied listing: ${role}.`,
+              'Hello [INTERVIEWER_NAME],',
+              '[ONLY IF VERIFIED: add a truthful acknowledgement of the interview on [INTERVIEW_DATE].]',
+              '[ADD A TRUE NOTE ABOUT [DISCUSSION_TOPIC]; omit any claim you cannot verify.]',
+              '[NEXT_STEP_OR_QUESTION]',
+              '[YOUR_NAME]',
+            ].join('\n\n'),
+            placeholders: [
+              '[INTERVIEWER_NAME]',
+              '[INTERVIEW_DATE]',
+              '[DISCUSSION_TOPIC]',
+              '[NEXT_STEP_OR_QUESTION]',
+              '[YOUR_NAME]',
+            ],
+          },
+        }
+      : undefined;
   return {
     status: 'draft_only' as const,
     jobId: input.job_id,
@@ -205,5 +257,6 @@ export function prepareApplicationMaterials(raw: ApplicationInput) {
     submitted: false as const,
     stored: false as const,
     ...(drafts ? { drafts } : {}),
+    ...(interviewPrep ? { interviewPrep } : {}),
   };
 }

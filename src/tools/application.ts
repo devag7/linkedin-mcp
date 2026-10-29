@@ -15,7 +15,7 @@ export function registerApplicationTools(server: McpServer): void {
   registerTool(
     server,
     'prepare_job_application',
-    'Create a local, unsaved application worksheet with optional reusable evidence and resume/cover-letter drafts. Only explicitly selected, user-supplied evidence is used; nothing is fetched, filled, uploaded, submitted or stored. Verify every claim and the current listing yourself.',
+    'Create a local, unsaved application worksheet with optional reusable evidence, resume/cover-letter drafts and interview practice when supported by the input schema. Only explicitly selected user-supplied evidence is used; nothing is fetched, filled, uploaded, submitted, sent or stored. Verify every claim and the current listing yourself.',
     applicationInputShape,
     async (input) => {
       try {

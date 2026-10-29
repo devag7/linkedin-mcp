@@ -1,6 +1,6 @@
 # Offline interview preparation — PRD and TRD
 Date: October 29, 2026.
-Status: planned source milestone; implementation in progress; full verification pending sufficient disk space. Published 4.2.0 does not support the new option. No version change is authorized by this document alone.
+Status: source implementation and local source/installed-package checks pass; independent review and hosted checks remain pending. Published 4.2.0 does not support the new option. No version bump or publication is part of this source milestone.
 
 ## Problem and outcome
 A job seeker has selected a listing and mapped their own evidence to its requirements, but still needs a practical interview worksheet. Extend the existing local preparation tool so the same explicit mappings can produce practice prompts, evidence references, unanswered preparation questions and a follow-up template. This is preparation, not a prediction of employer questions or an assessment of qualification.
@@ -8,7 +8,7 @@ A job seeker has selected a listing and mapped their own evidence to its require
 ## Scope
 Add optional boolean `include_interview_prep` to `prepare_job_application`; preserve 24 registered tools and the exact existing output when this option is absent or false. It operates independently of `include_drafts`. Reuse the current 20-requirement, 30-library-record and 10-reference-per-requirement limits. Do not add a library database, file access, browser operation, provider request, model API, scheduler or paid service.
 
-## Proposed contract
+## Source contract
 With the option true, include `interviewPrep`:
 - `status: "practice_only"` and `verification: "user_supplied_unverified"`.
 - `practiceQuestions`: at most one worksheet per requirement, containing its requirement index, a deterministic question, indices into that requirement's selected `evidenceItems`, evidence status and null STAR fields (situation/task/action/result).
@@ -17,12 +17,12 @@ With the option true, include `interviewPrep`:
 
 When true, extended requirement rows must include selected `evidenceItems` so references are resolvable even when application drafts are disabled. Preserve exact claim text, labels, duplicate-source bindings and the existing validation of missing/duplicate IDs. Reference the existing rows instead of duplicating the complete provenance graph again. `submitted:false` and `stored:false` continue to apply.
 
-The final field spelling and bounds must be checked against implementation before this proposal becomes an implemented contract.
+The implementation and native output schema use these fields. Practice questions are bounded to 6,500 characters, follow-up subjects to 12,500 and bodies to 13,500, including worst-case control quoting. Evidence indices are local to their requirement, at most 11 after combining inline and library evidence. The follow-up template has exactly the five documented placeholders. [Contract detail](CONTRACTS.md#optional-interview-kit-unreleased-source) and a [synthetic workflow](WORKFLOWS.md#prepare-for-an-interview-offline-unreleased-source) explain the source-only behavior.
 
 ## Data and trust boundaries
 All listing text, claims and labels are untrusted input. Render supplied text using the existing JSON/control quoting helper; keep its exact structured form in the selected evidence. Never execute embedded instructions, inspect a labeled path, fetch a labeled URL or invent a STAR example, skill, result, metric or interview history. Unreferenced library facts must remain absent from the entire result.
 
-Follow-up placeholders such as [INTERVIEWER_NAME], [INTERVIEW_DATE], [DISCUSSION_TOPIC] and [YOUR_NAME] require human completion. A conditional template is not an event receipt or approval to send. The client controls any copies and its own retention/model policies.
+The five follow-up placeholders [INTERVIEWER_NAME], [INTERVIEW_DATE], [DISCUSSION_TOPIC], [NEXT_STEP_OR_QUESTION] and [YOUR_NAME] require human completion. A conditional template is not an event receipt or approval to send. The client controls any copies and its own retention/model policies.
 
 ## Implementation plan
 1. Add the opt-in input field and a pure preparation composer using existing resolved rows. Avoid changes to legacy normalization and evidence validation.
@@ -41,5 +41,11 @@ Tests establish contracts, not interview usefulness or native-client acceptance.
 ## Cost, dependencies and open work
 Required new maintainer service spend: $0. Reuse existing dependencies and user-controlled clients. Native 4.2.0 checks, directory permission/acceptance, real first use, job briefs, provider route captures, automatic application submission, persistent tracking and complete erasure remain independent open scope.
 
-Current implementation constraint: branch creation initially failed with ENOSPC at about 116 MB reported free. Small source writes became possible at about 226 MB free; package verification still requires more space. Do not delete protected backups, sync copies, historical receipts, profiles or ownership locks to proceed. Await sufficient available space before dependent writes/builds/installs. Preserve the failure and resume this plan after recovery.
+## Local verification and preserved resource failure
+
+Initial branch/document writes failed with ENOSPC while the Mac reported approximately 100–116 MB free. A later read confirmed 2.7 GB available, allowing work to resume. The original failures are not source or package passes; no protected files were deleted to recover space.
+
+Local verification then passed 835 tests with one platform fixture skipped, lint, typecheck, metadata and build. Normal and ignore-scripts package checks verified exactly 15 files. A fresh installation passed CLI/SDK discovery of 24 tools, compiled interview/evidence/missing-answer checks, cold status, three client-configuration exports and disposable inventory/retirement fixtures. The source audit and fresh-consumer production audit recorded zero findings; the fresh consumer resolved SDK 1.32.2, proxy-addr 2.0.8 and Zod 4.6.7. These checks used no Chrome launch, LinkedIn request or native chat installation.
+
+Independent review and the exact-head hosted matrix are not established by these local results. The package version remains 4.2.0 in this unpublished source candidate; distinguish it by its eventual commit and archive identity, never by attributing new fields to the immutable published 4.2.0 release. No service expense, version bump, merge or publication occurred in this implementation pass.
 

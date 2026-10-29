@@ -132,3 +132,57 @@ provider read. Verify that the installed version/tool schema supports the new
 [Bounded synthetic request and requirements](https://github.com/devag7/linkedin-mcp/blob/main/docs/APPLICATION_MATERIALS_2026-10-27.md).
 This preparation flow is outside the separately consented own-profile pilot; do
 not add it to a participant's approved one-read attempt.
+
+## Prepare for an interview offline (unreleased source)
+
+Published 4.2.0 does not include this option. Use a reviewed source build whose
+schema includes `include_interview_prep` and require the returned `interviewPrep`.
+A successful worksheet response alone does not establish support. This workflow
+requires no login or health check.
+
+1. Supply one selected listing and map your own evidence explicitly to its
+   requirements through inline text or the existing evidence library.
+2. Request `include_interview_prep:true`. `include_drafts:false` can request the
+   worksheet and interview kit without resume/cover-letter drafts.
+3. Follow each question's zero-based `requirementIndex` and `evidenceItemIndices`
+   into that requirement's `evidenceItems`. Verify each exact claim and label
+   against your own records. Reuse preserves mappings, not proof of job fit.
+4. Fill the blank situation, task, action and result yourself. Unknown facts
+   stay unknown. A missing-evidence prompt must not become an invented example.
+   The interviewer questions are generic aids, not employer predictions.
+5. Only after verifying an actual interview and recipient, replace all five
+   follow-up placeholders truthfully and review the text yourself. The tool
+   does not send messages or applications.
+6. Control copies through your client's storage/model policies. The server does
+   not retain the worksheet or evidence library.
+
+Synthetic source request, not a real vacancy or candidate claim:
+
+```json
+{
+  "job_id": "123",
+  "job_title": "Example TypeScript role",
+  "company": "Example Company",
+  "requirements": [
+    { "requirement": "TypeScript", "evidence_ids": ["example-1"] },
+    { "requirement": "Incident response" }
+  ],
+  "evidence_library": [
+    {
+      "id": "example-1",
+      "text": "Maintained an example TypeScript library.",
+      "source_label": "Synthetic project notes"
+    }
+  ],
+  "include_drafts": false,
+  "include_interview_prep": true
+}
+```
+
+Expect two practice questions: the first references evidence item 0 in requirement
+0; the second has empty indices and `missing` status. Both STAR worksheets remain
+entirely null. Follow-up placeholders stay unfilled. Nothing is stored or sent.
+
+[PRD/TRD and acceptance gates](INTERVIEW_PREPARATION_2026-10-29.md).
+This source flow is separate from the account-read pilot; voluntary offline
+evaluation must not change that pilot's scope or denominator.

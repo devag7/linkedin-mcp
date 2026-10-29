@@ -5,8 +5,9 @@ with exact reviewed-byte and independent public readbacks. The source-lock
 [adapter repair](SECURITY_HONO_NODE_SERVER_2026-10-29.md) is merged; all 14
 checks passed on its reviewed head and merged main, with zero recorded repaired
 source/consumer/publisher audit findings. Neither update changes the immutable
-4.2.0 core archive. The [interview preparation proposal](INTERVIEW_PREPARATION_2026-10-29.md)
-is a separate source milestone in progress, absent from published 4.2.0.
+4.2.0 core archive. The [interview preparation kit](INTERVIEW_PREPARATION_2026-10-29.md)
+is a separate locally verified source candidate, absent from published 4.2.0;
+its independent review and hosted gates remain pending.
 The dated tables below remain historical; use the
 [current completion index](CURRENT_COMPLETION_STATUS_2026-10-18.md) for current scope.
 
