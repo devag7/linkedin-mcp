@@ -1,6 +1,6 @@
 # Capabilities and compatibility
 
-Generated from src/tools/capabilities.ts for linkedin-mcp-tools v4.2.0.
+Generated from src/tools/capabilities.ts for linkedin-mcp-tools v4.3.0.
 
 | Tool | Route | Source | Permission | Max rows | Evidence | Current live check |
 | --- | --- | --- | --- | --- | --- | --- |

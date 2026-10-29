@@ -7,7 +7,7 @@ Guidance for AI agents using or contributing to **LinkedIn MCP**
 
 An MCP server exposing LinkedIn to any MCP client (Claude, Cursor, …) as
 structured JSON. It drives a real stealth Chrome to pass Cloudflare, then calls
-LinkedIn's Voyager API from inside the authenticated page. Source 4.2.0 has
+LinkedIn's Voyager API from inside the authenticated page. Source 4.3.0 has
 24 tools, including two offline job-seeker tools introduced in 4.1.0.
 The earlier 4.0.0 had 22; publication is tracked in the version's release evidence.
 
@@ -32,7 +32,7 @@ The earlier 4.0.0 had 22; publication is tracked in the version's release eviden
 - Search: `search_people`, `search_jobs`, `get_job_details`, `search_companies`,
   `get_company`, `get_company_posts`, `get_company_employees`,
   `prepare_job_application`, `export_application_tracker` (published local
-  preparation/export; optional reusable evidence and draft materials; neither submits or stores applications)
+  preparation/export; optional reusable evidence, draft materials and interview practice; neither submits or stores applications)
 - Feed/messaging: `get_feed`, `get_notifications`, `get_inbox`, `get_conversation`,
   `get_pending_invitations`
 - Writes (gated): `connect_with_person`, `send_message`, `create_post`,

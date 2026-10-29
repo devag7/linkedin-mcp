@@ -106,9 +106,10 @@ Drafting is deterministic and uses no provider, model, file or storage call.
 Published 4.1.2 does not support this extension; verify 4.2.0 availability and
 the installed schema separately. Native usefulness remains unmeasured.
 
-## Optional interview kit (unreleased source)
+## Optional interview kit (4.3.0 source)
 
-Published 4.2.0 does not support this option. Check the installed tool's advertised
+This option requires 4.3.0; verify its release availability separately. Published
+4.2.0 does not support it. Check the installed tool's advertised
 schema and returned `interviewPrep`; a successful worksheet response alone does
 not establish support.
 
@@ -116,6 +117,8 @@ not establish support.
 fill-in follow-up template. Omitting the option or passing false preserves the
 previous output. Existing evidence bounds and missing/duplicate-reference errors
 continue to apply. No new tool is registered.
+The existing overall 10,000-byte transport input guard still applies even when
+all individual fields meet their own limits; trim supplied data to fit that budget.
 
 The optional `interviewPrep` contains:
 
@@ -142,5 +145,6 @@ interview event, recipient, answer, qualification or sent message is established
 The tool adds no provider, model, file, storage or send operation; outer
 `submitted:false` and `stored:false` remain unchanged.
 
-Implementation, package, review and hosted gates remain separate from public
-release. Offline checks do not establish native-client or interview usefulness.
+Package/review/hosted gates and public release are recorded in the
+[4.3.0 readiness record](RELEASE_READINESS_4.3.0.md). Offline checks do not
+establish native-client or interview usefulness.

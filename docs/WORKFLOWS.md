@@ -133,10 +133,12 @@ provider read. Verify that the installed version/tool schema supports the new
 This preparation flow is outside the separately consented own-profile pilot; do
 not add it to a participant's approved one-read attempt.
 
-## Prepare for an interview offline (unreleased source)
+## Prepare for an interview offline (4.3.0 source)
 
-Published 4.2.0 does not include this option. Use a reviewed source build whose
-schema includes `include_interview_prep` and require the returned `interviewPrep`.
+This workflow requires 4.3.0; check its [release availability](https://github.com/devag7/linkedin-mcp/releases/tag/v4.3.0)
+and [verification](RELEASE_READINESS_4.3.0.md) before installation. Published
+4.2.0 does not include it. Inspect the installed schema for `include_interview_prep`
+and require the returned `interviewPrep`.
 A successful worksheet response alone does not establish support. This workflow
 requires no login or health check.
 
@@ -156,7 +158,7 @@ requires no login or health check.
 6. Control copies through your client's storage/model policies. The server does
    not retain the worksheet or evidence library.
 
-Synthetic source request, not a real vacancy or candidate claim:
+Synthetic request, not a real vacancy or candidate claim:
 
 ```json
 {
