@@ -9,6 +9,20 @@ The [October 21 full-scope audit](COMPLETION_AUDIT_2026-10-21.md) maps every
 original functional requirement, later backlog item and job-seeker addition.
 The complete roadmap has not been achieved.
 
+## October 29 next release candidate: 4.4.0
+
+The [local follow-up timing plan](APPLICATION_FOLLOW_UP_2026-10-29.md) is merged
+in PR #55 with a matching reviewed tree, 843 local test passes plus one platform
+skip, clean independent review, and 14 hosted passes at both the reviewed head
+and merged main. It keeps supplied records/CSV unchanged and adds optional
+index groups at an explicit reference time; no notifications or storage.
+
+4.4.0 prepares distribution of this already reviewed feature. It is not yet
+published; [readiness](RELEASE_READINESS_4.4.0.md) and the Release destinations
+must confirm the new version. Public 4.3.0 and its Claude assets remain unchanged.
+Version-pinned 4.4.0 pilot instructions prepare a new separate 0/0 cohort; do not
+enroll before public verification. Native/live acceptance remains unmeasured.
+
 ## October 29 current release: 4.3.0
 
 An additive [local follow-up timing plan](APPLICATION_FOLLOW_UP_2026-10-29.md)

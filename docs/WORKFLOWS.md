@@ -49,7 +49,7 @@ reported an attempt without a verified receipt. `receipt_verified` requires
 your explicit receipt confirmation, still labelled user supplied. You can retain
 that confirmation if the status later becomes `rejected` or `withdrawn`.
 Optional `next_action` and `follow_up_at` fields help you plan a follow-up.
-Unreleased source also accepts `include_follow_up_plan:true` together with an
+The 4.4.0 candidate also accepts `include_follow_up_plan:true` together with an
 explicit UTC `as_of` timestamp. It classifies these same records as overdue,
 due now, upcoming, unscheduled or closed. Indices point to the unchanged returned
 `records` array; nothing is scheduled or sent. [Contract and example](https://github.com/devag7/linkedin-mcp/blob/main/docs/APPLICATION_FOLLOW_UP_2026-10-29.md).

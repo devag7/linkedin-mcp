@@ -1,8 +1,8 @@
 # Setup and client verification
 
-This guide targets the 24-tool **4.3.0 interview preparation update**. Check
-[release availability](https://github.com/devag7/linkedin-mcp/releases/tag/v4.3.0)
-and the [readiness record](https://github.com/devag7/linkedin-mcp/blob/main/docs/RELEASE_READINESS_4.3.0.md)
+This guide targets the 24-tool **4.4.0 follow-up planning update**. Check
+[release availability](https://github.com/devag7/linkedin-mcp/releases/tag/v4.4.0)
+and the [readiness record](https://github.com/devag7/linkedin-mcp/blob/main/docs/RELEASE_READINESS_4.4.0.md)
 before installing. These instructions do not establish publication. Historical
 4.1.1 bytes have newly reported dependency advisories; their publication receipts
 are identity evidence, not current security clearance. For offline source setup,
@@ -14,19 +14,19 @@ provider. There is no dotenv loader; use your shell or your client's env setting
 
 ## Guided offline first run
 
-After checking 4.3.0 availability and verification, install it at a stable path
+After checking 4.4.0 availability and verification, install it at a stable path
 and request the client report.
 On macOS/Linux:
 
 ```sh
-npm install --prefix "$HOME/.local/share/linkedin-mcp" linkedin-mcp-tools@4.3.0
+npm install --prefix "$HOME/.local/share/linkedin-mcp" linkedin-mcp-tools@4.4.0
 node "$HOME/.local/share/linkedin-mcp/node_modules/linkedin-mcp-tools/dist/index.js" --setup cursor
 ```
 
 On Windows PowerShell:
 
 ```powershell
-npm install --prefix "$env:LOCALAPPDATA\linkedin-mcp" linkedin-mcp-tools@4.3.0
+npm install --prefix "$env:LOCALAPPDATA\linkedin-mcp" linkedin-mcp-tools@4.4.0
 node "$env:LOCALAPPDATA\linkedin-mcp\node_modules\linkedin-mcp-tools\dist\index.js" --setup cursor
 ```
 

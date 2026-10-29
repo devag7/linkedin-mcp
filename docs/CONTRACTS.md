@@ -66,7 +66,7 @@ Absent attribution remains unknown. Known delivery timestamps sort ascending;
 undated messages remain undated and stable at the end. Counts and partial/unsupported
 continuation behavior are unchanged. These are optional additive contract fields.
 
-## Optional local follow-up timing (unreleased source)
+## Optional local follow-up timing (4.4.0 source)
 
 `export_application_tracker` accepts `include_follow_up_plan:true` with an explicit
 UTC `as_of`. It adds bounded zero-based record-index groups for overdue, due-now,
