@@ -18,8 +18,8 @@ these source notes alone are not proof that a package is available.
   verifying the actual interview and recipient. No message is sent.
 - Use interview preparation independently of `include_drafts`. Omitting the new
   option or passing false preserves the prior response shape. Existing evidence
-  reference validation and input limits remain unchanged, including the overall
-  10,000-byte transport input guard.
+  reference validation and input limits remain unchanged, including the SDK's
+  10,000-element structural guard (array elements/object keys before validation).
 
 The engine is deterministic and local, using no new dependency, model service,
 provider route, browser launch or server-owned storage. Existing evidence reuse,

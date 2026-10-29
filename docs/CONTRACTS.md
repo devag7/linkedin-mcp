@@ -117,8 +117,9 @@ not establish support.
 fill-in follow-up template. Omitting the option or passing false preserves the
 previous output. Existing evidence bounds and missing/duplicate-reference errors
 continue to apply. No new tool is registered.
-The existing overall 10,000-byte transport input guard still applies even when
-all individual fields meet their own limits; trim supplied data to fit that budget.
+The existing SDK structural input guard also applies before schema validation:
+at most 10,000 array elements/object keys. This counts structure, not bytes or
+string characters; the individual string and collection bounds remain separate.
 
 The optional `interviewPrep` contains:
 
