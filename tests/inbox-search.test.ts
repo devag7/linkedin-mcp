@@ -1,5 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import { searchInboxSummaries } from '../src/tools/inbox-search.js';
+import { searchInboxSummaries as searchViews } from '../src/tools/inbox-search.js';
+import type { ShapedConversation } from '../src/browser/normalize.js';
+
+// Manually supplied fixtures have explicit titles; normalized provenance is
+// exercised separately through actual provider-shaped SDK responses.
+const searchInboxSummaries = (rows: ShapedConversation[], keywords: string, count: number) =>
+  searchViews(
+    rows.map((conversation) => ({ conversation, titleForSearch: conversation.title })),
+    keywords,
+    count,
+  );
 
 describe('bounded inbox summary search', () => {
   it('matches only title, participant name and headline with literal NFC lowercase semantics', () => {

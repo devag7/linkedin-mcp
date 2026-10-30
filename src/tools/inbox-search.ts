@@ -1,6 +1,6 @@
 /** Local matching over a bounded portion of an already returned inbox page. */
 import { z } from 'zod';
-import type { ShapedConversation } from '../browser/normalize.js';
+import type { InboxSummarySearchView } from '../browser/normalize.js';
 import { ToolError } from './result.js';
 
 export const MAX_INBOX_SEARCH_ROWS = 25;
@@ -10,7 +10,7 @@ export const inboxSearchMetaSchema = z.object({
   query: z.string().min(1).max(100),
   matching: z.literal('nfc_lowercase_literal_substring'),
   fields: z.tuple([
-    z.literal('title'),
+    z.literal('provider_title'),
     z.literal('participant_name'),
     z.literal('participant_headline'),
   ]),
@@ -25,7 +25,7 @@ export const inboxSearchMetaSchema = z.object({
 });
 
 export function searchInboxSummaries(
-  rows: readonly ShapedConversation[],
+  rows: readonly InboxSummarySearchView[],
   keywords: string,
   count: number,
 ) {
@@ -42,34 +42,37 @@ export function searchInboxSummaries(
   const window = rows.slice(0, count);
   let summariesWithoutText = 0;
   let truncatedSummaries = 0;
-  const conversations = window.filter((row) => {
-    let truncated = (row.participants?.length ?? 0) > MAX_PARTICIPANTS;
-    let searchable = false;
-    let matched = false;
-    const inspect = (text: string | undefined) => {
-      if (text === undefined) return;
-      if (text.length > MAX_FIELD_CHARACTERS) truncated = true;
-      const sample = text.slice(0, MAX_FIELD_CHARACTERS);
-      if (!sample.trim()) return;
-      searchable = true;
-      if (sample.normalize('NFC').toLowerCase().includes(needle)) matched = true;
-    };
-    inspect(row.title);
-    for (const participant of (row.participants ?? []).slice(0, MAX_PARTICIPANTS)) {
-      inspect(participant.name);
-      inspect(participant.headline);
-    }
-    if (!searchable) summariesWithoutText++;
-    if (truncated) truncatedSummaries++;
-    return matched;
-  });
+  const conversations = window
+    .filter((view) => {
+      const row = view.conversation;
+      let truncated = (row.participants?.length ?? 0) > MAX_PARTICIPANTS;
+      let searchable = false;
+      let matched = false;
+      const inspect = (text: string | undefined) => {
+        if (text === undefined) return;
+        if (text.length > MAX_FIELD_CHARACTERS) truncated = true;
+        const sample = text.slice(0, MAX_FIELD_CHARACTERS);
+        if (!sample.trim()) return;
+        searchable = true;
+        if (sample.normalize('NFC').toLowerCase().includes(needle)) matched = true;
+      };
+      inspect(view.titleForSearch);
+      for (const participant of (row.participants ?? []).slice(0, MAX_PARTICIPANTS)) {
+        inspect(participant.name);
+        inspect(participant.headline);
+      }
+      if (!searchable) summariesWithoutText++;
+      if (truncated) truncatedSummaries++;
+      return matched;
+    })
+    .map((view) => view.conversation);
   return {
     status: 'partial' as const,
     conversations,
     search: {
       query,
       matching: 'nfc_lowercase_literal_substring' as const,
-      fields: ['title', 'participant_name', 'participant_headline'] as const,
+      fields: ['provider_title', 'participant_name', 'participant_headline'] as const,
       coverage: 'bounded_first_page' as const,
       complete: false as const,
       messageBodiesSearched: false as const,

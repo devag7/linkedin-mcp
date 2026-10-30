@@ -199,7 +199,18 @@ function ownerIdFromConversationUrn(urn: unknown): string | undefined {
  * is null) are unidentifiable without fetching each conversation.
  */
 export function shapeInbox(resp: NormalizedResponse): ShapedConversation[] {
-  const out: ShapedConversation[] = [];
+  return shapeInboxForSummarySearch(resp).map((view) => view.conversation);
+}
+
+export interface InboxSummarySearchView {
+  conversation: ShapedConversation;
+  /** Explicit provider summary text only; never the all-participant display fallback. */
+  titleForSearch?: string;
+}
+
+/** Keep source-title provenance beside the unchanged legacy display row. */
+export function shapeInboxForSummarySearch(resp: NormalizedResponse): InboxSummarySearchView[] {
+  const out: InboxSummarySearchView[] = [];
   const participants = indexMessagingParticipants(resp);
   for (const e of resp.included ?? []) {
     if (typeof e.$type !== 'string' || !e.$type.endsWith('.Conversation')) continue;
@@ -218,11 +229,11 @@ export function shapeInbox(resp: NormalizedResponse): ShapedConversation[] {
       )
       .map((u) => shapeMessagingParticipant(participants.get(u)))
       .filter((p): p is ShapedParticipant => !!p);
-    out.push({
+    const titleForSearch =
+      asText(c['title']) ?? asText(c['headlineText']) ?? asText(c['shortHeadlineText']);
+    const conversation: ShapedConversation = {
       title:
-        asText(c['title']) ??
-        asText(c['headlineText']) ??
-        asText(c['shortHeadlineText']) ??
+        titleForSearch ??
         (others
           .map((p) => p.name)
           .filter(Boolean)
@@ -235,7 +246,8 @@ export function shapeInbox(resp: NormalizedResponse): ShapedConversation[] {
       unreadCount: typeof c['unreadCount'] === 'number' ? (c['unreadCount'] as number) : undefined,
       read: typeof c['read'] === 'boolean' ? (c['read'] as boolean) : undefined,
       conversationUrn,
-    });
+    };
+    out.push({ conversation, titleForSearch });
   }
   return out;
 }

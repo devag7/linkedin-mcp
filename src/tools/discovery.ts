@@ -16,7 +16,7 @@ import type { Logger } from '../types.js';
 import {
   shapeJobs,
   shapeJobDetails,
-  shapeInbox,
+  shapeInboxForSummarySearch,
   shapeConversationMessages,
   shapePendingInvitations,
   ownFsdId,
@@ -89,7 +89,7 @@ export function registerDiscoveryTools(
   registerTool(
     server,
     'get_inbox',
-    'List a bounded first page of recent conversations. Optional keywords filter only returned titles and participant names/headlines, not message bodies; count then limits scanned conversations to 25. Search is always partial. No extra pages or conversation reads; continuation is not verified.',
+    'List a bounded first page of recent conversations. Optional keywords filter explicit provider titles and participant names/headlines, not generated display titles or message bodies; count then limits scanned conversations to 25. Search is always partial. No extra pages or conversation reads; continuation is not verified.',
     {
       count: z.number().int().min(1).max(50).default(20),
       keywords: z
@@ -99,7 +99,7 @@ export function registerDiscoveryTools(
         .max(100)
         .optional()
         .describe(
-          'Optional literal substring in titles/participant names/headlines only; not a full-inbox or message-body search.',
+          'Optional literal substring in explicit provider titles/participant names/headlines only; generated display titles and message bodies are not searched.',
         ),
     },
     async ({ count, keywords }) =>
@@ -111,9 +111,19 @@ export function registerDiscoveryTools(
           const fsd = ownFsdId(me);
           if (!fsd) throw new Error('Could not resolve own profile id from /me.');
           const raw = await voyager.voyagerGet<NormalizedResponse>(ep.inboxConversations(fsd));
-          return readRows(raw, shapeInbox(raw));
+          const summaries = shapeInboxForSummarySearch(raw);
+          readRows(
+            raw,
+            summaries.map((view) => view.conversation),
+          );
+          return summaries;
         });
-        if (keywords === undefined) return firstPage(data, count, 'voyager');
+        if (keywords === undefined)
+          return firstPage(
+            data.map((view) => view.conversation),
+            count,
+            'voyager',
+          );
         return ok(searchInboxSummaries(data, keywords, count), 'voyager', true, {
           pagination: { offset: 0, count, continuation: 'unsupported' },
         });

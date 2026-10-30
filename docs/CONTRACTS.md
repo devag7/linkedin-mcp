@@ -163,8 +163,9 @@ establish native-client or interview usefulness.
 
 `get_inbox` accepts optional `keywords` (trimmed 1–100 characters). Without it,
 the existing bounded array response and count limit 50 remain unchanged. With
-it, count limits the scanned first-page window to 25 before filtering titles
-and participant names/headlines; message bodies are never searched. Data is a
+it, count limits the scanned first-page window to 25 before filtering explicit provider summary titles
+and participant names/headlines; generated display titles and message bodies are
+never searched. Data is a
 bounded object containing unchanged matching rows, partial status and explicit
 field/coverage/missing/truncation counts. Both statuses stay partial even with
 zero matches, no cursor is issued, and existing malformed-provider errors remain.

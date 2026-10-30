@@ -267,6 +267,35 @@ it('refuses an oversized inbox search before any provider work', async () => {
   expect(runtime.voyager.voyagerGet).not.toHaveBeenCalled();
 });
 
+it.each([
+  { position: 50, explicitTitle: undefined, expectedMatches: 0 },
+  { position: 49, explicitTitle: undefined, expectedMatches: 1 },
+  { position: 50, explicitTitle: 'Needle explicit provider title', expectedMatches: 1 },
+])('honors participant cutoffs after actual inbox normalization: %j', async ({ position, explicitTitle, expectedMatches }) => {
+  const participants = Array.from({ length: 51 }, (_, i) =>
+    messagingParticipant(`bounded-${i}`, i === position ? 'Needle' : `Other ${i}`));
+  const response = { included: [...participants, {
+    $type: 'com.linkedin.messenger.Conversation',
+    entityUrn: messagingUrn,
+    title: explicitTitle ?? null,
+    '*conversationParticipants': participants.map((participant) => participant.entityUrn),
+  }] };
+  vi.mocked(runtime.voyager.voyagerGet)
+    .mockResolvedValueOnce(fixture.response).mockResolvedValueOnce(response)
+    .mockResolvedValueOnce(fixture.response).mockResolvedValueOnce(response);
+  const legacy = decode(await client.callTool({ name: 'get_inbox', arguments: { count: 1 } }));
+  expect(legacy.data[0].participants).toHaveLength(51);
+  expect(legacy.data[0].title).toContain('Needle');
+  expect(legacy.data[0]).not.toHaveProperty('titleForSearch');
+  const filtered = decode(await client.callTool({ name: 'get_inbox', arguments: { count: 1, keywords: 'Needle' } }));
+  expect(filtered.data.conversations).toEqual(expectedMatches ? legacy.data : []);
+  expect(filtered.data.search).toMatchObject({ matchedConversations: expectedMatches,
+    scannedConversations: 1, truncatedSummaries: 1,
+    fields: ['provider_title', 'participant_name', 'participant_headline'] });
+  expect(filtered.meta.status).toBe('partial');
+  expect(runtime.voyager.voyagerGet).toHaveBeenCalledTimes(4);
+});
+
 it('preserves malformed-provider rejection instead of manufacturing a zero-match search', async () => {
   vi.mocked(runtime.voyager.voyagerGet)
     .mockResolvedValueOnce(fixture.response)
