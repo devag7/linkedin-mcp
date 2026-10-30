@@ -36,6 +36,16 @@ remains unverified. The [4.4.0 kit](FIRST_USE_VOLUNTEER_KIT_4.4.0.md) and
 [results guide](FIRST_USE_RESULTS_4.4.0.md) retain a separate 0/0 cohort.
 The public invitation's actual version must match its selected kit.
 
+## October 30 next product work: bounded inbox summaries
+
+The [P5 local summary-search source candidate](INBOX_SUMMARY_SEARCH_2026-10-30.md)
+filters a bounded already returned inbox window without adding provider reads.
+It searches titles and participant names/headlines, not message bodies. Legacy
+calls remain unchanged and zero matches stay partial. Independent/source/package/
+hosted gates and future publication are separate. No inbox was accessed; public
+4.4.0 and the owner’s ongoing client installation check do not acquire this option.
+Full message search, current provider acceptance and the rest of P5 remain open.
+
 ## October 29 previous release: 4.3.0
 
 An additive [local follow-up timing plan](APPLICATION_FOLLOW_UP_2026-10-29.md)

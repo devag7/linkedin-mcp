@@ -16,7 +16,7 @@ import type { Logger } from '../types.js';
 import {
   shapeJobs,
   shapeJobDetails,
-  shapeInbox,
+  shapeInboxForSummarySearch,
   shapeConversationMessages,
   shapePendingInvitations,
   ownFsdId,
@@ -34,6 +34,7 @@ import { ok, run, ToolError } from './result.js';
 import { registerTool } from './register.js';
 import { assertReadResponse, readRows } from './provider-shape.js';
 import { pageFields, pageStart, pageResult, firstPage } from './pagination.js';
+import { MAX_INBOX_SEARCH_ROWS, searchInboxSummaries } from './inbox-search.js';
 
 export function registerDiscoveryTools(
   server: McpServer,
@@ -88,18 +89,44 @@ export function registerDiscoveryTools(
   registerTool(
     server,
     'get_inbox',
-    'List a bounded first page of recent conversations with participant names, headlines and profile links. Continuation is not verified.',
-    { count: z.number().int().min(1).max(50).default(20) },
-    async ({ count }) =>
+    'List a bounded first page of recent conversations. Optional keywords filter explicit provider titles and participant names/headlines, not generated display titles or message bodies; count then limits scanned conversations to 25. Search is always partial. No extra pages or conversation reads; continuation is not verified.',
+    {
+      count: z.number().int().min(1).max(50).default(20),
+      keywords: z
+        .string()
+        .trim()
+        .min(1)
+        .max(100)
+        .optional()
+        .describe(
+          'Optional literal substring in explicit provider titles/participant names/headlines only; generated display titles and message bodies are not searched.',
+        ),
+    },
+    async ({ count, keywords }) =>
       run(logger, 'get_inbox', async () => {
+        if (keywords !== undefined && count > MAX_INBOX_SEARCH_ROWS)
+          throw new ToolError('INVALID_INBOX_SEARCH');
         const data = await guard.run(ACTIONS.readGeneric, async () => {
           const me = await voyager.voyagerGet<NormalizedResponse>(ep.me());
           const fsd = ownFsdId(me);
           if (!fsd) throw new Error('Could not resolve own profile id from /me.');
           const raw = await voyager.voyagerGet<NormalizedResponse>(ep.inboxConversations(fsd));
-          return readRows(raw, shapeInbox(raw));
+          const summaries = shapeInboxForSummarySearch(raw);
+          readRows(
+            raw,
+            summaries.map((view) => view.conversation),
+          );
+          return summaries;
         });
-        return firstPage(data, count, 'voyager');
+        if (keywords === undefined)
+          return firstPage(
+            data.map((view) => view.conversation),
+            count,
+            'voyager',
+          );
+        return ok(searchInboxSummaries(data, keywords, count), 'voyager', true, {
+          pagination: { offset: 0, count, continuation: 'unsupported' },
+        });
       }),
   );
 

@@ -60,7 +60,7 @@ export function capabilityManifest(
     ...CAPABILITIES[name],
     provider: 'local_browser_unofficial',
     verification: 'offline_contract_tested',
-    offlineCheckedAt: '2026-10-21',
+    offlineCheckedAt: name === 'get_inbox' ? '2026-10-30' : '2026-10-21',
     liveCheckedAt: null,
     availability:
       CAPABILITIES[name].write && !policy.writesEnabled

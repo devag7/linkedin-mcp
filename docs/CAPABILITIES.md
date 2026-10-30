@@ -13,7 +13,7 @@ Generated from src/tools/capabilities.ts for linkedin-mcp-tools v4.4.0.
 | get_notifications | voyagerIdentityDashNotificationCards | voyager | authenticated_browser | 50 | offline_contract_tested (2026-10-21) | Unchecked |
 | search_people | /search/results/people/ | dom | authenticated_browser | 25 | offline_contract_tested (2026-10-21) | Unchecked |
 | search_jobs | voyagerJobsDashJobCards | voyager | authenticated_browser | 25 | offline_contract_tested (2026-10-21) | Unchecked |
-| get_inbox | /me + messengerConversations | voyager | authenticated_browser | 50 | offline_contract_tested (2026-10-21) | Unchecked |
+| get_inbox | /me + messengerConversations | voyager | authenticated_browser | 50 | offline_contract_tested (2026-10-30) | Unchecked |
 | get_job_details | voyagerJobsDashJobPosting | voyager | authenticated_browser | — | offline_contract_tested (2026-10-21) | Unchecked |
 | prepare_job_application | local application worksheet and draft materials; no submit or storage | engine | local | — | offline_contract_tested (2026-10-21) | Unchecked |
 | export_application_tracker | local application status export; no storage | engine | local | — | offline_contract_tested (2026-10-21) | Unchecked |

@@ -158,3 +158,18 @@ The tool adds no provider, model, file, storage or send operation; outer
 Package/review/hosted gates and public release are recorded in the
 [4.3.0 readiness record](RELEASE_READINESS_4.3.0.md). Offline checks do not
 establish native-client or interview usefulness.
+
+## Optional bounded inbox summary search (unreleased source)
+
+`get_inbox` accepts optional `keywords` (trimmed 1–100 characters). Without it,
+the existing bounded array response and count limit 50 remain unchanged. With
+it, count limits the scanned first-page window to 25 before filtering explicit provider summary titles
+and participant names/headlines; generated display titles and message bodies are
+never searched. Data is a
+bounded object containing unchanged matching rows, partial status and explicit
+field/coverage/missing/truncation counts. Both statuses stay partial even with
+zero matches, no cursor is issued, and existing malformed-provider errors remain.
+The [source contract](https://github.com/devag7/linkedin-mcp/blob/main/docs/INBOX_SUMMARY_SEARCH_2026-10-30.md) defines Unicode and
+per-field/participant cutoffs. The query adds no provider reads or persistence.
+This option is absent from published 4.4.0; inspect the installed schema and do
+not send it to older versions expecting a search rather than a legacy inbox list.
