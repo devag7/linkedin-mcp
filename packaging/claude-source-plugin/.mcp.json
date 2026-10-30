@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "linkedin-mcp-source": {
+      "command": "npx",
+      "args": ["--yes", "--registry=https://registry.npmjs.org", "linkedin-mcp-tools@4.4.0"],
+      "env": {
+        "LINKEDIN_ENABLE_WRITES": "false",
+        "LINKEDIN_ENABLE_EXPERIMENTAL_MESSAGES": "false"
+      }
+    }
+  }
+}

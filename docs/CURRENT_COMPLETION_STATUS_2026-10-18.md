@@ -22,6 +22,13 @@ or tag change. Source/tag stays `87dae34902cc6f14d5c60a11a901808782a95555`.
 Vite6.4.5 repairs the source development lock without changing public core bytes.
 Historical failures remain failed.
 
+Both Claude packages and checksum files are now public and independently read back.
+Anonymous downloads match reviewed bytes; wrapper PR #58 and merged-main CI pass
+all 14 jobs. [The Release](https://github.com/devag7/linkedin-mcp/releases/tag/v4.4.0)
+records checksums and separate native/directory limits. A new
+[GitHub source installation candidate](CLAUDE_GITHUB_INSTALL_2026-10-30.md) addresses
+the template-only source gap; its review/hosted/native gates remain separate.
+
 Matching Claude builds pass local staged/unpacked checks and static validation.
 Review, hosted integration and public downloads are tracked in the
 [distribution checkpoint](CLAUDE_DISTRIBUTION_4.4.0.md). Native/live acceptance
