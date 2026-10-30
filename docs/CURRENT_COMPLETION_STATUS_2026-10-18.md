@@ -127,22 +127,22 @@ has started; keep 0/0 as unmeasured. Historical protocols and failed receipts re
 | --- | --- | --- |
 | Core package | [4.4.0 release evidence](RELEASE_EVIDENCE_4.4.0.md): exact 15-file archive, npm integrity/signatures/provenance, public scoped package, active Registry and finalized Release/tag verified; 24 tools and existing SDK structural guard | No broad live-provider or native-client first-use proof |
 | Safety and setup | Default-disabled writes, reviewed preview tokens, shared caps/journal, offline diagnosis and client-config export; release tests and hosted matrix | LinkedIn account restrictions remain possible |
-| Job-seeker convenience | `prepare_job_application` creates an unsaved worksheet, optional evidence-linked resume/letter drafts and 4.3.0 interview practice/follow-up templates; `export_application_tracker` formats user-entered records as CSV | No form filling, uploading, submission, saved-job retrieval or server-owned tracker persistence; claims remain supplied and unverified |
+| Job-seeker convenience | `prepare_job_application` creates an unsaved worksheet, optional evidence-linked resume/letter drafts and interview practice/follow-up templates plus 4.4.0 record-index timing groups; `export_application_tracker` formats user-entered records as CSV | No form filling, uploading, submission, saved-job retrieval or server-owned tracker persistence; claims remain supplied and unverified |
 | Local retirement | Selected-profile retirement and interrupted-retirement preview; Windows private-state guard | Shared safety state, other profiles, client data and backups are outside selected retirement; complete coordinated erasure remains open |
-| Claude Desktop bundle | 4.3.0 MCPB/plugin local builds wrap the verified public runtime and pass SDK/interview/audit checks; [evidence](RELEASE_EVIDENCE_4.3.0.md) distinguishes local, hosted and public checkpoints. Historical native 4.1.0 evidence stays separate. | Native 4.3.0 installation, live use, other client/OS pairings and directory acceptance remain unproven |
+| Claude Desktop bundle | 4.4.0 MCPB/plugin local builds wrap the verified public runtime and pass SDK/interview/follow-up/audit checks; [evidence](RELEASE_EVIDENCE_4.4.0.md) distinguishes local, hosted and public checkpoints. Historical native 4.1.0 evidence stays separate. | Native 4.4.0 installation, live use, other client/OS pairings and directory acceptance remain unproven |
 
 ## Open acceptance gates
 
 | Gate | Current observation | Concrete finish line |
 | --- | --- | --- |
-| First use | Merged [4.3.0 consent kit](FIRST_USE_VOLUNTEER_KIT_4.3.0.md) and [scoring guide](FIRST_USE_RESULTS_4.3.0.md); recorded cohort 0/0, unmeasured. Earlier protocols/cohorts stay separate. | The public invitation must match the selected versioned kit. Participants personally consent; count every first started attempt, keep failures, and retain minimal rows privately. |
+| First use | Merged [4.4.0 consent kit](FIRST_USE_VOLUNTEER_KIT_4.4.0.md) and [scoring guide](FIRST_USE_RESULTS_4.4.0.md); recorded cohort 0/0, unmeasured. Earlier protocols/cohorts stay separate. | The public invitation must match the selected versioned kit. Participants personally consent; count every first started attempt, keep failures, and retain minimal rows privately. |
 | Job research briefs | Draft [PR #5](https://github.com/devag7/linkedin-mcp/pull/5) is blocked. Earlier live runs returned no useful job and had cleanup failures; its later search-only head had failed hosted/package cleanup jobs. | Fix reproducible cleanup and useful-result failures, then obtain new bounded consent for live validation before merge or release. Preserve failed receipts. |
-| Native clients and account compatibility | No fresh-user 4.3.0 read measured in Claude Desktop, Cursor or VS Code. Offline SDK exports and static validation are separate. | Record consented native first use and failure categories, then repair observed problems. |
+| Native clients and account compatibility | No fresh-user 4.4.0 read measured in Claude Desktop, Cursor or VS Code. Offline SDK exports and static validation are separate. | Record consented native first use and failure categories, then repair observed problems. |
 | Full privacy retirement | Selected-profile tools are scoped and released. | Design, review and test complete coordinated erasure with active-owner, interruption, same-account race and Windows evidence. Never use it to reset safety caps. |
 | Official provider and Claude directory | Official LinkedIn app grants/scopes are unavailable. The local browser server is not a remote HTTPS connector. [Current official route/policy research](CLAUDE_DIRECTORY_RESEARCH_2026-10-27.md) distinguishes local plugin submission from remote HTTPS/OAuth and identifies interface-control and installable-source gaps. | Obtain permitted provider access and written eligibility clarification; prepare a complete installable GitHub plugin source before any directory submission. A remote connector requires separate HTTPS/OAuth design. Do not claim listing eligibility from a local `.mcpb`. |
 | Application submission | LinkedIn Easy Apply and external ATS submission are absent. | Require a permitted integration, exact per-job field/attachment mapping, human final approval and receipt proof. Keep unsupported auto-apply claims out of release copy. |
-| Further product scope | Public 4.3.0 adds the offline interview/follow-up kit. Saved jobs, richer filters, inbox/post search, job alerts/application history and server-owned persistence remain absent. | Measure interview usefulness separately from the account-read pilot. Follow source/identity/privacy criteria for provider features and capture routes only under new scoped consent. |
-| SDK security maintenance | Core 4.3.0 retains SDK ^1.32.1/input guard and Zod 4.6.7; earlier esbuild/Vitest findings are resolved. The [October 29 adapter lock repair](SECURITY_HONO_NODE_SERVER_2026-10-29.md) clears the newly observed moderate source finding; repaired source/consumer/publisher audits recorded zero. | Continue advisory monitoring and update affected existing installations deliberately. A zero known-finding audit is not broad provider or native-client proof. |
+| Further product scope | Public 4.4.0 includes the offline interview kit and local follow-up timing groups. Saved jobs, richer filters, inbox/post search, job alerts/application history and server-owned persistence remain absent. | Measure interview usefulness separately from the account-read pilot. Follow source/identity/privacy criteria for provider features and capture routes only under new scoped consent. |
+| SDK security maintenance | Core 4.4.0 retains SDK ^1.32.1/input guard and Zod 4.6.7; earlier esbuild/Vitest findings are resolved. The [October 30 Vite6.4.5 lock repair](SECURITY_VITE_2026-10-30.md) clears the new moderate development finding; repaired source/consumer/publisher audits recorded zero. The immutable core tag still has the older development lock, without changing consumer production dependencies. | Continue advisory monitoring and update affected existing installations deliberately. A zero known-finding audit is not broad provider or native-client proof. |
 | Distribution and adoption | [Awesome MCP PR #15490](https://github.com/punkpeye/awesome-mcp-servers/pull/15490) remains open on October 21. The October 21 [Glama observation](https://glama.ai/mcp/servers/devag7/linkedin-mcp) showed older 4.0.0 installation instructions and generic hosted deployment copy; it is not a fresh October 27 readback. Its [Admin page](https://glama.ai/mcp/servers/devag7/linkedin-mcp/admin) requires the repository owner's GitHub sign-in for claiming/re-sync. The [private traffic ledger](ADOPTION_TRAFFIC_LEDGER_2026-10-19.md) now records 12 stars, +2 since October 19; first-use remains 0/0. | Recheck Glama; if still stale, the owner signs in and requests re-sync, then corrects editable fields and seeks platform correction for generated hosted copy. The October 27 private capture reports 12 stars, +2 since October 19, with 22 observed October days and no complete month. Clones are not installs. Capture traffic weekly and consented first-use/repeat-use outcomes separately. 10,000 stars and GitHub Trending daily are targets, not guaranteed milestones. |
 
 An older external [Dockerfile PR #2](https://github.com/devag7/linkedin-mcp/pull/2)
@@ -153,16 +153,16 @@ container work against current source as a separate change.
 
 ## Local Claude plugin preparation
 
-The [4.3.0 local plugin build](CLAUDE_PLUGIN_2026-10-22.md) wraps exact public
-4.3.0 with a job-preparation skill; its final public asset gates are separate. Public distribution, hosted checks, native
+The [4.4.0 local plugin build](CLAUDE_PLUGIN_2026-10-22.md) wraps exact public
+4.4.0 with a job-preparation skill; its final public asset gates are separate. Public distribution, hosted checks, native
 startup and directory acceptance are separate gates. This does not add
 application submission, a remote connector or PR #5 to the released runtime.
 
 ## Next sequence
 
-1. Use the verified public 4.3.0 runtime after checking its release evidence.
-   The [4.3.0 consent kit](FIRST_USE_VOLUNTEER_KIT_4.3.0.md) and
-   [results guide](FIRST_USE_RESULTS_4.3.0.md) define a new, separate cohort.
+1. Use the verified public 4.4.0 runtime after checking its release evidence.
+   The [4.4.0 consent kit](FIRST_USE_VOLUNTEER_KIT_4.4.0.md) and
+   [results guide](FIRST_USE_RESULTS_4.4.0.md) define a new, separate cohort.
    Match the public invitation to these version-pinned merged instructions;
    a participant must personally consent before starting. Historical protocols
    and failures stay preserved. No individual outreach is part of this update.
