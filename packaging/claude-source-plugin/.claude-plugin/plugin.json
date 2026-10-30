@@ -1,0 +1,10 @@
+{
+  "name": "linkedin-mcp-source",
+  "displayName": "LinkedIn MCP source install (unofficial)",
+  "version": "1.0.0",
+  "description": "Local 24-tool server from linkedin-mcp-tools 4.4.0. Offline preparation uses supplied facts. Account reads need separate consent; writes are disabled. No application submission.",
+  "author": { "name": "Dev Agarwalla", "url": "https://github.com/devag7" },
+  "homepage": "https://github.com/devag7/linkedin-mcp",
+  "repository": "https://github.com/devag7/linkedin-mcp",
+  "license": "MIT"
+}

@@ -5,6 +5,17 @@ were built from that exact public archive. Review, hosted integration and public
 asset availability remain separate gates. Check the actual
 [Release asset list](https://github.com/devag7/linkedin-mcp/releases/tag/v4.4.0).
 
+## Verified public outcome
+
+Wrapper PR #58 is merged at `3d18d974430fcbcc0f550ae8674a4c801a091beb` with a
+matching reviewed tree. Both reviewed-head and merged-main CI passed all 14 jobs.
+All four public assets (two archives and two checksum companions) downloaded
+anonymously and matched reviewed bytes, sizes and API digests. A separate readback
+confirmed the asset metadata, anonymous checksums, release notes, unchanged core
+tag/npm integrity and 4.4.0 pilot invitation. Cohorts remain 0/0; no native or live
+acceptance is implied. The redundant same-version Release run was cancelled
+before publication and is not counted as a passing release run.
+
 ## Local build evidence
 
 [Local receipt](evidence/release-4.4.0-2026-10-30/wrapper-local-builds.json)

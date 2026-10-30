@@ -1,0 +1,12 @@
+{
+  "name": "devag7-linkedin-tools",
+  "description": "Community local LinkedIn MCP tools and supplied-fact application preparation; no official directory approval.",
+  "owner": { "name": "Dev Agarwalla" },
+  "plugins": [
+    {
+      "name": "linkedin-mcp-source",
+      "source": "./packaging/claude-source-plugin",
+      "description": "Unofficial local LinkedIn tools and offline application preparation, using the pinned public npm release."
+    }
+  ]
+}

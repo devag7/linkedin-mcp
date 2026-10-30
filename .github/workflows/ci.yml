@@ -112,9 +112,11 @@ jobs:
         if: runner.os == 'Windows'
         run: node --import tsx scripts/prepare-windows-ci-temp.ts
       - name: Reject unexpected private plugin template files
-        run: node --test scripts/claude-plugin-template.test.mjs
+        run: node --test scripts/claude-plugin-template.test.mjs scripts/claude-source-plugin.test.mjs
       - run: npm run build
       - name: Build, unpack and audit current candidate Claude bundle offline
         run: npm run build:claude-mcpb -- --from-source
       - name: Build, unpack and audit pinned public 4.4.0 Claude plugin offline
         run: npm run build:claude-plugin
+      - name: Verify declared GitHub source launcher with cold local tools only
+        run: npm exec -- node scripts/verify-claude-source-plugin.mjs

@@ -1,5 +1,15 @@
 # Claude installation and directory readiness — October 27, 2026
 
+## October 30 source-installation delta
+
+The [new source-plugin candidate](CLAUDE_GITHUB_INSTALL_2026-10-30.md) adds a
+separate exact-version npm launcher and custom GitHub catalog. The older ZIP
+folder remains a template; it is not silently repurposed. This addresses source
+completeness without claiming native acceptance or directory eligibility. Current
+[portal checks](https://claude.com/docs/plugins/pre-submission-checklist) still hold
+pinned registry launchers for review. Source/hosted/review gates are recorded
+separately; no directory submission or native installation occurred.
+
 This research refresh uses current official documentation. Core 4.2.0 is publicly
 verified; the matching manual packages have separate build/distribution evidence.
 No directory submission, account connection, purchase or native installation was

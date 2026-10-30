@@ -1,0 +1,25 @@
+{
+  "commandsPassed": 9,
+  "coreArchiveSha256": "df8ecf6fa8d4143bbc8625b1f8b494e5a3445667b9134f8a94e9db614e2cc1a8",
+  "entries": 15,
+  "nativeInstall": false,
+  "linkedInRequests": 0,
+  "sourceFixturesPassed": 11,
+  "existingTemplateFixturesPassed": 4,
+  "localTestsPassed": 867,
+  "platformSkipped": 1,
+  "sourceAuditFindings": 0,
+  "freshConsumerAuditFindings": 0,
+  "sourceLauncherRuntimeHashMatchesPublic440": true,
+  "staticValidation": {
+    "client": "2.1.285 (Claude Code)",
+    "strictPluginAndCatalog": true,
+    "isolatedConfig": true,
+    "proxyBlocked": true
+  },
+  "nativeClientAcceptance": false,
+  "initialLocalCorrectionsPreserved": true,
+  "windowsVerifier": "Refuses owner/self-hosted runtime checks before execution; hosted Windows CI only",
+  "rootAndParentAliasRegression": "Refused before traversal",
+  "unreviewedManifestHooksAndComponents": "Refused"
+}
