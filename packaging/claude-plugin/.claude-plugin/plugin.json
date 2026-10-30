@@ -1,8 +1,8 @@
 {
   "name": "linkedin-mcp-local",
   "displayName": "LinkedIn MCP (local, unofficial)",
-  "version": "4.3.0",
-  "description": "Local LinkedIn MCP tools and guided application preparation. Account reads require separate consent; writes are disabled in this package. Does not submit applications. Optional offline interview practice uses only selected supplied evidence.",
+  "version": "4.4.0",
+  "description": "Local LinkedIn MCP tools and guided application preparation. Account reads require separate consent; writes are disabled in this package. Does not submit applications. Optional offline interview practice uses only selected supplied evidence. Optional local follow-up timing schedules no notifications.",
   "author": {
     "name": "Dev Agarwalla",
     "url": "https://github.com/devag7"

@@ -1,5 +1,15 @@
 # 4.4.0 release readiness — October 29, 2026
 
+## Publication verified — October 30
+
+Core 4.4.0 is published and independently read back on npm, GitHub Packages, the
+active MCP Registry and finalized Release/tag. [Exact source, archive and
+cryptographic evidence](RELEASE_EVIDENCE_4.4.0.md) records the verified gates and
+preserved first dry-run failure. Matching Claude distribution/native acceptance
+remain separate.
+
+## Preparation snapshot (preserved)
+
 Target: distribute the reviewed local follow-up timing queue in
 `export_application_tracker`, with 24 tools and unchanged default/false data
 and CSV. Base main is `55b41b5ec82f6c53953fc1b54c2b5b0db4471fa4`.

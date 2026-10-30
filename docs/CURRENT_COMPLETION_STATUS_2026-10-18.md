@@ -1,4 +1,4 @@
-# Current completion status — reviewed October 29, 2026
+# Current completion status — reviewed October 30, 2026
 
 This is the current-state index for the original roadmap, the job-seeker plan,
 and Claude distribution. Older dated evidence remains in its original files.
@@ -9,21 +9,27 @@ The [October 21 full-scope audit](COMPLETION_AUDIT_2026-10-21.md) maps every
 original functional requirement, later backlog item and job-seeker addition.
 The complete roadmap has not been achieved.
 
-## October 29 next release candidate: 4.4.0
+## October 30 current release: 4.4.0
 
-The [local follow-up timing plan](APPLICATION_FOLLOW_UP_2026-10-29.md) is merged
-in PR #55 with a matching reviewed tree, 843 local test passes plus one platform
-skip, clean independent review, and 14 hosted passes at both the reviewed head
-and merged main. It keeps supplied records/CSV unchanged and adds optional
-index groups at an explicit reference time; no notifications or storage.
+[Core 4.4.0 is published and verified on all four destinations](RELEASE_EVIDENCE_4.4.0.md).
+It adds optional follow-up timing groups to supplied tracker records at an explicit
+UTC reference time. Records/CSV stay unchanged; no scheduling, notifications,
+provider requests or storage are added. There are still 24 tools.
 
-4.4.0 prepares distribution of this already reviewed feature. It is not yet
-published; [readiness](RELEASE_READINESS_4.4.0.md) and the Release destinations
-must confirm the new version. Public 4.3.0 and its Claude assets remain unchanged.
-Version-pinned 4.4.0 pilot instructions prepare a new separate 0/0 cohort; do not
-enroll before public verification. Native/live acceptance remains unmeasured.
+The original producer remains failed after visibility/finalizer errors. A separately
+reviewed one-job recovery finalized the existing Release without another upload
+or tag change. Source/tag stays `87dae34902cc6f14d5c60a11a901808782a95555`.
+Vite6.4.5 repairs the source development lock without changing public core bytes.
+Historical failures remain failed.
 
-## October 29 current release: 4.3.0
+Matching Claude builds pass local staged/unpacked checks and static validation.
+Review, hosted integration and public downloads are tracked in the
+[distribution checkpoint](CLAUDE_DISTRIBUTION_4.4.0.md). Native/live acceptance
+remains unverified. The [4.4.0 kit](FIRST_USE_VOLUNTEER_KIT_4.4.0.md) and
+[results guide](FIRST_USE_RESULTS_4.4.0.md) retain a separate 0/0 cohort.
+The public invitation's actual version must match its selected kit.
+
+## October 29 previous release: 4.3.0
 
 An additive [local follow-up timing plan](APPLICATION_FOLLOW_UP_2026-10-29.md)
 is being validated separately in source. It groups supplied tracker records at
@@ -119,7 +125,7 @@ has started; keep 0/0 as unmeasured. Historical protocols and failed receipts re
 
 | Area | Evidence | Boundary |
 | --- | --- | --- |
-| Core package | [4.3.0 release evidence](RELEASE_EVIDENCE_4.3.0.md): exact 15-file archive, npm integrity/signatures/provenance, public scoped package, active Registry and finalized Release/tag verified; 24 tools and existing SDK structural guard | No broad live-provider or native-client first-use proof |
+| Core package | [4.4.0 release evidence](RELEASE_EVIDENCE_4.4.0.md): exact 15-file archive, npm integrity/signatures/provenance, public scoped package, active Registry and finalized Release/tag verified; 24 tools and existing SDK structural guard | No broad live-provider or native-client first-use proof |
 | Safety and setup | Default-disabled writes, reviewed preview tokens, shared caps/journal, offline diagnosis and client-config export; release tests and hosted matrix | LinkedIn account restrictions remain possible |
 | Job-seeker convenience | `prepare_job_application` creates an unsaved worksheet, optional evidence-linked resume/letter drafts and 4.3.0 interview practice/follow-up templates; `export_application_tracker` formats user-entered records as CSV | No form filling, uploading, submission, saved-job retrieval or server-owned tracker persistence; claims remain supplied and unverified |
 | Local retirement | Selected-profile retirement and interrupted-retirement preview; Windows private-state guard | Shared safety state, other profiles, client data and backups are outside selected retirement; complete coordinated erasure remains open |

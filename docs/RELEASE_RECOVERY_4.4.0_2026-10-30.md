@@ -1,5 +1,14 @@
 # 4.4.0 finalization recovery — October 30, 2026
 
+## Final outcome
+
+[Recovery 40995717682](https://github.com/devag7/linkedin-mcp/actions/runs/40995717682)
+passed its one job at helper `18879f09eed9f84f512c693bb511d8b8ad98aa70`.
+Zero package uploads and tag changes occurred. [Fresh public readback](RELEASE_EVIDENCE_4.4.0.md)
+verifies all four destinations; original producer attempts remain failed.
+
+## Preserved pre-dispatch checkpoint
+
 The immutable core source is `87dae34902cc6f14d5c60a11a901808782a95555`.
 Its reviewed 15-file archive SHA-256 is
 `df8ecf6fa8d4143bbc8625b1f8b494e5a3445667b9134f8a94e9db614e2cc1a8`.

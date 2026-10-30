@@ -1,6 +1,6 @@
 # LinkedIn MCP local Desktop extension
 
-This extension packages the independently published `linkedin-mcp-tools@4.3.0`
+This extension packages the independently published `linkedin-mcp-tools@4.4.0`
 archive and its production dependencies for Claude Desktop. It starts a local
 MCP server. It does not include a logged-in browser profile, credentials or
 application data. Install Chrome, then run the one-time manual login documented
@@ -36,10 +36,19 @@ cookies, profile files, private results or credentials.
 
 ## Offline interview kit
 
-The pinned 4.3.0 runtime supports `include_interview_prep:true` on
+The pinned 4.4.0 runtime supports `include_interview_prep:true` on
 `prepare_job_application`, independently of resume/cover-letter drafts. Practice
 questions reference only selected evidence; unknown answers and STAR fields stay
 blank. A follow-up template requires truthful human completion after verifying
 the real interview and recipient. No message, application, provider request or
 server-owned record is created. Inspect the advertised schema and returned kit;
-4.2.0 bundles do not upgrade themselves. Native 4.3.0 use remains untested.
+4.2.0 bundles do not upgrade themselves. Native 4.4.0 use remains untested.
+
+## Optional follow-up timing
+
+The 4.4.0 runtime supports `include_follow_up_plan:true` with an explicit UTC
+`as_of` on `export_application_tracker`. The returned index groups refer to
+unchanged records/CSV; rejected and withdrawn records stay closed. Missing
+actions stay blank. Nothing is stored, scheduled or sent. Inspect the installed
+schema; older 4.3.0 packages do not acquire this option automatically. Native
+4.4.0 usefulness remains unmeasured.

@@ -11,8 +11,8 @@ import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js'
 import { copyPluginTemplate } from './claude-plugin-template.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const version = '4.3.0';
-const expectedSha256 = '3896b31a25fe442fa23246dbf5e814dc1b7efde33636d81d72e858603aed20f9';
+const version = '4.4.0';
+const expectedSha256 = 'df8ecf6fa8d4143bbc8625b1f8b494e5a3445667b9134f8a94e9db614e2cc1a8';
 const npmCli = process.env.npm_execpath;
 assert.ok(npmCli, 'Run through npm run build:claude-plugin.');
 const scratch = realpathSync(mkdtempSync(join(tmpdir(), 'linkedin-plugin-build-')));
@@ -121,6 +121,30 @@ async function verifyCold(folder) {
     ]);
     for (const placeholder of interview.followUpTemplate.placeholders)
       assert.ok(interview.followUpTemplate.body.includes(placeholder));
+    const trackerRecords = [
+      { job_id: '123', title: 'Synthetic active', status: 'submitted_unverified',
+        updated_at: '2026-10-28T00:00:00Z', follow_up_at: '2026-10-29T00:00:00Z' },
+      { job_id: '456', title: 'Synthetic closed', status: 'withdrawn',
+        updated_at: '2026-10-28T00:00:00Z', follow_up_at: '2026-10-27T00:00:00Z' },
+    ];
+    const legacyTracker = await client.callTool({
+      name: 'export_application_tracker', arguments: { records: trackerRecords },
+    });
+    assert.notEqual(legacyTracker.isError, true);
+    assert.equal('followUpPlan' in legacyTracker.structuredContent.data, false);
+    const plannedTracker = await client.callTool({
+      name: 'export_application_tracker', arguments: {
+        records: trackerRecords, include_follow_up_plan: true, as_of: '2026-10-30T00:00:00Z',
+      },
+    });
+    assert.notEqual(plannedTracker.isError, true);
+    const { followUpPlan, ...unchangedTracker } = plannedTracker.structuredContent.data;
+    assert.deepEqual(unchangedTracker, legacyTracker.structuredContent.data);
+    assert.deepEqual(followUpPlan, {
+      referenceTime: '2026-10-30T00:00:00Z', basis: 'user_supplied_dates',
+      notificationsScheduled: false, overdueRecordIndices: [0], dueNowRecordIndices: [],
+      upcomingRecordIndices: [], unscheduledRecordIndices: [], closedRecordIndices: [1],
+    });
     const stillCold = await client.callTool({ name: 'whoami', arguments: {} });
     assert.equal(stillCold.structuredContent?.data?.sessionState, 'not_checked');
     assert.equal(stillCold.structuredContent?.data?.loggedIn, null);
