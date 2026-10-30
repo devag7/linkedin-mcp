@@ -24,12 +24,16 @@ export const RECOVERY = Object.freeze({
   sha256: 'df8ecf6fa8d4143bbc8625b1f8b494e5a3445667b9134f8a94e9db614e2cc1a8',
   integrity:
     'sha512-o1gw/RBPp+/6R0V2smtwcb5PId7C/79WuP5c/aI54LJCAC6ez0rFkVlWjK75wtiAhNAnVCo9I9mizeoFlcu5Ng==',
+  scopedName: '@devag7/linkedin-mcp-tools',
+  scopedIntegrity:
+    'sha512-xRW84vDEKoEyI/s6iBczAv/wY9LS+ZqJzBNcZm4U6r4DOGM4tG0k8wZYzkcH3GULFVgjtg4x3/0wYGxQbbUVDg==',
 });
 const fail = (code) => {
   throw new Error(code);
 };
 const origins = new Set([
   'https://registry.npmjs.org',
+  'https://npm.pkg.github.com',
   'https://registry.modelcontextprotocol.io',
   'https://api.github.com',
 ]);
@@ -40,7 +44,7 @@ export function assertRecoveryRequest(url, options = {}) {
     fail('RECOVERY_DESTINATION_REFUSED');
   if (
     new Headers(options.headers).has('authorization') &&
-    parsed.origin !== 'https://api.github.com'
+    !['https://api.github.com', 'https://npm.pkg.github.com'].includes(parsed.origin)
   )
     fail('RECOVERY_AUTH_HOST_REFUSED');
   const method = options.method ?? 'GET';
@@ -134,6 +138,21 @@ export async function finalizeVerified440(context, { fetchImpl = fetch, report =
   report('verify_registry');
   await verifyRegistry(context.server, anonymous);
   report('verify_public_scoped_package');
+  const scopedMetadata = await readMetadata(
+    `https://npm.pkg.github.com/${encodeURIComponent(RECOVERY.scopedName)}`,
+    authenticated,
+  );
+  const scopedVersion = scopedMetadata?.versions?.[RECOVERY.version];
+  if (
+    scopedMetadata?.name !== RECOVERY.scopedName ||
+    !scopedMetadata.versions ||
+    typeof scopedMetadata.versions !== 'object' ||
+    Array.isArray(scopedMetadata.versions) ||
+    scopedVersion?.name !== RECOVERY.scopedName ||
+    scopedVersion?.version !== RECOVERY.version ||
+    scopedVersion?.dist?.integrity !== RECOVERY.scopedIntegrity
+  )
+    fail('RECOVERY_SCOPED_VERSION_UNVERIFIED');
   await verifyPublicGithubPackage(authenticated);
   report('verify_source_tag_and_finalize_existing_draft');
   const id = await githubRelease(

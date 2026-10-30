@@ -41,8 +41,11 @@ The one-incident runner requires all of the following before publication:
   human-selected confirmation source, core HEAD and tag, and archive SHA/SRI.
 - Original producer identity/source/path/event and all nine successful prerequisite
   jobs. A missing, cancelled or failed prerequisite refuses finalization.
-- Fresh npm integrity, active source-matching Registry metadata and explicit
-  public scoped-package visibility, using the existing guarded release helpers.
+- Fresh npm integrity, active source-matching Registry metadata, exact scoped
+  4.4.0 version/integrity and separate public scoped-package visibility. The
+  scoped integrity is pinned to the independently downloaded archive whose 15
+  file bytes/modes match npm except the package name. Missing or different
+  scoped versions refuse finalization even if older public versions remain.
 - The source-matching draft and remote tag. The only permitted non-GET request
   is `PATCH /repos/devag7/linkedin-mcp/releases/428280123` with exactly
   `{"draft":false}`. Uploads, creation/deletion of tags or releases, changed

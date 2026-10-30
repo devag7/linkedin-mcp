@@ -37,7 +37,13 @@ const context = () => ({
 const response = (data: unknown, status = 200) => new Response(JSON.stringify(data), { status });
 
 function destinations(
-  change: { wrongProducer?: boolean; registryStatus?: string; scopedJobFailed?: boolean } = {},
+  change: {
+    wrongProducer?: boolean;
+    registryStatus?: string;
+    scopedJobFailed?: boolean;
+    scopedMissing?: boolean;
+    scopedMismatch?: boolean;
+  } = {},
 ) {
   let draft = true;
   const mutations: Array<{ url: string; body: string }> = [];
@@ -94,6 +100,21 @@ function destinations(
             dist: { integrity: RECOVERY.integrity },
           },
         },
+      });
+    if (parsed.hostname === 'npm.pkg.github.com')
+      return response({
+        name: RECOVERY.scopedName,
+        versions: change.scopedMissing
+          ? {}
+          : {
+              [RECOVERY.version]: {
+                name: RECOVERY.scopedName,
+                version: RECOVERY.version,
+                dist: {
+                  integrity: change.scopedMismatch ? 'sha512-different' : RECOVERY.scopedIntegrity,
+                },
+              },
+            },
       });
     if (parsed.hostname === 'registry.modelcontextprotocol.io')
       return response({
@@ -224,14 +245,17 @@ describe('source and artifact bound finalization recovery', () => {
     await finalizeVerified440(context(), { fetchImpl });
     expect(mutations).toHaveLength(1); // Repeated recovery verifies the completed release.
   });
-  it.each([{ wrongProducer: true }, { registryStatus: 'deleted' }, { scopedJobFailed: true }])(
-    'does not finalize unverified producer or destination state %j',
-    async (change) => {
-      const { fetchImpl, mutations } = destinations(change);
-      await expect(finalizeVerified440(context(), { fetchImpl })).rejects.toThrow();
-      expect(mutations).toHaveLength(0);
-    },
-  );
+  it.each([
+    { wrongProducer: true },
+    { registryStatus: 'deleted' },
+    { scopedJobFailed: true },
+    { scopedMissing: true },
+    { scopedMismatch: true },
+  ])('does not finalize unverified producer or destination state %j', async (change) => {
+    const { fetchImpl, mutations } = destinations(change);
+    await expect(finalizeVerified440(context(), { fetchImpl })).rejects.toThrow();
+    expect(mutations).toHaveLength(0);
+  });
 });
 
 describe('release transport identity and redacted failures', () => {
