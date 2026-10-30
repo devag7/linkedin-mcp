@@ -73,6 +73,11 @@ structural refusals. `npm exec -- node scripts/verify-claude-source-plugin.mjs`
 uses disposable npm storage, launches the declared command through an SDK client,
 checks cold/local tools and write overrides, compares runtime JavaScript to the
 verified public 4.4.0 file, and requires a zero-finding fresh production audit.
+On Windows this runtime verifier refuses local/self-hosted execution: the
+public runtime needs the real Windows home for native privacy checks, so its
+shared safety-state reads cannot be redirected into the verifier scratch folder.
+Use only a fresh GitHub-hosted Windows runner for that check; do not simulate CI
+variables to bypass this refusal. Static validation remains available locally.
 It does not register or install a plugin in Claude. npm network installation is
 separate from its cold/local MCP checks. Normal user launches do not rerun this
 audit or freeze transitive dependencies. Static validation, SDK execution and

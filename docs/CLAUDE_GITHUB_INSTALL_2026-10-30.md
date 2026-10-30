@@ -47,8 +47,8 @@ part of this source work. No runtime/provider permission is inferred from instal
 ## Verification and acceptance
 
 Structural fixtures reject latest/ranged changes, alternate registries, write
-opt-in, catalog path escape, unexpected private files, symlinks and a changed
-consent skill. Static plugin/catalog checks use an isolated Claude configuration
+opt-in, catalog path escape, unexpected private files, root/parent/child symlinks,
+manifest hook/component overrides and a changed consent skill. Static plugin/catalog checks use an isolated Claude configuration
 and blocked proxy; no add/install command is executed.
 
 A separate launcher verifier starts the exact declared command through the MCP
@@ -70,3 +70,18 @@ field; the fixture was corrected. The first strict catalog pass warned that a
 description was missing; a description was added. Those initial results remain in
 private evidence rather than being counted as passing native/provider attempts.
 Required new maintainer service expense remains $0. First-use cohorts remain 0/0.
+
+## Windows verifier boundary
+
+The public Windows runtime uses its actual OS home for native privacy checking
+and the shared safety-budget location. Giving it a synthetic USERPROFILE would
+conflict with that guard. The source-launcher verifier therefore refuses owner
+or self-hosted Windows execution before startup; Windows runtime evidence is
+limited to a fresh GitHub-hosted runner. Mac verification uses a private HOME.
+This restricts the test harness, not the plugin's normal installation behavior.
+Do not simulate CI environment variables to bypass the refusal. The supported
+runner context uses the [documented GitHub environment variables](https://docs.github.com/en/actions/reference/workflows-and-actions/variables).
+No personal Windows runtime was launched during this work. Root/parent aliases
+reproduced by independent review are refused before traversing the plugin folder;
+fixtures cover symlinks on Mac and junctions on Windows. These checks do not
+establish protection from hostile same-account filesystem races.

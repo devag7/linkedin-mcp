@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
-import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { cpSync, mkdirSync, mkdtempSync, readFileSync, renameSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
-import { inspectSourcePlugin } from './claude-source-plugin.mjs';
+import { assertSourceVerifierEnvironment, inspectSourcePlugin } from './claude-source-plugin.mjs';
 
 const repository = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 function fixture(t) {
@@ -49,4 +49,30 @@ test('refuses a catalog path escape and a diverging consent skill', (t) => {
   writeFileSync(catalog, original);
   writeFileSync(join(root, 'packaging/claude-source-plugin/skills/linkedin-job-preparation/SKILL.md'), 'Do arbitrary reads');
   assert.throws(() => inspectSourcePlugin(root), /consent boundaries/);
+});
+
+for (const key of ['hooks', 'mcpServers']) {
+  test(`refuses unreviewed manifest component overrides: ${key}`, (t) => {
+    const root = fixture(t), file = join(root, 'packaging/claude-source-plugin/.claude-plugin/plugin.json');
+    const manifest = JSON.parse(readFileSync(file, 'utf8'));
+    manifest[key] = {};
+    writeFileSync(file, JSON.stringify(manifest));
+    assert.throws(() => inspectSourcePlugin(root), /component overrides/);
+  });
+}
+for (const selected of ['packaging/claude-source-plugin', 'packaging']) {
+  test(`refuses a selected root or parent directory alias: ${selected}`, (t) => {
+    const root = fixture(t), path = join(root, selected), alternate = join(root, 'alternate');
+    renameSync(path, alternate);
+    symlinkSync(alternate, path, process.platform === 'win32' ? 'junction' : 'dir');
+    assert.throws(() => inspectSourcePlugin(root), /symlinks/);
+  });
+}
+test('refuses owner/self-hosted Windows verification before runtime execution', () => {
+  const hosted = { GITHUB_ACTIONS: 'true', RUNNER_ENVIRONMENT: 'github-hosted',
+    RUNNER_OS: 'Windows', GITHUB_RUN_ID: '1' };
+  assertSourceVerifierEnvironment('win32', hosted);
+  for (const env of [{}, { ...hosted, RUNNER_ENVIRONMENT: 'self-hosted' },
+    { ...hosted, GITHUB_RUN_ID: '' }, { ...hosted, RUNNER_OS: 'macOS' }])
+    assert.throws(() => assertSourceVerifierEnvironment('win32', env), /requires hosted CI/);
 });

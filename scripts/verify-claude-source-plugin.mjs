@@ -8,9 +8,10 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
-import { inspectSourcePlugin } from './claude-source-plugin.mjs';
+import { assertSourceVerifierEnvironment, inspectSourcePlugin } from './claude-source-plugin.mjs';
 
 const repository = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+assertSourceVerifierEnvironment(process.platform, process.env);
 const { server } = inspectSourcePlugin(repository);
 const npmCli = process.env.npm_execpath;
 assert.ok(npmCli, 'Run through npm exec -- node scripts/verify-claude-source-plugin.mjs.');

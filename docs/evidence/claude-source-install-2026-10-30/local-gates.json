@@ -4,7 +4,7 @@
   "entries": 15,
   "nativeInstall": false,
   "linkedInRequests": 0,
-  "sourceFixturesPassed": 6,
+  "sourceFixturesPassed": 11,
   "existingTemplateFixturesPassed": 4,
   "localTestsPassed": 867,
   "platformSkipped": 1,
@@ -18,5 +18,8 @@
     "proxyBlocked": true
   },
   "nativeClientAcceptance": false,
-  "initialLocalCorrectionsPreserved": true
+  "initialLocalCorrectionsPreserved": true,
+  "windowsVerifier": "Refuses owner/self-hosted runtime checks before execution; hosted Windows CI only",
+  "rootAndParentAliasRegression": "Refused before traversal",
+  "unreviewedManifestHooksAndComponents": "Refused"
 }
