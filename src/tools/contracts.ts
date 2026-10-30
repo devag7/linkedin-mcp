@@ -1,9 +1,21 @@
 import { z } from 'zod';
 import type { ToolName } from './capabilities.js';
 import { followUpPlanSchema } from './application-follow-up.js';
+import { inboxSearchMetaSchema } from './inbox-search.js';
 const str = z.string().optional();
 const num = z.number().optional();
 const row = (shape: z.ZodRawShape) => z.object(shape).passthrough();
+const conversation = row({
+  title: str,
+  participants: z
+    .array(row({ name: str, headline: str, profileUrn: str, profileUrl: str }))
+    .optional(),
+  groupChat: z.boolean().optional(),
+  lastActivityAt: num,
+  unreadCount: num,
+  read: z.boolean().optional(),
+  conversationUrn: str,
+});
 const person = row({
   name: str,
   headline: str,
@@ -116,21 +128,14 @@ const dataSchemas: Record<ToolName, z.ZodTypeAny> = {
   search_jobs: z
     .array(row({ title: str, location: str, listedAt: num, jobUrn: str, sourceUrl: str }))
     .max(25),
-  get_inbox: z
-    .array(
-      row({
-        title: str,
-        participants: z
-          .array(row({ name: str, headline: str, profileUrn: str, profileUrl: str }))
-          .optional(),
-        groupChat: z.boolean().optional(),
-        lastActivityAt: num,
-        unreadCount: num,
-        read: z.boolean().optional(),
-        conversationUrn: str,
-      }),
-    )
-    .max(50),
+  get_inbox: z.union([
+    z.array(conversation).max(50),
+    z.object({
+      status: z.literal('partial'),
+      conversations: z.array(conversation).max(25),
+      search: inboxSearchMetaSchema,
+    }),
+  ]),
   get_job_details: row({
     title: str,
     description: str,

@@ -195,7 +195,93 @@ it('retains inbox participant fields in the advertised and native bounded contra
   const schema: any = (await client.listTools()).tools.find(
     (t) => t.name === 'get_inbox',
   )!.outputSchema;
-  expect(schema.properties.data.anyOf[0].items.properties.participants).toBeDefined();
+  const alternatives = schema.properties.data.anyOf;
+  const arraySchema =
+    alternatives.find((branch: any) => branch.type === 'array') ??
+    alternatives
+      .flatMap((branch: any) => branch.anyOf ?? [])
+      .find((branch: any) => branch.type === 'array');
+  expect(arraySchema.items.properties.participants).toBeDefined();
+});
+
+it('filters only a bounded inbox summary window with unchanged provider calls and exact legacy rows', async () => {
+  const response = {
+    included: ['Other', 'RECRUITER', 'Recruiter outside window'].map((title, i) => ({
+      $type: 'com.linkedin.messenger.Conversation',
+      title,
+      entityUrn: `urn:li:msg_conversation:(urn:li:fsd_profile:${messagingOwner},synthetic-${i})`,
+    })),
+  };
+  vi.mocked(runtime.voyager.voyagerGet)
+    .mockResolvedValueOnce(fixture.response)
+    .mockResolvedValueOnce(response)
+    .mockResolvedValueOnce(fixture.response)
+    .mockResolvedValueOnce(response);
+  const legacy = decode(await client.callTool({ name: 'get_inbox', arguments: { count: 2 } }));
+  const filtered = decode(
+    await client.callTool({ name: 'get_inbox', arguments: { count: 2, keywords: 'recruiter' } }),
+  );
+  expect(legacy.data).toHaveLength(2);
+  expect(filtered.data.conversations).toEqual([legacy.data[1]]);
+  expect(filtered.data.search).toMatchObject({
+    scannedConversations: 2,
+    matchedConversations: 1,
+    messageBodiesSearched: false,
+    coverage: 'bounded_first_page',
+    complete: false,
+  });
+  expect(filtered.data.status).toBe('partial');
+  expect(filtered.meta).toMatchObject({
+    status: 'partial',
+    partial: true,
+    pagination: { offset: 0, count: 2, continuation: 'unsupported' },
+  });
+  expect(filtered.meta).not.toHaveProperty('nextCursor');
+  expect(runtime.voyager.voyagerGet).toHaveBeenCalledTimes(4);
+  const calls = vi.mocked(runtime.voyager.voyagerGet).mock.calls;
+  expect(calls.slice(0, 2)).toEqual(calls.slice(2, 4));
+});
+
+it('never labels a zero-match inbox summary search complete or empty', async () => {
+  vi.mocked(runtime.voyager.voyagerGet)
+    .mockResolvedValueOnce(fixture.response)
+    .mockResolvedValueOnce({
+      included: [{ $type: 'com.linkedin.messenger.Conversation', title: 'Other' }],
+    });
+  const result = decode(
+    await client.callTool({ name: 'get_inbox', arguments: { keywords: 'recruiter' } }),
+  );
+  expect(result.data.conversations).toEqual([]);
+  expect(result.data.status).toBe('partial');
+  expect(result.meta.status).toBe('partial');
+  expect(result.meta.partial).toBe(true);
+  expect(runtime.voyager.voyagerGet).toHaveBeenCalledTimes(2);
+});
+
+it('refuses an oversized inbox search before any provider work', async () => {
+  const result = decode(
+    await client.callTool({ name: 'get_inbox', arguments: { count: 26, keywords: 'recruiter' } }),
+  );
+  expect(result.code).toBe('INVALID_INBOX_SEARCH');
+  expect(runtime.guard.run).not.toHaveBeenCalled();
+  expect(runtime.voyager.voyagerGet).not.toHaveBeenCalled();
+});
+
+it('preserves malformed-provider rejection instead of manufacturing a zero-match search', async () => {
+  vi.mocked(runtime.voyager.voyagerGet)
+    .mockResolvedValueOnce(fixture.response)
+    .mockResolvedValueOnce({ included: [{ $type: 'com.synthetic.UnknownEntity' }] });
+  const result = decode(await client.callTool({ name: 'get_inbox', arguments: { keywords: 'recruiter' } }));
+  expect(result.code).toBe('RESPONSE_SHAPE_CHANGED');
+  expect(result.data).toBe(null);
+  expect(runtime.voyager.voyagerGet).toHaveBeenCalledTimes(2);
+});
+
+it.each(['   ', 'x'.repeat(101)])('refuses invalid summary keywords before provider work', async (keywords) => {
+  const result = await client.callTool({ name: 'get_inbox', arguments: { keywords } });
+  expect(result.isError).toBe(true);
+  expect(runtime.guard.run).not.toHaveBeenCalled();
+  expect(runtime.voyager.voyagerGet).not.toHaveBeenCalled();
 });
 it('returns sorted, attributed and bounded messages through native MCP while encoding the full URN', async () => {
   vi.mocked(runtime.voyager.voyagerGet).mockResolvedValueOnce({

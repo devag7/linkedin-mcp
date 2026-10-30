@@ -42,6 +42,12 @@ try {
         payload(await client.callTool({ name: 'whoami', arguments: {} })).data.sessionState,
         'not_checked',
       );
+      assert.equal(tools.find((tool) => tool.name === 'get_inbox').inputSchema.properties.keywords.maxLength, 100);
+      const invalidSearch = payload(await client.callTool({
+        name: 'get_inbox', arguments: { count: 26, keywords: 'Synthetic summary query' },
+      }));
+      assert.equal(invalidSearch.code, 'INVALID_INBOX_SEARCH');
+      assert.equal(invalidSearch.data, null);
       const materials = payload(
         await client.callTool({
           name: 'prepare_job_application',

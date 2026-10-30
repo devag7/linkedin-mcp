@@ -128,7 +128,7 @@
       "maxResults": 50,
       "provider": "local_browser_unofficial",
       "verification": "offline_contract_tested",
-      "offlineCheckedAt": "2026-10-21",
+      "offlineCheckedAt": "2026-10-30",
       "liveCheckedAt": null,
       "availability": "unknown_until_checked"
     },

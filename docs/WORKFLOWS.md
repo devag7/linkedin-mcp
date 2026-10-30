@@ -193,3 +193,14 @@ entirely null. Follow-up placeholders stay unfilled. Nothing is stored or sent.
 [PRD/TRD and acceptance gates](INTERVIEW_PREPARATION_2026-10-29.md).
 This source flow is separate from the account-read pilot; voluntary offline
 evaluation must not change that pilot's scope or denominator.
+
+## Find a returned inbox summary (unreleased source)
+
+Only with explicit inbox-read authorization and a source build advertising the
+keywords field, call get_inbox(count:20, keywords:"recruiter") once. Inspect the
+returned partial coverage and unchanged matching rows. Count bounds scanned
+conversations, not desired matches; no match means only no match in that limited
+summary window. It does not search message bodies, infer recruiter intent or
+fetch another conversation/page. Do not append retries, extra reads, login or
+writes. Selecting and reading a thread requires its own remaining authorized
+scope and budget. This is not in public 4.4.0 or its installation/own-profile pilot.

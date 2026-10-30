@@ -85,6 +85,8 @@ const messages: Record<string, string> = {
     'Application evidence references are inconsistent. Correct duplicate IDs or missing references locally; no account check is needed.',
   INVALID_TRACKER_RECORD:
     'Application tracker input is inconsistent. Correct duplicate IDs or receipt confirmation before exporting.',
+  INVALID_INBOX_SEARCH:
+    'Inbox summary search requires count 1–25 and a nonblank keyword of at most 100 characters. Correct the input locally; no health check or retry is needed.',
 };
 export function failure(tool: string, code: string, hint?: string): McpText {
   const structuredContent = {
