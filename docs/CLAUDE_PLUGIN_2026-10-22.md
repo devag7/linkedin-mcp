@@ -1,5 +1,12 @@
 # Local Claude plugin candidate — October 22, 2026
 
+## October 30: 4.4.0 current build
+
+The builder pins verified public core 4.4.0. See the
+[4.4.0 distribution checkpoint](CLAUDE_DISTRIBUTION_4.4.0.md) for hashes,
+checks and public asset status. Older sections are preserved version-specific
+evidence; native 4.4.0 use remains unverified.
+
 ## October 29: 4.3.0 public-runtime build
 
 The current builder wraps the [independently verified public 4.3.0 core](RELEASE_EVIDENCE_4.3.0.md),

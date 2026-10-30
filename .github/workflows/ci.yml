@@ -116,5 +116,5 @@ jobs:
       - run: npm run build
       - name: Build, unpack and audit current candidate Claude bundle offline
         run: npm run build:claude-mcpb -- --from-source
-      - name: Build, unpack and audit pinned public 4.3.0 Claude plugin offline
+      - name: Build, unpack and audit pinned public 4.4.0 Claude plugin offline
         run: npm run build:claude-plugin

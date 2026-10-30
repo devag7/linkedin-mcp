@@ -1,0 +1,91 @@
+{
+  "version": "4.4.0",
+  "source": "87dae34902cc6f14d5c60a11a901808782a95555",
+  "reviewedSource": "f3c0643428e5710bfba925ff297419e0136d5f44",
+  "archiveSha256": "df8ecf6fa8d4143bbc8625b1f8b494e5a3445667b9134f8a94e9db614e2cc1a8",
+  "integrity": "sha512-o1gw/RBPp+/6R0V2smtwcb5PId7C/79WuP5c/aI54LJCAC6ez0rFkVlWjK75wtiAhNAnVCo9I9mizeoFlcu5Ng==",
+  "entries": 15,
+  "coreDestinations": {
+    "checkedAt": "2026-10-30T03:13:02.783835+00:00",
+    "version": "4.4.0",
+    "source": "87dae34902cc6f14d5c60a11a901808782a95555",
+    "npm": {
+      "url": "https://www.npmjs.com/package/linkedin-mcp-tools/v/4.4.0",
+      "sha256": "df8ecf6fa8d4143bbc8625b1f8b494e5a3445667b9134f8a94e9db614e2cc1a8",
+      "integrity": "sha512-o1gw/RBPp+/6R0V2smtwcb5PId7C/79WuP5c/aI54LJCAC6ez0rFkVlWjK75wtiAhNAnVCo9I9mizeoFlcu5Ng==",
+      "signaturesAndAttestationsVerified": true
+    },
+    "githubPackages": {
+      "url": "https://github.com/users/devag7/packages/npm/package/linkedin-mcp-tools",
+      "visibility": "public",
+      "archiveSha256": "0b6751367044bca1294968fab78b5f944f6c3b0eba4772e1c92ea4ea5d1061d2",
+      "filesAndModesEqualExceptScopedName": true,
+      "fileCount": 15,
+      "anonymousDownloadHttpStatus": 401,
+      "downloadsRequireAuthentication": true
+    },
+    "mcpRegistry": {
+      "url": "https://registry.modelcontextprotocol.io/v0.1/servers/io.github.devag7%2Flinkedin-mcp/versions/4.4.0",
+      "status": "active",
+      "sourcePackagesMatch": true
+    },
+    "githubRelease": {
+      "url": "https://github.com/devag7/linkedin-mcp/releases/tag/v4.4.0",
+      "draft": false,
+      "tagSourceMatches": true
+    },
+    "productRuntimeExecuted": false,
+    "linkedInRequests": 0
+  },
+  "registrySignaturesVerified": 2,
+  "attestationsVerified": 2,
+  "candidateCi": {
+    "run": 40928205284,
+    "passed": 14
+  },
+  "dryRun": {
+    "run": 40928200140,
+    "attempt": 2,
+    "passed": 10,
+    "actualCheckoutVerified": true,
+    "hostedLocalArchiveIdentical": true,
+    "publicationStepsSkipped": true,
+    "firstAttemptFailure": "Windows/Node20 PROCESS_SNAPSHOT_TIMEOUT before browser launch; cause unproven; preserved as failed"
+  },
+  "production": {
+    "run": 40933053202,
+    "attempt": 3,
+    "conclusion": "failure",
+    "successfulJobs": 9,
+    "uploadAttempt": 1,
+    "secondNpmUploadSkipped": true,
+    "visibilityFailurePreserved": true,
+    "genericFinalizerFailuresPreserved": [
+      2,
+      3
+    ]
+  },
+  "finalizationRecovery": {
+    "run": 40995717682,
+    "helperSource": "18879f09eed9f84f512c693bb511d8b8ad98aa70",
+    "coreSource": "87dae34902cc6f14d5c60a11a901808782a95555",
+    "conclusion": "success",
+    "jobsPassed": 1,
+    "packageUploads": 0,
+    "tagMutations": 0
+  },
+  "sourceAudit": {
+    "candidateObservedFindings": 0,
+    "postMergeDevelopmentFindings": 1,
+    "advisory": "GHSA-8g5g-mxqh-grgj",
+    "affectedDevelopmentLock": "Vite6.4.4",
+    "sourceRepair": "Vite6.4.5; see SECURITY_VITE_2026-10-30.md"
+  },
+  "consumerProductionFindings": 0,
+  "publisherAuditFindings": 0,
+  "participantAttempts": 0,
+  "newMandatoryServiceExpense": 0,
+  "native440Installation": false,
+  "linkedInRequests": 0,
+  "fullRoadmapComplete": false
+}

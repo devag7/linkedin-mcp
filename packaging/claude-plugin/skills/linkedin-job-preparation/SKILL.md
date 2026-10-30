@@ -54,3 +54,14 @@ anecdote or achievement. The questions are practice aids, not employer predictio
 Use the follow-up only as a fill-in template after the user verifies a real
 interview and recipient, and require human review. Do not send it, contact an
 employer, infer interview history or call provider tools for this local flow.
+
+## Optional follow-up timing queue
+
+When the user requests follow-up organization, inspect the tracker schema for
+`include_follow_up_plan` and `as_of`. Only if supported, ask the user to choose
+an explicit UTC comparison time and supply it together with the enabled flag.
+The groups contain zero-based references to the unchanged returned records.
+Resolve only those indices; overdue timing does not prove submission, permission
+to contact an employer or that a message is appropriate. Missing actions remain
+blank. Do not schedule notifications, send a message, store a tracker or call
+provider tools. Old/false calls retain their previous data and CSV.

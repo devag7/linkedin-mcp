@@ -1,7 +1,7 @@
 # Local follow-up plan — October 29, 2026
 
-Status: 4.4.0 release candidate, not in published 4.3.0. Check the
-[versioned release readiness](RELEASE_READINESS_4.4.0.md) before installing. This is an additive
+Status: published in 4.4.0, absent from older 4.3.0. Check the
+[versioned release evidence](RELEASE_EVIDENCE_4.4.0.md) before installing. This is an additive
 option on `export_application_tracker`; the tool count remains 24. The feature
 addresses the job-seeker roadmap's follow-up organization without introducing
 server-owned persistence or background account activity.

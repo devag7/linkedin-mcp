@@ -2,8 +2,8 @@
   "manifest_version": "0.3",
   "name": "linkedin-mcp-tools",
   "display_name": "LinkedIn MCP (local)",
-  "version": "4.3.0",
-  "description": "Local LinkedIn tools and offline application drafts. Account reads need manual login; browser writes are disabled by default. Optional offline interview practice uses only selected supplied evidence.",
+  "version": "4.4.0",
+  "description": "Local LinkedIn tools and offline application drafts. Account reads need manual login; browser writes are disabled by default. Optional offline interview practice uses only selected supplied evidence. Optional local follow-up timing schedules no notifications.",
   "author": {
     "name": "Dev Agarwalla",
     "url": "https://github.com/devag7"

@@ -1,0 +1,65 @@
+{
+  "scope": "Local build checkpoint; public distribution and native use remain separate gates",
+  "publicCoreSha256": "df8ecf6fa8d4143bbc8625b1f8b494e5a3445667b9134f8a94e9db614e2cc1a8",
+  "proposedFiles": [
+    {
+      "path": "scripts/build-claude-mcpb.mjs",
+      "baselineSha256": "5aea353c63974a44f31346ee4ca1e12f831a1b90f93e051faf07e51b987c1f14",
+      "proposedSha256": "f96ad7e678bfc5b9e027c7f01b65b4cc45fcb1ba6c97019f19719ad12aa3f4f1"
+    },
+    {
+      "path": "scripts/build-claude-plugin.mjs",
+      "baselineSha256": "60ebad556a42d2d368352a1252885f5047fd674417bf97d707e6ae00132f474f",
+      "proposedSha256": "37184ea5628286a5e3a64f91cf75dcc5a6347d8d57c13672f59666b557f7e1fb"
+    },
+    {
+      "path": "packaging/claude-desktop/manifest.json",
+      "baselineSha256": "f3069286a2648c3db3954787e497b2ada30b7320d35ce264ec9df0d4206aa32e",
+      "proposedSha256": "161029ecf37cfe664b121a259fc23d4f6514e950c0cb2025765eaf8d2bbf39fc"
+    },
+    {
+      "path": "packaging/claude-desktop/README.md",
+      "baselineSha256": "40aa13d0b1fd7da0cfe62bd3f7a37eeb599bf3cf35035b19d69bb3f4e2c013db",
+      "proposedSha256": "f09114ba01c3a3cf64c61ace2ea6ee502cb249a4da151919f1fadd0c76261428"
+    },
+    {
+      "path": "packaging/claude-plugin/.claude-plugin/plugin.json",
+      "baselineSha256": "63bd5ca9975010882c6ecea61b36c37cac4d8e3b23cb24dbde4c0a0a5a34caad",
+      "proposedSha256": "e279a28b38edb452bbe66afcb581160d39b1644a9f50fe725fc91f490fefa9e4"
+    },
+    {
+      "path": "packaging/claude-plugin/README.md",
+      "baselineSha256": "dd80f73ab0130ba19ef00b38e0066b9fa25e967d6ef4c0d394601b1bf80a3044",
+      "proposedSha256": "c438a7a470aa5828c154caedb52fadc9d89c06420cc84e19659cdd39a2ddca6b"
+    },
+    {
+      "path": "packaging/claude-plugin/skills/linkedin-job-preparation/SKILL.md",
+      "baselineSha256": "c41ce3df1387d5be7d4d8920949d4087482f3192b3a21eb5514bc3c53ba65958",
+      "proposedSha256": "cbce4c43dad84f3ed67a0bbd98e808f468e81d02d28273eb09bcd3883214a435"
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "baselineSha256": "a8a70c496f61b16ec64df523a604ff56c51351866cc542d622e4f260e4990722",
+      "proposedSha256": "a8953a1336bfe77ea1fe15ea8b5c0a902e2fbc66f7c68f2cd7e2d266ed3bec30"
+    }
+  ],
+  "assets": [
+    {
+      "name": "linkedin-mcp-tools-4.4.0.mcpb",
+      "sha256": "5c5ed372ca8958395da5d8e6703c7cfa961472392602a813f23c587eeea5adb9",
+      "size": 7953924
+    },
+    {
+      "name": "linkedin-mcp-local-4.4.0.zip",
+      "sha256": "6690f1e2f7b06cfdb8dbdaf595f1fdc5f78d3370870d702e1a9cecff04bf29e2",
+      "size": 9698868
+    }
+  ],
+  "linkedInRequests": 0,
+  "staticValidation": {
+    "client": "Claude Code 2.1.285",
+    "strict": true,
+    "isolatedConfig": true,
+    "pluginLoaded": false
+  }
+}
