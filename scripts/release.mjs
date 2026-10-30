@@ -7,6 +7,7 @@ import { setTimeout as delay } from 'node:timers/promises';
 export const NPM = 'https://registry.npmjs.org';
 export const GITHUB_PACKAGES = 'https://npm.pkg.github.com';
 export const REGISTRY = 'https://registry.modelcontextprotocol.io';
+export const RELEASE_USER_AGENT = 'linkedin-mcp-release-verification/4.4.0';
 const fail = (code) => {
   throw new Error(code);
 };
@@ -37,16 +38,29 @@ export function releaseIdentity(pkg, head, tagCommit) {
 }
 
 export async function readMetadata(url, { fetchImpl = fetch, token, method = 'GET', body } = {}) {
-  const headers = { Accept: 'application/json' };
+  const headers = { Accept: 'application/json', 'User-Agent': RELEASE_USER_AGENT };
   if (token) headers.Authorization = `Bearer ${token}`;
   if (body) headers['Content-Type'] = 'application/json';
-  const response = await fetchImpl(url, {
-    method,
-    headers,
-    body: body && JSON.stringify(body),
-    signal: AbortSignal.timeout(15_000),
-    redirect: 'error',
-  });
+  let response;
+  try {
+    response = await fetchImpl(url, {
+      method,
+      headers,
+      body: body && JSON.stringify(body),
+      signal: AbortSignal.timeout(15_000),
+      redirect: 'error',
+    });
+  } catch (error) {
+    const host = new URL(url).hostname;
+    const destination = {
+      'registry.npmjs.org': 'NPM',
+      'npm.pkg.github.com': 'GITHUB_PACKAGES',
+      'registry.modelcontextprotocol.io': 'REGISTRY',
+      'api.github.com': 'GITHUB_API',
+    }[host] ?? 'UNKNOWN';
+    const reason = ['TimeoutError', 'AbortError'].includes(error?.name) ? 'TIMEOUT' : 'TRANSPORT_FAILED';
+    fail(`DESTINATION_${destination}_${reason}`);
+  }
   if (response.status === 404 && method === 'GET') return null;
   if (!response.ok) fail(`DESTINATION_HTTP_${response.status}`);
   const reader = response.body?.getReader();

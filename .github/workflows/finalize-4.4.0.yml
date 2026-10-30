@@ -1,0 +1,47 @@
+name: Finalize verified 4.4.0
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_source:
+        description: 'Exact reviewed core source SHA to finalize; no uploads or tag moves'
+        required: true
+        type: string
+permissions:
+  contents: read
+concurrency:
+  group: finalize-verified-4.4.0
+  cancel-in-progress: false
+jobs:
+  finalize:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: write
+      packages: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          path: helper
+      - uses: actions/checkout@v4
+        with:
+          ref: 87dae34902cc6f14d5c60a11a901808782a95555
+          fetch-depth: 0
+          path: core
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-artifact
+          run-id: 40933053202
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: core
+      - name: Verify immutable prerequisites and finalize existing draft only
+        working-directory: core
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_DRY_RUN: 'false'
+          CONFIRM_SOURCE: ${{ inputs.confirm_source }}
+        run: node ../helper/scripts/finalize-verified-4.4.0.mjs

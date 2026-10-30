@@ -238,7 +238,7 @@ describe('independent npm and GitHub Packages checks', () => {
       () => {
         throw new Error('synthetic-network-failure');
       },
-      'synthetic-network-failure',
+      'DESTINATION_NPM_TRANSPORT_FAILED',
     ],
     ['malformed JSON', () => new Response('{not-json'), 'INVALID_DESTINATION_JSON'],
     [
