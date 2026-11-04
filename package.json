@@ -103,5 +103,8 @@
     "docs/PRIVACY.md",
     "docs/WORKFLOWS.md"
   ],
-  "mcpName": "io.github.devag7/linkedin-mcp"
+  "mcpName": "io.github.devag7/linkedin-mcp",
+  "overrides": {
+    "minimatch": "^11.0.4"
+  }
 }
