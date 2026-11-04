@@ -7,13 +7,24 @@ import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
 
+export const publisherNpmVersion = '12.2.1';
+// npm 12.2.1 already bundles the earlier brace-expansion, http-cache-semantics
+// and postcss-selector-parser fixes. These replacements cover what it still lacks.
 export const bundlePatches = {
-  'brace-expansion': ['5.0.9', '5.0.12'],
-  'http-cache-semantics': ['4.2.0', '4.3.0'],
-  'ip-address': ['10.5.0', '10.7.5'],
-  'postcss-selector-parser': ['7.1.4', '7.1.6'],
-  undici: ['6.28.0', '6.29.1'],
+  glob: ['13.0.6', '14.0.3'],
+  'ip-address': ['10.7.2', '10.7.5'],
+  minimatch: ['10.2.5', '11.0.4'],
+  'path-scurry': ['2.0.2', '3.0.0'],
+  undici: ['6.29.0', '6.29.1'],
 };
+// Major replacements whose declared dependencies legitimately differ from the
+// bundled version. Every other replacement must keep identical requirements.
+export const bundleDependencyChanges = {
+  glob: { minimatch: '^11.0.2', minipass: '^7.1.3', 'path-scurry': '^3.0.0' },
+  minimatch: { 'brace-expansion': '^5.0.12', '@isaacs/nonrecursive-glob-match': '^1.0.3' },
+};
+// New modules required by the replacements, copied into the bundle beside them.
+export const bundleAdditions = { '@isaacs/nonrecursive-glob-match': '1.0.3' };
 const read = (file) => JSON.parse(fs.readFileSync(file, 'utf8'));
 
 export function hardenPublisherCache(root) {
@@ -72,7 +83,7 @@ export function verifyPublisherCache(target) {
 export function patchPublisherBundles(root) {
   root = fs.realpathSync(root);
   const modules = path.join(root, 'node_modules');
-  assert.equal(read(path.join(modules, 'npm/package.json')).version, '12.2.0');
+  assert.equal(read(path.join(modules, 'npm/package.json')).version, publisherNpmVersion);
   const lockPath = path.join(root, 'package-lock.json');
   const lock = read(lockPath);
   // Validate every replacement before mutating anything. npm ignores overrides
@@ -90,10 +101,26 @@ export function patchPublisherBundles(root) {
     assert.equal(newPackage.name, name);
     assert.equal(oldPackage.version, before);
     assert.equal(newPackage.version, after);
-    assert.deepEqual(newPackage.dependencies ?? {}, oldPackage.dependencies ?? {});
+    assert.deepEqual(newPackage.dependencies ?? {}, bundleDependencyChanges[name] ?? oldPackage.dependencies ?? {},
+      `Unreviewed dependency change for ${name}`);
     assert.equal(lock.packages[`node_modules/npm/node_modules/${name}`].version, before);
     const entry = lock.packages[`node_modules/${name}`];
     assert.equal(entry.version, after);
+    assert.ok(entry.integrity.startsWith('sha512-'));
+    return { name, source, target, entry };
+  });
+  const additions = Object.entries(bundleAdditions).map(([name, version]) => {
+    const source = path.join(modules, name);
+    const target = path.join(modules, 'npm/node_modules', name);
+    assert.ok(fs.lstatSync(source).isDirectory(), 'Publisher module must be a directory');
+    assert.equal(fs.realpathSync(source), source, 'Publisher aliases are forbidden');
+    assert.equal(fs.existsSync(target), false, `Bundled ${name} already exists; review before adding`);
+    assert.equal(lock.packages[`node_modules/npm/node_modules/${name}`], undefined);
+    const pkg = read(path.join(source, 'package.json'));
+    assert.equal(pkg.name, name);
+    assert.equal(pkg.version, version);
+    const entry = lock.packages[`node_modules/${name}`];
+    assert.equal(entry.version, version);
     assert.ok(entry.integrity.startsWith('sha512-'));
     return { name, source, target, entry };
   });
@@ -104,7 +131,29 @@ export function patchPublisherBundles(root) {
     // a disposable installation receipt; the repository lock stays unchanged.
     lock.packages[`node_modules/npm/node_modules/${name}`] = { ...entry, inBundle: true };
   }
+  for (const { name, source, target, entry } of additions) {
+    fs.mkdirSync(path.dirname(target), { recursive: true });
+    fs.cpSync(source, target, { recursive: true });
+    lock.packages[`node_modules/npm/node_modules/${name}`] = { ...entry, inBundle: true };
+  }
   fs.writeFileSync(lockPath, JSON.stringify(lock, null, 2) + '\n');
+}
+
+/** Every replaced or added module must resolve its dependencies inside npm's bundle. */
+export function verifyBundleDependencies(root) {
+  root = fs.realpathSync(root);
+  const bundle = path.join(root, 'node_modules/npm/node_modules');
+  const semver = createRequire(path.join(bundle, 'semver', 'package.json'))('./index.js');
+  for (const name of [...Object.keys(bundlePatches), ...Object.keys(bundleAdditions)]) {
+    const dependencies = read(path.join(bundle, name, 'package.json')).dependencies ?? {};
+    for (const [dependency, range] of Object.entries(dependencies)) {
+      const dir = path.join(bundle, dependency);
+      assert.ok(fs.lstatSync(dir, { throwIfNoEntry: false })?.isDirectory(), `${name} needs bundled ${dependency}`);
+      assert.equal(fs.realpathSync(dir), dir, 'Publisher aliases are forbidden');
+      const { version } = read(path.join(dir, 'package.json'));
+      assert.ok(semver.satisfies(version, range), `${name} needs ${dependency}@${range}, bundle has ${version}`);
+    }
+  }
 }
 
 export function installPublisher(destination) {
@@ -117,6 +166,7 @@ export function installPublisher(destination) {
   const bootstrap = process.platform === 'win32' ? 'npm.cmd' : 'npm';
   execFileSync(bootstrap, ['ci', '--prefix', destination, '--engine-strict', '--ignore-scripts', '--omit=dev', '--no-audit', '--no-fund'], { stdio: 'inherit' });
   patchPublisherBundles(destination);
+  verifyBundleDependencies(destination);
   hardenPublisherCache(destination);
   const cli = path.join(destination, 'node_modules/npm/bin/npm-cli.js');
   execFileSync(process.execPath, [cli, 'audit', '--prefix', destination, '--omit=dev'], { stdio: 'inherit' });
