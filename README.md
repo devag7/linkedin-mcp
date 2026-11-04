@@ -130,7 +130,9 @@ not a guarantee of current provider compatibility or account safety.
 
 ## 🚀 Quick start
 
-Using Claude Code? See [Claude Code plugin](#claude-code-plugin).
+Using Claude Code? See [Claude Code plugin](#claude-code-plugin). Comparing
+Claude routes (plugin, MCPB, ZIP, JSON)? See
+[choose one Claude installation route](SETUP_GUIDE.md#choose-one-claude-installation-route).
 
 Use Node.js 20 or later and Google Chrome. The commands below target 4.4.0;
 check its [release availability](https://github.com/devag7/linkedin-mcp/releases/tag/v4.4.0)

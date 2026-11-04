@@ -7,7 +7,7 @@ Guidance for AI agents using or contributing to **LinkedIn MCP**
 
 An MCP server exposing LinkedIn to any MCP client (Claude, Cursor, …) as
 structured JSON. It drives a real stealth Chrome to pass Cloudflare, then calls
-LinkedIn's Voyager API from inside the authenticated page. Source 4.4.0 has
+LinkedIn's Voyager API from inside the authenticated page. Published 4.4.0 has
 24 tools, including two offline job-seeker tools introduced in 4.1.0.
 The earlier 4.0.0 had 22; publication is tracked in the version's release evidence.
 
@@ -15,6 +15,8 @@ The earlier 4.0.0 had 22; publication is tracked in the version's release eviden
 
 1. The human runs the one-time login: `npx -y linkedin-mcp-tools@latest --login`.
 2. Configure the MCP server: command `npx`, args `["-y","linkedin-mcp-tools@latest"]`.
+   Claude Code users can instead install the pinned 4.4.0 plugin; see
+   [SETUP_GUIDE.md](SETUP_GUIDE.md#choose-one-claude-installation-route). Pick one installation.
 3. Call tools. Reads return structured JSON. **Writes are disabled by default.** After deliberate runtime opt-in, preview
    with confirmation omitted/false, obtain explicit human approval, then submit
    identical action/target/content with `confirm: true`, returned `operation_id`

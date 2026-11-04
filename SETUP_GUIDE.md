@@ -12,6 +12,39 @@ Node 20+ and installed Google Chrome are required. Login requires a local displa
 No OAuth/cookie value copied into environment variables activates an official API
 provider. There is no dotenv loader; use your shell or your client's env settings.
 
+## Choose one Claude installation route
+
+Pick one installation: running two of these routes for the same client
+duplicates the tools and browser sessions. Every route below targets 4.4.0 with
+writes disabled. None of them is an Anthropic directory listing, and native
+4.4.0 installation in Claude has not been verified for any of them.
+
+| Route | For | Where to start |
+| --- | --- | --- |
+| Claude Code plugin | Claude Code | [Commands below](#claude-code-plugin) |
+| Desktop extension (`linkedin-mcp-tools-4.4.0.mcpb`) | Manual Claude Desktop extension install | [Claude Desktop extension](#claude-desktop-extension) |
+| Local plugin ZIP (`linkedin-mcp-local-4.4.0.zip`) | Local plugin trial with a reviewed, bundled dependency tree | [packaging/claude-plugin](packaging/claude-plugin/README.md) |
+| Generated JSON entry | Claude Desktop config file, Cursor, VS Code | [Guided offline first run](#guided-offline-first-run) with `--setup claude-desktop` |
+
+### Claude Code plugin
+
+From any terminal:
+
+```bash
+claude plugin marketplace add devag7/linkedin-mcp
+claude plugin install linkedin-mcp-source@devag7-linkedin-tools
+```
+
+Inside an interactive `claude` session the equivalents are
+`/plugin marketplace add devag7/linkedin-mcp` and
+`/plugin install linkedin-mcp-source@devag7-linkedin-tools`. Start a new Claude
+Code session afterwards. The plugin launches `linkedin-mcp-tools@4.4.0` through
+`npx` with writes disabled; account reads still need the one-time login
+(`npx -y linkedin-mcp-tools@4.4.0 --login`). Pick one installation: do not also
+add a JSON entry, the MCPB or the ZIP plugin. This is a community catalog, not an
+Anthropic directory listing. Review, removal and limits:
+[packaging/claude-source-plugin](packaging/claude-source-plugin/README.md).
+
 ## Guided offline first run
 
 After checking 4.4.0 availability and verification, install it at a stable path
@@ -53,10 +86,18 @@ Source contributors can instead run `npm ci`, `npm run build`, then
 
 ### Claude Desktop extension
 
+The unsigned `linkedin-mcp-tools-4.4.0.mcpb` and its `.sha256` companion are
+[4.4.0 Release assets](https://github.com/devag7/linkedin-mcp/releases/tag/v4.4.0).
+Verify the download against the checksum before installing it manually in Claude
+Desktop; it runs local Node code with your account's permissions. The
+[4.4.0 distribution record](docs/CLAUDE_DISTRIBUTION_4.4.0.md) covers its build,
+audit and asset checks; native 4.4.0 installation and account use remain
+unverified. Use it instead of, not alongside, the Claude Code plugin or a JSON
+entry. The default builder pins public 4.4.0 and keeps its zero-audit gate.
+
 The [unsigned 4.1.1 extension and checksum](https://github.com/devag7/linkedin-mcp/releases/tag/v4.1.1)
 remain historical identity evidence. Newly reported dependency findings mean
-they do not establish current security clearance. The default builder retains
-this exact public pin and its zero-audit gate.
+they do not establish current security clearance.
 
 The `--from-source` mode builds an explicitly unreleased checkout bundle for
 offline verification; it does not claim public artifact identity. Native
@@ -155,7 +196,8 @@ call may wait. HTTP is local-only and requires bearer authentication; see README
 | SDK stdio client | Node + absolute built binary | Executed from source and fresh installed tarball; no LinkedIn calls |
 | SDK loopback HTTP client | 127.0.0.1 URL + bearer header | Local protocol/security tests |
 | Claude Desktop / Cursor compatible JSON config | Example below | Configuration example; application UI/first read untested |
-| Claude Desktop local extension | Verified 4.1.1 `.mcpb` Release asset; hosted Mac/Windows cold/guard checks | Historical native 4.1.0 Mac 2.42304.0 discovery/cold/removal passed. Native 4.1.1 and live reads untested |
+| Claude Desktop local extension | 4.4.0 `.mcpb` Release asset with `.sha256` companion; earlier 4.1.1 asset had hosted Mac/Windows cold/guard checks | Historical native 4.1.0 Mac 2.42304.0 discovery/cold/removal passed. Native 4.1.1/4.4.0 and live reads untested |
+| Claude Code plugin | `linkedin-mcp-source@devag7-linkedin-tools` from this repository's marketplace | Static validation and SDK launch checks only; native Claude Code use and live reads untested |
 | Other MCP clients | Use their documented stdio settings | No compatibility claim until a client/OS/version record exists |
 
 For a client accepting `mcpServers`, use an absolute path to the built file:

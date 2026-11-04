@@ -2,7 +2,7 @@
 
 Local unofficial LinkedIn browser integration, package linkedin-mcp-tools.
 Read README.md, docs/CAPABILITIES.md, docs/WORKFLOWS.md and docs/PRIVACY.md.
-Published 4.1.0 has 24 tools; the inventory is generated from
+Published 4.4.0 has 24 tools; the inventory is generated from
 src/tools/capabilities.ts. prepare_job_application and
 export_application_tracker use supplied facts locally; neither fills,
 submits, or stores applications.
