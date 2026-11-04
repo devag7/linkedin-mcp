@@ -130,6 +130,8 @@ not a guarantee of current provider compatibility or account safety.
 
 ## 🚀 Quick start
 
+Using Claude Code? See [Claude Code plugin](#claude-code-plugin).
+
 Use Node.js 20 or later and Google Chrome. The commands below target 4.4.0;
 check its [release availability](https://github.com/devag7/linkedin-mcp/releases/tag/v4.4.0)
 and [verification status](https://github.com/devag7/linkedin-mcp/blob/main/docs/RELEASE_READINESS_4.4.0.md) before installing.
@@ -181,6 +183,26 @@ metadata, then close the session. Do not retry or write."* Stop at a checkpoint.
 Current provider availability is uncertain; preserve empty, partial and error
 statuses. First-use results across Claude Desktop, Cursor and VS Code have not yet
 been measured.
+
+### Claude Code plugin
+
+Claude Code users can skip step 3 and install the version-pinned plugin from this
+repository. From any terminal:
+
+```bash
+claude plugin marketplace add devag7/linkedin-mcp
+claude plugin install linkedin-mcp-source@devag7-linkedin-tools
+```
+
+Inside an interactive `claude` session the equivalents are
+`/plugin marketplace add devag7/linkedin-mcp` and
+`/plugin install linkedin-mcp-source@devag7-linkedin-tools`. Start a new Claude
+Code session afterwards. The plugin launches `linkedin-mcp-tools@4.4.0` through
+`npx` with writes disabled; account reads still need the one-time login
+(`npx -y linkedin-mcp-tools@4.4.0 --login`). Pick one installation: do not also
+add the JSON entry above or the MCPB. This is a community catalog, not an
+Anthropic directory listing. Review, removal and limits:
+[packaging/claude-source-plugin](packaging/claude-source-plugin/README.md).
 
 <details>
 <summary><b>From source / contributing</b></summary>
