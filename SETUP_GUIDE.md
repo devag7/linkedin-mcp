@@ -16,8 +16,10 @@ provider. There is no dotenv loader; use your shell or your client's env setting
 
 Pick one installation: running two of these routes for the same client
 duplicates the tools and browser sessions. Every route below targets 4.4.0 with
-writes disabled. None of them is an Anthropic directory listing, and native
-4.4.0 installation in Claude has not been verified for any of them.
+writes disabled. None of them is an Anthropic directory listing. Only the Claude
+Code plugin has a recorded native install and MCP connect check (macOS, Claude
+Code 2.1.285, 2026-11-04, no tool calls); native 4.4.0 installation of the other
+routes remains unverified.
 
 | Route | For | Where to start |
 | --- | --- | --- |
@@ -197,7 +199,7 @@ call may wait. HTTP is local-only and requires bearer authentication; see README
 | SDK loopback HTTP client | 127.0.0.1 URL + bearer header | Local protocol/security tests |
 | Claude Desktop / Cursor compatible JSON config | Example below | Configuration example; application UI/first read untested |
 | Claude Desktop local extension | 4.4.0 `.mcpb` Release asset with `.sha256` companion; earlier 4.1.1 asset had hosted Mac/Windows cold/guard checks | Historical native 4.1.0 Mac 2.42304.0 discovery/cold/removal passed. Native 4.1.1/4.4.0 and live reads untested |
-| Claude Code plugin | `linkedin-mcp-source@devag7-linkedin-tools` from this repository's marketplace | Static validation and SDK launch checks only; native Claude Code use and live reads untested |
+| Claude Code plugin | `linkedin-mcp-source@devag7-linkedin-tools` from this repository's marketplace | Native install and MCP connect checked on macOS with Claude Code 2.1.285 (2026-11-04, no tool calls); Windows/Linux, tool use and live reads untested |
 | Other MCP clients | Use their documented stdio settings | No compatibility claim until a client/OS/version record exists |
 
 For a client accepting `mcpServers`, use an absolute path to the built file:
