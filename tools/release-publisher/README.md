@@ -1,6 +1,6 @@
 # Isolated release publisher
 
-The release job uses npm 12.2.0 on hosted Node 22 (at least 22.22.2). Its OIDC
+The release job uses npm 12.2.1 on hosted Node 22 (at least 22.22.2). Its OIDC
 exchange writes credentials only to process configuration and reports failures
 without logging credentials. This installation never enters the 15-file package.
 
@@ -66,3 +66,29 @@ zero production audit and reports npm 12.2.0. The raw blueprint describes npm's
 original bundled modules and is not an installed-publisher audit. Baseline and
 repaired installation outputs are preserved in the [security repair evidence](../../docs/SECURITY_REPAIR_2026-10-26.md).
 No authentication, OIDC-only policy or publication permission changes.
+
+November 4: the installed CLI audit started failing on two moderate advisories
+published October 30 in npm's bundled glob and minimatch:
+[glob AbortSignal bypass](https://github.com/advisories/GHSA-3g3m-2fjr-6pw4)
+(fixed in 14.0.2) and
+[minimatch globparts DoS](https://github.com/advisories/GHSA-g3hv-75wg-m249)
+(fixed in 11.0.1). No npm release bundles either fix yet; npm 12.2.1 still
+requires minimatch ^10.2.5 and glob ^13.0.6. The publisher moves to npm 12.2.1,
+whose own bundle already includes the earlier brace-expansion 5.0.12,
+http-cache-semantics 4.3.0 and postcss-selector-parser 7.1.6 fixes, so those
+three replacements are retired. Locked replacements are now ip-address 10.7.5,
+undici 6.29.1, minimatch 11.0.4, glob 14.0.3 and path-scurry 3.0.0, plus the
+new minimatch dependency @isaacs/nonrecursive-glob-match 1.0.3 copied into the
+bundle (refused if npm already ships it).
+
+minimatch, glob and path-scurry are **major** replacements that npm has not
+shipped together. Their changed dependency requirements must match a reviewed
+table exactly; any other replacement must keep identical requirements. After
+patching, every replaced or added module must resolve satisfying versions of its
+dependencies inside npm's own bundle, using npm's bundled semver. The
+http-cache-semantics guard is unchanged: npm 12.2.1's file has the same reviewed
+SHA-256. npm calls glob only through `glob()`/`globSync()`, whose array results
+are unchanged in glob 14. Publication passes an already packed tarball, so npm's
+own file selection is not used to choose published bytes. Local evidence and
+smoke results are in the [November 4 publisher repair](../../docs/SECURITY_REPAIR_2026-11-04.md).
+Remove these majors once an npm release bundles fixed versions.
