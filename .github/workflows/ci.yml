@@ -37,7 +37,7 @@ jobs:
         run: node --import tsx scripts/prepare-windows-ci-temp.ts
 
       - name: Audit all locked dependencies
-        run: npm audit
+        run: pnpm audit
 
       - name: Check generated metadata
         run: pnpm run metadata:check

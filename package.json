@@ -110,6 +110,9 @@
   },
   "packageManager": "pnpm@10.34.9",
   "pnpm": {
+    "overrides": {
+      "minimatch": "^11.0.4"
+    },
     "onlyBuiltDependencies": [
       "esbuild"
     ]
