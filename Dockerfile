@@ -1,17 +1,18 @@
 # Experimental Linux recipe. Not a verified deployment/first-login path.
 FROM node:22-bookworm-slim AS builder
 WORKDIR /app
-COPY package.json package-lock.json ./
-RUN npm ci
+COPY package.json pnpm-lock.yaml ./
+RUN npm install -g pnpm@10.34.9 && pnpm install --frozen-lockfile
 COPY tsconfig.json ./
 COPY scripts/build.mjs ./scripts/
 COPY src/ ./src/
-RUN npm run build
+RUN pnpm run build
 
 FROM node:22-bookworm-slim
 WORKDIR /app
-COPY package.json package-lock.json ./
-RUN npm ci --omit=dev && npx patchright install --with-deps chrome && npm cache clean --force
+COPY package.json pnpm-lock.yaml ./
+RUN npm install -g pnpm@10.34.9 && pnpm install --frozen-lockfile --prod \
+ && pnpm exec patchright install --with-deps chrome && pnpm store prune && npm cache clean --force
 COPY --from=builder /app/dist ./dist
 COPY LICENSE README.md ./
 USER node

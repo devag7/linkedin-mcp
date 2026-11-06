@@ -212,11 +212,11 @@ Anthropic directory listing. Review, removal and limits:
 ```bash
 git clone https://github.com/devag7/linkedin-mcp.git
 cd linkedin-mcp
-npm ci
-npm run setup:browser     # installs the Chrome patchright drives
-npm run login             # manual account login; only with your deliberate consent
-npm run spike             # live own-profile request; requires separate authorization
-npm run build             # produces dist/
+pnpm install
+pnpm run setup:browser     # installs the Chrome patchright drives
+pnpm run login             # manual account login; only with your deliberate consent
+pnpm run spike             # live own-profile request; requires separate authorization
+pnpm run build             # produces dist/
 node dist/index.js --doctor # local setup checks; no browser or network
 npm run verify:package     # install/test the packed artifact offline against LinkedIn
 ```
@@ -227,7 +227,7 @@ MCP config: `"command": "node", "args": ["/absolute/path/to/dist/index.js"]`.
 ### Diagnose this source checkout
 
 ```bash
-npm run build
+pnpm run build
 node dist/index.js --doctor
 ```
 
@@ -258,7 +258,7 @@ proxies, browser CORS clients, and serverless deployment are unsupported.
 Generate a local secret and start the server from this checkout:
 
 ```bash
-npm run build
+pnpm run build
 export LINKEDIN_HTTP_TOKEN="$(node -e 'console.log(require("node:crypto").randomBytes(32).toString("hex"))')"
 node dist/index.js --transport http --port 3000
 ```
@@ -443,7 +443,7 @@ See [write evidence](docs/PHASE0_WRITE_EVIDENCE.md) and
 
 ## Offline walkthrough
 
-Build this checkout, then run `npm run demo:offline`. It makes real local MCP
+Build this checkout, then run `pnpm run demo:offline`. It makes real local MCP
 calls with synthetic inputs and a persisted stop: cold status, capabilities, a
 reviewable draft preview, blocked read and clean close. It opens no browser and
 sends no LinkedIn request. [Dated sample output](docs/OFFLINE_DEMO.txt) is labeled
@@ -472,10 +472,10 @@ passed locally on Node 22; container display/login and runtime remain unverified
 ## 🛠 Development
 
 ```bash
-npm run dev          # run from source (stdio)
-npm run typecheck
-npm test             # vitest (safety layer + smoke)
-npm run build
+pnpm run dev          # run from source (stdio)
+pnpm run typecheck
+pnpm test             # vitest (safety layer + smoke)
+pnpm run build
 ```
 
 ---

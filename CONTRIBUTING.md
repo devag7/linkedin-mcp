@@ -6,15 +6,15 @@ preserve user work. Use TypeScript with strict types. The active runtime is
 `src/server.ts` → browser/guard/tools; v1 auth/client/middleware code is isolated
 and does not provide a shipped OAuth adapter.
 
-Install with `npm ci`. Normal development and tests never need a LinkedIn account
+Install with `pnpm install`. Normal development and tests never need a LinkedIn account
 or a browser launch. Before submitting code, run:
 
 ```bash
-npm run metadata:check
-npm run lint
-npm run typecheck
-npm test
-npm run build
+pnpm run metadata:check
+pnpm run lint
+pnpm run typecheck
+pnpm test
+pnpm run build
 npm run verify:package
 ```
 
@@ -26,7 +26,7 @@ Never commit cookies, tokens, real member IDs or message/profile text.
 To change a tool, use `src/tools/register.ts` for native output schemas,
 annotations and registration tracking; update `contracts.ts`, `capabilities.ts`,
 and protocol cases in `tests/contracts.test.ts`. Generate metadata with
-`npm run metadata:sync`. Maintain text JSON for existing clients, error codes,
+`pnpm run metadata:sync`. Maintain text JSON for existing clients, error codes,
 explicit partial state, bounded results and one-page calls. Do not invent a
 continuation token or silently crawl. Profile fanout is explicitly bounded.
 
@@ -47,7 +47,7 @@ Useful contributions: consented locale/browser fixture coverage, supported-clien
 first-use evidence, accessible troubleshooting, and bounded research examples.
 An issue should describe a user problem and evidence rather than a growth promise.
 
-For release or browser changes, run `npm run verify:browser` with installed Chrome.
+For release or browser changes, run `pnpm run verify:browser` with installed Chrome.
 It uses an empty temporary profile and local content; it does not log in or open
 LinkedIn. Review [release/dependency evidence](docs/ZERO_COST_EXECUTION_EVIDENCE_2026-10-01.md)
 before publication. Normal fixture tests disable the Vitest API; do not expose

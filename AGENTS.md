@@ -49,8 +49,8 @@ pacing for real use, and stop immediately if `health_check` reports a checkpoint
 
 ## Contributing (code agents)
 
-- TypeScript, strict. `npm run build` (esbuild), `npm run typecheck`, `npm test`
-  (vitest), `npm run lint` (eslint) — all must pass; CI enforces them.
+- TypeScript, strict. `pnpm run build` (esbuild), `pnpm run typecheck`, `pnpm test`
+  (vitest), `pnpm run lint` (eslint) — all must pass; CI enforces them.
 - Voyager endpoints rotate. Write endpoint shapes are captured live via
   `--writecapture` (intercept the SPA's POST, abort it — zero side effects) and
   verified via `--writeprobe`; do not guess payloads.
