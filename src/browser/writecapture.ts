@@ -179,6 +179,56 @@ export async function runWriteCapture(config: EnvConfig, logger: Logger): Promis
       await captureMessage(page, logger);
     }
 
+    // ── profile edits (manual UI drive; POSTs intercepted+aborted) ──────────
+    // These sections do NOT automate the edit UI — LinkedIn's selectors rotate
+    // too fast and the risk of a wrong click is too high. Instead, each section
+    // navigates to your profile and waits while YOU perform the edit manually.
+    // The interceptor captures every Voyager POST fired during the wait window.
+    // Abort with Ctrl+C between sections if you only want one.
+    const profileWait = async (label: string, hint: string) => {
+      currentLabel = label;
+      process.stderr.write(`\n========== ${label} (manual edit) ==========\n`);
+      process.stderr.write(`  👉 ${hint}\n`);
+      process.stderr.write('  The interceptor records every Voyager POST for ~75s. Perform the edit now.\n');
+      try {
+        await page.goto(`${ORIGIN}/in/me/`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+      } catch (e) {
+        process.stderr.write(`  (nav warn: ${e instanceof Error ? e.message : String(e)})\n`);
+      }
+      await page.waitForTimeout(75000);
+    };
+
+    if (want('profile_headline')) {
+      await profileWait(
+        'profile_headline',
+        'Click the pencil next to your headline/name, change the headline text, click Save (intercepted — nothing saves).',
+      );
+    }
+    if (want('profile_about')) {
+      await profileWait(
+        'profile_about',
+        'Scroll to the About section, click its pencil, edit the summary, click Save (intercepted).',
+      );
+    }
+    if (want('profile_experience')) {
+      await profileWait(
+        'profile_experience',
+        'Go to Experience: click + to add (or pencil to edit) an entry, fill fields, click Save (intercepted).',
+      );
+    }
+    if (want('profile_education')) {
+      await profileWait(
+        'profile_education',
+        'Go to Education: click + to add (or pencil to edit) an entry, fill fields, click Save (intercepted).',
+      );
+    }
+    if (want('profile_skills')) {
+      await profileWait(
+        'profile_skills',
+        'Go to Skills: click + to add a skill (or X to remove), confirm (intercepted).',
+      );
+    }
+
     // ── diagnose the 401 surfaces: let the SPA load them and watch statuses ──
     currentLabel = 'diagnose';
     if (only) {
