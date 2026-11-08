@@ -52,14 +52,6 @@ function shortPath(url: string): string | undefined {
   }
 }
 
-/** Heuristic: is this voyager path a write (a mutation), not a read? */
-function looksLikeWrite(method: string, path: string): boolean {
-  if (method !== 'POST') return false;
-  return /normInvitations|invitation|messag|normShares|contentcreation|Shares|reaction|Reaction|comment|Comment|relationships|memberRelationships|graphql/i.test(
-    path,
-  );
-}
-
 export async function runWriteCapture(config: EnvConfig, logger: Logger): Promise<void> {
   const engine = new BrowserEngine(config, logger);
   const captured: CapturedWrite[] = [];
@@ -105,21 +97,20 @@ export async function runWriteCapture(config: EnvConfig, logger: Logger): Promis
     await context.route('**/voyager/api/**', async (route: Route) => {
       const req = route.request();
       const p = shortPath(req.url());
-      if (req.method() === 'POST') {
-        // Diagnostic mode: let the SPA's OWN share mutation actually send, to see
-        // whether posting works at all on this account (replay-gap vs restriction).
+      const method = req.method();
+      // Log EVERY non-GET request (profile edits may use POST/PUT/PATCH/DELETE
+      // and may not match the looksLikeWrite heuristic). Abort all of them so
+      // nothing actually saves.
+      if (method !== 'GET' && method !== 'HEAD' && method !== 'OPTIONS') {
+        captured.push({ label: currentLabel, method, path: p ?? req.url(), postData: req.postData() ?? undefined });
+        process.stderr.write(`\n  🎯 [${currentLabel}] CAPTURED ${method} ${p ?? req.url()}\n`);
+        const pd = req.postData();
+        if (pd) process.stderr.write(`     body: ${pd.length > 3000 ? pd.slice(0, 3000) + '…' : pd}\n`);
+        // Diagnostic mode: let the SPA's OWN share mutation actually send.
         if (process.env.CAPTURE_LET_POST === '1' && p && /voyagerContentcreationDashShares\./.test(p)) {
           process.stderr.write(`\n  ➡️  [${currentLabel}] LETTING SHARE MUTATION THROUGH (diagnostic) ${p}\n`);
           await route.continue();
           return;
-        }
-        if (p && looksLikeWrite(req.method(), p)) {
-          captured.push({ label: currentLabel, method: req.method(), path: p, postData: req.postData() ?? undefined });
-          process.stderr.write(`\n  🎯 [${currentLabel}] CAPTURED POST ${p}\n`);
-          const pd = req.postData();
-          if (pd) process.stderr.write(`     body: ${pd.length > 1500 ? pd.slice(0, 1500) + '…' : pd}\n`);
-        } else {
-          process.stderr.write(`\n  ⛔ [${currentLabel}] BLOCKED unrecognized POST ${p ?? req.url()}\n`);
         }
         await route.abort('failed'); // never actually send ANY write
         return;
@@ -189,13 +180,13 @@ export async function runWriteCapture(config: EnvConfig, logger: Logger): Promis
       currentLabel = label;
       process.stderr.write(`\n========== ${label} (manual edit) ==========\n`);
       process.stderr.write(`  👉 ${hint}\n`);
-      process.stderr.write('  The interceptor records every Voyager POST for ~75s. Perform the edit now.\n');
+      process.stderr.write('  The interceptor records every Voyager request for ~90s. Perform the edit now. DO NOT close the browser window.\n');
       try {
         await page.goto(`${ORIGIN}/in/me/`, { waitUntil: 'domcontentloaded', timeout: 30000 });
       } catch (e) {
         process.stderr.write(`  (nav warn: ${e instanceof Error ? e.message : String(e)})\n`);
       }
-      await page.waitForTimeout(75000);
+      await page.waitForTimeout(90000);
     };
 
     if (want('profile_headline')) {
