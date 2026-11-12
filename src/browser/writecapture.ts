@@ -94,13 +94,17 @@ export async function runWriteCapture(config: EnvConfig, logger: Logger): Promis
     // — even an unrecognized mutation the SPA auto-issues on a diagnose nav. We
     // still record the writes we recognize for the payload catalog; the rest are
     // aborted-and-logged. Reads (GET) pass through untouched.
-    await context.route('**/voyager/api/**', async (route: Route) => {
+    await context.route('**/*', async (route: Route) => {
       const req = route.request();
-      const p = shortPath(req.url());
+      const url = req.url();
+      const p = shortPath(url) ?? url;
       const method = req.method();
       // Log EVERY non-GET request (profile edits may use POST/PUT/PATCH/DELETE
       // and may not match the looksLikeWrite heuristic). Abort all of them so
       // nothing actually saves.
+      // Skip static assets and tracking pixels
+      const isStatic = /\.(js|css|png|jpg|jpeg|gif|svg|ico|woff2?|ttf|eot|map)(\?|$)/i.test(url) || /\/li\/track/i.test(url);
+      if (isStatic) { await route.continue(); return; }
       if (method !== 'GET' && method !== 'HEAD' && method !== 'OPTIONS') {
         captured.push({ label: currentLabel, method, path: p ?? req.url(), postData: req.postData() ?? undefined });
         process.stderr.write(`\n  🎯 [${currentLabel}] CAPTURED ${method} ${p ?? req.url()}\n`);
