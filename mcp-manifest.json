@@ -305,6 +305,30 @@
       "offlineCheckedAt": "2026-10-21",
       "liveCheckedAt": null,
       "availability": "disabled"
+    },
+    {
+      "name": "update_profile_headline",
+      "route": "SDUI profile editor UI: headlineIntroForm",
+      "source": "voyager",
+      "permission": "alpha_write_opt_in_and_user_confirmation",
+      "write": true,
+      "provider": "local_browser_unofficial",
+      "verification": "offline_contract_tested",
+      "offlineCheckedAt": "2026-10-21",
+      "liveCheckedAt": null,
+      "availability": "disabled"
+    },
+    {
+      "name": "update_profile_about",
+      "route": "SDUI profile editor UI: aboutIntroForm",
+      "source": "voyager",
+      "permission": "alpha_write_opt_in_and_user_confirmation",
+      "write": true,
+      "provider": "local_browser_unofficial",
+      "verification": "offline_contract_tested",
+      "offlineCheckedAt": "2026-10-21",
+      "liveCheckedAt": null,
+      "availability": "disabled"
     }
   ]
 }

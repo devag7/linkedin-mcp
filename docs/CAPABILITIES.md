@@ -28,6 +28,8 @@ Generated from src/tools/capabilities.ts for linkedin-mcp-tools v4.1.1.
 | create_post | voyagerFeedDashCreateShare | voyager | alpha_write_opt_in_and_user_confirmation | — | offline_contract_tested (2026-10-21) | Unchecked |
 | react_to_post | voyagerSocialDashReactions | voyager | alpha_write_opt_in_and_user_confirmation | — | offline_contract_tested (2026-10-21) | Unchecked |
 | comment_on_post | voyagerSocialDashNormComments | voyager | alpha_write_opt_in_and_user_confirmation | — | offline_contract_tested (2026-10-21) | Unchecked |
+| update_profile_headline | SDUI profile editor UI: headlineIntroForm | voyager | alpha_write_opt_in_and_user_confirmation | — | offline_contract_tested (2026-10-21) | Unchecked |
+| update_profile_about | SDUI profile editor UI: aboutIntroForm | voyager | alpha_write_opt_in_and_user_confirmation | — | offline_contract_tested (2026-10-21) | Unchecked |
 
 These are synthetic contract and registration checks, not current LinkedIn observations. Historical capture comments are retained in endpoints.ts and are not promoted to current live checks. No endpoint has a new live capture here. DOM selectors have no multi-locale browser integration evidence. whoami supplies this inventory and the actual runtime write policy; it never guesses provider availability.
 

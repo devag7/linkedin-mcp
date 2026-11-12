@@ -388,13 +388,13 @@ See [write evidence](docs/PHASE0_WRITE_EVIDENCE.md) and
 
 <!-- capabilities:start -->
 
-24 registered tools. Native contract version 1 returns structuredContent and identical JSON text, with fetchedAt, source, partial and status metadata. [Full route and verification inventory](docs/CAPABILITIES.md).
+26 registered tools. Native contract version 1 returns structuredContent and identical JSON text, with fetchedAt, source, partial and status metadata. [Full route and verification inventory](docs/CAPABILITIES.md).
 
 | Group | Tools |
 | --- | --- |
 | Session | `whoami`, `health_check`, `close_session` |
 | Reads | `get_my_profile`, `get_profile`, `get_feed`, `get_notifications`, `search_people`, `search_jobs`, `get_inbox`, `get_job_details`, `prepare_job_application`, `export_application_tracker`, `search_companies`, `get_company`, `get_company_posts`, `get_company_employees`, `get_pending_invitations`, `get_conversation` |
-| Opt-in alpha writes | `connect_with_person`, `send_message`, `create_post`, `react_to_post`, `comment_on_post` |
+| Opt-in alpha writes | `connect_with_person`, `send_message`, `create_post`, `react_to_post`, `comment_on_post`, `update_profile_headline`, `update_profile_about` |
 
 <!-- capabilities:end -->
 

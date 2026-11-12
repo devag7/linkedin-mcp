@@ -29,6 +29,7 @@ import { registerFeedTools } from './tools/feed.js';
 import { registerDiscoveryTools } from './tools/discovery.js';
 import { registerApplicationTools } from './tools/application.js';
 import { registerWriteTools } from './tools/write.js';
+import { registerProfileEditTools } from './tools/profile-edit.js';
 import { VERSION } from './version.js';
 import { registeredToolNames } from './tools/register.js';
 import type { CapabilityPolicy } from './tools/capabilities.js';
@@ -101,6 +102,7 @@ export function createServer(
   registerDiscoveryTools(server, voyager, engine, guard, logger);
   registerApplicationTools(server);
   registerWriteTools(server, voyager, guard, logger, policy);
+  registerProfileEditTools(server, engine, voyager, guard, logger, policy);
   logger.info('MCP server created', {
     version: VERSION,
     tools: registeredToolNames(server).length,

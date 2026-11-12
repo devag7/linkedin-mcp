@@ -17,7 +17,13 @@ export interface WriteOutcome {
   detail?: string;
 }
 
-export type WriteKind = 'connect' | 'message' | 'post' | 'react' | 'comment';
+export type WriteKind =
+  | 'connect'
+  | 'message'
+  | 'post'
+  | 'react'
+  | 'comment'
+  | 'profile-edit';
 export type OperationOutcome = WriteOutcome & { operationId: string; replayed: boolean };
 export const UNKNOWN_WRITE_DETAIL =
   'The request may have reached LinkedIn. Inspect the target manually before considering another operation. This operation ID will not submit again.';

@@ -18,7 +18,7 @@ import { CAPABILITIES, type ToolName, type CapabilityPolicy } from './capabiliti
 const CONFIRM_HINT =
   'Review the exact target, content and effect. Only after user approval, repeat these inputs with the preview operationId, preview_token and confirm:true. Alpha writes also require runtime opt-in.';
 
-function review(
+export function review(
   action: ToolName,
   target: string,
   content: Record<string, unknown>,
@@ -60,7 +60,7 @@ function review(
   return undefined;
 }
 
-const confirmField = {
+export const confirmField = {
   preview_token: z
     .string()
     .regex(/^[A-Za-z0-9_-]{43}$/)
