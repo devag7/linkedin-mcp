@@ -59,14 +59,20 @@ async function buildProfile(voyager: VoyagerClient, slug: string): Promise<unkno
   let skills: unknown[] = [];
   let certifications: unknown[] = [];
   let languages: unknown[] = [];
+  let projects: unknown[] = [];
+  let honors: unknown[] = [];
+  let volunteering: unknown[] = [];
   if (fsd) {
     // Sections lazy-load independently; fetch in parallel.
-    const [exp, edu, sk, certs, langs] = await Promise.all([
+    const [exp, edu, sk, certs, langs, proj, hon, vol] = await Promise.all([
       section(voyager, fsd, 'experience'),
       section(voyager, fsd, 'education'),
       section(voyager, fsd, 'skills'),
       section(voyager, fsd, 'certifications'),
       section(voyager, fsd, 'languages'),
+      section(voyager, fsd, 'projects'),
+      section(voyager, fsd, 'honors'),
+      section(voyager, fsd, 'volunteering'),
     ]);
     experience = exp.map((e) => ({
       title: e.title,
@@ -78,6 +84,9 @@ async function buildProfile(voyager: VoyagerClient, slug: string): Promise<unkno
     skills = sk.map((e) => ({ name: e.title, detail: e.subtitle }));
     certifications = certs.map((e) => ({ name: e.title, issuer: e.subtitle, dates: e.caption }));
     languages = langs.map((e) => ({ name: e.title, proficiency: e.subtitle }));
+    projects = proj.map((e) => ({ title: e.title, description: e.subtitle, dates: e.caption, meta: e.meta }));
+    honors = hon.map((e) => ({ title: e.title, issuer: e.subtitle, dates: e.caption }));
+    volunteering = vol.map((e) => ({ role: e.title, organization: e.subtitle, dates: e.caption, meta: e.meta }));
   }
 
   // Drop the (empty) typed arrays from the core and attach the rich ones.
@@ -91,6 +100,9 @@ async function buildProfile(voyager: VoyagerClient, slug: string): Promise<unkno
     skills,
     certifications,
     languages,
+    projects,
+    honors,
+    volunteering,
     sourceUrl: `https://www.linkedin.com/in/${encodeURIComponent(slug)}/`,
   };
 }

@@ -109,10 +109,29 @@ export async function runWriteCapture(config: EnvConfig, logger: Logger): Promis
         captured.push({ label: currentLabel, method, path: p ?? req.url(), postData: req.postData() ?? undefined });
         process.stderr.write(`\n  🎯 [${currentLabel}] CAPTURED ${method} ${p ?? req.url()}\n`);
         const pd = req.postData();
-        if (pd) process.stderr.write(`     body: ${pd.length > 3000 ? pd.slice(0, 3000) + '…' : pd}\n`);
+        if (pd) {
+         process.stderr.write(`     body: ${pd.length > 3000 ? pd.slice(0, 3000) + '…' : pd}\n`);
+         try {
+           const fs = await import('node:fs');
+           const label = currentLabel.replace(/[^a-zA-Z0-9_-]/g, '_');
+           const fname = `/tmp/opencode/capture_${label}_${Date.now()}.json`;
+           fs.writeFileSync(fname, pd);
+           process.stderr.write(`     full body saved to ${fname}\n`);
+         } catch (e) {
+           process.stderr.write(`     (could not save body: ${e instanceof Error ? e.message : String(e)})\n`);
+         }
+       }
         // Diagnostic mode: let the SPA's OWN share mutation actually send.
         if (process.env.CAPTURE_LET_POST === '1' && p && /voyagerContentcreationDashShares\./.test(p)) {
           process.stderr.write(`\n  ➡️  [${currentLabel}] LETTING SHARE MUTATION THROUGH (diagnostic) ${p}\n`);
+          await route.continue();
+          return;
+        }
+        // Diagnostic mode: let profile save requests through so LinkedIn doesn't error.
+        if (process.env.CAPTURE_LET_PROFILE_SAVE === '1' && p && /saveProfileIntroForm/.test(p)) {
+          process.stderr.write('
+  >>> [' + "" + '] LETTING PROFILE SAVE THROUGH (diagnostic) ' + "" + '
+');
           await route.continue();
           return;
         }
