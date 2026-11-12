@@ -129,9 +129,7 @@ export async function runWriteCapture(config: EnvConfig, logger: Logger): Promis
         }
         // Diagnostic mode: let profile save requests through so LinkedIn doesn't error.
         if (process.env.CAPTURE_LET_PROFILE_SAVE === '1' && p && /saveProfileIntroForm/.test(p)) {
-          process.stderr.write('
-  >>> [' + "" + '] LETTING PROFILE SAVE THROUGH (diagnostic) ' + "" + '
-');
+          process.stderr.write('\n  >>> [' + currentLabel + '] LETTING PROFILE SAVE THROUGH (diagnostic) ' + p + '\n');
           await route.continue();
           return;
         }
