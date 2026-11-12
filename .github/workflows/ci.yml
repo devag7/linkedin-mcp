@@ -21,36 +21,38 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
       - name: Setup Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-          cache: npm
+          cache: pnpm
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Keep Windows fixtures under the current user profile
         if: runner.os == 'Windows'
         run: node --import tsx scripts/prepare-windows-ci-temp.ts
 
       - name: Audit all locked dependencies
-        run: npm audit
+        run: pnpm audit
 
       - name: Check generated metadata
-        run: npm run metadata:check
+        run: pnpm run metadata:check
 
       - name: Lint
-        run: npm run lint
+        run: pnpm run lint
 
       - name: Type check
-        run: npm run typecheck
+        run: pnpm run typecheck
 
       - name: Test
-        run: npm test
+        run: pnpm test
 
       - name: Build
-        run: npm run build
+        run: pnpm run build
 
       - name: Verify build output
         run: node dist/index.js --version
@@ -65,15 +67,17 @@ jobs:
         node-version: [20, 22]
     steps:
       - uses: actions/checkout@v4
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-          cache: npm
-      - run: npm ci
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
       - name: Keep Windows fixtures under the current user profile
         if: runner.os == 'Windows'
         run: node --import tsx scripts/prepare-windows-ci-temp.ts
-      - run: npm run build
+      - run: pnpm run build
       - name: Install packed package and verify offline CLI and MCP
         run: npm run verify:package
 
@@ -92,7 +96,7 @@ jobs:
         if: runner.os == 'macOS'
         run: node -e 'require("node:fs").accessSync("/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", require("node:fs").constants.X_OK)'
       - name: Verify actual Chrome launch, ownership and cleanup without LinkedIn
-        run: npm run verify:browser
+        run: pnpm run verify:browser
 
   claude-bundle:
     name: Claude packages (${{ matrix.os }}, Node 22)
@@ -103,17 +107,19 @@ jobs:
         os: [macos-latest, windows-latest]
     steps:
       - uses: actions/checkout@v4
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
-      - run: npm ci
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
       - name: Keep Windows bundle fixtures under the current user profile
         if: runner.os == 'Windows'
         run: node --import tsx scripts/prepare-windows-ci-temp.ts
       - name: Reject unexpected private plugin template files
         run: node --test scripts/claude-plugin-template.test.mjs scripts/claude-source-plugin.test.mjs
-      - run: npm run build
+      - run: pnpm run build
       - name: Build, unpack and audit current candidate Claude bundle offline
         run: npm run build:claude-mcpb -- --from-source
       - name: Build, unpack and audit pinned public 4.4.0 Claude plugin offline

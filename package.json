@@ -25,7 +25,7 @@
     "format": "prettier --write 'src/**/*.ts'",
     "format:check": "prettier --check 'src/**/*.ts'",
     "clean": "rm -rf dist",
-    "prepublishOnly": "npm run build",
+    "prepublishOnly": "pnpm run build",
     "metadata:sync": "tsx scripts/sync-metadata.ts",
     "metadata:check": "tsx scripts/sync-metadata.ts --check",
     "demo:offline": "node scripts/demo-offline.mjs",
@@ -49,6 +49,7 @@
     "esbuild": "^0.28.2",
     "eslint": "^9.27.0",
     "prettier": "^3.5.3",
+    "semver": "7.8.4",
     "tsx": "^4.19.4",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.61.0",
@@ -106,5 +107,14 @@
   "mcpName": "io.github.devag7/linkedin-mcp",
   "overrides": {
     "minimatch": "^11.0.4"
+  },
+  "packageManager": "pnpm@10.34.9",
+  "pnpm": {
+    "overrides": {
+      "minimatch": "^11.0.4"
+    },
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
   }
 }

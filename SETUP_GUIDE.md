@@ -6,7 +6,7 @@ and the [readiness record](https://github.com/devag7/linkedin-mcp/blob/main/docs
 before installing. These instructions do not establish publication. Historical
 4.1.1 bytes have newly reported dependency advisories; their publication receipts
 are identity evidence, not current security clearance. For offline source setup,
-use a reviewed checkout with `npm run build` and `node dist/index.js --setup cursor`.
+use a reviewed checkout with `pnpm run build` and `node dist/index.js --setup cursor`.
 Native first-use and broader live compatibility remain unproven.
 Node 20+ and installed Google Chrome are required. Login requires a local display.
 No OAuth/cookie value copied into environment variables activates an official API
@@ -83,7 +83,7 @@ every state path outside the actual `%USERPROFILE%` tree and passed hosted
 second-user tests and remains in 4.1.1; see the
 [4.0.0 migration notes](docs/RELEASE_NOTES_4.0.0.md#upgrade-notes-and-limits).
 
-Source contributors can instead run `npm ci`, `npm run build`, then
+Source contributors can instead run `pnpm install`, `pnpm run build`, then
 `node dist/index.js --setup cursor` from a stable reviewed checkout.
 
 ### Claude Desktop extension
@@ -163,14 +163,14 @@ Claude Desktop/Cursor exports use `mcpServers`; VS Code exports target native
 also supported by the client but is not the selected export format. The generated
 commands are arrays, so paths with spaces require no shell-escaping guesses.
 
-`npm run verify:setup` tests all three generated entries with a real SDK client and
+`pnpm run verify:setup` tests all three generated entries with a real SDK client and
 an offline stop fixture. The installed tarball test repeats it. VS Code 1.139.1 also accepted the native export, launched it and discovered 22 tools on the earlier setup-only build in a disposable stopped profile. Claude/Cursor UI acceptance, full chat flows and authorized live first reads remain separate evidence gates.
 See the [execution plan](docs/PRODUCT_EXECUTION_PLAN_2026.md) for current proposals,
 maintenance/cash estimates and distribution measures.
 
 ```bash
-npm ci
-npm run build
+pnpm install
+pnpm run build
 node dist/index.js --doctor
 ```
 
@@ -233,7 +233,7 @@ service. Do not expose container HTTP ports; the listener binds only to loopback
 
 ## Local browser lifecycle evidence
 
-On 2026-10-01, the source-only `npm run verify:browser` check passed on macOS /
+On 2026-10-01, the source-only `pnpm run verify:browser` check passed on macOS /
 Node22.14.0 / Chrome154 with an empty temporary profile, synthetic local content,
 observed process cleanup and released ownership. This is a browser lifecycle
 check, not a LinkedIn first read or client-application certification. See the

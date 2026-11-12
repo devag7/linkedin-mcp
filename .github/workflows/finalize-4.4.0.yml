@@ -29,6 +29,8 @@ jobs:
           ref: 87dae34902cc6f14d5c60a11a901808782a95555
           fetch-depth: 0
           path: core
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
