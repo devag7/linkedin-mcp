@@ -60,6 +60,38 @@ export function profilePath(profileDir?: string): string {
   return canonicalPath(profileDir || path.join(os.homedir(), '.linkedin-mcp', 'profile'));
 }
 
+/** Liveness probe via signal 0 — sends nothing, only asks "does this PID exist?". */
+function isProcessAlive(pid: number): boolean {
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch (error) {
+    // EPERM = exists but owned by another user → alive. ESRCH = gone. Anything
+    // else is undecidable, so treat it as alive (fail-closed).
+    return (error as NodeJS.ErrnoException).code !== 'ESRCH';
+  }
+}
+
+/**
+ * True when a live Chrome still holds the browser profile directory.
+ *
+ * Chrome's SingletonLock symlink encodes "<hostname>-<pid>". If that pid is
+ * alive, a browser owns the profile and it must not be reused.
+ */
+function chromeHoldsProfile(lockDirectory: string): boolean {
+  // <profile>.lock  →  <profile>  is the browser profile dir.
+  const profileDir = lockDirectory.replace(/\.lock$/, '');
+  let link: string;
+  try {
+    link = fs.readlinkSync(path.join(profileDir, 'SingletonLock'));
+  } catch {
+    return false; // No singleton lock → no live browser holding it.
+  }
+  const pid = Number(link.slice(link.lastIndexOf('-') + 1));
+  if (!Number.isInteger(pid) || pid <= 0) return false; // Unparseable → not a live pid.
+  return isProcessAlive(pid);
+}
+
 const ownerSchema = z.object({
   token: z.string().uuid(),
   pid: z.number().int().positive(),
@@ -76,6 +108,58 @@ export class StateLock {
     this.directory = `${canonicalPath(target)}.lock`;
   }
 
+  /**
+   * Reclaim a lock whose recorded owner is provably gone.
+   *
+   * This is OPT-IN (`LINKEDIN_RECLAIM_STALE_LOCK=1`). The default stays
+   * fail-closed: a crashed run leaves the lock directory behind, and the
+   * conservative reading is that the profile may still be held by a live
+   * browser we cannot see, so a human must repair it.
+   *
+   * When the operator opts in, the reclaim is only allowed if the evidence is
+   * unambiguous:
+   *   1. owner.json parses, names THIS host, and its PID is dead (ESRCH from
+   *      signal-0) — the automation owner is provably gone;
+   *   2. for profile locks, Chrome's own SingletonLock symlink (which encodes
+   *      hostname-PID) does not point at a LIVE pid — no browser still holds
+   *      the profile directory.
+   * Any other state — live owner, unparseable owner, different host, live
+   * browser — leaves the lock fail-closed exactly as before.
+   */
+  private reclaimIfStale(): boolean {
+    if (process.env.LINKEDIN_RECLAIM_STALE_LOCK !== '1') return false;
+
+    let owner: z.infer<typeof ownerSchema>;
+    try {
+      const raw = fs.readFileSync(path.join(this.directory, 'owner.json'), 'utf8');
+      owner = ownerSchema.parse(JSON.parse(raw));
+    } catch {
+      return false; // Unreadable/corrupt owner: cannot prove staleness — stay closed.
+    }
+    if (owner.host !== os.hostname()) return false; // Different host: undecidable.
+    if (isProcessAlive(owner.pid)) return false; // Owner is alive — the lock is legitimately held.
+
+    // A browser that survived the crash would still hold the profile dir.
+    if (this.profile && chromeHoldsProfile(this.directory)) return false;
+
+    try {
+      fs.rmSync(this.directory, { recursive: true, force: true });
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  /** The canonical "someone else holds this lock" error for this lock kind. */
+  private busyError(): SafetyStateError {
+    return new SafetyStateError(
+      this.profile ? 'PROFILE_IN_USE' : 'STATE_BUSY',
+      this.profile
+        ? 'Browser profile is owned by another process. Stop that process before using the profile.'
+        : 'Safety state is locked by another transaction. No action was submitted; retry this operation ID later.',
+    );
+  }
+
   acquire(): void {
     if (this.token) {
       this.assertOwned();
@@ -85,20 +169,26 @@ export class StateLock {
       ensurePrivateStateDirectory(path.dirname(this.directory));
       fs.mkdirSync(this.directory, { mode: 0o700 });
     } catch (error) {
-      if ((error as NodeJS.ErrnoException).code === 'EEXIST')
-        throw new SafetyStateError(
-          this.profile ? 'PROFILE_IN_USE' : 'STATE_BUSY',
-          this.profile
-            ? 'Browser profile is owned by another process. Stop that process before using the profile.'
-            : 'Safety state is locked by another transaction. No action was submitted; retry this operation ID later.',
+      if ((error as NodeJS.ErrnoException).code === 'EEXIST') {
+        if (this.reclaimIfStale()) {
+          // Stale owner confirmed dead — take it over.
+          try {
+            fs.mkdirSync(this.directory, { mode: 0o700 });
+          } catch {
+            throw this.busyError();
+          }
+        } else {
+          throw this.busyError();
+        }
+      } else {
+        const wrapped = new SafetyStateError(
+          'STATE_WRITE_FAILED',
+          'Safety lock could not be created. Repair local storage before continuing.',
         );
-      const wrapped = new SafetyStateError(
-        'STATE_WRITE_FAILED',
-        'Safety lock could not be created. Repair local storage before continuing.',
-      );
-      const stateCode = fixedWindowsStateCode(error);
-      if (stateCode) Object.assign(wrapped, { stateCode });
-      throw wrapped;
+        const stateCode = fixedWindowsStateCode(error);
+        if (stateCode) Object.assign(wrapped, { stateCode });
+        throw wrapped;
+      }
     }
     const token = randomUUID();
     try {

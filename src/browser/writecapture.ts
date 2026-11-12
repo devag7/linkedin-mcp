@@ -155,6 +155,7 @@ export async function runWriteCapture(config: EnvConfig, logger: Logger): Promis
 
     // WC_ONLY=<section> runs a single section (fast iteration). Default: all.
     const only = process.env.WC_ONLY;
+    
     const want = (s: string): boolean => !only || only === s;
 
     // ── create_post ─────────────────────────────────────────────────────────
