@@ -67,6 +67,8 @@ const args: Record<ToolName, Record<string, unknown>> = {
   create_post: { text: 'Synthetic post' },
   react_to_post: { post_urn: 'urn:li:activity:123' },
   comment_on_post: { post_urn: 'urn:li:activity:123', text: 'Synthetic comment' },
+  update_profile_headline: { headline: 'Synthetic headline' },
+  update_profile_about: { about: 'Synthetic about text' },
 };
 let dir: string;
 let client: Client;
@@ -641,6 +643,8 @@ it.each([
   'send_message',
   'react_to_post',
   'comment_on_post',
+  'update_profile_headline',
+  'update_profile_about',
 ] as ToolName[])(
   '%s previews locally and refuses a confirmed write while disabled',
   async (name) => {

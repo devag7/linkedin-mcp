@@ -34,6 +34,7 @@ export type ActionType =
   | 'endorsement'
   | 'event-invite'
   | 'profile-view'
+  | 'profile-edit'
   | 'search'
   | 'read';
 

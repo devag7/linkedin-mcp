@@ -59,6 +59,7 @@ export const ACTIONS = {
   like: { pace: 'write', budget: 'likes', breaker: 'like' },
   comment: { pace: 'write', budget: 'comments', breaker: 'comment' },
   follow: { pace: 'write', budget: 'follows', breaker: 'follow' },
+  profileEdit: { pace: 'write', budget: 'profile-edits', breaker: 'profile-edit' },
 } satisfies Record<string, ActionDescriptor>;
 
 /** Thrown when a call is refused before it runs (breaker open / budget hit). */

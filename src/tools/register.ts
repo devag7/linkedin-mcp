@@ -32,6 +32,8 @@ const TOOL_TITLES: Record<ToolName, string> = {
   create_post: 'Create post',
   react_to_post: 'React to post',
   comment_on_post: 'Comment on post',
+  update_profile_headline: 'Update my LinkedIn headline',
+  update_profile_about: 'Update my LinkedIn About section',
 };
 /** All registrations share native contracts while retaining JSON text for older clients. */
 export function registerTool<Args extends z.ZodRawShape>(

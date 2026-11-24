@@ -52,16 +52,70 @@ function shortPath(url: string): string | undefined {
   }
 }
 
-/** Heuristic: is this voyager path a write (a mutation), not a read? */
-function looksLikeWrite(method: string, path: string): boolean {
-  if (method !== 'POST') return false;
-  return /normInvitations|invitation|messag|normShares|contentcreation|Shares|reaction|Reaction|comment|Comment|relationships|memberRelationships|graphql/i.test(
-    path,
-  );
+/**
+ * Mutation verbs that begin an SDUI action id.
+ *
+ * SDUI (LinkedIn's server-driven UI) expresses BOTH reads and writes as POST.
+ * The action id's final dot-segment starts with the verb, e.g.
+ *   com.linkedin.sdui.requests.profile.saveProfileIntroForm  -> write
+ *   com.linkedin.sdui.requests.profile.fetchProfileDiscoveryDrawer -> read
+ *   com.linkedin.sdui.impl.homenav.requests.getThirdPartyTrackingPixels -> read
+ */
+const SDUI_MUTATION_VERB =
+  /^(save|create|update|delete|remove|add|set|post|send|submit|apply|accept|reject|endorse|follow|unfollow|connect|invite|comment|react|like|share|publish|upload|edit|upsert|insert|modify|patch|destroy|drop|revoke|unpublish|flag|report|join|leave|register|unregister|subscribe|unsubscribe|book|cancel|enable|disable|mark|trigger|reset)/i;
+
+/** SDUI action ids seen that are NOT mutations — surfaced once so we can refine. */
+const seenSduiActions = new Set<string>();
+
+/**
+ * Decide whether a non-GET request is a real MUTATION (must be captured, and
+ * aborted so nothing actually saves) or a READ that merely happens to use POST.
+ *
+ * Getting this wrong breaks the page: LinkedIn's profile edit screen loads
+ * its data via `POST /flagship-web/rsc-action/actions/component` and
+ * `.../navigation`. Aborting those yields "Something went wrong on our end"
+ * in the Edit-intro modal, and no save request is ever sent.
+ *
+ * Returns 'voyager' | 'sdui' for mutations, undefined for reads.
+ */
+export function classifyWrite(url: string, _method: string): 'voyager' | 'sdui' | undefined {
+  let u: URL;
+  try {
+    u = new URL(url);
+  } catch {
+    return undefined;
+  }
+  const pathname = u.pathname;
+
+  // ── SDUI: component / navigation / app-config are reads; only the
+  //    server-request action endpoint can carry a mutation.
+  if (pathname.includes('/rsc-action/actions/')) {
+    if (!pathname.endsWith('/server-request')) return undefined;
+    const sduiid = u.searchParams.get('sduiid') ?? '';
+    const action = sduiid.slice(sduiid.lastIndexOf('.') + 1);
+    if (!action) return undefined;
+    if (SDUI_MUTATION_VERB.test(action)) return 'sdui';
+    if (!seenSduiActions.has(action)) {
+      seenSduiActions.add(action);
+      process.stderr.write(`\n  (sdui action classified as READ: ${action})\n`);
+    }
+    return undefined;
+  }
+
+  // ── Voyager: every non-GET is a mutation.
+  if (pathname.startsWith('/voyager/api/')) return 'voyager';
+
+  // ── Everything else (telemetry blobs, /flagship-web/in/... page data,
+  //    realtime connectivity) is a read wearing a POST costume.
+  return undefined;
 }
 
 export async function runWriteCapture(config: EnvConfig, logger: Logger): Promise<void> {
-  const engine = new BrowserEngine(config, logger);
+  // The profile-edit sections REQUIRE a visible window — the human drives the
+  // edit UI by hand. Headless would launch fine and then the user would find
+  // nothing to click, which is exactly the "the browser didn't open" symptom.
+  // (Same force-headful stance as capture.ts and login.ts.)
+  const engine = new BrowserEngine({ ...config, LINKEDIN_HEADLESS: false }, logger);
   const captured: CapturedWrite[] = [];
   const observed: ObservedCall[] = [];
 
@@ -97,34 +151,75 @@ export async function runWriteCapture(config: EnvConfig, logger: Logger): Promis
     });
 
     let currentLabel = 'unknown';
-    // Intercept ALL voyager traffic. SAFETY-FIRST: abort EVERY POST (Voyager
-    // queries are GET; a POST is a mutation), so no write can ever fire for real
-    // — even an unrecognized mutation the SPA auto-issues on a diagnose nav. We
-    // still record the writes we recognize for the payload catalog; the rest are
-    // aborted-and-logged. Reads (GET) pass through untouched.
-    await context.route('**/voyager/api/**', async (route: Route) => {
+    // SAFETY-FIRST, but not dumb. We abort every genuine MUTATION so nothing
+    // actually saves, yet we must let READS through — and on LinkedIn's
+    // server-driven UI, reads are POSTs too (rsc-action/actions/component,
+    // /navigation, page data). Aborting those breaks the edit screen with
+    // "Something went wrong on our end" and no save request is ever sent.
+    // classifyWrite() tells the two apart.
+    await context.route('**/*', async (route: Route) => {
       const req = route.request();
-      const p = shortPath(req.url());
-      if (req.method() === 'POST') {
-        // Diagnostic mode: let the SPA's OWN share mutation actually send, to see
-        // whether posting works at all on this account (replay-gap vs restriction).
-        if (process.env.CAPTURE_LET_POST === '1' && p && /voyagerContentcreationDashShares\./.test(p)) {
-          process.stderr.write(`\n  ➡️  [${currentLabel}] LETTING SHARE MUTATION THROUGH (diagnostic) ${p}\n`);
-          await route.continue();
-          return;
-        }
-        if (p && looksLikeWrite(req.method(), p)) {
-          captured.push({ label: currentLabel, method: req.method(), path: p, postData: req.postData() ?? undefined });
-          process.stderr.write(`\n  🎯 [${currentLabel}] CAPTURED POST ${p}\n`);
-          const pd = req.postData();
-          if (pd) process.stderr.write(`     body: ${pd.length > 1500 ? pd.slice(0, 1500) + '…' : pd}\n`);
-        } else {
-          process.stderr.write(`\n  ⛔ [${currentLabel}] BLOCKED unrecognized POST ${p ?? req.url()}\n`);
-        }
-        await route.abort('failed'); // never actually send ANY write
+      const url = req.url();
+      const p = shortPath(url) ?? url;
+      const method = req.method();
+      if (method === 'GET' || method === 'HEAD' || method === 'OPTIONS') {
+        await route.continue();
         return;
       }
-      await route.continue();
+      // Skip static assets and tracking pixels
+      const isStatic = /\.(js|css|png|jpg|jpeg|gif|svg|ico|woff2?|ttf|eot|map)(\?|$)/i.test(url) || /\/li\/track/i.test(url);
+      if (isStatic) {
+        await route.continue();
+        return;
+      }
+      // A read wearing a POST costume — must pass through or the page breaks.
+      const kind = classifyWrite(url, method);
+      if (!kind) {
+        await route.continue();
+        return;
+      }
+      // Only JSON bodies are worth recording. LinkedIn fires a lot of
+      // binary/encrypted telemetry POSTs; dumping those floods the log and
+      // writes multi-megabyte junk files. JSON.parse is the ground truth.
+      const raw = req.postData() ?? undefined;
+      let body: string | undefined;
+      if (raw) {
+        try {
+          JSON.parse(raw);
+          body = raw;
+        } catch {
+          body = undefined;
+        }
+      }
+      captured.push({ label: currentLabel, method, path: p ?? req.url(), postData: body });
+      process.stderr.write(`\n  \u{1F3AF} [${currentLabel}] CAPTURED ${method} ${p ?? req.url()}\n`);
+      if (body) {
+        process.stderr.write(`     body: ${body.length > 3000 ? body.slice(0, 3000) + '\u2026' : body}\n`);
+        try {
+          const fs = await import('node:fs');
+          const label = currentLabel.replace(/[^a-zA-Z0-9_-]/g, '_');
+          const fname = `/tmp/opencode/capture_${label}_${Date.now()}.json`;
+          fs.writeFileSync(fname, body);
+          process.stderr.write(`     full body saved to ${fname}\n`);
+        } catch (e) {
+          process.stderr.write(`     (could not save body: ${e instanceof Error ? e.message : String(e)})\n`);
+        }
+      } else {
+        process.stderr.write('     (non-JSON body \u2014 not recorded)\n');
+      }
+      // Diagnostic mode: let the SPA's OWN share mutation actually send.
+      if (process.env.CAPTURE_LET_POST === '1' && p && /voyagerContentcreationDashShares\./.test(p)) {
+        process.stderr.write(`\n  \u{27A1}\uFE0F  [${currentLabel}] LETTING SHARE MUTATION THROUGH (diagnostic) ${p}\n`);
+        await route.continue();
+        return;
+      }
+      // Diagnostic mode: let profile save requests through so LinkedIn doesn't error.
+      if (process.env.CAPTURE_LET_PROFILE_SAVE === '1' && p && /saveProfileIntroForm/.test(p)) {
+        process.stderr.write('\n  >>> [' + currentLabel + '] LETTING PROFILE SAVE THROUGH (diagnostic) ' + p + '\n');
+        await route.continue();
+        return;
+      }
+      await route.abort('failed'); // never actually send ANY write
     });
 
     const page = await engine.getFeedPage();
@@ -143,6 +238,7 @@ export async function runWriteCapture(config: EnvConfig, logger: Logger): Promis
 
     // WC_ONLY=<section> runs a single section (fast iteration). Default: all.
     const only = process.env.WC_ONLY;
+    
     const want = (s: string): boolean => !only || only === s;
 
     // ── create_post ─────────────────────────────────────────────────────────
@@ -177,6 +273,56 @@ export async function runWriteCapture(config: EnvConfig, logger: Logger): Promis
       currentLabel = 'send_message';
       process.stderr.write('\n========== send_message ==========\n');
       await captureMessage(page, logger);
+    }
+
+    // ── profile edits (manual UI drive; POSTs intercepted+aborted) ──────────
+    // These sections do NOT automate the edit UI — LinkedIn's selectors rotate
+    // too fast and the risk of a wrong click is too high. Instead, each section
+    // navigates to your profile and waits while YOU perform the edit manually.
+    // The interceptor captures every Voyager POST fired during the wait window.
+    // Abort with Ctrl+C between sections if you only want one.
+    const profileWait = async (label: string, hint: string) => {
+      currentLabel = label;
+      process.stderr.write(`\n========== ${label} (manual edit) ==========\n`);
+      process.stderr.write(`  👉 ${hint}\n`);
+      process.stderr.write('  The interceptor records every Voyager request for ~90s. Perform the edit now. DO NOT close the browser window.\n');
+      try {
+        await page.goto(`${ORIGIN}/in/me/`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+      } catch (e) {
+        process.stderr.write(`  (nav warn: ${e instanceof Error ? e.message : String(e)})\n`);
+      }
+      await page.waitForTimeout(90000);
+    };
+
+    if (want('profile_headline')) {
+      await profileWait(
+        'profile_headline',
+        'Click the pencil next to your headline/name, change the headline text, click Save (intercepted — nothing saves).',
+      );
+    }
+    if (want('profile_about')) {
+      await profileWait(
+        'profile_about',
+        'Scroll to the About section, click its pencil, edit the summary, click Save (intercepted).',
+      );
+    }
+    if (want('profile_experience')) {
+      await profileWait(
+        'profile_experience',
+        'Go to Experience: click + to add (or pencil to edit) an entry, fill fields, click Save (intercepted).',
+      );
+    }
+    if (want('profile_education')) {
+      await profileWait(
+        'profile_education',
+        'Go to Education: click + to add (or pencil to edit) an entry, fill fields, click Save (intercepted).',
+      );
+    }
+    if (want('profile_skills')) {
+      await profileWait(
+        'profile_skills',
+        'Go to Skills: click + to add a skill (or X to remove), confirm (intercepted).',
+      );
     }
 
     // ── diagnose the 401 surfaces: let the SPA load them and watch statuses ──

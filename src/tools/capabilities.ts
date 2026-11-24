@@ -45,6 +45,8 @@ export const CAPABILITIES = {
   create_post: write('voyagerFeedDashCreateShare'),
   react_to_post: write('voyagerSocialDashReactions'),
   comment_on_post: write('voyagerSocialDashNormComments'),
+  update_profile_headline: write('SDUI profile editor UI: headlineIntroForm'),
+  update_profile_about: write('SDUI profile editor UI: aboutIntroForm'),
 } as const;
 export type ToolName = keyof typeof CAPABILITIES;
 export interface CapabilityPolicy {

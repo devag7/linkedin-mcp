@@ -314,6 +314,8 @@ const dataSchemas: Record<ToolName, z.ZodTypeAny> = {
   create_post: write,
   react_to_post: write,
   comment_on_post: write,
+  update_profile_headline: write,
+  update_profile_about: write,
 };
 export const metaSchema = z.object({
   contractVersion: z.literal(1),

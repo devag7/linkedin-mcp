@@ -43,7 +43,8 @@ export type WriteActionType =
   | 'comments'
   | 'follows'
   | 'endorsements'
-  | 'event-invites';
+  | 'event-invites'
+  | 'profile-edits';
 
 /** Read actions tracked against daily read caps. */
 export type ReadActionType = 'profile-views' | 'searches';
@@ -120,6 +121,7 @@ const writeRecordSchema = z.object({
     'follows',
     'endorsements',
     'event-invites',
+    'profile-edits',
   ]),
   day: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   status: z.enum([
@@ -160,6 +162,7 @@ export interface DailyCaps {
   follows: number;
   endorsements: number;
   eventInvites: number;
+  profileEdits: number;
   profileViews: number;
   searches: number;
 }
@@ -205,6 +208,7 @@ export const DEFAULT_DAILY_CAPS: DailyCaps = {
   follows: 30,
   endorsements: 20,
   eventInvites: 20,
+  profileEdits: 20,
   profileViews: 80,
   searches: 30,
 };
@@ -227,6 +231,7 @@ const WRITE_ACTIONS: readonly WriteActionType[] = [
   'follows',
   'endorsements',
   'event-invites',
+  'profile-edits',
 ];
 
 export function budgetStatePath(override?: string): string {
@@ -625,6 +630,7 @@ export class BudgetTracker {
       'follows',
       'endorsements',
       'event-invites',
+      'profile-edits',
       'profile-views',
       'searches',
     ];
@@ -692,6 +698,8 @@ export class BudgetTracker {
         return this.dailyCaps.endorsements;
       case 'event-invites':
         return this.dailyCaps.eventInvites;
+      case 'profile-edits':
+        return this.dailyCaps.profileEdits;
       case 'profile-views':
         return this.dailyCaps.profileViews;
       case 'searches':
